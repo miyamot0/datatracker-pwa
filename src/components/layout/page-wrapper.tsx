@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import NavigationBar, { BreadCrumbListing } from './views/navigation-bar';
 import package_json from '../../../package.json';
-//import build_date from "../../scripts/build_date.json";
+import build_date from '@/assets/build_date.json';
 import { GithubIcon, HomeIcon, TwitterIcon } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Link } from 'react-router-dom';
@@ -11,10 +11,6 @@ type Props = {
   breadcrumbs?: BreadCrumbListing[];
   label?: string;
   className?: string;
-};
-
-const build_date = {
-  date: 'TODO',
 };
 
 export default function PageWrapper({ children, className, breadcrumbs, label }: Props) {

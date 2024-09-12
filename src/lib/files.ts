@@ -88,6 +88,7 @@ export const GetSettingsFileFromEvaluationFolder = async (
     if (!settings_json) throw new Error("Settings file not well-formed");
 
     return settings_json;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     files.getFileHandle("settings.json", { create: true }).then((file) => {
       file.createWritable().then((writer) => {

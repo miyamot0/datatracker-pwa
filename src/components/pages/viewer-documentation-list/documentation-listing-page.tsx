@@ -1,51 +1,43 @@
-import PageWrapper from "@/components/layout/page-wrapper";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { FrontMatterUniversalType } from "@/lib/mdx";
-import { cn } from "@/lib/utils";
-import { KeywordColors } from "@/types/colors";
-import { ChevronRight } from "lucide-react";
-import Link from "next/link";
+import PageWrapper from '@/components/layout/page-wrapper';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { generateKeywordColors } from '@/lib/colors';
+import { FrontMatterUniversalType } from '@/lib/mdx';
+import { cn } from '@/lib/utils';
+import { KeywordColors } from '@/types/colors';
+import { ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-type Props = {
-  FrontMatter: FrontMatterUniversalType[];
-  KeywordArray: KeywordColors[];
-};
+import documentation from '@/assets/documentation.json';
 
-export default async function DocumentationListingPage({
-  FrontMatter,
-  KeywordArray,
-}: Props) {
+export default function DocumentationListingPage() {
+  const entries = documentation.information;
+  const FrontMatter = entries
+    .sort((a, b) => a.matter.index - b.matter.index)
+    .map((entry) => entry.matter as FrontMatterUniversalType);
+
+  const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
+
   return (
-    <PageWrapper label={"Documentation"}>
+    <PageWrapper label={'Documentation'}>
       <Card className="w-full max-w-screen-2xl">
         <CardHeader>
           <CardTitle>DataTracker Documentation</CardTitle>
           <CardDescription>
-            Information on this page provides guidelines and instructions for
-            DataTracker
+            Information on this page provides guidelines and instructions for DataTracker
           </CardDescription>
         </CardHeader>
 
         <CardContent className="flex flex-col divide-y divide-solid">
           {FrontMatter.map((entry, index) => {
             const kw_badges = entry.keywords
-              .split(",")
+              .split(',')
               .map((str) => str.trim())
-              .filter((str) => str !== "");
+              .filter((str) => str !== '');
 
             return (
-              <div
-                key={index}
-                className="flex flex-row justify-between items-center py-4"
-              >
+              <div key={index} className="flex flex-row justify-between items-center py-4">
                 <div className="flex flex-col gap-1">
                   <div className="flex flex-row gap-1 flex-1 items-end font-semibold">
                     <span>{`${entry.index + 1}. ${entry.title}`}</span>
@@ -56,18 +48,11 @@ export default async function DocumentationListingPage({
                   <div className="flex flex-row gap-2 text-sm mt-1">
                     <span className="font-semibold">Keywords: </span>
                     {kw_badges.map((kw, index) => {
-                      const keyword_obj = KeywordArray.find(
-                        (obj) => obj.Keyword === kw
-                      );
-                      const color_str = keyword_obj
-                        ? keyword_obj.Color
-                        : "bg-gray-500";
+                      const keyword_obj = KeywordArray.find((obj) => obj.Keyword === kw);
+                      const color_str = keyword_obj ? keyword_obj.Color : 'bg-gray-500';
 
                       return (
-                        <Badge
-                          key={index}
-                          className={cn(color_str, "select-none")}
-                        >
+                        <Badge key={index} className={cn(color_str, 'select-none')}>
                           {kw}
                         </Badge>
                       );
@@ -75,13 +60,8 @@ export default async function DocumentationListingPage({
                   </div>
                 </div>
 
-                <Link
-                  href={`/documentation/${entry.filename.replaceAll(
-                    ".mdx",
-                    ""
-                  )}`}
-                >
-                  <Button variant={"outline"} className="shadow" size={"sm"}>
+                <Link to={`/documentation/${entry.filename.replaceAll('.mdx', '')}`}>
+                  <Button variant={'outline'} className="shadow" size={'sm'}>
                     Read More
                     <ChevronRight className="w-4 h-4 ml-2" />
                   </Button>

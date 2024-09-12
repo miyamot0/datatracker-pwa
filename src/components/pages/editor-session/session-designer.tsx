@@ -1,13 +1,7 @@
-import PageWrapper from "@/components/layout/page-wrapper";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import PageWrapper from '@/components/layout/page-wrapper';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -16,57 +10,33 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   DataCollectorRoles,
   SessionDesignerSchema,
   SessionDesignerSchemaType,
   SessionTerminationOptions,
-} from "@/forms/schema/session-designer-schema";
-import { CleanUpString } from "@/lib/strings";
-import {
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useRouter } from "next/navigation";
-import {
-  GetHandleEvaluationFolder,
-  GetSettingsFileFromEvaluationFolder,
-} from "@/lib/files";
-import { toSavedSettings } from "@/lib/dtos";
-import { KeySet } from "@/types/keyset";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { FolderHandleContext } from "@/context/folder-context";
+} from '@/forms/schema/session-designer-schema';
+import { CleanUpString } from '@/lib/strings';
+import { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { GetHandleEvaluationFolder, GetSettingsFileFromEvaluationFolder } from '@/lib/files';
+import { toSavedSettings } from '@/lib/dtos';
+import { KeySet } from '@/types/keyset';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { FolderHandleContext } from '@/context/folder-context';
 import {
   BuildEvaluationsBreadcrumb,
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,
-} from "@/components/ui/breadcrumb-entries";
-import { displayConditionalNotification } from "@/lib/notifications";
-import { FolderPlus } from "lucide-react";
-import ToolTipWrapper from "@/components/ui/tooltip-wrapper";
+} from '@/components/ui/breadcrumb-entries';
+import { displayConditionalNotification } from '@/lib/notifications';
+import { FolderPlus } from 'lucide-react';
+import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
+import { useNavigate } from 'react-router-dom';
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
@@ -90,20 +60,20 @@ export default function SessionDesigner({
   SetConditions,
 }: Props) {
   const { handle, settings } = useContext(FolderHandleContext);
-  const router = useRouter();
+  const navigate = useNavigate();
   const form = useForm<SessionDesignerSchemaType>({
     resolver: zodResolver(SessionDesignerSchema),
     values: {
-      SessionTherapistID: "",
-      SessionKeySet: "",
+      SessionTherapistID: '',
+      SessionKeySet: '',
       SessionDurationS: 600,
-      SessionTerminationOption: "End on Primary Timer",
+      SessionTerminationOption: 'End on Primary Timer',
       SessionNumber: 1,
-      SessionCondition: "",
-      DataCollectorID: "",
-      DataCollectorRole: "Primary",
+      SessionCondition: '',
+      DataCollectorID: '',
+      DataCollectorRole: 'Primary',
     },
-    mode: "onChange",
+    mode: 'onChange',
   });
   const [keySet, setKeySet] = useState<KeySet | undefined>(undefined);
 
@@ -119,43 +89,41 @@ export default function SessionDesigner({
       if (!files) {
         displayConditionalNotification(
           settings,
-          "Error: No evaluation folder found",
-          "The folder requested does not exist",
+          'Error: No evaluation folder found',
+          'The folder requested does not exist',
           3000,
           true
         );
 
-        throw new Error("No files found for this evaluation");
+        throw new Error('No files found for this evaluation');
       }
 
       const sessionSettings = await GetSettingsFileFromEvaluationFolder(files);
 
-      form.setValue("SessionKeySet", sessionSettings.KeySet);
-      form.setValue("DataCollectorID", sessionSettings.Initials);
-      form.trigger("DataCollectorID");
+      form.setValue('SessionKeySet', sessionSettings.KeySet);
+      form.setValue('DataCollectorID', sessionSettings.Initials);
+      form.trigger('DataCollectorID');
 
-      form.setValue("SessionTherapistID", sessionSettings.Therapist);
-      form.trigger("SessionTherapistID");
+      form.setValue('SessionTherapistID', sessionSettings.Therapist);
+      form.trigger('SessionTherapistID');
 
-      form.setValue("SessionDurationS", sessionSettings.DurationS);
-      form.setValue("SessionTerminationOption", sessionSettings.TimerOption);
-      form.setValue("SessionNumber", sessionSettings.Session);
+      form.setValue('SessionDurationS', sessionSettings.DurationS);
+      form.setValue('SessionTerminationOption', sessionSettings.TimerOption);
+      form.setValue('SessionNumber', sessionSettings.Session);
 
-      form.setValue("SessionCondition", sessionSettings.Condition);
-      form.trigger("SessionCondition");
+      form.setValue('SessionCondition', sessionSettings.Condition);
+      form.trigger('SessionCondition');
 
-      form.setValue("DataCollectorRole", sessionSettings.Role);
-      form.trigger("DataCollectorRole");
+      form.setValue('DataCollectorRole', sessionSettings.Role);
+      form.trigger('DataCollectorRole');
 
       if (sessionSettings.KeySet.trim().length > 0) {
-        const keyset_default = Keysets.find(
-          (keyset) => keyset.Name === sessionSettings.KeySet
-        );
+        const keyset_default = Keysets.find((keyset) => keyset.Name === sessionSettings.KeySet);
 
         if (keyset_default) setKeySet(keyset_default);
       }
 
-      form.trigger("SessionKeySet");
+      form.trigger('SessionKeySet');
     };
 
     read_files();
@@ -166,27 +134,18 @@ export default function SessionDesigner({
   function onSubmit(values: z.infer<typeof SessionDesignerSchema>) {
     const newer_settings = toSavedSettings(values);
 
-    GetHandleEvaluationFolder(
-      Handle,
-      CleanUpString(Group),
-      CleanUpString(Individual),
-      CleanUpString(Evaluation)
-    )
+    GetHandleEvaluationFolder(Handle, CleanUpString(Group), CleanUpString(Individual), CleanUpString(Evaluation))
       .then(async (files) => {
-        if (!files) throw new Error("No directory found for this evaluation");
+        if (!files) throw new Error('No directory found for this evaluation');
 
-        const settings_file = await files.getFileHandle("settings.json", {
+        const settings_file = await files.getFileHandle('settings.json', {
           create: true,
         });
         const writer = await settings_file.createWritable();
         await writer.write(JSON.stringify(newer_settings));
         await writer.close();
 
-        router.push(
-          `/session/${CleanUpString(Group)}/${CleanUpString(
-            Individual
-          )}/${CleanUpString(Evaluation)}/run`
-        );
+        navigate(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}/run`);
       })
       .catch((error) => {
         console.error(error);
@@ -207,27 +166,23 @@ export default function SessionDesigner({
           <CardHeader className="flex flex-row w-full justify-between">
             <div className="flex flex-col gap-1.5">
               <CardTitle>Session Designer</CardTitle>
-              <CardDescription>
-                Specify your conditions for the session on this page
-              </CardDescription>
+              <CardDescription>Specify your conditions for the session on this page</CardDescription>
             </div>
             <div>
               <ToolTipWrapper Label="Add a new Condition for this Evaluation">
                 <Button
-                  variant={"outline"}
+                  variant={'outline'}
                   className="shadow"
                   onClick={async () => {
-                    const input = window.prompt(
-                      "Enter the name for the new condition."
-                    );
+                    const input = window.prompt('Enter the name for the new condition.');
 
                     if (!input) return;
 
                     if (Conditions.includes(input.trim())) {
                       displayConditionalNotification(
                         settings,
-                        "Error Adding Condition",
-                        "The condition provided already exists",
+                        'Error Adding Condition',
+                        'The condition provided already exists',
                         3000,
                         true
                       );
@@ -236,13 +191,12 @@ export default function SessionDesigner({
                     }
 
                     if (input.trim().length > 0) {
-                      const evaluations_folder =
-                        await GetHandleEvaluationFolder(
-                          handle!,
-                          Group,
-                          Individual,
-                          Evaluation
-                        );
+                      const evaluations_folder = await GetHandleEvaluationFolder(
+                        handle!,
+                        Group,
+                        Individual,
+                        Evaluation
+                      );
 
                       await evaluations_folder.getDirectoryHandle(input, {
                         create: true,
@@ -252,7 +206,7 @@ export default function SessionDesigner({
 
                       displayConditionalNotification(
                         settings,
-                        "Condition Added",
+                        'Condition Added',
                         `The condition '${input}' has been added`
                       );
                     }
@@ -267,10 +221,7 @@ export default function SessionDesigner({
 
           <CardContent className="flex flex-col gap-4">
             <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-8"
-              >
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <FormField
                   control={form.control}
                   name="SessionCondition"
@@ -280,7 +231,7 @@ export default function SessionDesigner({
                       <Select
                         onValueChange={(value) => {
                           field.onChange(value);
-                          form.trigger("SessionCondition");
+                          form.trigger('SessionCondition');
                         }}
                         value={field.value}
                       >
@@ -300,9 +251,7 @@ export default function SessionDesigner({
                           </SelectGroup>
                         </SelectContent>
                       </Select>
-                      <FormDescription>
-                        Which condition does this session correspond to?
-                      </FormDescription>
+                      <FormDescription>Which condition does this session correspond to?</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -316,11 +265,9 @@ export default function SessionDesigner({
                       <Select
                         onValueChange={(value) => {
                           field.onChange(value);
-                          setKeySet(
-                            Keysets.find((keyset) => keyset.Name === value)
-                          );
+                          setKeySet(Keysets.find((keyset) => keyset.Name === value));
 
-                          form.trigger("SessionKeySet");
+                          form.trigger('SessionKeySet');
                         }}
                         value={field.value}
                       >
@@ -340,10 +287,7 @@ export default function SessionDesigner({
                           </SelectGroup>
                         </SelectContent>
                       </Select>
-                      <FormDescription>
-                        Select WHICH timer should be used to terminate the
-                        session
-                      </FormDescription>
+                      <FormDescription>Select WHICH timer should be used to terminate the session</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -355,14 +299,9 @@ export default function SessionDesigner({
                     <FormItem>
                       <FormLabel>Session Therapist ID</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Enter the ID for the session therapist"
-                          {...field}
-                        />
+                        <Input placeholder="Enter the ID for the session therapist" {...field} />
                       </FormControl>
-                      <FormDescription>
-                        Enter the ID for the session therapist (e.g., initials)
-                      </FormDescription>
+                      <FormDescription>Enter the ID for the session therapist (e.g., initials)</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -374,15 +313,9 @@ export default function SessionDesigner({
                     <FormItem>
                       <FormLabel>Data Collector ID</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Initials of data collector"
-                          {...field}
-                        />
+                        <Input placeholder="Initials of data collector" {...field} />
                       </FormControl>
-                      <FormDescription>
-                        Enter your ID as the session data collector (e.g.,
-                        initials)
-                      </FormDescription>
+                      <FormDescription>Enter your ID as the session data collector (e.g., initials)</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -393,10 +326,7 @@ export default function SessionDesigner({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Role as Data Collector</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select role as data collector" />
@@ -404,9 +334,7 @@ export default function SessionDesigner({
                         </FormControl>
                         <SelectContent>
                           <SelectGroup>
-                            <SelectLabel>
-                              Session Termination Option
-                            </SelectLabel>
+                            <SelectLabel>Session Termination Option</SelectLabel>
                             {Object.values(DataCollectorRoles).map((role) => (
                               <SelectItem key={role} value={role}>
                                 {role} Data Collector
@@ -416,8 +344,7 @@ export default function SessionDesigner({
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        Specify whether you are the PRIMARY or RELIABILITY data
-                        collector
+                        Specify whether you are the PRIMARY or RELIABILITY data collector
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -433,8 +360,7 @@ export default function SessionDesigner({
                         <Input placeholder="600" type="number" {...field} />
                       </FormControl>
                       <FormDescription>
-                        Assign the length of the session in seconds (Default =
-                        600s or 10m)
+                        Assign the length of the session in seconds (Default = 600s or 10m)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -449,9 +375,7 @@ export default function SessionDesigner({
                       <FormControl>
                         <Input placeholder="600" type="number" {...field} />
                       </FormControl>
-                      <FormDescription>
-                        Assign the session number for the client (Default = 1)
-                      </FormDescription>
+                      <FormDescription>Assign the session number for the client (Default = 1)</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -462,10 +386,7 @@ export default function SessionDesigner({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Session Termination Option</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select role as data collector" />
@@ -474,20 +395,15 @@ export default function SessionDesigner({
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Session Timers</SelectLabel>
-                            {Object.values(SessionTerminationOptions).map(
-                              (role) => (
-                                <SelectItem key={role} value={role}>
-                                  {role}
-                                </SelectItem>
-                              )
-                            )}
+                            {Object.values(SessionTerminationOptions).map((role) => (
+                              <SelectItem key={role} value={role}>
+                                {role}
+                              </SelectItem>
+                            ))}
                           </SelectGroup>
                         </SelectContent>
                       </Select>
-                      <FormDescription>
-                        Select WHICH timer should be used to terminate the
-                        session
-                      </FormDescription>
+                      <FormDescription>Select WHICH timer should be used to terminate the session</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

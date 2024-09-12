@@ -1,62 +1,49 @@
-"use client";
+'use client';
 
-import PageWrapper from "@/components/layout/page-wrapper";
+import PageWrapper from '@/components/layout/page-wrapper';
 import {
   BuildEvaluationsBreadcrumb,
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,
-} from "@/components/ui/breadcrumb-entries";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import LoadingDisplay from "@/components/ui/loading-display";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import ToolTipWrapper from "@/components/ui/tooltip-wrapper";
-import { FolderHandleContext } from "@/context/folder-context";
-import { getClientKeyboards, GetHandleKeyboardsFolder } from "@/lib/files";
-import { createNewKeySet, serializeKeySet } from "@/lib/keyset";
-import createHref from "@/lib/links";
-import { LoadingStructureKeysets } from "@/types/working";
-import { Edit2, Plus } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
+} from '@/components/ui/breadcrumb-entries';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import LoadingDisplay from '@/components/ui/loading-display';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
+import { FolderHandleContext } from '@/context/folder-context';
+import { getClientKeyboards, GetHandleKeyboardsFolder } from '@/lib/files';
+import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
+import createHref from '@/lib/links';
+import { LoadingStructureKeysets } from '@/types/working';
+import { Edit2, Plus } from 'lucide-react';
+import { useContext, useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
-type Props = {
-  Group: string;
-  Individual: string;
-};
-
-export default function KeySetsPage({ Group, Individual }: Props) {
+export default function KeySetsPage() {
+  const { Group, Individual } = useParams();
   const { handle } = useContext(FolderHandleContext);
+
   const [keysets, setKeysets] = useState<LoadingStructureKeysets>({
-    Status: "loading",
+    Status: 'loading',
     KeySets: [],
   });
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (!handle) {
-      router.push(createHref({ type: "Dashboard" }));
+    if (!handle || !Group || !Individual) {
+      navigate(createHref({ type: 'Dashboard' }));
       return;
     }
 
     getClientKeyboards(handle, Group, Individual, setKeysets);
-  }, [handle, router, Group, Individual]);
+  }, [handle, navigate, Group, Individual]);
 
   if (!handle) return <LoadingDisplay />;
+
+  if (!Group || !Individual || !handle) {
+    throw new Error('Params missing.');
+  }
 
   return (
     <PageWrapper
@@ -65,38 +52,29 @@ export default function KeySetsPage({ Group, Individual }: Props) {
         BuildIndividualsBreadcrumb(Group),
         BuildEvaluationsBreadcrumb(Group, Individual),
       ]}
-      label={"Keysets"}
+      label={'Keysets'}
     >
       <Card className="w-full max-w-screen-2xl">
         <CardHeader className="flex flex-col md:flex-row w-full justify-between">
           <div className="flex flex-col gap-1.5">
             <CardTitle>Keysets</CardTitle>
-            <CardDescription>
-              View/Edit Keysets for {Individual}
-            </CardDescription>
+            <CardDescription>View/Edit Keysets for {Individual}</CardDescription>
           </div>
           <ToolTipWrapper Label="Create a new KeySet for individual">
             <Button
-              variant={"outline"}
+              variant={'outline'}
               className="shadow"
               onClick={async () => {
-                const new_keyset_name =
-                  window && window.prompt("Enter the name of the keyset");
+                const new_keyset_name = window && window.prompt('Enter the name of the keyset');
 
                 if (!new_keyset_name) return;
 
                 if (new_keyset_name.trim().length < 4) {
-                  window.alert(
-                    "Keyset name must be at least 4 characters long"
-                  );
+                  window.alert('Keyset name must be at least 4 characters long');
                   return;
                 }
 
-                const keyboards_folder = await GetHandleKeyboardsFolder(
-                  handle,
-                  Group,
-                  Individual
-                );
+                const keyboards_folder = await GetHandleKeyboardsFolder(handle, Group, Individual);
 
                 let keyboard_exists = false;
 
@@ -109,16 +87,13 @@ export default function KeySetsPage({ Group, Individual }: Props) {
                 }
 
                 if (keyboard_exists) {
-                  window.alert("Keyset already exists");
+                  window.alert('Keyset already exists');
                   return;
                 }
 
                 const key_set = createNewKeySet(new_keyset_name);
 
-                const key_board = await keyboards_folder.getFileHandle(
-                  `${new_keyset_name}.json`,
-                  { create: true }
-                );
+                const key_board = await keyboards_folder.getFileHandle(`${new_keyset_name}.json`, { create: true });
 
                 const writer = await key_board.createWritable();
                 await writer.write(serializeKeySet(key_set));
@@ -147,9 +122,7 @@ export default function KeySetsPage({ Group, Individual }: Props) {
                 <TableHead>Duration Keys</TableHead>
                 <TableHead>Date Created</TableHead>
                 <TableHead>Date Modified</TableHead>
-                <TableHead className="flex flex-row justify-end">
-                  Manage Keyset
-                </TableHead>
+                <TableHead className="flex flex-row justify-end">Manage Keyset</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -159,14 +132,10 @@ export default function KeySetsPage({ Group, Individual }: Props) {
                   <TableCell>{keys.FrequencyKeys.length}</TableCell>
                   <TableCell>{keys.DurationKeys.length}</TableCell>
                   <TableCell>{keys.createdAt.toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    {keys.lastModified.toLocaleDateString()}
-                  </TableCell>
+                  <TableCell>{keys.lastModified.toLocaleDateString()}</TableCell>
                   <TableCell className="flex flex-row justify-end">
-                    <Link
-                      href={`/session/${Group}/${Individual}/keysets/${keys.Name}`}
-                    >
-                      <Button size={"sm"} variant={"outline"}>
+                    <Link to={`/session/${Group}/${Individual}/keysets/${keys.Name}`}>
+                      <Button size={'sm'} variant={'outline'}>
                         <Edit2 className="h-4 w-4 mr-2" />
                         Edit KeySet
                       </Button>

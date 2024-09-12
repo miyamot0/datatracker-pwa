@@ -2,7 +2,8 @@
   "files": [],
   "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
   "compilerOptions": {
-    "types": ["vite-plugin-pwa/client", "vitest/globals"],
+    "types": ["vite-plugin-pwa/client", "vitest/globals", "@types/wicg-file-system-access"],
+    "lib": ["ES2021.String", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

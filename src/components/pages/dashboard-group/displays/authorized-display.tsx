@@ -1,11 +1,5 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,25 +7,18 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-  Table,
-} from "@/components/ui/table";
-import ToolTipWrapper from "@/components/ui/tooltip-wrapper";
-import { FolderHandleContext } from "@/context/folder-context";
-import { removeGroupFolder } from "@/lib/files";
-import createHref from "@/lib/links";
-import { displayConditionalNotification } from "@/lib/notifications";
-import { cn } from "@/lib/utils";
-import { LoadingStructure } from "@/types/working";
-import { ChevronDown, FolderInput, FolderPlus, FolderX } from "lucide-react";
-import Link from "next/link";
-import { Dispatch, SetStateAction, useContext } from "react";
+} from '@/components/ui/dropdown-menu';
+import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from '@/components/ui/table';
+import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
+import { FolderHandleContext } from '@/context/folder-context';
+import { removeGroupFolder } from '@/lib/files';
+import createHref from '@/lib/links';
+import { displayConditionalNotification } from '@/lib/notifications';
+import { cn } from '@/lib/utils';
+import { LoadingStructure } from '@/types/working';
+import { ChevronDown, FolderInput, FolderPlus, FolderX } from 'lucide-react';
+import { Dispatch, SetStateAction, useContext } from 'react';
+import { Link } from 'react-router-dom';
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
@@ -39,11 +26,7 @@ type Props = {
   AddCallback: Dispatch<SetStateAction<LoadingStructure>>;
 };
 
-export default function AuthorizedDisplay({
-  Handle,
-  Groups,
-  AddCallback,
-}: Props) {
+export default function AuthorizedDisplay({ Handle, Groups, AddCallback }: Props) {
   const { settings } = useContext(FolderHandleContext);
 
   return (
@@ -51,28 +34,26 @@ export default function AuthorizedDisplay({
       <CardHeader className="flex flex-col md:flex-row w-full justify-between">
         <div className="flex flex-col gap-1.5">
           <CardTitle>Directory of Client Groups</CardTitle>
-          <CardDescription>
-            Select group to load relevant client data
-          </CardDescription>
+          <CardDescription>Select group to load relevant client data</CardDescription>
         </div>
 
         <div className="flex flex-col md:flex-row gap-4">
           <ToolTipWrapper Label="Create a new group folder">
             <Button
-              variant={"outline"}
+              variant={'outline'}
               className="shadow"
               onClick={async () => {
-                const input = window.prompt("Enter a name for the new group.");
+                const input = window.prompt('Enter a name for the new group.');
 
                 if (!input || !Handle) return;
 
                 if (Groups.Values.includes(input)) {
-                  alert("Group already exists.");
+                  alert('Group already exists.');
                   return;
                 }
 
                 if (input.trim().length < 4) {
-                  alert("Group name must be at least 4 characters long.");
+                  alert('Group name must be at least 4 characters long.');
                   return;
                 }
 
@@ -87,8 +68,8 @@ export default function AuthorizedDisplay({
 
                 displayConditionalNotification(
                   settings,
-                  "Folder Created",
-                  "The new Group folder has been successfully created."
+                  'Folder Created',
+                  'The new Group folder has been successfully created.'
                 );
               }}
             >
@@ -113,13 +94,13 @@ export default function AuthorizedDisplay({
                 <TableCell>{group}</TableCell>
                 <TableCell className="flex flex-row justify-end">
                   <Button
-                    size={"sm"}
-                    variant={"outline"}
+                    size={'sm'}
+                    variant={'outline'}
                     className="flex flex-row divide-x justify-between mx-0 px-0 shadow"
                   >
                     <Link
                       className="px-3 hover:underline flex flex-row items-center"
-                      href={createHref({ type: "Individuals", group })}
+                      to={createHref({ type: 'Individuals', group })}
                     >
                       <FolderInput className="mr-2 h-4 w-4" />
                       Open Group
@@ -128,27 +109,21 @@ export default function AuthorizedDisplay({
                       <DropdownMenuTrigger asChild>
                         <ChevronDown className="w-fit px-2" />
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        className="w-56"
-                        side="bottom"
-                        align="end"
-                        sideOffset={12}
-                      >
+                      <DropdownMenuContent className="w-56" side="bottom" align="end" sideOffset={12}>
                         <DropdownMenuLabel>Data Management</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className={cn(
-                            "bg-red-500 text-white hover:bg-red-400 focus:bg-red-400 focus:text-white rounded cursor-pointer",
+                            'bg-red-500 text-white hover:bg-red-400 focus:bg-red-400 focus:text-white rounded cursor-pointer',
                             {
                               disabled: settings.EnableFileDeletion === false,
-                              "pointer-events-none":
-                                settings.EnableFileDeletion === false,
+                              'pointer-events-none': settings.EnableFileDeletion === false,
                             }
                           )}
                           disabled={settings.EnableFileDeletion === false}
                           onClick={async () => {
                             const confirm_delete = window.confirm(
-                              "Are you sure you want to delete this group?. This CANNOT be undone."
+                              'Are you sure you want to delete this group?. This CANNOT be undone.'
                             );
 
                             if (confirm_delete) {
@@ -157,23 +132,22 @@ export default function AuthorizedDisplay({
 
                                 const new_state = {
                                   ...Groups,
-                                  Values: Groups.Values.filter(
-                                    (item) => item !== group
-                                  ),
+                                  Values: Groups.Values.filter((item) => item !== group),
                                 };
 
                                 AddCallback(new_state);
 
                                 displayConditionalNotification(
                                   settings,
-                                  "Group Data Deleted",
-                                  "Group data has been successfully deleted."
+                                  'Group Data Deleted',
+                                  'Group data has been successfully deleted.'
                                 );
-                              } catch (error) {
+                                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                              } catch (error: unknown) {
                                 displayConditionalNotification(
                                   settings,
-                                  "Error Deleting Group Data",
-                                  "An error occurred while trying to delete the group folder.",
+                                  'Error Deleting Group Data',
+                                  'An error occurred while trying to delete the group folder.',
                                   3000,
                                   true
                                 );

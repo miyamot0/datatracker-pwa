@@ -1,18 +1,9 @@
-"use client";
+'use client';
 
-import PageWrapper from "@/components/layout/page-wrapper";
-import {
-  BuildGroupBreadcrumb,
-  BuildIndividualsBreadcrumb,
-} from "@/components/ui/breadcrumb-entries";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import PageWrapper from '@/components/layout/page-wrapper';
+import { BuildGroupBreadcrumb, BuildIndividualsBreadcrumb } from '@/components/ui/breadcrumb-entries';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,54 +11,41 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-  Table,
-} from "@/components/ui/table";
-import ToolTipWrapper from "@/components/ui/tooltip-wrapper";
-import { FolderHandleContext } from "@/context/folder-context";
-import {
-  getClientEvaluationFolders,
-  removeClientEvaluationFolder,
-} from "@/lib/files";
-import createHref from "@/lib/links";
-import { displayConditionalNotification } from "@/lib/notifications";
-import { CleanUpString } from "@/lib/strings";
-import { cn } from "@/lib/utils";
-import { LoadingStructure } from "@/types/working";
-import {
-  ChartColumnIcon,
-  ChevronDown,
-  Disc3,
-  FilePlus,
-  FolderX,
-  KeyboardIcon,
-  LibraryIcon,
-} from "lucide-react";
-import Link from "next/link";
-import { useContext, useEffect, useState } from "react";
+} from '@/components/ui/dropdown-menu';
+import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from '@/components/ui/table';
+import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
+import { FolderHandleContext } from '@/context/folder-context';
+import { getClientEvaluationFolders, removeClientEvaluationFolder } from '@/lib/files';
+import createHref from '@/lib/links';
+import { displayConditionalNotification } from '@/lib/notifications';
+import { CleanUpString } from '@/lib/strings';
+import { cn } from '@/lib/utils';
+import { LoadingStructure } from '@/types/working';
+import { ChartColumnIcon, ChevronDown, Disc3, FilePlus, FolderX, KeyboardIcon, LibraryIcon } from 'lucide-react';
+import { useContext, useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
-type Props = {
-  Handle: FileSystemDirectoryHandle;
-  Group: string;
-  Individual: string;
-};
-
-export default function EvaluationsPage({ Handle, Group, Individual }: Props) {
-  const { settings } = useContext(FolderHandleContext);
+export default function EvaluationsPage() {
+  const { Group, Individual } = useParams();
+  const { settings, handle } = useContext(FolderHandleContext);
   const [evaluations, setEvaluations] = useState<LoadingStructure>({
-    Status: "loading",
+    Status: 'loading',
     Values: [],
   });
+  const navigate = useNavigate();
 
   useEffect(() => {
-    getClientEvaluationFolders(Handle, Group, Individual, setEvaluations);
-  }, [Handle, Group, Individual]);
+    if (!handle || !Group || !Individual) {
+      navigate(createHref({ type: 'Dashboard' }));
+      return;
+    }
+
+    getClientEvaluationFolders(handle, Group, Individual, setEvaluations);
+  }, [handle, Group, Individual, navigate]);
+
+  if (!Group || !Individual || !handle) {
+    throw new Error('Params missing.');
+  }
 
   return (
     <PageWrapper
@@ -78,40 +56,30 @@ export default function EvaluationsPage({ Handle, Group, Individual }: Props) {
         <CardHeader className="flex flex-col md:flex-row w-full justify-between">
           <div className="flex flex-col gap-1.5">
             <CardTitle>{Individual}</CardTitle>
-            <CardDescription>
-              Select Evaluation to Build Session
-            </CardDescription>
+            <CardDescription>Select Evaluation to Build Session</CardDescription>
           </div>
           <div className="flex flex-row gap-2">
             <ToolTipWrapper Label="Add an a new evaluation for current individual">
               <Button
-                variant={"outline"}
+                variant={'outline'}
                 className="shadow"
                 onClick={async () => {
-                  const input = window.prompt(
-                    "Enter a name for the new evaluation."
-                  );
+                  const input = window.prompt('Enter a name for the new evaluation.');
 
-                  if (!input || !Handle) return;
+                  if (!input || !handle) return;
 
                   if (evaluations.Values.includes(input)) {
-                    alert("Evaluation already exists.");
+                    alert('Evaluation already exists.');
                     return;
                   }
 
                   if (input.trim().length < 4) {
-                    alert(
-                      "Evaluation name must be at least 4 characters long."
-                    );
+                    alert('Evaluation name must be at least 4 characters long.');
                     return;
                   }
 
-                  const group_dir = await Handle.getDirectoryHandle(
-                    CleanUpString(Group)
-                  );
-                  const client_dir = await group_dir.getDirectoryHandle(
-                    CleanUpString(Individual)
-                  );
+                  const group_dir = await handle.getDirectoryHandle(CleanUpString(Group));
+                  const client_dir = await group_dir.getDirectoryHandle(CleanUpString(Individual));
                   await client_dir.getDirectoryHandle(input, { create: true });
 
                   const new_state = {
@@ -127,14 +95,14 @@ export default function EvaluationsPage({ Handle, Group, Individual }: Props) {
               </Button>
             </ToolTipWrapper>
             <Link
-              href={createHref({
-                type: "Keysets",
+              to={createHref({
+                type: 'Keysets',
                 group: Group,
                 individual: Individual,
               })}
             >
               <ToolTipWrapper Label="Manage KeySets across evaluations">
-                <Button variant={"outline"} className="shadow">
+                <Button variant={'outline'} className="shadow">
                   <KeyboardIcon className="w-4 h-4 mr-2" />
                   Manage KeySets
                 </Button>
@@ -157,14 +125,14 @@ export default function EvaluationsPage({ Handle, Group, Individual }: Props) {
                   <TableCell>{evaluation}</TableCell>
                   <TableCell className="flex flex-row justify-end">
                     <Button
-                      size={"sm"}
-                      variant={"outline"}
+                      size={'sm'}
+                      variant={'outline'}
                       className="flex flex-row divide-x justify-between mx-0 px-0 shadow"
                     >
                       <Link
                         className="px-3 hover:underline flex flex-row items-center"
-                        href={createHref({
-                          type: "Session Designer",
+                        to={createHref({
+                          type: 'Session Designer',
                           group: Group,
                           individual: Individual,
                           evaluation,
@@ -177,18 +145,13 @@ export default function EvaluationsPage({ Handle, Group, Individual }: Props) {
                         <DropdownMenuTrigger asChild>
                           <ChevronDown className="w-fit px-2" />
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          className="w-64"
-                          side="bottom"
-                          align="end"
-                          sideOffset={12}
-                        >
+                        <DropdownMenuContent className="w-64" side="bottom" align="end" sideOffset={12}>
                           <DropdownMenuLabel>Data Management</DropdownMenuLabel>
                           <DropdownMenuItem>
                             <Link
                               className="flex flex-row items-center"
-                              href={createHref({
-                                type: "Evaluation Viewer",
+                              to={createHref({
+                                type: 'Evaluation Viewer',
                                 group: Group,
                                 individual: Individual,
                                 evaluation,
@@ -201,8 +164,8 @@ export default function EvaluationsPage({ Handle, Group, Individual }: Props) {
                           <DropdownMenuItem>
                             <Link
                               className="flex flex-row items-center"
-                              href={createHref({
-                                type: "Reli Viewer",
+                              to={createHref({
+                                type: 'Reli Viewer',
                                 group: Group,
                                 individual: Individual,
                                 evaluation,
@@ -215,47 +178,40 @@ export default function EvaluationsPage({ Handle, Group, Individual }: Props) {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className={cn(
-                              "bg-red-500 text-white hover:bg-red-400 focus:bg-red-400 focus:text-white rounded cursor-pointer",
+                              'bg-red-500 text-white hover:bg-red-400 focus:bg-red-400 focus:text-white rounded cursor-pointer',
                               {
                                 disabled: settings.EnableFileDeletion === false,
-                                "pointer-events-none":
-                                  settings.EnableFileDeletion === false,
+                                'pointer-events-none': settings.EnableFileDeletion === false,
                               }
                             )}
                             disabled={settings.EnableFileDeletion === false}
                             onClick={async () => {
                               const confirm_delete = window.confirm(
-                                "Are you sure you want to delete this evaluation?. This CANNOT be undone."
+                                'Are you sure you want to delete this evaluation?. This CANNOT be undone.'
                               );
 
                               if (confirm_delete) {
                                 try {
-                                  await removeClientEvaluationFolder(
-                                    Handle,
-                                    Group,
-                                    Individual,
-                                    evaluation
-                                  );
+                                  await removeClientEvaluationFolder(handle, Group, Individual, evaluation);
 
                                   const new_state = {
                                     ...evaluations,
-                                    Values: evaluations.Values.filter(
-                                      (item) => item !== evaluation
-                                    ),
+                                    Values: evaluations.Values.filter((item) => item !== evaluation),
                                   };
 
                                   setEvaluations(new_state);
 
                                   displayConditionalNotification(
                                     settings,
-                                    "Evaluation Data Deleted",
-                                    "Evaluation data has been successfully deleted."
+                                    'Evaluation Data Deleted',
+                                    'Evaluation data has been successfully deleted.'
                                   );
+                                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                 } catch (error) {
                                   displayConditionalNotification(
                                     settings,
-                                    "Evaluation Data Deletion Error",
-                                    "An error occurred while deleting the evaluation data.",
+                                    'Evaluation Data Deletion Error',
+                                    'An error occurred while deleting the evaluation data.',
                                     3000,
                                     true
                                   );
