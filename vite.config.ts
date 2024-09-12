@@ -7,9 +7,13 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      registerType: 'autoUpdate',
+
       // add this to cache all the imports
       workbox: {
         globPatterns: ['**/*'],
+        cleanupOutdatedCaches: false,
+        sourcemap: true,
       },
       // add this to cache all the
       // static assets in the public folder
