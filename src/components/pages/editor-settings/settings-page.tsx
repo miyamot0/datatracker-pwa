@@ -1,24 +1,9 @@
-"use client";
-
-import PageWrapper from "@/components/layout/page-wrapper";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { FolderHandleContext } from "@/context/folder-context";
-import { useContext } from "react";
-import SettingsFormItemWrapper from "./views/settings-form-item-wrapper";
+import PageWrapper from '@/components/layout/page-wrapper';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FolderHandleContext } from '@/context/folder-context';
+import { useContext } from 'react';
+import SettingsFormItemWrapper from './views/settings-form-item-wrapper';
 import {
   ApplicationSettingsTypes,
   ELEVATED_PRIVILEGES_OPTIONS,
@@ -33,13 +18,12 @@ import {
   ThemeTypes,
   TOOL_TIP_OPTIONS,
   ToolTipOptionTypes,
-} from "@/types/settings";
-import { displayConditionalNotification } from "@/lib/notifications";
-import { useTheme } from "next-themes";
+} from '@/types/settings';
+import { displayConditionalNotification } from '@/lib/notifications';
+import { useTheme } from '@/components/ui/theme-provider';
 
 export default function SettingsPage() {
-  const { settings, setSettings, saveSettings } =
-    useContext(FolderHandleContext);
+  const { settings, setSettings, saveSettings } = useContext(FolderHandleContext);
   const { setTheme, theme } = useTheme();
 
   return (
@@ -48,9 +32,7 @@ export default function SettingsPage() {
         <CardHeader className="flex flex-row justify-between">
           <div className="flex flex-col gap-1.5">
             <CardTitle>Application Settings</CardTitle>
-            <CardDescription>
-              Manage and Update Settings for Data Tracker
-            </CardDescription>
+            <CardDescription>Manage and Update Settings for Data Tracker</CardDescription>
           </div>
         </CardHeader>
         <CardContent className="min-h-96 flex flex-col justify-start gap-6">
@@ -59,15 +41,11 @@ export default function SettingsPage() {
             Description="Toggle light/dark/system Themes for preference"
           >
             <Select
-              value={theme ?? "system"}
+              value={theme ?? 'system'}
               onValueChange={(value: ThemeTypes) => {
                 setTheme(value);
 
-                displayConditionalNotification(
-                  settings,
-                  "Settings updated.",
-                  "Settings have been saved."
-                );
+                displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
               }}
             >
               <SelectTrigger className="w-full md:max-w-[250px]">
@@ -99,11 +77,7 @@ export default function SettingsPage() {
                 setSettings(newSettings);
                 saveSettings(newSettings);
 
-                displayConditionalNotification(
-                  settings,
-                  "Settings updated.",
-                  "Settings have been saved."
-                );
+                displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
               }}
             >
               <SelectTrigger className="w-full md:max-w-[250px]">
@@ -135,11 +109,7 @@ export default function SettingsPage() {
                 setSettings(newSettings);
                 saveSettings(newSettings);
 
-                displayConditionalNotification(
-                  settings,
-                  "Settings updated.",
-                  "Settings have been saved."
-                );
+                displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
               }}
             >
               <SelectTrigger className="w-full md:max-w-[250px]">
@@ -162,20 +132,16 @@ export default function SettingsPage() {
             Description="Enable deletion of files and folders (Warning: Risk of accidental data loss)"
           >
             <Select
-              value={settings.EnableFileDeletion ? "true" : "false"}
+              value={settings.EnableFileDeletion ? 'true' : 'false'}
               onValueChange={(value: ElevatedPrivilegesType) => {
                 const newSettings = {
                   ...settings,
-                  EnableFileDeletion: value === "true",
+                  EnableFileDeletion: value === 'true',
                 } satisfies ApplicationSettingsTypes;
                 setSettings(newSettings);
                 saveSettings(newSettings);
 
-                displayConditionalNotification(
-                  settings,
-                  "Settings updated.",
-                  "Settings have been saved."
-                );
+                displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
               }}
             >
               <SelectTrigger className="w-full md:max-w-[250px]">
@@ -198,20 +164,16 @@ export default function SettingsPage() {
             Description="By default, the appropriate folder must be named 'DataTracker'"
           >
             <Select
-              value={settings.EnforceDataFolderName ? "true" : "false"}
+              value={settings.EnforceDataFolderName ? 'true' : 'false'}
               onValueChange={(value: EnforceDataFolderType) => {
                 const newSettings = {
                   ...settings,
-                  EnforceDataFolderName: value === "true",
+                  EnforceDataFolderName: value === 'true',
                 } satisfies ApplicationSettingsTypes;
                 setSettings(newSettings);
                 saveSettings(newSettings);
 
-                displayConditionalNotification(
-                  settings,
-                  "Settings updated.",
-                  "Settings have been saved."
-                );
+                displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
               }}
             >
               <SelectTrigger className="w-full md:max-w-[250px]">
@@ -229,25 +191,18 @@ export default function SettingsPage() {
             </Select>
           </SettingsFormItemWrapper>
 
-          <SettingsFormItemWrapper
-            Label="Tooltip Instructions"
-            Description="Add or disable tooltips for new users"
-          >
+          <SettingsFormItemWrapper Label="Tooltip Instructions" Description="Add or disable tooltips for new users">
             <Select
-              value={settings.EnableToolTip === true ? "All" : "None"}
+              value={settings.EnableToolTip === true ? 'All' : 'None'}
               onValueChange={(value: ToolTipOptionTypes) => {
                 const newSettings = {
                   ...settings,
-                  EnableToolTip: value === "All",
+                  EnableToolTip: value === 'All',
                 } satisfies ApplicationSettingsTypes;
                 setSettings(newSettings);
                 saveSettings(newSettings);
 
-                displayConditionalNotification(
-                  settings,
-                  "Settings updated.",
-                  "Settings have been saved."
-                );
+                displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
               }}
             >
               <SelectTrigger className="w-full md:max-w-[250px]">

@@ -21,6 +21,9 @@ import img_schedule from '@/assets/img/fct_multiple_schedule.svg';
 import img_reversal from '@/assets/img/fct_reversal.svg';
 import img_baseline from '@/assets/img/multiple_baseline.svg';
 
+import licenseInformation from '@/assets/licenses.json';
+import { cn } from '@/lib/utils';
+
 const IMAGES = [img_chains, img_integrity, img_standard, img_schedule, img_reversal, img_baseline];
 
 export default function HomePage() {
@@ -79,9 +82,7 @@ export default function HomePage() {
               <DialogDescription>Licensing information for relevant software is provided below</DialogDescription>
             </DialogHeader>
             <ScrollArea className="h-[200px] w-full rounded-md pr-4">
-              <p>...</p>
-              {/*
-{licenseInformation.map((entry, index) => {
+              {licenseInformation.map((entry, index) => {
                 return (
                   <div
                     key={index}
@@ -96,7 +97,7 @@ export default function HomePage() {
                       <span className="text-sm text-muted-foreground">{`${entry.licenseType} Licensed`}</span>
                     </span>
                     <Link
-                      href={entry.link.replace('git+', '')}
+                      to={entry.link.replace('git+', '')}
                       target="_blank"
                       className="text-blue-500 hover:underline hover:text-blue-600"
                     >
@@ -105,7 +106,6 @@ export default function HomePage() {
                   </div>
                 );
               })}
-*/}
             </ScrollArea>
           </DialogContent>
         </Dialog>
