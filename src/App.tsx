@@ -15,9 +15,11 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">
       <Route index element={<HomePage />} />
+      <Route path="documentation">
+        <Route index element={<DocumentationListingPage />} />
+        <Route path=":slug" element={<DocumentationEntryPage />} />
+      </Route>
       <Route path="settings" element={<SettingsPage />} />
-      <Route path="documentation" element={<DocumentationListingPage />} />
-      <Route path="documentation/:slug" element={<DocumentationEntryPage />} />
       <Route path="dashboard" element={<DashboardPage />} />
       <Route path="session">
         <Route path=":Group">
