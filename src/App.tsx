@@ -1,14 +1,12 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './App.css';
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
-import HomeTemp from './components/home_temp';
+import HomePage from './components/pages/home/home-page';
+import { FolderContextProvider } from './context/folder-context';
+import { ThemeProvider } from './components/ui/theme-provider';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">
-      <Route index element={<HomeTemp />} />
+      <Route index element={<HomePage />} />
     </Route>
   )
 );
@@ -16,7 +14,11 @@ const router = createBrowserRouter(
 function App({}) {
   return (
     <>
-      <RouterProvider router={router} />
+      <ThemeProvider defaultTheme="system">
+        <FolderContextProvider>
+          <RouterProvider router={router} />
+        </FolderContextProvider>
+      </ThemeProvider>
     </>
   );
 }
