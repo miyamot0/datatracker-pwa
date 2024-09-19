@@ -1,30 +1,13 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { SavedSessionResult } from "@/lib/dtos";
-import { KeySet } from "@/types/keyset";
-import { Code2Icon, TableIcon } from "lucide-react";
-import React from "react";
-import { exportHumanReadableToCSV } from "@/lib/download";
-import {
-  EntryHolder,
-  HumanReadableResults,
-  HumanReadableResultsRow,
-} from "@/types/export";
-import ToolTipWrapper from "@/components/ui/tooltip-wrapper";
-import Spreadsheet, { CellBase, Matrix } from "react-spreadsheet";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { SavedSessionResult } from '@/lib/dtos';
+import { KeySet } from '@/types/keyset';
+import { Code2Icon, TableIcon } from 'lucide-react';
+import { exportHumanReadableToCSV } from '@/lib/download';
+import { EntryHolder, HumanReadableResults, HumanReadableResultsRow } from '@/types/export';
+import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
+import Spreadsheet, { CellBase, Matrix } from 'react-spreadsheet';
+import { walkSessionFrequencyKey } from '../helpers/schedule_parser';
 
 type Props = {
   Keyset: KeySet;
@@ -33,7 +16,7 @@ type Props = {
 
 export default function ViewFrequencyResults({ Keyset, Results }: Props) {
   const hr_results: HumanReadableResults = {
-    type: "Frequency",
+    type: 'Frequency',
     keys: Keyset.FrequencyKeys.map((key) => ({
       Key: key.KeyName,
       Value: key.KeyDescription,
@@ -43,8 +26,6 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
   };
 
   Results.map((result) => {
-    const session_minutes = result.TimerMain / 60;
-
     const temp_result = {
       Session: result.SessionSettings.Session,
       Condition: result.SessionSettings.Condition,
@@ -58,21 +39,32 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
     } satisfies HumanReadableResultsRow;
 
     Keyset.FrequencyKeys.map((key) => {
-      const key_obj = result.FrequencyKeyPresses.filter(
-        (k) => k.KeyDescription === key.KeyDescription
-      ).sort(
-        (a, b) =>
-          new Date(a.TimePressed).valueOf() - new Date(b.TimePressed).valueOf()
-      );
+      const primary = walkSessionFrequencyKey(result, 'Primary', key);
+      const secondary = walkSessionFrequencyKey(result, 'Secondary', key);
+      const tertiary = walkSessionFrequencyKey(result, 'Tertiary', key);
+
+      const score_by_schedule = [primary, secondary, tertiary];
+
+      const total_frequency = score_by_schedule.reduce((partialSum, a) => partialSum + a.Value, 0);
 
       temp_result.values.push({
         Key: key.KeyDescription,
-        Value: key_obj.length.toString(),
+        Value: (primary.Value / (result.TimerOne / 60)).toPrecision(2),
       });
 
       temp_result.values.push({
         Key: key.KeyDescription,
-        Value: (key_obj.length / session_minutes).toPrecision(2),
+        Value: (secondary.Value / (result.TimerTwo / 60)).toPrecision(2),
+      });
+
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: (tertiary.Value / (result.TimerThree / 60)).toPrecision(2),
+      });
+
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: total_frequency.toString(),
       });
     });
 
@@ -81,20 +73,17 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
 
   const csv_string = exportHumanReadableToCSV(hr_results);
 
-  const columnLabels = [
-    "Session #",
-    "Condition",
-    "Data Collector",
-    "Therapist",
-  ];
+  const columnLabels = ['Session #', 'Condition', 'Data Collector', 'Therapist'];
   hr_results.keys.forEach((entry) => {
-    columnLabels.push(entry.Value + " (Count)");
-    columnLabels.push(entry.Value + " (Rate)");
+    columnLabels.push(entry.Value + ' (Rate; Timer #1 Basis)');
+    columnLabels.push(entry.Value + ' (Rate; Timer #2 Basis)');
+    columnLabels.push(entry.Value + ' (Rate; Timer #3 Basis)');
+    columnLabels.push(entry.Value + ' (Total Count)');
   });
-  columnLabels.push("Main Timer (Min)");
-  columnLabels.push("Timer #1 (Min)");
-  columnLabels.push("Timer #2 (Min)");
-  columnLabels.push("Timer #3 (Min)");
+  columnLabels.push('Main Timer (Min)');
+  columnLabels.push('Timer #1 (Min)');
+  columnLabels.push('Timer #2 (Min)');
+  columnLabels.push('Timer #3 (Min)');
 
   const data = hr_results.results.map((datum) => {
     const values = datum.values.map((datum2) => {
@@ -113,8 +102,9 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
       { value: datum.duration.toFixed(2), readOnly: true },
       { value: datum.Timer1.toFixed(2), readOnly: true },
       { value: datum.Timer2.toFixed(2), readOnly: true },
-      { value: datum.Timer3.toFixed(2), readOnly: true, mode: "view" },
+      { value: datum.Timer3.toFixed(2), readOnly: true, mode: 'view' },
     ];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }) as Matrix<CellBase<any>>;
 
   return (
@@ -122,19 +112,17 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
       <CardHeader className="flex flex-col md:flex-row justify-between">
         <div className="flex flex-col gap-1.5">
           <CardTitle>Summary of Session Frequency Data</CardTitle>
-          <CardDescription>
-            Key Presses are summarized in the table below
-          </CardDescription>
+          <CardDescription>Key Presses are summarized in the table below</CardDescription>
         </div>
         <div className="flex flex-row gap-2">
           <ToolTipWrapper Label="Download data as CSV">
             <Button
-              size={"sm"}
-              variant={"outline"}
+              size={'sm'}
+              variant={'outline'}
               onClick={() => {
-                const link = document.createElement("a");
+                const link = document.createElement('a');
                 const csvData = new Blob([csv_string], {
-                  type: "text/csv",
+                  type: 'text/csv',
                 });
                 const csvURL = URL.createObjectURL(csvData);
                 link.href = csvURL;
@@ -152,12 +140,12 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
 
           <ToolTipWrapper Label="Download data as JSON">
             <Button
-              size={"sm"}
-              variant={"outline"}
+              size={'sm'}
+              variant={'outline'}
               onClick={() => {
-                const link = document.createElement("a");
+                const link = document.createElement('a');
                 const jsonData = new Blob([JSON.stringify(hr_results)], {
-                  type: "text/json",
+                  type: 'text/json',
                 });
                 const jsonURL = URL.createObjectURL(jsonData);
                 link.href = jsonURL;
@@ -179,7 +167,7 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
           data={data}
           columnLabels={columnLabels}
           onKeyDown={(ev) => {
-            if (ev.key.toLocaleLowerCase() === "v") ev.preventDefault();
+            if (ev.key.toLocaleLowerCase() === 'v') ev.preventDefault();
           }}
         />
       </CardContent>

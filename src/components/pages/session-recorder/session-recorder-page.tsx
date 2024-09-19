@@ -1,36 +1,103 @@
-"use client";
+'use client';
 
-import PageWrapper from "@/components/layout/page-wrapper";
-import { useEventListener } from "@/helpers/event-listeners";
-import { SavedSettings } from "@/lib/dtos";
-import { cn } from "@/lib/utils";
-import { KeySet } from "@/types/keyset";
-import { useRouter } from "next/navigation";
-import { useState, useRef, useEffect, useContext } from "react";
+import PageWrapper from '@/components/layout/page-wrapper';
+import { useEventListener } from '@/helpers/event-listeners';
+import { SavedSettings } from '@/lib/dtos';
+import { cn } from '@/lib/utils';
+import { KeySet } from '@/types/keyset';
+import { useState, useRef, useEffect, useContext } from 'react';
+import { KeyManageType, KeyTiming, TimerSetting } from './types/session-recorder-types';
 import {
-  KeyManageType,
-  KeyTiming,
-  TimerSetting,
-} from "./types/session-recorder-types";
-import {
+  GetHandleEvaluationFolder,
+  GetHandleKeyboardsFolder,
+  GetSettingsFileFromEvaluationFolder,
   pullSessionSettings,
   saveSessionOutcomesToFile,
   saveSessionSettingsToFile,
-} from "@/lib/files";
-import { CleanUpString } from "@/lib/strings";
-import { toast } from "sonner";
-import SessionRecorderInstructions from "./views/ui-instructions";
-import KeyHistoryListing from "./views/ui-key-listing";
-import SessionRecorderTallies from "./views/ui-counts";
-import createHref from "@/lib/links";
+} from '@/lib/files';
+import { CleanUpString } from '@/lib/strings';
+import { toast } from 'sonner';
+import SessionRecorderInstructions from './views/ui-instructions';
+import KeyHistoryListing from './views/ui-key-listing';
+import SessionRecorderTallies from './views/ui-counts';
+import createHref from '@/lib/links';
 import {
   BuildEvaluationsBreadcrumb,
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,
   BuildSessionDesignerBreadcrumb,
-} from "@/components/ui/breadcrumb-entries";
-import { displayConditionalNotification } from "@/lib/notifications";
-import { FolderHandleContext } from "@/context/folder-context";
+} from '@/components/ui/breadcrumb-entries';
+import { displayConditionalNotification } from '@/lib/notifications';
+import { FolderHandleContext } from '@/context/folder-context';
+import { useNavigate, useParams } from 'react-router-dom';
+import { deserializeKeySet } from '@/lib/keyset';
+
+const PullKeySet = async (Handle: FileSystemDirectoryHandle, Group: string, Individual: string, KeySet: string) => {
+  const keyboard_folder = await GetHandleKeyboardsFolder(Handle, Group, Individual);
+
+  return keyboard_folder.getFileHandle(KeySet, { create: true });
+};
+
+export function SessionRecorderPageShim() {
+  const { handle } = useContext(FolderHandleContext);
+  const [settings, setSettings] = useState<SavedSettings | undefined>();
+  const [keySet, setKeySet] = useState<KeySet>();
+  const navigate = useNavigate();
+
+  const { Group, Individual, Evaluation } = useParams();
+
+  useEffect(() => {
+    if (!handle || !Group || !Individual || !Evaluation) {
+      navigate(createHref({ type: 'Dashboard' }));
+      return;
+    }
+
+    const runner = async () => {
+      const files = await GetHandleEvaluationFolder(
+        handle,
+        CleanUpString(Group),
+        CleanUpString(Individual),
+        CleanUpString(Evaluation)
+      );
+
+      if (!files) throw new Error('No files found for this evaluation');
+
+      const settings = await GetSettingsFileFromEvaluationFolder(files);
+
+      setSettings(settings);
+
+      PullKeySet(handle, Group, Individual, `${settings.KeySet}.json`).then(async (entry) => {
+        const keyset = await entry.getFile();
+        const keyset_text = await keyset.text();
+
+        if (keyset_text.length === 0) return;
+
+        const keyset_json = deserializeKeySet(keyset_text);
+
+        if (keyset_json) {
+          setKeySet(keyset_json);
+        }
+      });
+    };
+
+    runner();
+
+    return function cleanup() {};
+  }, [Evaluation, Group, Individual, handle, navigate]);
+
+  if (!handle || !settings || !keySet) return null;
+
+  return (
+    <SessionRecorderPage
+      Handle={handle}
+      Group={CleanUpString(Group!)}
+      Individual={CleanUpString(Individual!)}
+      Evaluation={CleanUpString(Evaluation!)}
+      Settings={settings}
+      Keyset={keySet}
+    />
+  );
+}
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
@@ -44,22 +111,14 @@ type Props = {
 const TIME_DELTA = 50;
 const TIME_UNIT = 1000;
 
-export default function SessionRecorderPage({
-  Handle,
-  Group,
-  Individual,
-  Evaluation,
-  Keyset,
-  Settings,
-}: Props) {
-  const router = useRouter();
+export default function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Settings }: Props) {
+  const navigate = useNavigate();
   const { settings: applicationSettings } = useContext(FolderHandleContext);
 
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
-  const [systemKeysPressed, setSystemKeysPressed] = useState<KeyManageType[]>(
-    []
-  );
+  const [systemKeysPressed, setSystemKeysPressed] = useState<KeyManageType[]>([]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setTickCount] = useState<number>(0);
 
   const secondsElapsedTotal = useRef<number>(0);
@@ -67,51 +126,47 @@ export default function SessionRecorderPage({
   const secondsElapsedSecond = useRef<number>(0);
   const secondsElapsedThird = useRef<number>(0);
 
-  const [runningState, setRunningState] = useState<
-    "Not Started" | "Started" | "Completed" | "Cancelled"
-  >("Not Started");
+  const [runningState, setRunningState] = useState<'Not Started' | 'Started' | 'Completed' | 'Cancelled'>(
+    'Not Started'
+  );
 
   const [startTime, setStartTime] = useState<Date | null>(null);
 
-  let totalTimerRef = useRef<NodeJS.Timeout>();
-  let activeTimerRef = useRef<TimerSetting>("Stopped");
+  const totalTimerRef = useRef<NodeJS.Timeout>();
+  const activeTimerRef = useRef<TimerSetting>('Stopped');
 
   useEffect(() => {
     if (!Handle) {
-      router.push(createHref({ type: "Dashboard" }));
+      navigate(createHref({ type: 'Dashboard' }));
       return;
     }
 
-    if (runningState === "Completed" || runningState === "Cancelled") {
+    if (runningState === 'Completed' || runningState === 'Cancelled') {
       const save_output = async () => {
-        if (!startTime) throw new Error("No start time found.");
+        if (!startTime) throw new Error('No start time found.');
 
-        const ended_early = runningState === "Cancelled";
+        const ended_early = runningState === 'Cancelled';
 
         const final_system_keys = [
           ...systemKeysPressed,
           {
-            KeyName: "Escape",
+            KeyName: 'Escape',
             KeyCode: 0,
-            KeyDescription: "End of Session",
+            KeyDescription: 'End of Session',
             TimePressed: new Date(),
             KeyScheduleRecording: activeTimerRef.current as KeyTiming,
-            KeyType: "System",
+            KeyType: 'System',
             TimeIntoSession: 0,
           } satisfies KeyManageType,
         ];
 
         if (ended_early) {
           const confirm_save = window.confirm(
-            "This data will be saved even though the session ended early. Are you sure?"
+            'This data will be saved even though the session ended early. Are you sure?'
           );
 
           if (confirm_save === false) {
-            router.push(
-              `/session/${CleanUpString(Group)}/${CleanUpString(
-                Individual
-              )}/${CleanUpString(Evaluation)}`
-            );
+            navigate(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`);
             return;
           }
         }
@@ -133,42 +188,25 @@ export default function SessionRecorderPage({
           ended_early
         );
 
-        const settings = await pullSessionSettings(
-          Handle,
-          Group,
-          Individual,
-          Evaluation
-        );
+        const settings = await pullSessionSettings(Handle, Group, Individual, Evaluation);
 
         try {
-          await saveSessionSettingsToFile(
-            Handle,
-            Group,
-            Individual,
-            Evaluation,
-            settings
-          );
+          await saveSessionSettingsToFile(Handle, Group, Individual, Evaluation, settings);
 
           switch (applicationSettings.PostSessionBx) {
-            case "AutoAdvance":
-              router.push(
-                `/session/${CleanUpString(Group)}/${CleanUpString(
-                  Individual
-                )}/${CleanUpString(Evaluation)}`
-              );
+            case 'AutoAdvance':
+              navigate(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`);
 
               break;
 
-            case "AwaitInput":
-              toast("Session has been recorded.", {
-                description: "Click button to queue session.",
+            case 'AwaitInput':
+              toast('Session has been recorded.', {
+                description: 'Click button to queue session.',
                 action: {
-                  label: "Load Next Session",
+                  label: 'Load Next Session',
                   onClick: () => {
-                    router.push(
-                      `/session/${CleanUpString(Group)}/${CleanUpString(
-                        Individual
-                      )}/${CleanUpString(Evaluation)}`
+                    navigate(
+                      `/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`
                     );
                   },
                 },
@@ -176,11 +214,12 @@ export default function SessionRecorderPage({
 
               break;
           }
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
           displayConditionalNotification(
             applicationSettings,
-            "Error Saving Results",
-            "An error occurred while saving the results. Please try again.",
+            'Error Saving Results',
+            'An error occurred while saving the results. Please try again.',
             3000,
             true
           );
@@ -190,23 +229,14 @@ export default function SessionRecorderPage({
       save_output();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     () => {
       clearInterval(totalTimerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    runningState,
-    keysPressed,
-    Settings,
-    Handle,
-    router,
-    Group,
-    Individual,
-    Evaluation,
-    applicationSettings,
-  ]);
+  }, [runningState, keysPressed, Settings, Handle, navigate, Group, Individual, Evaluation, applicationSettings]);
 
-  function registerListener(timer: "Primary" | "Secondary" | "Tertiary") {
+  function registerListener(timer: 'Primary' | 'Secondary' | 'Tertiary') {
     if (totalTimerRef.current) {
       setSystemKeysPressed([
         ...systemKeysPressed,
@@ -216,7 +246,7 @@ export default function SessionRecorderPage({
           KeyDescription: `End of ${activeTimerRef.current}`,
           TimePressed: new Date(),
           KeyScheduleRecording: activeTimerRef.current as KeyTiming,
-          KeyType: "System",
+          KeyType: 'System',
           TimeIntoSession: 0,
         } satisfies KeyManageType,
       ]);
@@ -231,7 +261,7 @@ export default function SessionRecorderPage({
           KeyDescription: `Start of ${timer}`,
           TimePressed: new Date(),
           KeyScheduleRecording: activeTimerRef.current as KeyTiming,
-          KeyType: "System",
+          KeyType: 'System',
           TimeIntoSession: 0,
         } satisfies KeyManageType,
       ]);
@@ -243,15 +273,15 @@ export default function SessionRecorderPage({
       secondsElapsedTotal.current += TIME_DELTA / TIME_UNIT;
 
       switch (activeTimerRef.current) {
-        case "Primary":
+        case 'Primary':
           secondsElapsedFirst.current += TIME_DELTA / TIME_UNIT;
 
           break;
-        case "Secondary":
+        case 'Secondary':
           secondsElapsedSecond.current += TIME_DELTA / TIME_UNIT;
 
           break;
-        case "Tertiary":
+        case 'Tertiary':
           secondsElapsedThird.current += TIME_DELTA / TIME_UNIT;
 
           break;
@@ -259,36 +289,24 @@ export default function SessionRecorderPage({
 
       setTickCount((prev) => prev + 1);
 
-      if (
-        Settings.TimerOption === "End on Primary Timer" &&
-        secondsElapsedTotal.current >= Settings.DurationS
-      ) {
+      if (Settings.TimerOption === 'End on Primary Timer' && secondsElapsedTotal.current >= Settings.DurationS) {
         clearInterval(totalTimerRef.current);
-        setRunningState("Completed");
+        setRunningState('Completed');
 
         return;
-      } else if (
-        Settings.TimerOption === "End on Timer #1" &&
-        secondsElapsedFirst.current >= Settings.DurationS
-      ) {
+      } else if (Settings.TimerOption === 'End on Timer #1' && secondsElapsedFirst.current >= Settings.DurationS) {
         clearInterval(totalTimerRef.current);
-        setRunningState("Completed");
+        setRunningState('Completed');
 
         return;
-      } else if (
-        Settings.TimerOption === "End on Timer #2" &&
-        secondsElapsedSecond.current >= Settings.DurationS
-      ) {
+      } else if (Settings.TimerOption === 'End on Timer #2' && secondsElapsedSecond.current >= Settings.DurationS) {
         clearInterval(totalTimerRef.current);
-        setRunningState("Completed");
+        setRunningState('Completed');
 
         return;
-      } else if (
-        Settings.TimerOption === "End on Timer #3" &&
-        secondsElapsedThird.current >= Settings.DurationS
-      ) {
+      } else if (Settings.TimerOption === 'End on Timer #3' && secondsElapsedThird.current >= Settings.DurationS) {
         clearInterval(totalTimerRef.current);
-        setRunningState("Completed");
+        setRunningState('Completed');
 
         return;
       }
@@ -296,18 +314,18 @@ export default function SessionRecorderPage({
   }
 
   // Note: Z/X/C for Timers 1/2/3
-  useEventListener("keydown", (ev: React.KeyboardEvent<HTMLElement>) => {
+  useEventListener('keydown', (ev: React.KeyboardEvent<HTMLElement>) => {
     if (ev.repeat) {
       return;
     }
 
     if (!totalTimerRef.current) {
-      if (ev.key === "Enter" && runningState === "Not Started") {
+      if (ev.key === 'Enter' && runningState === 'Not Started') {
         //setActiveTimer("Primary");
-        activeTimerRef.current = "Primary";
-        registerListener("Primary");
+        activeTimerRef.current = 'Primary';
+        registerListener('Primary');
 
-        setRunningState("Started");
+        setRunningState('Started');
         setStartTime(new Date());
 
         setSystemKeysPressed([
@@ -315,15 +333,15 @@ export default function SessionRecorderPage({
           {
             KeyName: ev.key,
             KeyCode: ev.keyCode,
-            KeyDescription: "Start of Session",
+            KeyDescription: 'Start of Session',
             TimePressed: new Date(),
             KeyScheduleRecording: activeTimerRef.current as KeyTiming,
-            KeyType: "System",
+            KeyType: 'System',
             TimeIntoSession: 0,
           } satisfies KeyManageType,
         ]);
 
-        toast("Session started recording.", {
+        toast('Session started recording.', {
           dismissible: true,
         });
       }
@@ -331,49 +349,41 @@ export default function SessionRecorderPage({
       return;
     }
 
-    if (ev.key === "Escape") {
-      setRunningState("Cancelled");
+    if (ev.key === 'Escape') {
+      setRunningState('Cancelled');
 
       clearInterval(totalTimerRef.current);
     }
 
-    if (ev.key === "z" && activeTimerRef.current !== "Primary") {
-      registerListener("Primary");
+    if (ev.key === 'z' && activeTimerRef.current !== 'Primary') {
+      registerListener('Primary');
       return;
     }
 
-    if (ev.key === "x" && activeTimerRef.current !== "Secondary") {
-      registerListener("Secondary");
+    if (ev.key === 'x' && activeTimerRef.current !== 'Secondary') {
+      registerListener('Secondary');
       return;
     }
 
-    if (ev.key === "c" && activeTimerRef.current !== "Tertiary") {
-      registerListener("Tertiary");
+    if (ev.key === 'c' && activeTimerRef.current !== 'Tertiary') {
+      registerListener('Tertiary');
       return;
     }
 
-    if (ev.key === "Backspace" || ev.key === "Delete") {
+    if (ev.key === 'Backspace' || ev.key === 'Delete') {
       if (keysPressed.length === 0) return;
 
-      setKeysPressed((keysPressed) =>
-        keysPressed.slice(0, keysPressed.length - 1)
-      );
+      setKeysPressed((keysPressed) => keysPressed.slice(0, keysPressed.length - 1));
 
       return;
     }
 
-    const is_freq = Keyset.FrequencyKeys.some(
-      (key) => key.KeyCode === ev.keyCode
-    );
-    const is_dur = Keyset.DurationKeys.some(
-      (key) => key.KeyCode === ev.keyCode
-    );
+    const is_freq = Keyset.FrequencyKeys.some((key) => key.KeyCode === ev.keyCode);
+    const is_dur = Keyset.DurationKeys.some((key) => key.KeyCode === ev.keyCode);
 
     if (is_freq || is_dur) {
       if (is_freq) {
-        const freq_key = Keyset.FrequencyKeys.find(
-          (key) => key.KeyCode === ev.keyCode
-        );
+        const freq_key = Keyset.FrequencyKeys.find((key) => key.KeyCode === ev.keyCode);
 
         if (!freq_key) return;
 
@@ -385,16 +395,14 @@ export default function SessionRecorderPage({
             KeyDescription: freq_key.KeyDescription,
             TimePressed: new Date(),
             KeyScheduleRecording: activeTimerRef.current as KeyTiming,
-            KeyType: "Frequency",
+            KeyType: 'Frequency',
             TimeIntoSession: secondsElapsedTotal.current,
           } satisfies KeyManageType,
         ]);
       }
 
       if (is_dur) {
-        const freq_key = Keyset.DurationKeys.find(
-          (key) => key.KeyCode === ev.keyCode
-        );
+        const freq_key = Keyset.DurationKeys.find((key) => key.KeyCode === ev.keyCode);
 
         if (!freq_key) return;
 
@@ -406,7 +414,7 @@ export default function SessionRecorderPage({
             KeyDescription: freq_key.KeyDescription,
             TimePressed: new Date(),
             KeyScheduleRecording: activeTimerRef.current as KeyTiming,
-            KeyType: "Duration",
+            KeyType: 'Duration',
             TimeIntoSession: secondsElapsedTotal.current,
           } satisfies KeyManageType,
         ]);
@@ -430,30 +438,20 @@ export default function SessionRecorderPage({
         <div className="w-full flex flex-row justify-between">
           <div className="flex-1 flex flex-row">
             <p
-              className={cn(
-                "transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit",
-                {
-                  "bg-green-600 text-white": Settings.Role === "Primary",
-                  "bg-purple-400 text-white": Settings.Role === "Reliability",
-                }
-              )}
+              className={cn('transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit', {
+                'bg-green-600 text-white': Settings.Role === 'Primary',
+                'bg-purple-400 text-white': Settings.Role === 'Reliability',
+              })}
             >
               {`${Settings.Role} Data Collector`}
             </p>
             <p
-              className={cn(
-                "mx-2 transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit",
-                {
-                  "bg-gray-600 text-white":
-                    Settings.TimerOption === "End on Primary Timer",
-                  "bg-green-400 text-white":
-                    Settings.TimerOption === "End on Timer #1",
-                  "bg-orange-400 text-white":
-                    Settings.TimerOption === "End on Timer #2",
-                  "bg-red-400 text-white":
-                    Settings.TimerOption === "End on Timer #3",
-                }
-              )}
+              className={cn('mx-2 transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit', {
+                'bg-gray-600 text-white': Settings.TimerOption === 'End on Primary Timer',
+                'bg-green-400 text-white': Settings.TimerOption === 'End on Timer #1',
+                'bg-orange-400 text-white': Settings.TimerOption === 'End on Timer #2',
+                'bg-red-400 text-white': Settings.TimerOption === 'End on Timer #3',
+              })}
             >
               {Settings.TimerOption} ({Settings.DurationS}s)
             </p>
@@ -463,14 +461,11 @@ export default function SessionRecorderPage({
           </div>
           <div className="flex-1 flex flex-row justify-end">
             <p
-              className={cn(
-                "transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit",
-                {
-                  "bg-gray-600 text-white": runningState === "Not Started",
-                  "bg-blue-400 text-white": runningState === "Started",
-                  "bg-green-400 text-white": runningState === "Completed",
-                }
-              )}
+              className={cn('transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit', {
+                'bg-gray-600 text-white': runningState === 'Not Started',
+                'bg-blue-400 text-white': runningState === 'Started',
+                'bg-green-400 text-white': runningState === 'Completed',
+              })}
             >
               {runningState}
             </p>
@@ -482,22 +477,10 @@ export default function SessionRecorderPage({
           <SessionRecorderInstructions {...{ Evaluation, Settings }} />
           <KeyHistoryListing
             KeysPressed={keysPressed}
-            SecondsElapsed={Math.min(
-              secondsElapsedTotal.current,
-              Settings.DurationS
-            )}
-            SecondsElapsedFirst={Math.min(
-              secondsElapsedFirst.current,
-              Settings.DurationS
-            )}
-            SecondsElapsedSecond={Math.min(
-              secondsElapsedSecond.current,
-              Settings.DurationS
-            )}
-            SecondsElapsedThird={Math.min(
-              secondsElapsedThird.current,
-              Settings.DurationS
-            )}
+            SecondsElapsed={Math.min(secondsElapsedTotal.current, Settings.DurationS)}
+            SecondsElapsedFirst={Math.min(secondsElapsedFirst.current, Settings.DurationS)}
+            SecondsElapsedSecond={Math.min(secondsElapsedSecond.current, Settings.DurationS)}
+            SecondsElapsedThird={Math.min(secondsElapsedThird.current, Settings.DurationS)}
             ActiveTimer={activeTimerRef.current}
             Running={!!totalTimerRef.current}
           />

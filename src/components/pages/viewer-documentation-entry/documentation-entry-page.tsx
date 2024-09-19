@@ -47,10 +47,12 @@ export default function DocumentationEntryPage() {
   return (
     <PageWrapper breadcrumbs={[BuildDocumentationBreadcrumb()]} label={entry.matter.title}>
       <Card className="w-full max-w-screen-2xl">
-        <CardHeader className="flex flex-row justify-between">
+        <CardHeader className="flex flex-col md:flex-row md:justify-between">
           <div className="flex flex-col gap-1.5">
             <CardTitle>{entry.matter.title}</CardTitle>
-            <CardDescription>{entry.matter.title}</CardDescription>
+            <CardDescription>
+              Written {entry.matter.date} by {entry.matter.author}
+            </CardDescription>
           </div>
           <div className="flex flex-row gap-1 items-start">
             {entry.matter.keywords.split(',').map((kw, index) => {
@@ -58,7 +60,7 @@ export default function DocumentationEntryPage() {
               const color_str = keyword_obj ? keyword_obj.Color : 'bg-gray-500';
 
               return (
-                <Badge key={index} className={cn(color_str, 'select-none')}>
+                <Badge key={index} className={cn(color_str, 'select-none text-white whitespace-nowrap')}>
                   {kw}
                 </Badge>
               );

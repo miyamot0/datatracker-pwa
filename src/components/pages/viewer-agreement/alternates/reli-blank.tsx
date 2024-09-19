@@ -1,18 +1,11 @@
-import PageWrapper from "@/components/layout/page-wrapper";
+import PageWrapper from '@/components/layout/page-wrapper';
 import {
   BuildEvaluationsBreadcrumb,
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,
-} from "@/components/ui/breadcrumb-entries";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { CleanUpString } from "@/lib/strings";
-import React from "react";
+} from '@/components/ui/breadcrumb-entries';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CleanUpString } from '@/lib/strings';
 
 type Props = {
   Group: string;
@@ -20,11 +13,7 @@ type Props = {
   Evaluation: string;
 };
 
-export default function ReliabilityBlank({
-  Group,
-  Individual,
-  Evaluation,
-}: Props) {
+export default function ReliabilityBlank({ Group, Individual, Evaluation }: Props) {
   return (
     <PageWrapper
       breadcrumbs={[
@@ -40,9 +29,7 @@ export default function ReliabilityBlank({
             <CardTitle>Reliability Viewer</CardTitle>
             <CardDescription>Error in Calculating Reliability</CardDescription>
           </CardHeader>
-          <CardContent>
-            No data files are currently available to inspect.
-          </CardContent>
+          <CardContent>No data files are currently available to inspect.</CardContent>
         </Card>
       </div>
     </PageWrapper>

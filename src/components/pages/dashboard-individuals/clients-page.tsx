@@ -58,7 +58,7 @@ export default function ClientsPage() {
       <Card className="w-full max-w-screen-2xl">
         <CardHeader className="flex flex-col md:flex-row w-full justify-between">
           <div className="flex flex-col gap-1.5">
-            <CardTitle>Client Group: {CleanUpString(Group)}</CardTitle>
+            <CardTitle>{CleanUpString(Group)}: Individual-level Directory</CardTitle>
             <CardDescription>Select clients to develop and evaluate outcomes</CardDescription>
           </div>
           <div className="flex flex-col md:flex-row gap-4">
@@ -109,7 +109,7 @@ export default function ClientsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Client Information</TableHead>
+                <TableHead>Client Names</TableHead>
                 <TableHead className="text-right">Client Folder Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -134,7 +134,7 @@ export default function ClientsPage() {
                         <FolderInput className="mr-2 h-4 w-4" />
                         Open Evaluations
                       </Link>
-                      <DropdownMenu>
+                      <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                           <ChevronDown className="w-fit px-2" />
                         </DropdownMenuTrigger>
@@ -171,7 +171,6 @@ export default function ClientsPage() {
                                     'Client Data Deleted',
                                     'Client data has been successfully deleted.'
                                   );
-
                                   // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                 } catch (error: unknown) {
                                   displayConditionalNotification(

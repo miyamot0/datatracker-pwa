@@ -37,7 +37,7 @@ export default function DocumentationListingPage() {
               .filter((str) => str !== '');
 
             return (
-              <div key={index} className="flex flex-row justify-between items-center py-4">
+              <div key={index} className="flex flex-col md:flex-row md:justify-between md:items-center py-4 gap-2">
                 <div className="flex flex-col gap-1">
                   <div className="flex flex-row gap-1 flex-1 items-end font-semibold">
                     <span>{`${entry.index + 1}. ${entry.title}`}</span>
@@ -45,14 +45,14 @@ export default function DocumentationListingPage() {
                   <span className="text-sm text-muted-foreground">
                     Written {entry.date} by {entry.author}
                   </span>
-                  <div className="flex flex-row gap-2 text-sm mt-1">
+                  <div className="flex flex-row gap-2 text-sm mt-1 flex-wrap">
                     <span className="font-semibold">Keywords: </span>
                     {kw_badges.map((kw, index) => {
                       const keyword_obj = KeywordArray.find((obj) => obj.Keyword === kw);
                       const color_str = keyword_obj ? keyword_obj.Color : 'bg-gray-500';
 
                       return (
-                        <Badge key={index} className={cn(color_str, 'select-none')}>
+                        <Badge key={index} className={cn(color_str, 'select-none text-white whitespace-nowrap')}>
                           {kw}
                         </Badge>
                       );
@@ -60,8 +60,8 @@ export default function DocumentationListingPage() {
                   </div>
                 </div>
 
-                <Link to={`/documentation/${entry.filename.replaceAll('.mdx', '')}`}>
-                  <Button variant={'outline'} className="shadow" size={'sm'}>
+                <Link to={`/documentation/${entry.filename.replaceAll('.mdx', '')}`} className="w-full md:w-fit">
+                  <Button variant={'outline'} className="shadow w-full md:w-fit" size={'sm'}>
                     Read More
                     <ChevronRight className="w-4 h-4 ml-2" />
                   </Button>

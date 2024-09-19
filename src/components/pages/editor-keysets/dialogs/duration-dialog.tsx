@@ -17,7 +17,7 @@ import {
 import { displayConditionalNotification } from "@/lib/notifications";
 import { KeySet, KeySetInstance } from "@/types/keyset";
 import { PlusIcon } from "lucide-react";
-import { createRef, useContext, useRef, useState } from "react";
+import { createRef, useContext, useState } from "react";
 
 type Props = {
   KeySet: KeySet;

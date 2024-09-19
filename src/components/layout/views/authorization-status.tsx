@@ -1,19 +1,14 @@
-import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import ToolTipWrapper from "@/components/ui/tooltip-wrapper";
-import { FolderHandleContext } from "@/context/folder-context";
-import { useContext } from "react";
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { FolderHandleContext } from '@/context/folder-context';
+import { useContext } from 'react';
 
 const NotAuthorized = () => (
   <Tooltip>
     <TooltipTrigger>
       <Badge
         className="text-center justify-center cursor-default select-none whitespace-nowrap"
-        variant={"destructive"}
+        variant={'destructive'}
       >
         Access Not Authorized
       </Badge>
@@ -39,10 +34,6 @@ const Authorized = ({ Handle }: { Handle: FileSystemDirectoryHandle }) => (
 
 export default function AuthorizationStatus() {
   const { handle } = useContext(FolderHandleContext);
-
-  const message = handle
-    ? `Folder Authorized: ${handle.name}`
-    : "Access Not Authorized";
 
   return <>{handle ? <Authorized Handle={handle} /> : <NotAuthorized />}</>;
 }

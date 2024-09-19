@@ -1,38 +1,36 @@
-import { Metadata } from "next";
-
-const DEFAULT_TITLE = "DataTracker";
-const DEFAULT_DESCRIPTION = "Web-based port of the Data Tracker application.";
-const DEFAULT_ADDRESS = "https://data-tracker-web.vercel.app";
+const DEFAULT_TITLE = 'DataTracker';
+const DEFAULT_DESCRIPTION = 'Web-based port of the Data Tracker application.';
+const DEFAULT_ADDRESS = 'https://data-tracker-web.vercel.app';
 
 const title = DEFAULT_TITLE;
 const applicationName = DEFAULT_TITLE;
 
 const description = DEFAULT_DESCRIPTION;
 
-export const DEFAULT_METADATA: Metadata = {
+export const DEFAULT_METADATA = {
   title: {
     default: DEFAULT_TITLE,
-    template: "%s | DataTracker",
+    template: '%s | DataTracker',
   },
   description,
   applicationName,
   authors: [
     {
-      name: "Shawn Gilroy",
-      url: "https://www.smallnstats.com",
+      name: 'Shawn Gilroy',
+      url: 'https://www.smallnstats.com',
     },
   ],
-  generator: "Next.js",
+  generator: 'Next.js',
   // TODO: Add more keywords
-  keywords: ["DataTracker"],
-  creator: "Shawn P. Gilroy",
+  keywords: ['DataTracker'],
+  creator: 'Shawn P. Gilroy',
   // TODO: Decide on a publisher
   //publisher: "Vercel",
-  manifest: "/manifest.json",
+  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     title,
-    statusBarStyle: "default",
+    statusBarStyle: 'default',
   },
   formatDetection: {
     telephone: false,

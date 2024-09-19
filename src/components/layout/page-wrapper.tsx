@@ -25,36 +25,55 @@ export default function PageWrapper({ children, className, breadcrumbs, label }:
         <div>
           <Link
             to={`https://github.com/miyamot0/data-tracker-web`}
-            className="text-blue-600 hover:text-blue-500"
+            className="text-blue-600 hover:text-blue-500 underline"
             target="_blank"
           >
             DataTracker (PWA)
           </Link>{' '}
           is FOSS developed by{' '}
-          <Link to={'https://www.smallnstats.com'} className="text-blue-600 hover:text-blue-500" target="_blank">
+          <Link
+            to={'https://www.smallnstats.com'}
+            className="text-blue-600 hover:text-blue-500 underline"
+            target="_blank"
+          >
             Shawn Gilroy
           </Link>{' '}
           @ Louisiana State University
         </div>
         <div className="font-semibold">{`Build Version ${package_json.version} (${build_date.date})`}</div>
         <div className="flex flex-row items-center justify-center gap-2">
-          <Button variant={'outline'} className="h-10 w-10 shadow-xl">
-            <Link to={'https://x.com/gilroy_shawn'} target="_blank">
+          <Link aria-label="Link to Twitter/X page" to={'https://x.com/gilroy_shawn'} target="_blank">
+            <Button
+              name="Twitter button"
+              aria-label="Twitter button"
+              variant={'outline'}
+              className="shadow-xl text-primary h-10 w-10 p-0 m-0"
+            >
               <TwitterIcon className="h-4 w-4" />
-            </Link>
-          </Button>
+            </Button>
+          </Link>
 
-          <Button variant={'outline'} className="h-10 w-10 shadow-xl">
-            <Link to={'https://github.com/miyamot0'} target="_blank">
+          <Link aria-label="Link to GitHub website" to={'https://github.com/miyamot0'} target="_blank">
+            <Button
+              name="Github button"
+              aria-label="Github button"
+              variant={'outline'}
+              className="shadow-xl text-primary h-10 w-10 p-0 m-0"
+            >
               <GithubIcon className="h-4 w-4" />
-            </Link>
-          </Button>
+            </Button>
+          </Link>
 
-          <Button variant={'outline'} className="h-10 w-10 shadow-xl">
-            <Link to={'https://www.smallnstats.com'} target="_blank">
+          <Link aria-label="Link to SmallNStats website" to={'https://www.smallnstats.com'} target="_blank">
+            <Button
+              name="SmallNStats button"
+              aria-label="SmallNStats button"
+              variant={'outline'}
+              className="shadow-xl text-primary h-10 w-10 p-0 m-0"
+            >
               <HomeIcon className="h-4 w-4" />
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </div>
       </footer>
     </main>

@@ -1,27 +1,54 @@
-"use client";
+'use client';
 
-import PageWrapper from "@/components/layout/page-wrapper";
+import PageWrapper from '@/components/layout/page-wrapper';
 import {
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,
   BuildEvaluationsBreadcrumb,
-} from "@/components/ui/breadcrumb-entries";
-import { DataCollectorRolesType } from "@/forms/schema/session-designer-schema";
-import { SavedSessionResult } from "@/lib/dtos";
-import { GetResultsFromEvaluationFolder } from "@/lib/files";
-import { CleanUpString } from "@/lib/strings";
-import { KeySet } from "@/types/keyset";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-} from "@/components/ui/select";
-import React, { useEffect, useState } from "react";
-import ViewFrequencyResults from "./views/view-frequency-results";
-import ViewDurationResults from "./views/view-duration-results";
+} from '@/components/ui/breadcrumb-entries';
+import { DataCollectorRolesType } from '@/forms/schema/session-designer-schema';
+import { SavedSessionResult } from '@/lib/dtos';
+import { GetResultsFromEvaluationFolder } from '@/lib/files';
+import { CleanUpString } from '@/lib/strings';
+import { KeySet } from '@/types/keyset';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectItem } from '@/components/ui/select';
+import { useContext, useEffect, useState } from 'react';
+import ViewFrequencyResults from './views/view-frequency-results';
+import ViewDurationResults from './views/view-duration-results';
+import { FolderHandleContext } from '@/context/folder-context';
+import { useNavigate, useParams } from 'react-router-dom';
+import createHref from '@/lib/links';
+import LoadingDisplay from '@/components/ui/loading-display';
+
+export function ResultsViewerPageShim() {
+  const { handle } = useContext(FolderHandleContext);
+  const navigate = useNavigate();
+
+  const { Group, Individual, Evaluation } = useParams();
+
+  useEffect(() => {
+    if (!handle) {
+      navigate(createHref({ type: 'Dashboard' }));
+      return;
+    }
+  }, [handle, navigate]);
+
+  if (!handle) return <LoadingDisplay />;
+
+  if (!Group || !Individual || !Evaluation) {
+    navigate(createHref({ type: 'Dashboard' }));
+    return;
+  }
+
+  return (
+    <ResultsViewerPage
+      Handle={handle}
+      Group={CleanUpString(Group)}
+      Individual={CleanUpString(Individual)}
+      Evaluation={CleanUpString(Evaluation)}
+    />
+  );
+}
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
@@ -30,27 +57,14 @@ type Props = {
   Evaluation: string;
 };
 
-export default function ResultsViewerPage({
-  Handle,
-  Group,
-  Individual,
-  Evaluation,
-}: Props) {
+export default function ResultsViewerPage({ Handle, Group, Individual, Evaluation }: Props) {
   const [results, setResults] = useState<SavedSessionResult[]>([]);
   const [keySet, setKeySet] = useState<KeySet>();
-  const [role, setRole] = useState<DataCollectorRolesType>("Primary");
+  const [role, setRole] = useState<DataCollectorRolesType>('Primary');
 
   useEffect(() => {
     const load_data = async () => {
-      const { keyset, results } = await GetResultsFromEvaluationFolder(
-        Handle,
-        Group,
-        Individual,
-        Evaluation
-      );
-
-      console.log(keyset);
-      console.log(results);
+      const { keyset, results } = await GetResultsFromEvaluationFolder(Handle, Group, Individual, Evaluation);
 
       setKeySet(keyset);
       setResults(results);
@@ -68,10 +82,7 @@ export default function ResultsViewerPage({
       breadcrumbs={[
         BuildGroupBreadcrumb(),
         BuildIndividualsBreadcrumb(CleanUpString(Group)),
-        BuildEvaluationsBreadcrumb(
-          CleanUpString(Group),
-          CleanUpString(Individual)
-        ),
+        BuildEvaluationsBreadcrumb(CleanUpString(Group), CleanUpString(Individual)),
       ]}
       label={`View ${CleanUpString(CleanUpString(Evaluation))} Data`}
     >
@@ -90,12 +101,8 @@ export default function ResultsViewerPage({
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value="Primary">
-                    Primary Data Collector
-                  </SelectItem>
-                  <SelectItem value="Reliability">
-                    Reliability Data Collector
-                  </SelectItem>
+                  <SelectItem value="Primary">Primary Data Collector</SelectItem>
+                  <SelectItem value="Reliability">Reliability Data Collector</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -106,9 +113,7 @@ export default function ResultsViewerPage({
           <ViewFrequencyResults Keyset={keySet} Results={results_filtered} />
         )}
 
-        {keySet && keySet.DurationKeys.length > 0 && (
-          <ViewDurationResults Keyset={keySet} Results={results_filtered} />
-        )}
+        {keySet && keySet.DurationKeys.length > 0 && <ViewDurationResults Keyset={keySet} Results={results_filtered} />}
       </div>
     </PageWrapper>
   );

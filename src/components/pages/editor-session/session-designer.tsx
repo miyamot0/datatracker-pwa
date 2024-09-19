@@ -23,7 +23,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { GetHandleEvaluationFolder, GetSettingsFileFromEvaluationFolder } from '@/lib/files';
+import {
+  GetHandleEvaluationFolder,
+  GetSettingsFileFromEvaluationFolder,
+  pullSessionDesignerParameters,
+} from '@/lib/files';
 import { toSavedSettings } from '@/lib/dtos';
 import { KeySet } from '@/types/keyset';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -36,7 +40,49 @@ import {
 import { displayConditionalNotification } from '@/lib/notifications';
 import { FolderPlus } from 'lucide-react';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import LoadingDisplay from '@/components/ui/loading-display';
+import createHref from '@/lib/links';
+
+export function SessionDesignerShim() {
+  const { handle } = useContext(FolderHandleContext);
+  const navigate = useNavigate();
+  const [keysetsFilenames, setKeysetFilenames] = useState<string[]>([]);
+  const [keysets, setKeysets] = useState<KeySet[]>([]);
+  const [conditions, setConditions] = useState<string[]>([]);
+
+  const { Group, Individual, Evaluation } = useParams();
+
+  //const group = searchParams?.get('group');
+  //const individual = searchParams?.get('individual');
+  //const evaluation = searchParams?.get('evaluation');
+
+  useEffect(() => {
+    if (!handle || !Group || !Individual || !Evaluation) {
+      navigate(createHref({ type: 'Dashboard' }));
+      return;
+    }
+
+    pullSessionDesignerParameters(handle, Group, Individual, Evaluation, setKeysets, setKeysetFilenames, setConditions);
+
+    return () => {};
+  }, [Evaluation, Group, handle, Individual, navigate]);
+
+  if (!handle || !Group || !Individual || !Evaluation) return <LoadingDisplay />;
+
+  return (
+    <SessionDesigner
+      Handle={handle}
+      Group={Group}
+      Individual={CleanUpString(Individual)}
+      Evaluation={CleanUpString(Evaluation)}
+      Conditions={conditions}
+      Keysets={keysets}
+      KeysetFilenames={keysetsFilenames.map((keyset) => keyset.replace('.json', ''))}
+      SetConditions={setConditions}
+    />
+  );
+}
 
 type Props = {
   Handle: FileSystemDirectoryHandle;

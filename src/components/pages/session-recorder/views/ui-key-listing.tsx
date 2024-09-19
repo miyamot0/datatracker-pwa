@@ -1,13 +1,7 @@
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-} from "@/components/ui/table";
-import { formatTimeOfDay } from "@/lib/time";
-import { KeyManageType, TimerSetting } from "../types/session-recorder-types";
-import { PaddedTimerRow } from "./padded-row";
+import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
+import { formatTimeOfDay } from '@/lib/time';
+import { KeyManageType, TimerSetting } from '../types/session-recorder-types';
+import { PaddedTimerRow } from './padded-row';
 
 type Props = {
   KeysPressed: KeyManageType[];
@@ -30,9 +24,7 @@ export default function KeyHistoryListing({
 }: Props) {
   return (
     <div className="w-full flex flex-col gap-0 border rounded shadow-xl">
-      <div className="w-full text-center my-2 text-sm font-bold">
-        Session Measurements
-      </div>
+      <div className="w-full text-center my-2 text-sm font-bold">Session Measurements</div>
 
       <hr className="mb-2" />
 
@@ -75,7 +67,7 @@ export default function KeyHistoryListing({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {KeysPressed.toReversed()
+          {KeysPressed.reverse()
             .slice(0, 5)
             .map((key, index) => (
               <TableRow key={index} className="text-sm">
@@ -83,12 +75,8 @@ export default function KeyHistoryListing({
                   {key.KeyName} ({key.KeyCode})
                 </TableHead>
                 <TableHead className="h-9">{key.KeyDescription}</TableHead>
-                <TableHead className="h-9">
-                  {key.KeyScheduleRecording}
-                </TableHead>
-                <TableHead className="h-9">
-                  {formatTimeOfDay(key.TimePressed)}
-                </TableHead>
+                <TableHead className="h-9">{key.KeyScheduleRecording}</TableHead>
+                <TableHead className="h-9">{formatTimeOfDay(key.TimePressed)}</TableHead>
               </TableRow>
             ))}
         </TableBody>

@@ -21,7 +21,17 @@ import { displayConditionalNotification } from '@/lib/notifications';
 import { CleanUpString } from '@/lib/strings';
 import { cn } from '@/lib/utils';
 import { LoadingStructure } from '@/types/working';
-import { ChartColumnIcon, ChevronDown, Disc3, FilePlus, FolderX, KeyboardIcon, LibraryIcon } from 'lucide-react';
+import {
+  ChartColumnIcon,
+  ChevronDown,
+  Disc3,
+  FilePlus,
+  FolderX,
+  KeyboardIcon,
+  ScatterChartIcon,
+  SearchIcon,
+  Table2Icon,
+} from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
@@ -55,7 +65,7 @@ export default function EvaluationsPage() {
       <Card className="w-full max-w-screen-2xl">
         <CardHeader className="flex flex-col md:flex-row w-full justify-between">
           <div className="flex flex-col gap-1.5">
-            <CardTitle>{Individual}</CardTitle>
+            <CardTitle>{Individual}: Evaluation Directory</CardTitle>
             <CardDescription>Select Evaluation to Build Session</CardDescription>
           </div>
           <div className="flex flex-row gap-2">
@@ -115,7 +125,7 @@ export default function EvaluationsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Client Directory</TableHead>
+                <TableHead>Client Evaluations</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -141,12 +151,26 @@ export default function EvaluationsPage() {
                         <Disc3 className="mr-2 h-4 w-4" />
                         Record Sessions
                       </Link>
-                      <DropdownMenu>
+                      <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                           <ChevronDown className="w-fit px-2" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-64" side="bottom" align="end" sideOffset={12}>
                           <DropdownMenuLabel>Data Management</DropdownMenuLabel>
+                          <DropdownMenuItem>
+                            <Link
+                              className="flex flex-row items-center"
+                              to={createHref({
+                                type: 'Evaluation Session Viewer',
+                                group: Group,
+                                individual: Individual,
+                                evaluation,
+                              })}
+                            >
+                              <SearchIcon className="mr-2 h-4 w-4" />
+                              Inspect Session Data
+                            </Link>
+                          </DropdownMenuItem>
                           <DropdownMenuItem>
                             <Link
                               className="flex flex-row items-center"
@@ -157,8 +181,36 @@ export default function EvaluationsPage() {
                                 evaluation,
                               })}
                             >
-                              <LibraryIcon className="mr-2 h-4 w-4" />
-                              View Evaluation Data
+                              <Table2Icon className="mr-2 h-4 w-4" />
+                              Summarize Session Data
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Link
+                              className="flex flex-row items-center"
+                              to={createHref({
+                                type: 'Evaluation Visualizer-Rate',
+                                group: Group,
+                                individual: Individual,
+                                evaluation,
+                              })}
+                            >
+                              <ScatterChartIcon className="mr-2 h-4 w-4" />
+                              Analyze Frequency Data
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Link
+                              className="flex flex-row items-center"
+                              to={createHref({
+                                type: 'Evaluation Visualizer-Proportion',
+                                group: Group,
+                                individual: Individual,
+                                evaluation,
+                              })}
+                            >
+                              <ScatterChartIcon className="mr-2 h-4 w-4" />
+                              Analyze Duration Data
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem>
@@ -172,7 +224,7 @@ export default function EvaluationsPage() {
                               })}
                             >
                               <ChartColumnIcon className="mr-2 h-4 w-4" />
-                              Generate Reliability Estimates
+                              Calculate Reliability
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />

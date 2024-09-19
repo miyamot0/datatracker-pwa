@@ -12,6 +12,7 @@ import createHref from '@/lib/links';
 import { Button } from '@/components/ui/button';
 import { MenuIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 export type BreadCrumbListing = {
   label: string;
@@ -25,12 +26,14 @@ type Props = {
 
 export default function NavigationBar({ breadcrumbs, label }: Props) {
   return (
-    <div className="flex flex-row justify-between w-full max-w-screen-2xl py-4 items-center select-none">
+    <div className={cn('flex flex-row justify-between w-full max-w-screen-2xl py-4 items-center select-none')}>
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to={createHref({ type: 'Home' })}>Home</Link>
+              <Link to={createHref({ type: 'Home' })} className={cn('underline')}>
+                Home
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
 
@@ -40,7 +43,9 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link to={breadcrumb.href}>{breadcrumb.label}</Link>
+                    <Link to={breadcrumb.href} className={cn('underline')}>
+                      {breadcrumb.label}
+                    </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
               </React.Fragment>
@@ -60,11 +65,16 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
       <div className="flex flex-row gap-2 items-center">
         <AuthorizationStatus />
 
-        <Button variant="navigation" className="w-10 h-10 p-1">
-          <Link to={createHref({ type: 'Settings' })} className="flex flex-row gap-2 items-center">
+        <Link to={createHref({ type: 'Settings' })} className="flex flex-row gap-2 items-center">
+          <Button
+            name="Settings button"
+            aria-label="Settings Button"
+            variant="navigation"
+            className="shadow-xl text-primary h-10 w-10 p-0 m-0"
+          >
             <MenuIcon className="h-4 w-4" />
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
     </div>
   );
