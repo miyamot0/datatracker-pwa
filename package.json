@@ -1,8 +1,29 @@
 {
-  "name": "vite-react",
-  "private": true,
-  "version": "0.1.7",
+  "name": "data-tracker",
   "type": "module",
+  "description": "DataTracker is a web application that helps you to track various forms of behavioral phenomena",
+  "homepage": "https://www.smallnstats.com",
+  "author": {
+    "name": "Shawn P. Gilroy",
+    "url": "https://www.smallnstats.com",
+    "email": "sgilroy1@lsu.edu"
+  },
+  "maintainers": [
+    {
+      "name": "Shawn P. Gilroy",
+      "url": "https://www.smallnstats.com",
+      "email": "sgilroy1@lsu.edu"
+    }
+  ],
+  "private": true,
+  "keywords": [
+    "behavioral data",
+    "data collection",
+    "single case design",
+    "research software"
+  ],
+  "license": "Apache-2.0",
+  "version": "0.2.2",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

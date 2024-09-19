@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { BookTextIcon, ChartLineIcon, PackageIcon } from 'lucide-react';
+import { BookTextIcon, ChartLineIcon, HardDriveDownloadIcon, PackageIcon } from 'lucide-react';
 import PageWrapper from '@/components/layout/page-wrapper';
 import createHref from '@/lib/links';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -24,10 +24,21 @@ import img_baseline from '@/assets/img/multiple_baseline.svg';
 import licenseInformation from '@/assets/licenses.json';
 import { cn } from '@/lib/utils';
 
+import { usePWAInstall } from 'react-use-pwa-install';
+import { useEffect, useState } from 'react';
+import { isOnMobilePlatform } from '@/lib/user-agent';
+
 const IMAGES = [img_chains, img_integrity, img_standard, img_schedule, img_reversal, img_baseline];
 
 export default function HomePage() {
-  //const install = usePWAInstall();
+  const install = usePWAInstall();
+  const [display, setDisplay] = useState<'loading' | 'desktop' | 'mobile'>('loading');
+
+  useEffect(() => {
+    const is_on_mobile = isOnMobilePlatform();
+
+    setDisplay(is_on_mobile ? 'mobile' : 'desktop');
+  }, []);
 
   return (
     <PageWrapper className="flex flex-col gap-6">
@@ -115,14 +126,16 @@ export default function HomePage() {
           <Link to={createHref({ type: 'Dashboard' })}>Load Application</Link>
         </Button>
 
-        {/*
-{install && (
+        {display === 'mobile' && (
+          <p className="text-center text-red-500">DataTracker is Currently Unsupported on Mobile</p>
+        )}
+
+        {install && (
           <Button className="w-full shadow-xl" variant={'default'} onClick={install}>
             <HardDriveDownloadIcon className="mr-2 h-4 w-4" />
             Install Application
           </Button>
         )}
-*/}
       </div>
     </PageWrapper>
   );
