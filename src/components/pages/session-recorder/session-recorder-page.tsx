@@ -274,25 +274,6 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
     }
 
     totalTimerRef.current = setInterval(() => {
-      secondsElapsedTotal.current += TIME_DELTA / TIME_UNIT;
-
-      switch (activeTimerRef.current) {
-        case 'Primary':
-          secondsElapsedFirst.current += TIME_DELTA / TIME_UNIT;
-
-          break;
-        case 'Secondary':
-          secondsElapsedSecond.current += TIME_DELTA / TIME_UNIT;
-
-          break;
-        case 'Tertiary':
-          secondsElapsedThird.current += TIME_DELTA / TIME_UNIT;
-
-          break;
-      }
-
-      setTickCount((prev) => prev + 1);
-
       if (Settings.TimerOption === 'End on Primary Timer' && secondsElapsedTotal.current >= Settings.DurationS) {
         clearInterval(totalTimerRef.current);
         setRunningState('Completed');
@@ -314,6 +295,25 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
 
         return;
       }
+
+      secondsElapsedTotal.current += TIME_DELTA / TIME_UNIT;
+
+      switch (activeTimerRef.current) {
+        case 'Primary':
+          secondsElapsedFirst.current += TIME_DELTA / TIME_UNIT;
+
+          break;
+        case 'Secondary':
+          secondsElapsedSecond.current += TIME_DELTA / TIME_UNIT;
+
+          break;
+        case 'Tertiary':
+          secondsElapsedThird.current += TIME_DELTA / TIME_UNIT;
+
+          break;
+      }
+
+      setTickCount((prev) => prev + 1);
     }, TIME_DELTA);
   }
 
