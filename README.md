@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Version-0.2.2-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple) ![Static Badge](https://img.shields.io/badge/Coverage-65.26_Percent-orange)
+![Static Badge](https://img.shields.io/badge/Version-0.2.3-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple) ![Static Badge](https://img.shields.io/badge/Coverage-65.26_Percent-orange)
 
 # DataTracker (PWA Application)
 
@@ -18,7 +18,7 @@ Features included in DataTracker include:
 - Saving data in a range of common formats
 - Calculation of IOA/Reliability in multiple formats
 
-## Changelog:
+## Changelog
 
 - 0.1.0 - Initial alpha release
 - 0.1.1 - Core functionality introduced
@@ -31,8 +31,9 @@ Features included in DataTracker include:
 - 0.2.0 - Minor bump, all key metrics/interpretations included
 - 0.2.1 - Add in session viewer, minor bugfixes
 - 0.2.2 - Filter functionality to screen out mobile hardware (not presently a priority)
+- 0.2.3 - Port over to Vite for core build (full offline)
 
-## Features:
+## Features
 
 The DataTracker application has been ported to a Progressive Web App (PWA), which is a way to flexibly manage strict requirements for data management as well as work within secure systems that require sandboxed applications.
 
@@ -62,7 +63,7 @@ Electronic data collection can be performed for both event and duration recordin
 
 ![Session Recorder Page](public/screenshots/group_editor.png 'Session Recorder')
 
-## Referenced Works:
+## Referenced Works
 
 @hookform/resolvers (3.9.0). Copyright bluebill1049 <bluebill1049@hotmail.com> -- MIT Licensed: [Repo](https://github.com/react-hook-form/resolvers.git) 
  
@@ -128,17 +129,17 @@ vite-plugin-mdx-plus (1.1.1). Copyright Codpoe <codpoe.me@gmail.com> -- MIT Lice
  
 zod (3.23.8). Copyright Colin McDonnell <colin@colinhacks.com> -- MIT Licensed: [Repo](https://github.com/colinhacks/zod.git) 
 
-## Acknowledgements:
+## Acknowledgements
 
 Bullock, C. E., Fisher, W. W., & Hagopian, L. P. (2017). Description and validation of a computerized behavioral data program:"BDataPro". The Behavior Analyst, 40, 275-285. doi: [10.1007/s40614-016-0079-0](https://doi.org/10.1007%2Fs40614-016-0079-0)
 
 Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/miyamot0/DataTracker3)
 
-## License:
+## License
 
 Apache 2.0 - Shawn Gilroy, Louisiana State University
 
-## Version:
+## Version
 
-Version 0.2.2
+Version 0.2.3
 
