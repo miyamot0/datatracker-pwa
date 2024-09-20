@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Version-0.2.2-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple) ![Static Badge](https://img.shields.io/badge/Coverage-{{PERCENTAGE}}-{{PERCENTAGE_COLOR}})
+![Static Badge](https://img.shields.io/badge/Version-0.2.2-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple) ![Static Badge](https://img.shields.io/badge/Coverage-65.26_Percent-orange)
 
 # DataTracker (PWA Application)
 

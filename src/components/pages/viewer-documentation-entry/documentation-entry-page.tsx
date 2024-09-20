@@ -1,4 +1,4 @@
-import { FrontMatterUniversalType } from '@/lib/mdx';
+import { FrontMatterUniversalType } from '@/types/mdx';
 import PageWrapper from '@/components/layout/page-wrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BuildDocumentationBreadcrumb } from '@/components/ui/breadcrumb-entries';

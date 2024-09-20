@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { generateKeywordColors } from '@/lib/colors';
-import { FrontMatterUniversalType } from '@/lib/mdx';
+import { FrontMatterUniversalType } from '@/types/mdx';
 import { cn } from '@/lib/utils';
 import { KeywordColors } from '@/types/colors';
 import { ChevronRight } from 'lucide-react';

@@ -1,19 +1,10 @@
 import * as fs from 'fs';
 import packageJson from '../package.json';
 import licenses from '../src/assets/licenses.json';
+import coverageSummary from '../coverage/coverage-summary.json';
 import path from 'path';
-//import { compile } from '@mdx-js/mdx';
-//import remarkFrontmatter from 'remark-frontmatter';
-//import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
-
-//import mdx from 'remark-mdx';
-//import { remark } from 'remark';
-//import parseFrontMatter from 'remark-parse-frontmatter';
-
 import { read } from 'to-vfile';
 import { matter } from 'vfile-matter';
-
-//import coverageSummary from "../coverage/coverage-summary.json";
 
 const DOCUMENTATION_FOLDER = path.join(process.cwd(), 'content');
 
@@ -35,7 +26,6 @@ function write_date() {
 function populate_software() {
   return licenses.map((relevant_license) => {
     const author = relevant_license.author.trim() === 'na' ? '' : ` ${relevant_license.author}`;
-
     const license = relevant_license?.licenseType ?? 'Error';
 
     return `${relevant_license.name} (${
@@ -87,19 +77,18 @@ async function outputFrontMatterData() {
   fs.writeFileSync('./src/assets/documentation.json', JSON.stringify(front_matter_data), 'utf-8');
 }
 
-//const converage_pct = `${coverageSummary.total.lines.pct}_Percent`;
+const converage_pct = `${coverageSummary.total.lines.pct}_Percent`;
 const version_text = `Version ${packageJson.version}\r\n`;
 const software_pkg_text = populate_software().join('\r\n \r\n');
 
-//let coverage_color =
-//  coverageSummary.total.statements.pct < 80 ? "orange" : "green";
+let coverage_color = coverageSummary.total.statements.pct < 80 ? 'orange' : 'green';
 
 let readme_md = read_md();
 readme_md = readme_md.replace('{{VERSION}}', version_text);
 readme_md = readme_md.replace('{{VERSION_NUMBER}}', packageJson.version);
 readme_md = readme_md.replace('{{LICENSES}}', software_pkg_text);
-//readme_md = readme_md.replace("{{PERCENTAGE}}", converage_pct);
-//readme_md = readme_md.replace("{{PERCENTAGE_COLOR}}", coverage_color);
+readme_md = readme_md.replace('{{PERCENTAGE}}', converage_pct);
+readme_md = readme_md.replace('{{PERCENTAGE_COLOR}}', coverage_color);
 
 write_md(readme_md);
 
