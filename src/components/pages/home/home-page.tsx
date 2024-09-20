@@ -24,9 +24,7 @@ export default function HomePage() {
   const [display, setDisplay] = useState<'loading' | 'desktop' | 'mobile'>('loading');
 
   useEffect(() => {
-    const is_on_mobile = isOnMobilePlatform();
-
-    setDisplay(is_on_mobile ? 'mobile' : 'desktop');
+    setDisplay(isOnMobilePlatform() === true ? 'mobile' : 'desktop');
   }, []);
 
   return (

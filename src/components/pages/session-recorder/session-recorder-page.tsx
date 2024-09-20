@@ -108,6 +108,9 @@ type Props = {
 
 const TIME_DELTA = 50;
 const TIME_UNIT = 1000;
+
+const INCREMENT = TIME_DELTA / TIME_UNIT;
+
 export default function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Settings }: Props) {
   const navigator = useNavigate();
   const { settings: applicationSettings } = useContext(FolderHandleContext);
@@ -241,6 +244,9 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
   }, [runningState, keysPressed, Settings, Handle, navigator, Group, Individual, Evaluation, applicationSettings]);
 
   function registerListener(timer: 'Primary' | 'Secondary' | 'Tertiary') {
+    /**
+     * Firing here on the *switch* between schedules
+     */
     if (totalTimerRef.current) {
       const end_prev = {
         KeyName: activeTimerRef.current,
@@ -274,22 +280,34 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
     }
 
     totalTimerRef.current = setInterval(() => {
-      if (Settings.TimerOption === 'End on Primary Timer' && secondsElapsedTotal.current >= Settings.DurationS) {
+      if (
+        Settings.TimerOption === 'End on Primary Timer' &&
+        secondsElapsedTotal.current + INCREMENT >= Settings.DurationS
+      ) {
         clearInterval(totalTimerRef.current);
         setRunningState('Completed');
 
         return;
-      } else if (Settings.TimerOption === 'End on Timer #1' && secondsElapsedFirst.current >= Settings.DurationS) {
+      } else if (
+        Settings.TimerOption === 'End on Timer #1' &&
+        secondsElapsedFirst.current + INCREMENT >= Settings.DurationS
+      ) {
         clearInterval(totalTimerRef.current);
         setRunningState('Completed');
 
         return;
-      } else if (Settings.TimerOption === 'End on Timer #2' && secondsElapsedSecond.current >= Settings.DurationS) {
+      } else if (
+        Settings.TimerOption === 'End on Timer #2' &&
+        secondsElapsedSecond.current + INCREMENT >= Settings.DurationS
+      ) {
         clearInterval(totalTimerRef.current);
         setRunningState('Completed');
 
         return;
-      } else if (Settings.TimerOption === 'End on Timer #3' && secondsElapsedThird.current >= Settings.DurationS) {
+      } else if (
+        Settings.TimerOption === 'End on Timer #3' &&
+        secondsElapsedThird.current + INCREMENT >= Settings.DurationS
+      ) {
         clearInterval(totalTimerRef.current);
         setRunningState('Completed');
 
@@ -500,9 +518,9 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
           <KeyHistoryListing
             KeysPressed={keysPressed}
             SecondsElapsed={secondsElapsedTotal.current}
-            SecondsElapsedFirst={Math.min(secondsElapsedFirst.current, Settings.DurationS)}
-            SecondsElapsedSecond={Math.min(secondsElapsedSecond.current, Settings.DurationS)}
-            SecondsElapsedThird={Math.min(secondsElapsedThird.current, Settings.DurationS)}
+            SecondsElapsedFirst={secondsElapsedFirst.current}
+            SecondsElapsedSecond={secondsElapsedSecond.current}
+            SecondsElapsedThird={secondsElapsedThird.current}
             ActiveTimer={activeTimerRef.current}
             Running={!!totalTimerRef.current}
           />

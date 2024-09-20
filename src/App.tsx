@@ -42,8 +42,6 @@ const router = createBrowserRouter(
       <Route path="/session/:Group/:Individual/:Evaluation/view" element={<ResultsViewerPageShim />} />
 
       <Route path="/settings" element={<SettingsPage />} />
-
-      {}
     </Route>
   )
 );

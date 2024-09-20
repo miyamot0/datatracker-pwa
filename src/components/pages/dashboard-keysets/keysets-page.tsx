@@ -57,8 +57,8 @@ export default function KeySetsPage() {
       <Card className="w-full max-w-screen-2xl">
         <CardHeader className="flex flex-col md:flex-row w-full justify-between">
           <div className="flex flex-col gap-1.5">
-            <CardTitle>Keysets</CardTitle>
-            <CardDescription>View/Edit Keysets for {Individual}</CardDescription>
+            <CardTitle>Keyset Directory: {Individual}</CardTitle>
+            <CardDescription>Create or Edit Current Keysets</CardDescription>
           </div>
           <ToolTipWrapper Label="Create a new KeySet for individual">
             <Button

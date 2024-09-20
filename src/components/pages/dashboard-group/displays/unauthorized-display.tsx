@@ -1,16 +1,9 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import AuthorizationInstructions from "../views/authorization-instructions";
-import { FolderHandleContext } from "@/context/folder-context";
-import { useContext } from "react";
-import { displayConditionalNotification } from "@/lib/notifications";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import AuthorizationInstructions from '../views/authorization-instructions';
+import { FolderHandleContext } from '@/context/folder-context';
+import { useContext } from 'react';
+import { displayConditionalNotification } from '@/lib/notifications';
 
 type Props = {};
 
@@ -18,14 +11,11 @@ export default function UnauthorizedDisplay({}: Props) {
   const { setHandle, settings } = useContext(FolderHandleContext);
 
   return (
-    <Card className="w-full non-full-w">
+    <Card className="w-full max-w-screen-lg">
       <CardHeader className="flex flex-row w-full justify-between">
         <div className="flex flex-col gap-1.5">
           <CardTitle>Program Access and Authorization</CardTitle>
-          <CardDescription>
-            You need to authorize the program to work with the desired local
-            folder
-          </CardDescription>
+          <CardDescription>You need to authorize the program to work with the desired local folder</CardDescription>
         </div>
       </CardHeader>
 
@@ -38,22 +28,17 @@ export default function UnauthorizedDisplay({}: Props) {
           className="w-full"
           onClick={async () => {
             const options = {
-              startIn: "documents",
-              mode: "readwrite",
+              startIn: 'documents',
+              mode: 'readwrite',
             } as DirectoryPickerOptions;
 
             try {
-              const directory_picker = await window.showDirectoryPicker(
-                options
-              );
+              const directory_picker = await window.showDirectoryPicker(options);
 
-              if (
-                settings.EnforceDataFolderName === true &&
-                directory_picker.name !== "DataTracker"
-              ) {
+              if (settings.EnforceDataFolderName === true && directory_picker.name !== 'DataTracker') {
                 displayConditionalNotification(
                   settings,
-                  "Error Authorizing Directory",
+                  'Error Authorizing Directory',
                   "Please select a folder named 'DataTracker' to continue.",
                   3000,
                   true
@@ -66,15 +51,15 @@ export default function UnauthorizedDisplay({}: Props) {
 
                 displayConditionalNotification(
                   settings,
-                  "Access Authorized",
-                  "You can you interact with files in the relevant folder."
+                  'Access Authorized',
+                  'You can you interact with files in the relevant folder.'
                 );
               }
             } catch (_error) {
               displayConditionalNotification(
                 settings,
-                "Error Authorizing Directory",
-                "Please select an applicable, non-system folder to continue.",
+                'Error Authorizing Directory',
+                'Please select an applicable, non-system folder to continue.',
                 3000,
                 true
               );

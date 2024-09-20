@@ -4,10 +4,9 @@ import App from './App.tsx';
 import { registerSW } from 'virtual:pwa-register';
 import '@/styles/globals.css';
 
-// add this to prompt for a refresh
 const updateSW = registerSW({
   onNeedRefresh() {
-    if (confirm('New content available. Reload?')) {
+    if (window.confirm('New content available. Reload?')) {
       updateSW(true);
     }
   },

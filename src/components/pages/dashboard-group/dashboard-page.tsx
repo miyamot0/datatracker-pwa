@@ -1,5 +1,3 @@
-'use client';
-
 import PageWrapper from '@/components/layout/page-wrapper';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useContext, useEffect, useState } from 'react';

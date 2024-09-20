@@ -58,7 +58,7 @@ export default function ClientsPage() {
       <Card className="w-full max-w-screen-2xl">
         <CardHeader className="flex flex-col md:flex-row w-full justify-between">
           <div className="flex flex-col gap-1.5">
-            <CardTitle>{CleanUpString(Group)}: Individual-level Directory</CardTitle>
+            <CardTitle>Client Directory: {CleanUpString(Group)}</CardTitle>
             <CardDescription>Select clients to develop and evaluate outcomes</CardDescription>
           </div>
           <div className="flex flex-col md:flex-row gap-4">
