@@ -106,9 +106,11 @@ type Props = {
   Settings: SavedSettings;
 };
 
+// Time in MS
 const TIME_DELTA = 50;
 const TIME_UNIT = 1000;
 
+// Increment--Proportional to seconds change
 const INCREMENT = TIME_DELTA / TIME_UNIT;
 
 export default function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Settings }: Props) {
@@ -314,19 +316,19 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
         return;
       }
 
-      secondsElapsedTotal.current += TIME_DELTA / TIME_UNIT;
+      secondsElapsedTotal.current += INCREMENT;
 
       switch (activeTimerRef.current) {
         case 'Primary':
-          secondsElapsedFirst.current += TIME_DELTA / TIME_UNIT;
+          secondsElapsedFirst.current += INCREMENT;
 
           break;
         case 'Secondary':
-          secondsElapsedSecond.current += TIME_DELTA / TIME_UNIT;
+          secondsElapsedSecond.current += INCREMENT;
 
           break;
         case 'Tertiary':
-          secondsElapsedThird.current += TIME_DELTA / TIME_UNIT;
+          secondsElapsedThird.current += INCREMENT;
 
           break;
       }

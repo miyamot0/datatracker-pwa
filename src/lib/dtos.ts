@@ -1,10 +1,10 @@
-import { KeyManageType } from "@/components/pages/session-recorder/types/session-recorder-types";
+import { KeyManageType } from '@/components/pages/session-recorder/types/session-recorder-types';
 import {
   DataCollectorRolesType,
   SessionDesignerSchemaType,
   SessionTerminationOptionsType,
-} from "@/forms/schema/session-designer-schema";
-import { KeySet } from "@/types/keyset";
+} from '@/forms/schema/session-designer-schema';
+import { KeySet } from '@/types/keyset';
 
 /**
  * This is the type definition for the HumanReadableResults type
@@ -21,14 +21,14 @@ export type SavedSettings = {
 };
 
 export const DEFAULT_SESSION_SETTINGS: SavedSettings = {
-  Condition: "",
-  TimerOption: "End on Primary Timer",
-  Role: "Primary",
-  Initials: "",
+  Condition: '',
+  TimerOption: 'End on Timer #1',
+  Role: 'Primary',
+  Initials: '',
   Session: 1,
   DurationS: 600,
-  KeySet: "",
-  Therapist: "",
+  KeySet: '',
+  Therapist: '',
 };
 
 /**
