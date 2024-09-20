@@ -1,6 +1,6 @@
 import { FrontMatterUniversalType } from '@/types/mdx';
 import PageWrapper from '@/components/layout/page-wrapper';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { BuildDocumentationBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { Badge } from '@/components/ui/badge';
 import { KeywordColors } from '@/types/colors';
@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 import documentation from '@/assets/documentation.json';
 import { generateKeywordColors } from '@/lib/colors';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 import { useEffect, useState } from 'react';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
@@ -17,6 +17,7 @@ import type { FC, ReactNode } from 'react';
 import type { MDXProps } from 'mdx/types';
 import type { EvaluateOptions } from '@mdx-js/mdx';
 import { evaluate } from '@mdx-js/mdx';
+import { Button } from '@/components/ui/button';
 
 type ReactMDXContent = (props: MDXProps) => ReactNode;
 type Runtime = Pick<EvaluateOptions, 'jsx' | 'jsxs' | 'Fragment'>;
@@ -44,6 +45,9 @@ export default function DocumentationEntryPage() {
 
   if (!entry) throw new Error('Entry not found');
 
+  const prev_entry = entries.find((e) => e.matter.index === entry.matter.index - 1);
+  const next_entry = entries.find((e) => e.matter.index === entry.matter.index + 1);
+
   return (
     <PageWrapper breadcrumbs={[BuildDocumentationBreadcrumb()]} label={entry.matter.title}>
       <Card className="w-full max-w-screen-2xl">
@@ -70,6 +74,29 @@ export default function DocumentationEntryPage() {
         <CardContent className="prose dark:prose-invert !max-w-none">
           <Preview source={entry.value} />
         </CardContent>
+        <CardFooter className="flex flex-row justify-between">
+          <Link
+            to={`/documentation/${prev_entry?.matter.filename.replaceAll('.mdx', '')}`}
+            className={cn('flex flex-row', {
+              'pointer-events-none disabled': !prev_entry,
+            })}
+          >
+            <Button disabled={!prev_entry} variant={'outline'} className="w-full shadow-xl">
+              Read Previous
+            </Button>
+          </Link>
+
+          <Link
+            to={`/documentation/${next_entry?.matter.filename.replaceAll('.mdx', '')}`}
+            className={cn('flex flex-row', {
+              'pointer-events-none disabled': !next_entry,
+            })}
+          >
+            <Button disabled={!next_entry} variant={'outline'} className="w-full shadow-xl">
+              Read Next
+            </Button>
+          </Link>
+        </CardFooter>
       </Card>
     </PageWrapper>
   );

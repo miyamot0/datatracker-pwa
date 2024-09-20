@@ -23,7 +23,7 @@ export default function DocumentationListingPage() {
     <PageWrapper label={'Documentation'}>
       <Card className="w-full max-w-screen-2xl">
         <CardHeader>
-          <CardTitle>DataTracker Documentation</CardTitle>
+          <CardTitle>Software Documentation</CardTitle>
           <CardDescription>
             Information on this page provides guidelines and instructions for DataTracker
           </CardDescription>
@@ -37,7 +37,7 @@ export default function DocumentationListingPage() {
               .filter((str) => str !== '');
 
             return (
-              <div key={index} className="flex flex-col md:flex-row md:justify-between md:items-center py-4 gap-2">
+              <div key={index} className="flex flex-col md:flex-row md:justify-between md:items-center py-5 gap-2">
                 <div className="flex flex-col gap-1">
                   <div className="flex flex-row gap-1 flex-1 items-end font-semibold">
                     <span>{`${entry.index + 1}. ${entry.title}`}</span>
