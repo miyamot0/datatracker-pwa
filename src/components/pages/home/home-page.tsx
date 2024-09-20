@@ -63,13 +63,13 @@ export default function HomePage() {
               <DialogTitle>Open Source Software</DialogTitle>
               <DialogDescription>Licensing information for relevant software is provided below</DialogDescription>
             </DialogHeader>
-            <ScrollArea className="h-[200px] w-full rounded-md pr-4">
+            <ScrollArea className="h-[200px] w-full rounded-md pr-4 flex flex-col">
               {licenseInformation.map((entry, index) => {
                 return (
                   <div
                     key={index}
                     className={cn('flex flex-row justify-between items-center', {
-                      'mt-4': index > 0,
+                      'mt-4 border-t pt-4': index > 0,
                     })}
                   >
                     <span>
