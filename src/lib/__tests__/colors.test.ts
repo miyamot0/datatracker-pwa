@@ -1,5 +1,5 @@
 import { COLOR_LIST, generateKeywordColors } from '../colors';
-import { FrontMatterUniversalType } from '../mdx';
+import { FrontMatterUniversalType } from '../../types/mdx';
 
 describe('generateKeywordColors', () => {
   it('should return an empty array if the input array is empty', () => {

@@ -1,7 +1,7 @@
 import { KeySet } from '../../types/keyset';
 import { v4 as uuidv4 } from 'uuid';
 import { createNewKeySet, deserializeKeySet, serializeKeySet } from '../keyset';
-import { vi, Mock } from 'vitest';
+import { Mock } from 'vitest';
 
 vi.mock('uuid', () => ({
   v4: vi.fn(),

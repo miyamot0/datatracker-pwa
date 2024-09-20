@@ -1,11 +1,6 @@
-import { KeyManageType } from "@/components/pages/session-recorder/types/session-recorder-types";
-import {
-  BinValueType,
-  ProbedKey,
-  ReliabilityPairType,
-  ScoredKey,
-} from "@/types/reli";
-import { SavedSessionResult } from "./dtos";
+import { KeyManageType } from '@/components/pages/session-recorder/types/session-recorder-types';
+import { BinValueType, ProbedKey, ReliabilityPairType, ScoredKey } from '@/types/reli';
+import { SavedSessionResult } from './dtos';
 
 /**
  * Generate an empty bin array
@@ -29,12 +24,9 @@ export function generateEmptyBinArray(n_bins: number) {
  * @param Reliability reliability bin array
  * @returns
  */
-export function generateEIABinMatch(
-  Primary: BinValueType[],
-  Reliability: BinValueType[]
-) {
+export function generateEIABinMatch(Primary: BinValueType[], Reliability: BinValueType[]) {
   let ExactCountMatch = 0;
-  let BinCounts = Primary.length;
+  const BinCounts = Primary.length;
 
   for (let i = 0; i < BinCounts; i++) {
     const primary_count = Math.floor(Primary[i].Value);
@@ -55,12 +47,9 @@ export function generateEIABinMatch(
  * @param Reliability reliability bin array
  * @returns
  */
-export function generatePIABinMatch(
-  Primary: BinValueType[],
-  Reliability: BinValueType[]
-) {
+export function generatePIABinMatch(Primary: BinValueType[], Reliability: BinValueType[]) {
   let running_proportions = 0.0;
-  let BinCounts = Primary.length;
+  const BinCounts = Primary.length;
 
   for (let i = 0; i < BinCounts; i++) {
     const primary_count = Math.floor(Primary[i].Value);
@@ -69,9 +58,7 @@ export function generatePIABinMatch(
     if (primary_count === reli_count) {
       running_proportions += 1;
     } else {
-      running_proportions +=
-        Math.min(primary_count, reli_count) /
-        Math.max(primary_count, reli_count);
+      running_proportions += Math.min(primary_count, reli_count) / Math.max(primary_count, reli_count);
     }
   }
 
@@ -85,12 +72,9 @@ export function generatePIABinMatch(
  * @param Reliability reliability bin array
  * @returns
  */
-export function generateTIABinMatch(
-  Primary: BinValueType[],
-  Reliability: BinValueType[]
-) {
+export function generateTIABinMatch(Primary: BinValueType[], Reliability: BinValueType[]) {
   let agreements = 0;
-  let BinCounts = Primary.length;
+  const BinCounts = Primary.length;
 
   for (let i = 0; i < BinCounts; i++) {
     const primary_count = Math.floor(Primary[i].Value);
@@ -114,13 +98,10 @@ export function generateTIABinMatch(
  * @param Reliability reliability bin array
  * @returns
  */
-export function generateOIABinMatch(
-  Primary: BinValueType[],
-  Reliability: BinValueType[]
-) {
+export function generateOIABinMatch(Primary: BinValueType[], Reliability: BinValueType[]) {
   let observed_matches = 0;
   let observed_non_empty_intervals = 0;
-  let BinCounts = Primary.length;
+  const BinCounts = Primary.length;
 
   for (let i = 0; i < BinCounts; i++) {
     const primary_count = Math.floor(Primary[i].Value);
@@ -147,13 +128,10 @@ export function generateOIABinMatch(
  * @param Reliability reliability bin array
  * @returns
  */
-export function generateNIABinMatch(
-  Primary: BinValueType[],
-  Reliability: BinValueType[]
-) {
+export function generateNIABinMatch(Primary: BinValueType[], Reliability: BinValueType[]) {
   let observed_matches = 0;
   let observed_non_empty_intervals = 0;
-  let BinCounts = Primary.length;
+  const BinCounts = Primary.length;
 
   for (let i = 0; i < BinCounts; i++) {
     const primary_count = Math.floor(Primary[i].Value);
@@ -178,15 +156,12 @@ export function generateNIABinMatch(
  * @param Reliability reliability bin array
  * @returns
  */
-export function generatePMABinMatch(
-  Primary: BinValueType[],
-  Reliability: BinValueType[]
-) {
+export function generatePMABinMatch(Primary: BinValueType[], Reliability: BinValueType[]) {
   let minute = 0;
   let primary_temp = 0;
   let reliability_temp = 0;
 
-  let BinCounts = Primary.length;
+  const BinCounts = Primary.length;
 
   let run_value = 0;
 
@@ -201,9 +176,7 @@ export function generatePMABinMatch(
       if (primary_temp === reliability_temp) {
         run_value += 1;
       } else {
-        run_value +=
-          Math.min(primary_temp, reliability_temp) /
-          Math.max(primary_temp, reliability_temp);
+        run_value += Math.min(primary_temp, reliability_temp) / Math.max(primary_temp, reliability_temp);
       }
 
       primary_temp = 0;
@@ -242,15 +215,11 @@ export function getCorrespondingSessionPairs(
   Reliability: SavedSessionResult[]
 ): ReliabilityPairType[] {
   const primary_with_reli = Primary.map((result) => {
-    const reli = Reliability.find(
-      (reli) => reli.SessionSettings.Session === result.SessionSettings.Session
-    );
+    const reli = Reliability.find((reli) => reli.SessionSettings.Session === result.SessionSettings.Session);
     return { primary: result, reli };
   });
 
-  return primary_with_reli.filter(
-    (pair) => pair.reli !== undefined
-  ) as ReliabilityPairType[];
+  return primary_with_reli.filter((pair) => pair.reli !== undefined) as ReliabilityPairType[];
 }
 
 /**
@@ -260,10 +229,7 @@ export function getCorrespondingSessionPairs(
  * @param keys_to_code_f Keys to code
  * @returns
  */
-export function calculateReliabilityFrequency(
-  pair: ReliabilityPairType,
-  keys_to_code_f: ProbedKey[]
-) {
+export function calculateReliabilityFrequency(pair: ReliabilityPairType, keys_to_code_f: ProbedKey[]) {
   const { primary, reli } = pair;
 
   const keys: ScoredKey[] = [];
@@ -271,9 +237,9 @@ export function calculateReliabilityFrequency(
   keys_to_code_f.forEach((key) => {
     const binCounts = Math.round(primary.TimerMain / 10);
 
-    const primary_relevant_key = primary.FrequencyKeyPresses.filter(
-      (k) => k.KeyDescription === key.KeyDescription
-    ).map((k: KeyManageType) => addBinToKeyData(k));
+    const primary_relevant_key = primary.FrequencyKeyPresses.filter((k) => k.KeyDescription === key.KeyDescription).map(
+      (k: KeyManageType) => addBinToKeyData(k)
+    );
 
     const reliability_relevant_key = reli.FrequencyKeyPresses.filter(
       (k) => k.KeyDescription === key.KeyDescription
@@ -319,10 +285,7 @@ export function calculateReliabilityFrequency(
  * @param keys_to_code_d Keys to code
  * @returns
  */
-export function calculateReliabilityDuration(
-  pair: ReliabilityPairType,
-  keys_to_code_d: ProbedKey[]
-) {
+export function calculateReliabilityDuration(pair: ReliabilityPairType, keys_to_code_d: ProbedKey[]) {
   const { primary, reli } = pair;
 
   const keys: ScoredKey[] = [];
@@ -330,13 +293,13 @@ export function calculateReliabilityDuration(
   keys_to_code_d.forEach((key) => {
     const binCounts = Math.round(primary.TimerMain / 10);
 
-    const primary_relevant_key = primary.DurationKeyPresses.filter(
-      (k) => k.KeyDescription === key.KeyDescription
-    ).map((k: KeyManageType) => addBinToKeyData(k));
+    const primary_relevant_key = primary.DurationKeyPresses.filter((k) => k.KeyDescription === key.KeyDescription).map(
+      (k: KeyManageType) => addBinToKeyData(k)
+    );
 
-    const reliability_relevant_key = reli.DurationKeyPresses.filter(
-      (k) => k.KeyDescription === key.KeyDescription
-    ).map((k: KeyManageType) => addBinToKeyData(k));
+    const reliability_relevant_key = reli.DurationKeyPresses.filter((k) => k.KeyDescription === key.KeyDescription).map(
+      (k: KeyManageType) => addBinToKeyData(k)
+    );
 
     const key_bins_p = generateEmptyBinArray(binCounts);
     const key_bins_r = generateEmptyBinArray(binCounts);
@@ -348,11 +311,7 @@ export function calculateReliabilityDuration(
         const point_a = primary_relevant_key[i];
         const point_b = primary_relevant_key[i + 1];
 
-        for (
-          let k = Math.floor(point_a.TimeIntoSession);
-          k < Math.floor(point_b.TimeIntoSession);
-          k++
-        ) {
+        for (let k = Math.floor(point_a.TimeIntoSession); k < Math.floor(point_b.TimeIntoSession); k++) {
           const bin = Math.floor(k / 10);
           key_bins_p[bin].Value++;
         }
@@ -362,20 +321,14 @@ export function calculateReliabilityDuration(
         const point_a = primary_relevant_key[i];
         const point_b = primary_relevant_key[i + 1];
 
-        for (
-          let k = Math.floor(point_a.TimeIntoSession);
-          k < Math.floor(point_b.TimeIntoSession);
-          k++
-        ) {
+        for (let k = Math.floor(point_a.TimeIntoSession); k < Math.floor(point_b.TimeIntoSession); k++) {
           const bin = Math.floor(k / 10);
           key_bins_p[bin].Value++;
         }
       }
 
       for (
-        let k = Math.floor(
-          primary_relevant_key[primary_relevant_key.length - 1].TimeIntoSession
-        );
+        let k = Math.floor(primary_relevant_key[primary_relevant_key.length - 1].TimeIntoSession);
         k < Math.floor(primary.TimerMain);
         k++
       ) {
@@ -391,11 +344,7 @@ export function calculateReliabilityDuration(
         const point_a = reliability_relevant_key[i];
         const point_b = reliability_relevant_key[i + 1];
 
-        for (
-          let k = Math.floor(point_a.TimeIntoSession);
-          k < Math.floor(point_b.TimeIntoSession);
-          k++
-        ) {
+        for (let k = Math.floor(point_a.TimeIntoSession); k < Math.floor(point_b.TimeIntoSession); k++) {
           const bin = Math.floor(k / 10);
           key_bins_r[bin].Value++;
         }
@@ -405,21 +354,14 @@ export function calculateReliabilityDuration(
         const point_a = reliability_relevant_key[i];
         const point_b = reliability_relevant_key[i + 1];
 
-        for (
-          let k = Math.floor(point_a.TimeIntoSession);
-          k < Math.floor(point_b.TimeIntoSession);
-          k++
-        ) {
+        for (let k = Math.floor(point_a.TimeIntoSession); k < Math.floor(point_b.TimeIntoSession); k++) {
           const bin = Math.floor(k / 10);
           key_bins_r[bin].Value++;
         }
       }
 
       for (
-        let k = Math.floor(
-          reliability_relevant_key[reliability_relevant_key.length - 1]
-            .TimeIntoSession
-        );
+        let k = Math.floor(reliability_relevant_key[reliability_relevant_key.length - 1].TimeIntoSession);
         k < Math.floor(primary.TimerMain);
         k++
       ) {
@@ -449,4 +391,67 @@ export function calculateReliabilityDuration(
   });
 
   return keys;
+}
+
+/**
+ * Calculate reliability for duration keys
+ *
+ * @param pair Reliability pair
+ * @param keys_to_code_d Keys to code
+ * @returns
+ */
+export function generateBinsProportion(primary: SavedSessionResult, keys_to_code_d: ProbedKey[]) {
+  return keys_to_code_d.map((key) => {
+    const binCounts = Math.round(primary.TimerMain / 10);
+
+    const primary_relevant_key = primary.DurationKeyPresses.filter((k) => k.KeyDescription === key.KeyDescription).map(
+      (k: KeyManageType) => addBinToKeyData(k)
+    );
+
+    const key_bins_p = generateEmptyBinArray(binCounts);
+
+    const is_even_keys_p = primary_relevant_key.length % 2 === 0;
+
+    if (is_even_keys_p) {
+      for (let i = 0; i < primary_relevant_key.length; i += 2) {
+        const point_a = primary_relevant_key[i];
+        const point_b = primary_relevant_key[i + 1];
+
+        for (let k = Math.floor(point_a.TimeIntoSession); k < Math.floor(point_b.TimeIntoSession); k++) {
+          const bin = Math.floor(k / 10);
+          key_bins_p[bin].Value++;
+        }
+      }
+    } else {
+      for (let i = 0; i < primary_relevant_key.length - 1; i += 2) {
+        const point_a = primary_relevant_key[i];
+        const point_b = primary_relevant_key[i + 1];
+
+        for (let k = Math.floor(point_a.TimeIntoSession); k < Math.floor(point_b.TimeIntoSession); k++) {
+          const bin = Math.floor(k / 10);
+          key_bins_p[bin].Value++;
+        }
+      }
+
+      for (
+        let k = Math.floor(primary_relevant_key[primary_relevant_key.length - 1].TimeIntoSession);
+        k < Math.floor(primary.TimerMain);
+        k++
+      ) {
+        const bin = Math.floor(k / 10);
+        key_bins_p[bin].Value++;
+      }
+    }
+
+    const TotalBins = key_bins_p.length;
+    const BinsNonzero = key_bins_p.filter((bin) => bin.Value > 0).length;
+    const Proportion = (BinsNonzero / TotalBins) * 100;
+
+    return {
+      ...key,
+      TotalBins,
+      BinsNonzero,
+      Proportion,
+    };
+  });
 }

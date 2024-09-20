@@ -1,5 +1,5 @@
 import { KeywordColors } from '@/types/colors';
-import { FrontMatterUniversalType } from './mdx';
+import { FrontMatterUniversalType } from '../types/mdx';
 
 export const FIGURE_PATH_COLORS = ['#9061C2', '#4E9CB5', '#4BC599', '#F9A826', '#EB540A', '#C86F98', '#14B694'];
 

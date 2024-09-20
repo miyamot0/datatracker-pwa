@@ -76,8 +76,12 @@ export default function HomePage() {
 
       <div className="max-w-lg flex flex-col w-full py-8 gap-4">
         <Button variant={'outline'} className="w-full shadow-xl">
-          <BookTextIcon className="mr-2 h-4 w-4" />
-          <Link to={createHref({ type: 'Documentation' })}>Documentation</Link>
+          <Link to={createHref({ type: 'Documentation' })} className="flex flex-row">
+            <Button variant={'outline'} className="w-full shadow-xl">
+              <BookTextIcon className="mr-2 h-4 w-4" />
+              Documentation
+            </Button>
+          </Link>
         </Button>
 
         <Dialog>
@@ -121,10 +125,12 @@ export default function HomePage() {
           </DialogContent>
         </Dialog>
 
-        <Button className="w-full shadow-xl">
-          <ChartLineIcon className="mr-2 h-4 w-4" />
-          <Link to={createHref({ type: 'Dashboard' })}>Load Application</Link>
-        </Button>
+        <Link to={createHref({ type: 'Dashboard' })} className="flex flex-row">
+          <Button className="w-full shadow-xl">
+            <ChartLineIcon className="mr-2 h-4 w-4" />
+            Load Application
+          </Button>
+        </Link>
 
         {display === 'mobile' && (
           <p className="text-center text-red-500">DataTracker is Currently Unsupported on Mobile</p>

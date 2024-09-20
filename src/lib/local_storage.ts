@@ -1,6 +1,6 @@
 import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-schema';
 
-type ReturnLocalStorageCache = {
+export type ReturnLocalStorageCache = {
   KeyDescription: string[];
   CTBElements: string[];
   Schedule: SessionTerminationOptionsType;

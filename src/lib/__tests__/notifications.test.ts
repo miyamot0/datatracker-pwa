@@ -1,7 +1,6 @@
 import { displayConditionalNotification } from '../notifications';
 import { toast } from 'sonner';
 import { ApplicationSettingsTypes } from '../../types/settings';
-import { vi } from 'vitest';
 
 // Mock the toast functions
 vi.mock('sonner', () => ({
@@ -99,7 +98,13 @@ describe('displayConditionalNotification', () => {
   });
 
   it('should display a success notification with default duration when duration is not provided', () => {
-    displayConditionalNotification(defaultSettings, 'Success Title', 'Success Description', undefined, false);
+    displayConditionalNotification(
+      defaultSettings as ApplicationSettingsTypes,
+      'Success Title',
+      'Success Description',
+      undefined,
+      false
+    );
 
     expect(toast.success).toHaveBeenCalledWith('Success Title', {
       description: 'Success Description',

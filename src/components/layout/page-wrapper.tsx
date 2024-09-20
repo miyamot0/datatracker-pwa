@@ -21,10 +21,10 @@ export default function PageWrapper({ children, className, breadcrumbs, label }:
       <NavigationBar breadcrumbs={breadcrumbs} label={label} />
       {children}
 
-      <footer className="text-center text-sm text-gray-500 my-4 flex flex-col gap-4 select-none">
+      <footer className="text-center text-sm text-gray-500 my-4 flex flex-col gap-4 select-none font-semibold">
         <div>
           <Link
-            to={`https://github.com/miyamot0/data-tracker-web`}
+            to={`https://github.com/miyamot0/datatracker-pwa`}
             className="text-blue-600 hover:text-blue-500 underline"
             target="_blank"
           >

@@ -3,7 +3,7 @@ import { CleanUpString } from './strings';
 /**
  * Route information type guards
  */
-type RouteInformationType =
+export type RouteInformationType =
   | {
       type: 'Home';
     }
