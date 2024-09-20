@@ -4,7 +4,11 @@
  * @returns {boolean} True if the user is on a mobile platform
  */
 export function isOnMobilePlatform() {
-  //@ts-expect-error - navigator.userAgent is not typed correctly
-  const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-  return /Android|webOS|iPhone|iPad|iPod|Opera Mini/i.test(userAgent.userAgent);
+  // Note: on TRUE, will hide, so a safe default
+
+  const userAgent = navigator.userAgent;
+
+  if (!userAgent) return true;
+
+  return /Android|webOS|iPhone|iPad|iPod|Opera Mini/i.test(userAgent);
 }
