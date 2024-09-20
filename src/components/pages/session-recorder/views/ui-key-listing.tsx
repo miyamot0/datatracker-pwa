@@ -23,7 +23,7 @@ export default function KeyHistoryListing({
   Running,
 }: Props) {
   return (
-    <div className="w-full flex flex-col gap-0 border rounded shadow-xl">
+    <div className="w-full flex flex-col gap-0 border rounded shadow-xl bg-card">
       <div className="w-full text-center my-2 text-sm font-bold">Session Measurements</div>
 
       <hr className="mb-2" />
@@ -71,9 +71,7 @@ export default function KeyHistoryListing({
             .slice(0, 5)
             .map((key, index) => (
               <TableRow key={index} className="text-sm">
-                <TableHead className="h-9">
-                  {key.KeyName} ({key.KeyCode})
-                </TableHead>
+                <TableHead className="h-9">{key.KeyName}</TableHead>
                 <TableHead className="h-9">{key.KeyDescription}</TableHead>
                 <TableHead className="h-9">{key.KeyScheduleRecording}</TableHead>
                 <TableHead className="h-9">{formatTimeOfDay(key.TimePressed)}</TableHead>

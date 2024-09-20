@@ -1,5 +1,3 @@
-'use client';
-
 import PageWrapper from '@/components/layout/page-wrapper';
 import { useEventListener } from '@/helpers/event-listeners';
 import { SavedSettings } from '@/lib/dtos';
@@ -110,15 +108,13 @@ type Props = {
 
 const TIME_DELTA = 50;
 const TIME_UNIT = 1000;
-
 export default function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Settings }: Props) {
-  const navigate = useNavigate();
+  const navigator = useNavigate();
   const { settings: applicationSettings } = useContext(FolderHandleContext);
 
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
   const [systemKeysPressed, setSystemKeysPressed] = useState<KeyManageType[]>([]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setTickCount] = useState<number>(0);
 
   const secondsElapsedTotal = useRef<number>(0);
@@ -132,12 +128,12 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
 
   const [startTime, setStartTime] = useState<Date | null>(null);
 
-  const totalTimerRef = useRef<NodeJS.Timeout>();
-  const activeTimerRef = useRef<TimerSetting>('Stopped');
+  let totalTimerRef = useRef<NodeJS.Timeout>();
+  let activeTimerRef = useRef<TimerSetting>('Stopped');
 
   useEffect(() => {
     if (!Handle) {
-      navigate(createHref({ type: 'Dashboard' }));
+      navigator(createHref({ type: 'Dashboard' }));
       return;
     }
 
@@ -150,13 +146,24 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
         const final_system_keys = [
           ...systemKeysPressed,
           {
+            KeyName: activeTimerRef.current,
+            KeyCode: 0,
+            KeyDescription: `End of ${activeTimerRef.current}`,
+            TimePressed: new Date(),
+            KeyScheduleRecording: activeTimerRef.current as KeyTiming,
+            KeyType: 'System',
+            TimeIntoSession: secondsElapsedTotal.current,
+            ScheduleIndicator: 'End',
+          } satisfies KeyManageType,
+          {
             KeyName: 'Escape',
             KeyCode: 0,
             KeyDescription: 'End of Session',
             TimePressed: new Date(),
             KeyScheduleRecording: activeTimerRef.current as KeyTiming,
             KeyType: 'System',
-            TimeIntoSession: 0,
+            TimeIntoSession: secondsElapsedTotal.current,
+            ScheduleIndicator: 'End',
           } satisfies KeyManageType,
         ];
 
@@ -166,7 +173,7 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
           );
 
           if (confirm_save === false) {
-            navigate(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`);
+            navigator(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`);
             return;
           }
         }
@@ -181,10 +188,10 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
           Individual,
           Evaluation,
           startTime,
-          Math.min(secondsElapsedTotal.current, Settings.DurationS),
-          Math.min(secondsElapsedFirst.current, Settings.DurationS),
-          Math.min(secondsElapsedSecond.current, Settings.DurationS),
-          Math.min(secondsElapsedThird.current, Settings.DurationS),
+          secondsElapsedTotal.current,
+          secondsElapsedFirst.current,
+          secondsElapsedSecond.current,
+          secondsElapsedThird.current,
           ended_early
         );
 
@@ -195,7 +202,7 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
 
           switch (applicationSettings.PostSessionBx) {
             case 'AutoAdvance':
-              navigate(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`);
+              navigator(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`);
 
               break;
 
@@ -205,7 +212,7 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
                 action: {
                   label: 'Load Next Session',
                   onClick: () => {
-                    navigate(
+                    navigator(
                       `/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`
                     );
                   },
@@ -214,7 +221,6 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
 
               break;
           }
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
           displayConditionalNotification(
             applicationSettings,
@@ -229,40 +235,38 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
       save_output();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     () => {
       clearInterval(totalTimerRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [runningState, keysPressed, Settings, Handle, navigate, Group, Individual, Evaluation, applicationSettings]);
+  }, [runningState, keysPressed, Settings, Handle, navigator, Group, Individual, Evaluation, applicationSettings]);
 
   function registerListener(timer: 'Primary' | 'Secondary' | 'Tertiary') {
     if (totalTimerRef.current) {
-      setSystemKeysPressed([
-        ...systemKeysPressed,
-        {
-          KeyName: activeTimerRef.current,
-          KeyCode: 0,
-          KeyDescription: `End of ${activeTimerRef.current}`,
-          TimePressed: new Date(),
-          KeyScheduleRecording: activeTimerRef.current as KeyTiming,
-          KeyType: 'System',
-          TimeIntoSession: 0,
-        } satisfies KeyManageType,
-      ]);
+      const end_prev = {
+        KeyName: activeTimerRef.current,
+        KeyCode: 0,
+        KeyDescription: `End of ${activeTimerRef.current}`,
+        TimePressed: new Date(),
+        KeyScheduleRecording: activeTimerRef.current as KeyTiming,
+        KeyType: 'System',
+        TimeIntoSession: secondsElapsedTotal.current,
+        ScheduleIndicator: 'End',
+      } satisfies KeyManageType;
 
       activeTimerRef.current = timer;
 
       setSystemKeysPressed([
         ...systemKeysPressed,
+        end_prev,
         {
           KeyName: activeTimerRef.current,
           KeyCode: 0,
           KeyDescription: `Start of ${timer}`,
           TimePressed: new Date(),
-          KeyScheduleRecording: activeTimerRef.current as KeyTiming,
+          KeyScheduleRecording: timer as KeyTiming,
           KeyType: 'System',
-          TimeIntoSession: 0,
+          ScheduleIndicator: 'Start',
+          TimeIntoSession: secondsElapsedTotal.current,
         } satisfies KeyManageType,
       ]);
 
@@ -337,7 +341,18 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
             TimePressed: new Date(),
             KeyScheduleRecording: activeTimerRef.current as KeyTiming,
             KeyType: 'System',
-            TimeIntoSession: 0,
+            TimeIntoSession: secondsElapsedTotal.current,
+            ScheduleIndicator: 'Start',
+          } satisfies KeyManageType,
+          {
+            KeyName: 'Primary',
+            KeyCode: 0,
+            KeyDescription: 'Start of Primary',
+            TimePressed: new Date(),
+            KeyScheduleRecording: 'Primary' as KeyTiming,
+            KeyType: 'System',
+            TimeIntoSession: secondsElapsedTotal.current,
+            ScheduleIndicator: 'Start',
           } satisfies KeyManageType,
         ]);
 
@@ -435,31 +450,37 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
       label={`Record ${Evaluation} Session`}
     >
       <div className="flex flex-col w-full gap-4 max-w-screen-2xl">
-        <div className="w-full flex flex-row justify-between">
+        <div className="w-full flex flex-row justify-between select-none">
           <div className="flex-1 flex flex-row">
             <p
-              className={cn('transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit', {
-                'bg-green-600 text-white': Settings.Role === 'Primary',
-                'bg-purple-400 text-white': Settings.Role === 'Reliability',
-              })}
+              className={cn(
+                'transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
+                {
+                  'bg-green-600 text-white': Settings.Role === 'Primary',
+                  'bg-purple-400 text-white': Settings.Role === 'Reliability',
+                }
+              )}
             >
               {`${Settings.Role} Data Collector`}
             </p>
             <p
-              className={cn('mx-2 transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit', {
-                'bg-gray-600 text-white': Settings.TimerOption === 'End on Primary Timer',
-                'bg-green-400 text-white': Settings.TimerOption === 'End on Timer #1',
-                'bg-orange-400 text-white': Settings.TimerOption === 'End on Timer #2',
-                'bg-red-400 text-white': Settings.TimerOption === 'End on Timer #3',
-              })}
+              className={cn(
+                'mx-2 transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
+                {
+                  'bg-gray-600 text-white': Settings.TimerOption === 'End on Primary Timer',
+                  'bg-green-400 text-white': Settings.TimerOption === 'End on Timer #1',
+                  'bg-orange-400 text-white': Settings.TimerOption === 'End on Timer #2',
+                  'bg-red-400 text-white': Settings.TimerOption === 'End on Timer #3',
+                }
+              )}
             >
               {Settings.TimerOption} ({Settings.DurationS}s)
             </p>
           </div>
-          <div className="flex-1 flex flex-row justify-center items-center text-center font-bold">
+          <div className="flex-1 flex flex-row justify-center items-center text-center font-bold whitespace-nowrap">
             <p className="flex-1">{`Session #${Settings.Session}`}</p>
           </div>
-          <div className="flex-1 flex flex-row justify-end">
+          <div className="flex-1 flex flex-row justify-end whitespace-nowrap">
             <p
               className={cn('transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit', {
                 'bg-gray-600 text-white': runningState === 'Not Started',
@@ -473,11 +494,12 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
         </div>
 
         <SessionRecorderTallies KeysPressed={keysPressed} Keyset={Keyset} />
-        <div className="grid grid-cols-2 w-full gap-4 ">
+
+        <div className="grid grid-cols-2 w-full gap-4 select-none">
           <SessionRecorderInstructions {...{ Evaluation, Settings }} />
           <KeyHistoryListing
             KeysPressed={keysPressed}
-            SecondsElapsed={Math.min(secondsElapsedTotal.current, Settings.DurationS)}
+            SecondsElapsed={secondsElapsedTotal.current}
             SecondsElapsedFirst={Math.min(secondsElapsedFirst.current, Settings.DurationS)}
             SecondsElapsedSecond={Math.min(secondsElapsedSecond.current, Settings.DurationS)}
             SecondsElapsedThird={Math.min(secondsElapsedThird.current, Settings.DurationS)}

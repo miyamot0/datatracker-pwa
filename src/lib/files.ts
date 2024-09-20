@@ -1,15 +1,11 @@
-import { CleanUpString } from "./strings";
-import {
-  DEFAULT_SESSION_SETTINGS,
-  SavedSessionResult,
-  SavedSettings,
-} from "./dtos";
-import { Dispatch, SetStateAction } from "react";
-import { toast } from "sonner";
-import { KeySet } from "@/types/keyset";
-import { KeyManageType } from "@/components/pages/session-recorder/types/session-recorder-types";
-import { LoadingStructure, LoadingStructureKeysets } from "@/types/working";
-import { deserializeKeySet } from "./keyset";
+import { CleanUpString } from './strings';
+import { DEFAULT_SESSION_SETTINGS, SavedSessionResult, SavedSettings } from './dtos';
+import { Dispatch, SetStateAction } from 'react';
+import { toast } from 'sonner';
+import { KeySet } from '@/types/keyset';
+import { KeyManageType } from '@/components/pages/session-recorder/types/session-recorder-types';
+import { LoadingStructure, LoadingStructureKeysets } from '@/types/working';
+import { deserializeKeySet } from './keyset';
 
 // --- Handles for Folders ---
 
@@ -31,14 +27,8 @@ export const GetHandleEvaluationFolder = async (
   const individuals = await Handle.getDirectoryHandle(CleanUpString(Group), {
     create: true,
   });
-  const evaluations = await individuals.getDirectoryHandle(
-    CleanUpString(Individual),
-    { create: true }
-  );
-  const files = await evaluations.getDirectoryHandle(
-    CleanUpString(Evaluation),
-    { create: true }
-  );
+  const evaluations = await individuals.getDirectoryHandle(CleanUpString(Individual), { create: true });
+  const files = await evaluations.getDirectoryHandle(CleanUpString(Evaluation), { create: true });
 
   return files;
 };
@@ -56,14 +46,8 @@ export const GetHandleKeyboardsFolder = async (
   Group: string,
   Individual: string
 ) => {
-  const individuals_folder = await Handle.getDirectoryHandle(
-    CleanUpString(Group),
-    { create: true }
-  );
-  const keyboards_folder = await individuals_folder.getDirectoryHandle(
-    CleanUpString(Individual),
-    { create: true }
-  );
+  const individuals_folder = await Handle.getDirectoryHandle(CleanUpString(Group), { create: true });
+  const keyboards_folder = await individuals_folder.getDirectoryHandle(CleanUpString(Individual), { create: true });
 
   return keyboards_folder;
 };
@@ -76,21 +60,19 @@ export const GetHandleKeyboardsFolder = async (
  * @param files The handle to the evaluation folder
  * @returns The settings file
  */
-export const GetSettingsFileFromEvaluationFolder = async (
-  files: FileSystemDirectoryHandle
-) => {
+export const GetSettingsFileFromEvaluationFolder = async (files: FileSystemDirectoryHandle) => {
   try {
-    const settings_file = await files.getFileHandle("settings.json");
+    const settings_file = await files.getFileHandle('settings.json');
     const settings = await settings_file.getFile();
     const settings_text = await settings.text();
     const settings_json = JSON.parse(settings_text) as SavedSettings;
 
-    if (!settings_json) throw new Error("Settings file not well-formed");
+    if (!settings_json) throw new Error('Settings file not well-formed');
 
     return settings_json;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    files.getFileHandle("settings.json", { create: true }).then((file) => {
+    files.getFileHandle('settings.json', { create: true }).then((file) => {
       file.createWritable().then((writer) => {
         writer.write(JSON.stringify(DEFAULT_SESSION_SETTINGS));
         writer.close();
@@ -107,18 +89,10 @@ export const GetResultsFromEvaluationFolder = async (
   Individual: string,
   Evaluation: string
 ) => {
-  const result = await castSavedFilesToSessionResults(
-    Handle,
-    Group,
-    Individual,
-    Evaluation
-  );
+  const result = await castSavedFilesToSessionResults(Handle, Group, Individual, Evaluation);
 
   if (result.length > 0) {
-    const time_sorted = result.sort(
-      (a, b) =>
-        new Date(a.SessionStart).getTime() - new Date(b.SessionStart).getTime()
-    );
+    const time_sorted = result.sort((a, b) => new Date(a.SessionStart).getTime() - new Date(b.SessionStart).getTime());
 
     return {
       keyset: time_sorted[0].Keyset,
@@ -149,18 +123,18 @@ export const getGroupFolders = async (
     const temp_group_folders = [] as string[];
 
     for await (const entry of entries) {
-      if (entry.kind === "directory") {
+      if (entry.kind === 'directory' && entry.name !== '.DS_Store') {
         temp_group_folders.push(entry.name);
       }
     }
 
     SetGroups({
-      Status: "complete",
+      Status: 'complete',
       Values: temp_group_folders,
     });
   } catch (error) {
     SetGroups({
-      Status: "error",
+      Status: 'error',
       Values: [],
       Error: error as string,
     });
@@ -185,16 +159,18 @@ export const getIndividualClientFolders = async (
     const temp_individuals = [] as string[];
 
     for await (const entry of entries) {
+      if (entry.name === '.DS_Store') continue;
+
       temp_individuals.push(entry.name);
     }
 
     SetIndividuals({
-      Status: "complete",
+      Status: 'complete',
       Values: temp_individuals,
     });
   } catch (error) {
     SetIndividuals({
-      Status: "error",
+      Status: 'error',
       Values: [],
       Error: error as string,
     });
@@ -223,16 +199,18 @@ export const getClientEvaluationFolders = async (
     const temp_evaluation_folders = [] as string[];
 
     for await (const entry of entries) {
-      if (entry.kind === "directory") temp_evaluation_folders.push(entry.name);
+      if (entry.name === '.DS_Store') continue;
+
+      if (entry.kind === 'directory') temp_evaluation_folders.push(entry.name);
     }
 
     SetEvaluations({
-      Status: "complete",
+      Status: 'complete',
       Values: temp_evaluation_folders,
     });
   } catch (error) {
     SetEvaluations({
-      Status: "error",
+      Status: 'error',
       Values: [],
       Error: error as string,
     });
@@ -254,16 +232,14 @@ export const getClientKeyboards = async (
   SetKeyboards: Dispatch<SetStateAction<LoadingStructureKeysets>>
 ) => {
   try {
-    const keyboard_folder = await GetHandleKeyboardsFolder(
-      Handle,
-      Group,
-      Individual
-    );
+    const keyboard_folder = await GetHandleKeyboardsFolder(Handle, Group, Individual);
 
     const keysets = [];
 
     for await (const entry of keyboard_folder.values()) {
-      if (entry.kind === "file" && entry.name.endsWith(".json")) {
+      if (entry.name === '.DS_Store') continue;
+
+      if (entry.kind === 'file' && entry.name.endsWith('.json')) {
         const keyset = await entry.getFile();
         const keyset_text = await keyset.text();
 
@@ -276,12 +252,12 @@ export const getClientKeyboards = async (
     }
 
     SetKeyboards({
-      Status: "complete",
+      Status: 'complete',
       KeySets: keysets,
     });
   } catch (error) {
     SetKeyboards({
-      Status: "error",
+      Status: 'error',
       KeySets: [],
       Error: error as string,
     });
@@ -297,14 +273,11 @@ export const getClientKeyboards = async (
  * @param Group The group name
  * @returns
  */
-export async function removeGroupFolder(
-  Handle: FileSystemDirectoryHandle,
-  Group: string
-) {
-  const perms = await Handle.requestPermission({ mode: "readwrite" });
+export async function removeGroupFolder(Handle: FileSystemDirectoryHandle, Group: string) {
+  const perms = await Handle.requestPermission({ mode: 'readwrite' });
 
-  if (perms === "denied") {
-    toast.error("Permission denied to remove group folder.");
+  if (perms === 'denied') {
+    toast.error('Permission denied to remove group folder.');
     return;
   }
 
@@ -319,15 +292,11 @@ export async function removeGroupFolder(
  * @param Individual The individual name
  * @returns
  */
-export async function removeClientFolder(
-  Handle: FileSystemDirectoryHandle,
-  Group: string,
-  Individual: string
-) {
-  const perms = await Handle.requestPermission({ mode: "readwrite" });
+export async function removeClientFolder(Handle: FileSystemDirectoryHandle, Group: string, Individual: string) {
+  const perms = await Handle.requestPermission({ mode: 'readwrite' });
 
-  if (perms === "denied") {
-    toast.error("Permission denied to remove group folder.");
+  if (perms === 'denied') {
+    toast.error('Permission denied to remove group folder.');
     return;
   }
 
@@ -351,17 +320,15 @@ export async function removeClientEvaluationFolder(
   Individual: string,
   Evaluation: string
 ) {
-  const perms = await Handle.requestPermission({ mode: "readwrite" });
+  const perms = await Handle.requestPermission({ mode: 'readwrite' });
 
-  if (perms === "denied") {
-    toast.error("Permission denied to remove group folder.");
+  if (perms === 'denied') {
+    toast.error('Permission denied to remove group folder.');
     return;
   }
 
   const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
-  const client_dir = await group_dir.getDirectoryHandle(
-    CleanUpString(Individual)
-  );
+  const client_dir = await group_dir.getDirectoryHandle(CleanUpString(Individual));
 
   return await client_dir.removeEntry(CleanUpString(Evaluation), {
     recursive: true,
@@ -390,25 +357,23 @@ export async function pullSessionDesignerParameters(
   SetKeysetFilenames: Dispatch<SetStateAction<string[]>>,
   SetConditions: Dispatch<SetStateAction<string[]>>
 ) {
-  const perms = await Handle.requestPermission({ mode: "readwrite" });
+  const perms = await Handle.requestPermission({ mode: 'readwrite' });
 
-  if (perms === "denied") {
-    toast.error("Permission denied to remove group folder.");
+  if (perms === 'denied') {
+    toast.error('Permission denied to remove group folder.');
 
-    throw new Error("Permission denied to work with data.");
+    throw new Error('Permission denied to work with data.');
   }
 
-  const keyboard_folder = await GetHandleKeyboardsFolder(
-    Handle,
-    Group,
-    Individual
-  );
+  const keyboard_folder = await GetHandleKeyboardsFolder(Handle, Group, Individual);
 
   const keyset_time_filenames: string[] = [];
   const keyset_time_files: KeySet[] = [];
 
   for await (const entry of keyboard_folder.values()) {
-    if (entry.kind === "file" && entry.name.endsWith(".json")) {
+    if (entry.name === '.DS_Store') continue;
+
+    if (entry.kind === 'file' && entry.name.endsWith('.json')) {
       const keyset = await entry.getFile();
       const keyset_text = await keyset.text();
 
@@ -426,18 +391,13 @@ export async function pullSessionDesignerParameters(
   SetKeysets(keyset_time_files);
   SetKeysetFilenames(keyset_time_filenames);
 
-  const evaluations_folder = await GetHandleEvaluationFolder(
-    Handle,
-    Group,
-    Individual,
-    Evaluation
-  );
+  const evaluations_folder = await GetHandleEvaluationFolder(Handle, Group, Individual, Evaluation);
 
   const conditions: string[] = [];
 
   const entries2 = await evaluations_folder.values();
   for await (const entry of entries2) {
-    if (entry.kind === "directory") {
+    if (entry.kind === 'directory') {
       conditions.push(entry.name);
     }
   }
@@ -466,7 +426,7 @@ export async function pullSessionSettings(
     CleanUpString(Evaluation)
   );
 
-  if (!files) throw new Error("No files found for this evaluation");
+  if (!files) throw new Error('No files found for this evaluation');
 
   return await GetSettingsFileFromEvaluationFolder(files);
 }
@@ -489,33 +449,24 @@ export async function pullSessionOutcomesFiles(
   const individuals = await Handle.getDirectoryHandle(CleanUpString(Group), {
     create: true,
   });
-  const evaluations = await individuals.getDirectoryHandle(
-    CleanUpString(Individual),
-    { create: true }
-  );
-  const specific_evaluation = await evaluations.getDirectoryHandle(
-    CleanUpString(Evaluation),
-    { create: true }
-  );
+  const evaluations = await individuals.getDirectoryHandle(CleanUpString(Individual), { create: true });
+  const specific_evaluation = await evaluations.getDirectoryHandle(CleanUpString(Evaluation), { create: true });
 
   const files: FileSystemFileHandle[] = [];
 
   for await (const entry of specific_evaluation.values()) {
-    if (entry.kind === "file" && entry.name.endsWith(".json")) {
+    if (entry.name === '.DS_Store') continue;
+
+    if (entry.kind === 'file' && entry.name.endsWith('.json')) {
       // Skip if the session outcomes file
-      if (entry.name === "settings.json") continue;
+      if (entry.name === 'settings.json') continue;
 
       files.push(entry);
-    } else if (entry.kind === "directory") {
-      const condition_folder = await specific_evaluation.getDirectoryHandle(
-        entry.name
-      );
+    } else if (entry.kind === 'directory') {
+      const condition_folder = await specific_evaluation.getDirectoryHandle(entry.name);
 
       for await (const condition_entry of condition_folder.values()) {
-        if (
-          condition_entry.kind === "file" &&
-          condition_entry.name.endsWith(".json")
-        ) {
+        if (condition_entry.kind === 'file' && condition_entry.name.endsWith('.json')) {
           files.push(condition_entry);
         }
       }
@@ -548,14 +499,14 @@ export async function saveSessionSettingsToFile(
     CleanUpString(Evaluation)
   );
 
-  if (!files) throw new Error("No directory found for this evaluation");
+  if (!files) throw new Error('No directory found for this evaluation');
 
   const newer_settings = {
     ...Settings,
     Session: Settings.Session + 1,
   };
 
-  const settings_file = await files.getFileHandle("settings.json", {
+  const settings_file = await files.getFileHandle('settings.json', {
     create: true,
   });
 
@@ -605,13 +556,12 @@ export async function saveSessionOutcomesToFile(
     CleanUpString(evaluation)
   );
 
-  const relevent_condition_folder =
-    await client_evaluations_folder.getDirectoryHandle(
-      CleanUpString(Settings.Condition),
-      {
-        create: true,
-      }
-    );
+  const relevent_condition_folder = await client_evaluations_folder.getDirectoryHandle(
+    CleanUpString(Settings.Condition),
+    {
+      create: true,
+    }
+  );
 
   const session_output_file = await relevent_condition_folder.getFileHandle(
     `${Settings.Session}_${Settings.Condition}_${Settings.Role}.json`,
@@ -620,10 +570,8 @@ export async function saveSessionOutcomesToFile(
 
   const saved_session_data = {
     SessionSettings: Settings,
-    FrequencyKeyPresses: KeysPressed.filter(
-      (key) => key.KeyType === "Frequency"
-    ),
-    DurationKeyPresses: KeysPressed.filter((key) => key.KeyType === "Duration"),
+    FrequencyKeyPresses: KeysPressed.filter((key) => key.KeyType === 'Frequency'),
+    DurationKeyPresses: KeysPressed.filter((key) => key.KeyType === 'Duration'),
     SystemKeyPresses: SystemKeys,
     SessionStart: sessionStart.toJSON(),
     Keyset: KeySet,
@@ -655,12 +603,7 @@ export async function castSavedFilesToSessionResults(
   Individual: string,
   Evaluation: string
 ) {
-  const files = await pullSessionOutcomesFiles(
-    Handle,
-    Group,
-    Individual,
-    Evaluation
-  );
+  const files = await pullSessionOutcomesFiles(Handle, Group, Individual, Evaluation);
 
   const session_results: SavedSessionResult[] = [];
 

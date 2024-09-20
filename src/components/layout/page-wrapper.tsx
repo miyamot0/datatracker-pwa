@@ -19,9 +19,10 @@ export default function PageWrapper({ children, className, breadcrumbs, label }:
       className={cn('flex min-h-screen flex-col items-center w-full py-4 mx-2 max-w-screen-xl self-center', className)}
     >
       <NavigationBar breadcrumbs={breadcrumbs} label={label} />
+
       {children}
 
-      <footer className="text-center text-sm text-gray-500 my-4 flex flex-col gap-4 select-none font-semibold">
+      <footer className="text-center text-sm text-gray-500 my-8 flex flex-col gap-4 select-none font-semibold">
         <div>
           <Link
             to={`https://github.com/miyamot0/datatracker-pwa`}

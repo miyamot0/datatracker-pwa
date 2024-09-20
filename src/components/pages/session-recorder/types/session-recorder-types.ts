@@ -1,4 +1,4 @@
-export type KeyTiming = "Primary" | "Secondary" | "Tertiary";
+export type KeyTiming = 'Primary' | 'Secondary' | 'Tertiary';
 
 export type KeyManageType = {
   KeyName: string;
@@ -7,7 +7,8 @@ export type KeyManageType = {
   KeyScheduleRecording: KeyTiming;
   TimePressed: Date;
   TimeIntoSession: number;
-  KeyType: "Frequency" | "Duration" | "System" | "Timing";
+  KeyType: 'Frequency' | 'Duration' | 'System' | 'Timing';
+  ScheduleIndicator?: 'Start' | 'End';
 };
 
 export type SessionRecordingState = {
@@ -26,7 +27,7 @@ export type SessionRecordingState = {
   }[];
 };
 
-export type TimerSetting = "Primary" | "Secondary" | "Tertiary" | "Stopped";
+export type TimerSetting = 'Primary' | 'Secondary' | 'Tertiary' | 'Stopped';
 
 export const DEFAULT_SESSION_RECORDING_STATE: SessionRecordingState = {
   FrequencyKeys: [],

@@ -1,20 +1,15 @@
-import { SavedSettings } from "@/lib/dtos";
-import { PaddedRow } from "./padded-row";
+import { SavedSettings } from '@/lib/dtos';
+import { PaddedRow } from './padded-row';
 
 type Props = {
   Evaluation: string;
   Settings: SavedSettings;
 };
 
-export default function SessionRecorderInstructions({
-  Evaluation,
-  Settings,
-}: Props) {
+export default function SessionRecorderInstructions({ Evaluation, Settings }: Props) {
   return (
-    <div className="w-full flex flex-col gap-2 border rounded shadow-xl">
-      <div className="w-full text-center justify-center pt-2 text-sm font-bold">
-        Session Parameters
-      </div>
+    <div className="w-full flex flex-col gap-2 border rounded shadow-xl bg-card">
+      <div className="w-full text-center justify-center pt-2 text-sm font-bold">Session Parameters</div>
       <hr />
       <PaddedRow label="Evaluation Name:" value={Evaluation} />
       <PaddedRow label="Condition Name:" value={Settings.Condition} />
