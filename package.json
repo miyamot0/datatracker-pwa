@@ -79,6 +79,7 @@
   "devDependencies": {
     "@eslint/js": "^9.9.0",
     "@tailwindcss/typography": "^0.5.15",
+    "@types/dom-screen-wake-lock": "^1.0.3",
     "@types/jest": "^29.5.12",
     "@types/mdx": "^2.0.13",
     "@types/node": "^22.5.4",

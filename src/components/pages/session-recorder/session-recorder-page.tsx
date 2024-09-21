@@ -114,7 +114,7 @@ const TIME_UNIT = 1000;
 const INCREMENT = TIME_DELTA / TIME_UNIT;
 
 export default function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Settings }: Props) {
-  const navigator = useNavigate();
+  const navigator_ = useNavigate();
   const { settings: applicationSettings } = useContext(FolderHandleContext);
 
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
@@ -127,6 +127,8 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
   const secondsElapsedSecond = useRef<number>(0);
   const secondsElapsedThird = useRef<number>(0);
 
+  const wakelockRef = useRef<WakeLockSentinel>();
+
   const [runningState, setRunningState] = useState<'Not Started' | 'Started' | 'Completed' | 'Cancelled'>(
     'Not Started'
   );
@@ -138,7 +140,7 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
 
   useEffect(() => {
     if (!Handle) {
-      navigator(createHref({ type: 'Dashboard' }));
+      navigator_(createHref({ type: 'Dashboard' }));
       return;
     }
 
@@ -178,7 +180,7 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
           );
 
           if (confirm_save === false) {
-            navigator(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`);
+            navigator_(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`);
             return;
           }
         }
@@ -202,12 +204,15 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
 
         const settings = await pullSessionSettings(Handle, Group, Individual, Evaluation);
 
+        if (wakelockRef.current) wakelockRef.current.release();
+        wakelockRef.current = undefined;
+
         try {
           await saveSessionSettingsToFile(Handle, Group, Individual, Evaluation, settings);
 
           switch (applicationSettings.PostSessionBx) {
             case 'AutoAdvance':
-              navigator(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`);
+              navigator_(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`);
 
               break;
 
@@ -217,7 +222,7 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
                 action: {
                   label: 'Load Next Session',
                   onClick: () => {
-                    navigator(
+                    navigator_(
                       `/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`
                     );
                   },
@@ -242,8 +247,11 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
 
     () => {
       clearInterval(totalTimerRef.current);
+
+      if (wakelockRef.current) wakelockRef.current.release();
+      wakelockRef.current = undefined;
     };
-  }, [runningState, keysPressed, Settings, Handle, navigator, Group, Individual, Evaluation, applicationSettings]);
+  }, [runningState, keysPressed, Settings, Handle, navigator_, Group, Individual, Evaluation, applicationSettings]);
 
   function registerListener(timer: 'Primary' | 'Secondary' | 'Tertiary') {
     /**
@@ -375,6 +383,15 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
             ScheduleIndicator: 'Start',
           } satisfies KeyManageType,
         ]);
+
+        // Requestion wake-lock
+        const request_wake_lock = async () => {
+          if (navigator && navigator.wakeLock) {
+            wakelockRef.current = await navigator.wakeLock.request('screen');
+          }
+        };
+
+        request_wake_lock();
 
         toast('Session started recording.', {
           dismissible: true,

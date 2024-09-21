@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Get the values of an object
@@ -14,25 +14,23 @@ function getValues<T extends Record<string, any>>(obj: T) {
 
 // Roles for data collectors
 export const DataCollectorRoles = {
-  Primary: "Primary",
-  Reliability: "Reliability",
+  Primary: 'Primary',
+  Reliability: 'Reliability',
 } as const;
 
 // Type for data collector roles
-export type DataCollectorRolesType =
-  (typeof DataCollectorRoles)[keyof typeof DataCollectorRoles];
+export type DataCollectorRolesType = (typeof DataCollectorRoles)[keyof typeof DataCollectorRoles];
 
 // Session termination options
 export const SessionTerminationOptions = {
-  TimerMain: "End on Primary Timer",
-  Timer1: "End on Timer #1",
-  Timer2: "End on Timer #2",
-  Timer3: "End on Timer #3",
+  TimerMain: 'End on Primary Timer',
+  Timer1: 'End on Timer #1',
+  Timer2: 'End on Timer #2',
+  Timer3: 'End on Timer #3',
 } as const;
 
 // Type for session termination options
-export type SessionTerminationOptionsType =
-  (typeof SessionTerminationOptions)[keyof typeof SessionTerminationOptions];
+export type SessionTerminationOptionsType = (typeof SessionTerminationOptions)[keyof typeof SessionTerminationOptions];
 
 // Session designer schema
 export const SessionDesignerSchema = z.object({
@@ -40,7 +38,10 @@ export const SessionDesignerSchema = z.object({
   DataCollectorRole: z.enum(getValues(DataCollectorRoles)),
   SessionCondition: z.string().min(2).max(128),
   SessionTherapistID: z.string().min(2).max(128),
-  SessionDurationS: z.coerce.number().min(10).max(3600),
+  SessionDurationS: z.coerce
+    .number()
+    .min(10)
+    .max(3600 * 24),
   SessionTerminationOption: z.enum(getValues(SessionTerminationOptions)),
   SessionNumber: z.coerce.number().min(1),
   SessionKeySet: z.string().min(1),
