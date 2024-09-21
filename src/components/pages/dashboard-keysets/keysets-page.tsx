@@ -32,7 +32,9 @@ export default function KeySetsPage() {
 
   useEffect(() => {
     if (!handle || !Group || !Individual) {
-      navigate(createHref({ type: 'Dashboard' }));
+      navigate(createHref({ type: 'Dashboard' }), {
+        unstable_viewTransition: true,
+      });
       return;
     }
 
@@ -134,7 +136,7 @@ export default function KeySetsPage() {
                   <TableCell>{keys.createdAt.toLocaleDateString()}</TableCell>
                   <TableCell>{keys.lastModified.toLocaleDateString()}</TableCell>
                   <TableCell className="flex flex-row justify-end">
-                    <Link to={`/session/${Group}/${Individual}/keysets/${keys.Name}`}>
+                    <Link unstable_viewTransition to={`/session/${Group}/${Individual}/keysets/${keys.Name}`}>
                       <Button size={'sm'} variant={'outline'}>
                         <Edit2 className="h-4 w-4 mr-2" />
                         Edit KeySet

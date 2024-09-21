@@ -1,19 +1,7 @@
-"use client";
-
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import {
-  ApplicationSettingsTypes,
-  DEFAULT_APPLICATION_SETTINGS,
-} from "@/types/settings";
-import {
-  createContext,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useEffect,
-  useState,
-} from "react";
+import { Toaster } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { ApplicationSettingsTypes, DEFAULT_APPLICATION_SETTINGS } from '@/types/settings';
+import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react';
 
 // Type definitions for folder handle context
 export type FolderHandleContextType = {
@@ -26,13 +14,9 @@ export type FolderHandleContextType = {
 // Context for folder handle
 export const FolderHandleContext = createContext({
   handle: undefined as FileSystemDirectoryHandle | undefined,
-  setHandle: undefined as unknown as Dispatch<
-    SetStateAction<FileSystemDirectoryHandle | undefined>
-  >,
+  setHandle: undefined as unknown as Dispatch<SetStateAction<FileSystemDirectoryHandle | undefined>>,
   settings: DEFAULT_APPLICATION_SETTINGS,
-  setSettings: undefined as unknown as Dispatch<
-    SetStateAction<ApplicationSettingsTypes>
-  >,
+  setSettings: undefined as unknown as Dispatch<SetStateAction<ApplicationSettingsTypes>>,
   saveSettings: (_: ApplicationSettingsTypes) => {},
 });
 
@@ -44,15 +28,13 @@ export const FolderHandleContext = createContext({
  */
 export function FolderContextProvider({ children }: { children: ReactNode }) {
   const [handle, setHandle] = useState<FileSystemDirectoryHandle | undefined>();
-  const [settings, setSettings] = useState<ApplicationSettingsTypes>(
-    DEFAULT_APPLICATION_SETTINGS
-  );
+  const [settings, setSettings] = useState<ApplicationSettingsTypes>(DEFAULT_APPLICATION_SETTINGS);
   const saveSettings = (settings: ApplicationSettingsTypes) => {
-    localStorage.setItem("data_tracker_settings", JSON.stringify(settings));
+    localStorage.setItem('data_tracker_settings', JSON.stringify(settings));
   };
 
   useEffect(() => {
-    const settings = localStorage.getItem("data_tracker_settings");
+    const settings = localStorage.getItem('data_tracker_settings');
     if (settings) {
       const parsedSettings = JSON.parse(settings);
 

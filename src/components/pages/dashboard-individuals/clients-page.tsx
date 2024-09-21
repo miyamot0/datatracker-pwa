@@ -38,7 +38,9 @@ export default function ClientsPage() {
 
   useEffect(() => {
     if (!handle || !Group) {
-      navigate(createHref({ type: 'Dashboard' }));
+      navigate(createHref({ type: 'Dashboard' }), {
+        unstable_viewTransition: true,
+      });
       return;
     }
 
@@ -124,6 +126,7 @@ export default function ClientsPage() {
                       className="flex flex-row divide-x justify-between mx-0 px-0 shadow"
                     >
                       <Link
+                        unstable_viewTransition
                         className="px-3 hover:underline flex flex-row items-center"
                         to={createHref({
                           type: 'Evaluations',

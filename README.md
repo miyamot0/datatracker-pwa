@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Version-0.2.3-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple) ![Static Badge](https://img.shields.io/badge/Coverage-65.26_Percent-orange)
+![Static Badge](https://img.shields.io/badge/Version-0.2.4-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple) ![Static Badge](https://img.shields.io/badge/Coverage-65.26_Percent-orange)
 
 # DataTracker (PWA Application)
 
@@ -32,6 +32,7 @@ Features included in DataTracker include:
 - 0.2.1 - Add in session viewer, minor bugfixes
 - 0.2.2 - Filter functionality to screen out mobile hardware (not presently a priority)
 - 0.2.3 - Port over to Vite for core build (full offline)
+- 0.2.4 - Bring in wakelocks, screen/route transitions, to mirror native functionality
 
 ## Features
 
@@ -141,5 +142,5 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Version
 
-Version 0.2.3
+Version 0.2.4
 

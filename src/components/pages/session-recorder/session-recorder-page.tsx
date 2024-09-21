@@ -46,7 +46,9 @@ export function SessionRecorderPageShim() {
 
   useEffect(() => {
     if (!handle || !Group || !Individual || !Evaluation) {
-      navigate(createHref({ type: 'Dashboard' }));
+      navigate(createHref({ type: 'Dashboard' }), {
+        unstable_viewTransition: true,
+      });
       return;
     }
 
@@ -140,7 +142,9 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
 
   useEffect(() => {
     if (!Handle) {
-      navigator_(createHref({ type: 'Dashboard' }));
+      navigator_(createHref({ type: 'Dashboard' }), {
+        unstable_viewTransition: true,
+      });
       return;
     }
 
@@ -180,7 +184,9 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
           );
 
           if (confirm_save === false) {
-            navigator_(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`);
+            navigator_(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`, {
+              unstable_viewTransition: true,
+            });
             return;
           }
         }

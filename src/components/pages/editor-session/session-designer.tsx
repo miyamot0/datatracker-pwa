@@ -59,7 +59,9 @@ export function SessionDesignerShim() {
 
   useEffect(() => {
     if (!handle || !Group || !Individual || !Evaluation) {
-      navigate(createHref({ type: 'Dashboard' }));
+      navigate(createHref({ type: 'Dashboard' }), {
+        unstable_viewTransition: true,
+      });
       return;
     }
 
@@ -191,7 +193,9 @@ export default function SessionDesigner({
         await writer.write(JSON.stringify(newer_settings));
         await writer.close();
 
-        navigate(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}/run`);
+        navigate(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}/run`, {
+          unstable_viewTransition: true,
+        });
       })
       .catch((error) => {
         console.error(error);

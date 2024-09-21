@@ -31,7 +31,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to={createHref({ type: 'Home' })} className={cn('underline')}>
+              <Link unstable_viewTransition to={createHref({ type: 'Home' })} className={cn('underline')}>
                 Home
               </Link>
             </BreadcrumbLink>
@@ -43,7 +43,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link to={breadcrumb.href} className={cn('underline')}>
+                    <Link unstable_viewTransition to={breadcrumb.href} className={cn('underline')}>
                       {breadcrumb.label}
                     </Link>
                   </BreadcrumbLink>
@@ -65,7 +65,11 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
       <div className="flex flex-row gap-2 items-center">
         <AuthorizationStatus />
 
-        <Link to={createHref({ type: 'Settings' })} className="flex flex-row gap-2 items-center">
+        <Link
+          unstable_viewTransition
+          to={createHref({ type: 'Settings' })}
+          className="flex flex-row gap-2 items-center"
+        >
           <Button
             name="Settings button"
             aria-label="Settings Button"

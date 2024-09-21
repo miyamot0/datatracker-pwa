@@ -46,7 +46,9 @@ export default function EvaluationsPage() {
 
   useEffect(() => {
     if (!handle || !Group || !Individual) {
-      navigate(createHref({ type: 'Dashboard' }));
+      navigate(createHref({ type: 'Dashboard' }), {
+        unstable_viewTransition: true,
+      });
       return;
     }
 
@@ -105,6 +107,7 @@ export default function EvaluationsPage() {
               </Button>
             </ToolTipWrapper>
             <Link
+              unstable_viewTransition
               to={createHref({
                 type: 'Keysets',
                 group: Group,
@@ -140,6 +143,7 @@ export default function EvaluationsPage() {
                       className="flex flex-row divide-x justify-between mx-0 px-0 shadow"
                     >
                       <Link
+                        unstable_viewTransition
                         className="px-3 hover:underline flex flex-row items-center"
                         to={createHref({
                           type: 'Session Designer',
@@ -159,6 +163,7 @@ export default function EvaluationsPage() {
                           <DropdownMenuLabel>Data Management</DropdownMenuLabel>
                           <DropdownMenuItem>
                             <Link
+                              unstable_viewTransition
                               className="flex flex-row items-center"
                               to={createHref({
                                 type: 'Evaluation Session Viewer',
@@ -173,6 +178,7 @@ export default function EvaluationsPage() {
                           </DropdownMenuItem>
                           <DropdownMenuItem>
                             <Link
+                              unstable_viewTransition
                               className="flex flex-row items-center"
                               to={createHref({
                                 type: 'Evaluation Viewer',
@@ -187,6 +193,7 @@ export default function EvaluationsPage() {
                           </DropdownMenuItem>
                           <DropdownMenuItem>
                             <Link
+                              unstable_viewTransition
                               className="flex flex-row items-center"
                               to={createHref({
                                 type: 'Evaluation Visualizer-Rate',
@@ -201,6 +208,7 @@ export default function EvaluationsPage() {
                           </DropdownMenuItem>
                           <DropdownMenuItem>
                             <Link
+                              unstable_viewTransition
                               className="flex flex-row items-center"
                               to={createHref({
                                 type: 'Evaluation Visualizer-Proportion',
@@ -215,6 +223,7 @@ export default function EvaluationsPage() {
                           </DropdownMenuItem>
                           <DropdownMenuItem>
                             <Link
+                              unstable_viewTransition
                               className="flex flex-row items-center"
                               to={createHref({
                                 type: 'Reli Viewer',

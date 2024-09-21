@@ -76,6 +76,7 @@ export default function DocumentationEntryPage() {
         </CardContent>
         <CardFooter className="flex flex-row justify-between">
           <Link
+            unstable_viewTransition
             to={`/documentation/${prev_entry?.matter.filename.replaceAll('.mdx', '')}`}
             className={cn('flex flex-row', {
               'pointer-events-none disabled': !prev_entry,
@@ -87,6 +88,7 @@ export default function DocumentationEntryPage() {
           </Link>
 
           <Link
+            unstable_viewTransition
             to={`/documentation/${next_entry?.matter.filename.replaceAll('.mdx', '')}`}
             className={cn('flex flex-row', {
               'pointer-events-none disabled': !next_entry,

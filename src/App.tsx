@@ -51,7 +51,7 @@ function App() {
     <>
       <ThemeProvider defaultTheme="system">
         <FolderContextProvider>
-          <RouterProvider router={router} />
+          <RouterProvider future={{ v7_startTransition: true }} router={router} />
         </FolderContextProvider>
       </ThemeProvider>
     </>

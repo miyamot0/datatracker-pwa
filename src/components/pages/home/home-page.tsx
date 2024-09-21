@@ -42,7 +42,7 @@ export default function HomePage() {
       <ImageCarousel />
 
       <div className="max-w-lg flex flex-col w-full py-8 gap-4">
-        <Link to={createHref({ type: 'Documentation' })} className="flex flex-row">
+        <Link to={createHref({ type: 'Documentation' })} className="flex flex-row" unstable_viewTransition>
           <Button variant={'outline'} className="w-full shadow-xl">
             <BookTextIcon className="mr-2 h-4 w-4" />
             Documentation
@@ -90,7 +90,7 @@ export default function HomePage() {
           </DialogContent>
         </Dialog>
 
-        <Link to={createHref({ type: 'Dashboard' })} className="flex flex-row">
+        <Link to={createHref({ type: 'Dashboard' })} className="flex flex-row" unstable_viewTransition>
           <Button className="w-full shadow-xl">
             <ChartLineIcon className="mr-2 h-4 w-4" />
             Load Application

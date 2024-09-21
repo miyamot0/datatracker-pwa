@@ -99,6 +99,7 @@ export default function AuthorizedDisplay({ Handle, Groups, AddCallback }: Props
                     className="flex flex-row divide-x justify-between mx-0 px-0 shadow"
                   >
                     <Link
+                      unstable_viewTransition
                       className="px-3 hover:underline flex flex-row items-center"
                       to={createHref({ type: 'Individuals', group })}
                     >

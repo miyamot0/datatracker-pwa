@@ -29,7 +29,9 @@ export function ReliabilityViewerPageShim() {
 
   useEffect(() => {
     if (!handle || !Group || !Individual || !Evaluation) {
-      navigate(createHref({ type: 'Dashboard' }));
+      navigate(createHref({ type: 'Dashboard' }), {
+        unstable_viewTransition: true,
+      });
       return;
     }
 
@@ -59,7 +61,9 @@ export function ReliabilityViewerPageShim() {
   if (!handle) return <LoadingDisplay />;
 
   //if (!Group || !Individual || !Evaluation) {
-  //  navigate(createHref({ type: 'Dashboard' }));
+  //  navigate(createHref({ type: 'Dashboard' }), {
+  //        unstable_viewTransition: true,
+  //      });
   //  return;
   // }
 

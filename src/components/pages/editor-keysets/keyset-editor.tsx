@@ -109,7 +109,9 @@ export default function KeySetEditor() {
 
   useEffect(() => {
     if (!handle || !Group || !Individual || !KeySet) {
-      navigate(createHref({ type: 'Dashboard' }));
+      navigate(createHref({ type: 'Dashboard' }), {
+        unstable_viewTransition: true,
+      });
       return;
     }
 

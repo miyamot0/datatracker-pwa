@@ -60,7 +60,11 @@ export default function DocumentationListingPage() {
                   </div>
                 </div>
 
-                <Link to={`/documentation/${entry.filename.replaceAll('.mdx', '')}`} className="w-full md:w-fit">
+                <Link
+                  unstable_viewTransition
+                  to={`/documentation/${entry.filename.replaceAll('.mdx', '')}`}
+                  className="w-full md:w-fit"
+                >
                   <Button variant={'outline'} className="shadow w-full md:w-fit" size={'sm'}>
                     Read More
                     <ChevronRight className="w-4 h-4 ml-2" />

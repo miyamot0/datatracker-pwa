@@ -27,7 +27,9 @@ export function DashboardHistoryPageShim() {
 
   useEffect(() => {
     if (!handle) {
-      navigate(createHref({ type: 'Dashboard' }));
+      navigate(createHref({ type: 'Dashboard' }), {
+        unstable_viewTransition: true,
+      });
       return;
     }
   }, [handle, navigate]);
@@ -35,7 +37,9 @@ export function DashboardHistoryPageShim() {
   if (!handle) return <LoadingDisplay />;
 
   if (!Group || !Individual || !Evaluation) {
-    navigate(createHref({ type: 'Dashboard' }));
+    navigate(createHref({ type: 'Dashboard' }), {
+      unstable_viewTransition: true,
+    });
     return;
   }
 

@@ -37,7 +37,9 @@ export function ResultsRateVisualsPageShim() {
 
   useEffect(() => {
     if (!handle) {
-      navigate(createHref({ type: 'Dashboard' }));
+      navigate(createHref({ type: 'Dashboard' }), {
+        unstable_viewTransition: true,
+      });
       return;
     }
   }, [handle, navigate]);
@@ -45,7 +47,9 @@ export function ResultsRateVisualsPageShim() {
   if (!handle) return <LoadingDisplay />;
 
   if (!Group || !Individual || !Evaluation) {
-    navigate(createHref({ type: 'Dashboard' }));
+    navigate(createHref({ type: 'Dashboard' }), {
+      unstable_viewTransition: true,
+    });
     return;
   }
 
