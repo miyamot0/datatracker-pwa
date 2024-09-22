@@ -90,18 +90,20 @@ export default function HomePage() {
           </DialogContent>
         </Dialog>
 
-        <Link to={createHref({ type: 'Dashboard' })} className="flex flex-row" unstable_viewTransition>
-          <Button className="w-full shadow-xl">
-            <ChartLineIcon className="mr-2 h-4 w-4" />
-            Load Application
-          </Button>
-        </Link>
+        {display === 'desktop' && (
+          <Link to={createHref({ type: 'Dashboard' })} className="flex flex-row" unstable_viewTransition>
+            <Button className="w-full shadow-xl">
+              <ChartLineIcon className="mr-2 h-4 w-4" />
+              Load Application
+            </Button>
+          </Link>
+        )}
 
         {display === 'mobile' && (
           <p className="text-center text-red-500">DataTracker is Currently Unsupported on Mobile</p>
         )}
 
-        {install && (
+        {display === 'desktop' && install && (
           <Button className="w-full shadow-xl" variant={'default'} onClick={install}>
             <HardDriveDownloadIcon className="mr-2 h-4 w-4" />
             Install Application
