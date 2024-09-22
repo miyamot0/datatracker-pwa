@@ -7,30 +7,40 @@ author: "Shawn Gilroy"
 index: 0
 ---
 
-To all new users, thank you for your interest in the DataTracker data collection tool. The program is the result of various collaborations amongst single-case experimental design (SCED) researchers over the past several decades. The core aim of the program is to be *simple*, *useful*, *consistent*, and *reliable* for conducting realtime behavioral research and therapy. This documentation entry is designed to provide a brief overview of the software, the intended audience, common uses, and some of the conventions reflected in its design.
+First, thank you for your interest in the DataTracker data collection tool. 
+
+The DataTracker program is the result of various collaborations amongst single-case experimental design (SCED) researchers over the past several decades. The core aim of the program is to be *simple*, *useful*, *consistent*, and *reliable* for conducting realtime behavioral research and therapy. This documentation entry is designed to provide a brief overview of the software, the intended audience, common uses, and some of the conventions reflected in its design.
 
 ### Program Structure and Functionality
 
-The DataTracker program is, at its core, simply a **website**. Said a bit more simply, the website functions as a **Progressive Web Application** or "PWA". Although distinct from typical compiled computer programs, there are many similarities between PWAs and typical programs (e.g., those downloaded and installed from the internet or 'app' marketplaces). Specifically, DataTracker works as any website would, but can be *installed* on your computer and used as an offline program as well (e.g., 'pinned' to Dock, to Applications folder, etc.).
+The DataTracker program is, at its core, is a **website**. Specifically, the website functions as a **Progressive Web Application** or "PWA". Although distinct from typical compiled computer programs, there are many similarities between PWAs and typical programs (e.g., those downloaded and installed from the internet or 'app' marketplaces). DataTracker works as any website would; However, it can be *installed* on your computer and used as an offline program as well (e.g., 'pinned' to Dock, to Applications folder, etc.). This provide the flexibility of a website with the convenience of a traditional program.
 
 The decision to adopt a PWA approach was designed to balance some modern considerations of SCED clinicians and researchers. This approach means the program can be accessed through a web browser like any other website, but it also has additional features that allow it to be installed on your device like a traditional application (i.e., can quickly access from your device's home screen). This is also a way to ensure that the program is always up-to-date, as it will automatically update whenever you are connected to the internet.
 
-The DataTracker program is designed to be used on a **desktop or laptop computer**. Although it can be accessed on a mobile device, the interface is not optimized for smaller screens, and some features are simply not supported on mobile systems (e.g., no access to native file system). For the best experience, it is recommended to use the program on a larger screen. This is particularly relevant since it is designed to support recording a wide range of behavioral targets simultaneously, which can be difficult to manage on a small screen and without a keyboard.
+The DataTracker program is designed to be used on a **desktop or laptop computer**. Although it can be accessed on a mobile device, the interface is not optimized for smaller screens, and certain features are simply not supported on mobile systems (e.g., there is no access to a native file system). For the best experience, it is recommended to use the program on a larger laptop screen or external monitor, especially when many targets are being recorded simultaneously.
 
 ### Installation Options
 
-In general, you _should_ be able to install DataTracker on your machine by using any browser of your choosing. However, the program is most heavily testing for use with **Google Chrome**. It should function similarly across operating systems; however, Apple support for PWA's is somewhat mixed (i.e., installing through **Apple Safari** is completely disabled in some regions). It remains possible to install as a PWA through **Google Chrome** on Apple devices, but this is not as straightforward a process (i.e., it can be pinned to the Menu Bar to emulate app behavior).
+You _should_ be able to install DataTracker on your machine by using a browser of your choosing. However, the program is most heavily testing for use with **Google Chrome** and **Microsoft Edge**. Apple support for PWA's is somewhat mixed (i.e., installing through **Apple Safari** is limited in most versions of MacOS). Although native options for MacOS are more limited, it is possible to install DataTracker as a PWA through **Google Chrome** (i.e., it can be pinned to the MenuBar to emulate native app behavior).
 
-**You may use DataTracker completely without ever installing it on your device**; However, if you wish to use the program in a more native fashion or access it more quickly, you might consider installing it locally on your machine. Although there are not extra features provided by installing the program, it is often convenient and provides flexibility.
+As a general note, it is **not required** to 'install' DataTracker on your device. The program can be accessed through your browser like any other website. However, installing the program on your device can provide a more native experience and allow for quicker access to the program (e.g., added to Desktop/Menubar, wakelock during recording). The installation process is straightforward and can be done in a few clicks, so it is generally recommended by default.
 
-#### Recommended Option: Using/Installing with Google Chrome
+#### Installation for Windows Users
 
-The installation of DataTracker on **Google Chrome** is the most straightforward. When you first visit the DataTracker website, you will be presented with a button that prompts the installation of the program. Clicking this button will install DataTracker on your device, and you will be able to access it from your home screen or app drawer like any other application (Note: On MacOS, this will be a 'Chrome web app', but it can be pinned to the Menu bar).
+##### Installation on Microsoft Edge (Recommended)
 
-#### Windows Alternative: Installation on Microsoft Edge
+On a Windows machine, it is simplest to install DataTracker using **Microsoft Edge**. This is easiest for Windows users because there is no need to install any additional software (e.g., Google Chrome). You can install the program by selecting the 'Install' button on the home screen, or alternatively, you can install the program manually by selecting the 'Install' option in the browser menu.
 
-The installation process for **Microsoft Edge** is similar to that of Google Chrome. If on a Windows machine, you may find it more convenient and prefer to install DataTracker through **Microsoft Edge**. The installation process is the same as for Google Chrome, and you will be able to access the program from your home screen or app drawer.
+##### Alternative Installation on Google Chrome
 
-#### Installation on Apple Safari
+The installation of DataTracker on **Google Chrome** is also straightforward. This is largely the same process as with **Microsoft Edge**, but would require the installation of Google Chrome if you do not already have it on your machine.
 
-Installation on **Apple Safari** is only possible for those running the Ventura build of the MacOS; however, this is not universally supported and may not be available in all regions. Should your machine meet all the criteria listed by Apple, you would have to navigate to the DataTracker website and manually install the program as a PWA (i.e., File > "Add to Dock"). As a more straightforward alternative, you may install the program through **Google Chrome**.
+#### Installation for MacOS Users
+
+##### Installation on Google Chrome (Recommended)
+
+Although native options for MacOS are possible, it is more universally supported to install DataTracker using **Google Chrome**. This is the most straightforward option for MacOS users, as it is among the most widely used browsers and is well-supported for PWA installations. You can install the program by selecting the 'Install' button on the home screen, or alternatively, you can install the program manually by selecting the 'Install' option in the browser menu.
+
+##### Installation on Apple Safari
+
+Installation on **Apple Safari** is only possible for those running the Sonoma build of MacOS. Additionally, this is not universally supported and may not be available in all regions. Should your machine meet the criteria for installation per Apple's standards, you would have to navigate to the DataTracker website and manually install the program as a PWA (i.e., File > "Add to Dock"). 

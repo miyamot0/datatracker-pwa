@@ -138,6 +138,9 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    manifest: true,
+  },
   assetsInclude: ['**/*.mdx'],
   resolve: {
     alias: {
