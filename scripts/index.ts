@@ -6,7 +6,7 @@ import path from 'path';
 import { read } from 'to-vfile';
 import { matter } from 'vfile-matter';
 
-const DOCUMENTATION_FOLDER = path.join(process.cwd(), 'content');
+const DOCUMENTATION_FOLDER = path.join(process.cwd(), 'src/assets/content');
 
 /**
  * Write out current build date to string for easy reference
