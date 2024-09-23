@@ -129,8 +129,6 @@ vite-plugin-mdx (3.6.0). Copyright n/a -- MIT Licensed: [Repo](https://github.co
 vite-plugin-mdx-plus (1.1.1). Copyright Codpoe <codpoe.me@gmail.com> -- MIT Licensed: [Repo](https://github.com/Codpoe/vite-plugin-mdx-plus.git) 
  
 zod (3.23.8). Copyright Colin McDonnell <colin@colinhacks.com> -- MIT Licensed: [Repo](https://github.com/colinhacks/zod.git) 
- 
-zod-matter (0.1.1). Copyright HiDeoo <github@hideoo.dev> (https://hideoo.dev) -- MIT Licensed: [Repo](https://github.com/HiDeoo/zod-matter.git) 
 
 ## Acknowledgements
 

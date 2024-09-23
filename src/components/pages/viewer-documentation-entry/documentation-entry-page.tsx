@@ -41,7 +41,7 @@ export default function DocumentationEntryPage() {
   const FrontMatter = entries.map((entry) => entry.matter as FrontMatterUniversalType);
   const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
 
-  const entry = entries.find((entry) => entry.matter.filename.replaceAll('.mdx', '') === slug);
+  const entry = entries.find((entry) => entry.matter.filename.replaceAll('.md', '') === slug);
 
   if (!entry) throw new Error('Entry not found');
 
@@ -77,7 +77,7 @@ export default function DocumentationEntryPage() {
         <CardFooter className="flex flex-row justify-between">
           <Link
             unstable_viewTransition
-            to={`/documentation/${prev_entry?.matter.filename.replaceAll('.mdx', '')}`}
+            to={`/documentation/${prev_entry?.matter.filename.replaceAll('.md', '')}`}
             className={cn('flex flex-row', {
               'pointer-events-none disabled': !prev_entry,
             })}
@@ -89,7 +89,7 @@ export default function DocumentationEntryPage() {
 
           <Link
             unstable_viewTransition
-            to={`/documentation/${next_entry?.matter.filename.replaceAll('.mdx', '')}`}
+            to={`/documentation/${next_entry?.matter.filename.replaceAll('.md', '')}`}
             className={cn('flex flex-row', {
               'pointer-events-none disabled': !next_entry,
             })}
