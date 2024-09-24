@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Version-0.2.4-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple) ![Static Badge](https://img.shields.io/badge/Coverage-65.26_Percent-orange)
+![Static Badge](https://img.shields.io/badge/Version-0.2.5-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple) ![Static Badge](https://img.shields.io/badge/Coverage-65.26_Percent-orange)
 
 # DataTracker (PWA Application)
 
@@ -33,6 +33,7 @@ Features included in DataTracker include:
 - 0.2.2 - Filter functionality to screen out mobile hardware (not presently a priority)
 - 0.2.3 - Port over to Vite for core build (full offline)
 - 0.2.4 - Bring in wakelocks, screen/route transitions, to mirror native functionality
+- 0.2.5 - Streamline docs and build
 
 ## Features
 
@@ -69,8 +70,6 @@ Electronic data collection can be performed for both event and duration recordin
 @hookform/resolvers (3.9.0). Copyright bluebill1049 <bluebill1049@hotmail.com> -- MIT Licensed: [Repo](https://github.com/react-hook-form/resolvers.git) 
  
 @mdx-js/mdx (3.0.1). Copyright John Otander <johnotander@gmail.com> (https://johno.com) -- MIT Licensed: [Repo](https://github.com/mdx-js/mdx.git) 
- 
-@mdx-js/react (3.0.1). Copyright John Otander <johnotander@gmail.com> (https://johno.com) -- MIT Licensed: [Repo](https://github.com/mdx-js/mdx.git) 
  
 @radix-ui/react-dialog (1.1.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
@@ -124,10 +123,6 @@ tailwindcss-animate (1.0.7). Copyright Jamie Kyle <me@thejameskyle.com> -- MIT L
  
 uuid (10.0.0). Copyright n/a -- MIT Licensed: [Repo](https://github.com/uuidjs/uuid.git) 
  
-vite-plugin-mdx (3.6.0). Copyright n/a -- MIT Licensed: [Repo](https://github.com/brillout/vite-plugin-mdx.git) 
- 
-vite-plugin-mdx-plus (1.1.1). Copyright Codpoe <codpoe.me@gmail.com> -- MIT Licensed: [Repo](https://github.com/Codpoe/vite-plugin-mdx-plus.git) 
- 
 zod (3.23.8). Copyright Colin McDonnell <colin@colinhacks.com> -- MIT Licensed: [Repo](https://github.com/colinhacks/zod.git) 
 
 ## Acknowledgements
@@ -142,5 +137,5 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Version
 
-Version 0.2.4
+Version 0.2.5
 

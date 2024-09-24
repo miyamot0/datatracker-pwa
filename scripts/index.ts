@@ -4,18 +4,6 @@ import licenses from '../src/assets/licenses.json';
 import coverageSummary from '../coverage/coverage-summary.json';
 
 /**
- * Write out current build date to string for easy reference
- */
-function write_date() {
-  const build_date = new Date().toLocaleDateString('en-US');
-  const object_to_write = {
-    date: build_date,
-  };
-
-  fs.writeFileSync('./src/assets/build_date.json', JSON.stringify(object_to_write), 'utf-8');
-}
-
-/**
  * Populate the software section of the README with the licenses
  */
 function populate_software() {
@@ -61,5 +49,3 @@ readme_md = readme_md.replace('{{PERCENTAGE}}', converage_pct);
 readme_md = readme_md.replace('{{PERCENTAGE_COLOR}}', coverage_color);
 
 write_md(readme_md);
-
-write_date();

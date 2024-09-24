@@ -33,6 +33,7 @@ Features included in DataTracker include:
 - 0.2.2 - Filter functionality to screen out mobile hardware (not presently a priority)
 - 0.2.3 - Port over to Vite for core build (full offline)
 - 0.2.4 - Bring in wakelocks, screen/route transitions, to mirror native functionality
+- 0.2.5 - Streamline docs and build
 
 ## Features
 
