@@ -1,4 +1,4 @@
-const all_md_files = import.meta.glob('/src/assets/content/*.md', { as: 'raw', eager: true });
+const all_md_files = import.meta.glob('/src/assets/content/*.md', { as: 'raw', eager: true, import: 'default' });
 
 export const DocumentationObjects = Object.entries(all_md_files).map(([key, value]) => {
   const filename = key.split('/').pop();

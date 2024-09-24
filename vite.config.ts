@@ -137,6 +137,7 @@ export default defineConfig({
       },
     }),
   ],
+  assetsInclude: ['**/*.md'],
   define: {
     BUILD_DATE: JSON.stringify(new Date().toLocaleDateString('en-US')),
     BUILD_VERSION: JSON.stringify(package_json.version),
