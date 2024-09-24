@@ -67,14 +67,19 @@ export default function KeyHistoryListing({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {KeysPressed.reverse()
-            .slice(0, 5)
+          {KeysPressed.slice(-5)
+            .reverse()
             .map((key, index) => (
-              <TableRow key={index} className="text-sm">
+              <TableRow
+                key={`${key.KeyType}-${key.KeyCode}-${key.TimePressed.toUTCString()}-${index}`}
+                className="text-sm"
+              >
                 <TableHead className="h-9">{key.KeyName}</TableHead>
                 <TableHead className="h-9">{key.KeyDescription}</TableHead>
                 <TableHead className="h-9">{key.KeyScheduleRecording}</TableHead>
-                <TableHead className="h-9">{formatTimeOfDay(key.TimePressed)}</TableHead>
+                <TableHead className="h-9">
+                  {formatTimeOfDay(key.TimePressed)} ({key.TimeIntoSession.toFixed(2)}s)
+                </TableHead>
               </TableRow>
             ))}
         </TableBody>

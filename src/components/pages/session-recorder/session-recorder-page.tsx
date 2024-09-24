@@ -122,6 +122,7 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
   const [systemKeysPressed, setSystemKeysPressed] = useState<KeyManageType[]>([]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setTickCount] = useState<number>(0);
 
   const secondsElapsedTotal = useRef<number>(0);
@@ -137,8 +138,8 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
 
   const [startTime, setStartTime] = useState<Date | null>(null);
 
-  let totalTimerRef = useRef<NodeJS.Timeout>();
-  let activeTimerRef = useRef<TimerSetting>('Stopped');
+  const totalTimerRef = useRef<NodeJS.Timeout>();
+  const activeTimerRef = useRef<TimerSetting>('Stopped');
 
   useEffect(() => {
     if (!Handle) {
@@ -237,6 +238,7 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
 
               break;
           }
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
           displayConditionalNotification(
             applicationSettings,
@@ -251,13 +253,27 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
       save_output();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     () => {
       clearInterval(totalTimerRef.current);
 
       if (wakelockRef.current) wakelockRef.current.release();
       wakelockRef.current = undefined;
     };
-  }, [runningState, keysPressed, Settings, Handle, navigator_, Group, Individual, Evaluation, applicationSettings]);
+  }, [
+    runningState,
+    keysPressed,
+    Settings,
+    Handle,
+    navigator_,
+    Group,
+    Individual,
+    Evaluation,
+    applicationSettings,
+    startTime,
+    systemKeysPressed,
+    Keyset,
+  ]);
 
   function registerListener(timer: 'Primary' | 'Secondary' | 'Tertiary') {
     /**
