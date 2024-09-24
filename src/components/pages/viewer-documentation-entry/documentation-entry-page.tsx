@@ -5,51 +5,24 @@ import { BuildDocumentationBreadcrumb } from '@/components/ui/breadcrumb-entries
 import { Badge } from '@/components/ui/badge';
 import { KeywordColors } from '@/types/colors';
 import { cn } from '@/lib/utils';
-
-import documentation from '@/assets/documentation.json';
 import { generateKeywordColors } from '@/lib/colors';
 import { Link, useParams } from 'react-router-dom';
-
-import { useEffect, useState } from 'react';
-import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
-
-import type { FC, ReactNode } from 'react';
-import type { MDXProps } from 'mdx/types';
-import type { EvaluateOptions } from '@mdx-js/mdx';
-import { evaluate } from '@mdx-js/mdx';
 import { Button } from '@/components/ui/button';
-
-type ReactMDXContent = (props: MDXProps) => ReactNode;
-type Runtime = Pick<EvaluateOptions, 'jsx' | 'jsxs' | 'Fragment'>;
-
-const runtime = { jsx, jsxs, Fragment } as Runtime;
-
-const Preview: FC<{ source?: string }> = ({ source = '' }) => {
-  const [MdxContent, setMdxContent] = useState<ReactMDXContent>(() => () => null);
-
-  useEffect(() => {
-    evaluate(source, runtime).then((r) => setMdxContent(() => r.default));
-  }, [source]);
-
-  return <MdxContent />;
-};
+import { MdViewer } from '@/helpers/md-viewer';
+import { DocumentationObjects } from '@/lib/docs';
 
 export default function DocumentationEntryPage() {
   const { slug } = useParams();
 
-  const entries = documentation.information.sort((a, b) => a.matter.index - b.matter.index);
-
-  console.log(entries);
-
-  const entry = entries.find((entry) => entry.matter.filename.replaceAll('.md', '') === slug);
+  const entry = DocumentationObjects.find((entry) => entry.matter.filename.replaceAll('.md', '') === slug);
 
   if (!entry || !entry.matter) throw new Error('Entry not found');
 
-  const FrontMatter = entries.map((entry) => entry.matter as FrontMatterUniversalType);
+  const FrontMatter = DocumentationObjects.map((entry) => entry.matter as FrontMatterUniversalType);
   const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
 
-  const prev_entry = entries.find((e) => e.matter.index === entry.matter.index - 1);
-  const next_entry = entries.find((e) => e.matter.index === entry.matter.index + 1);
+  const prev_entry = DocumentationObjects.find((e) => e.matter.index === entry.matter.index - 1);
+  const next_entry = DocumentationObjects.find((e) => e.matter.index === entry.matter.index + 1);
 
   return (
     <PageWrapper breadcrumbs={[BuildDocumentationBreadcrumb()]} label={entry.matter.title}>
@@ -62,7 +35,7 @@ export default function DocumentationEntryPage() {
             </CardDescription>
           </div>
           <div className="flex flex-row gap-1 items-start">
-            {entry.matter.keywords.split(',').map((kw, index) => {
+            {entry.matter.keywords.split(',').map((kw: string, index: number) => {
               const keyword_obj = KeywordArray.find((obj) => obj.Keyword === kw.trim());
               const color_str = keyword_obj ? keyword_obj.Color : 'bg-gray-500';
 
@@ -75,7 +48,7 @@ export default function DocumentationEntryPage() {
           </div>
         </CardHeader>
         <CardContent className="prose dark:prose-invert !max-w-none">
-          <Preview source={entry.value} />
+          <MdViewer source={entry.value} />
         </CardContent>
         <CardFooter className="flex flex-row justify-between">
           <Link

@@ -14,7 +14,6 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         sourcemap: false,
       },
-      //includeAssets: ['**/*', 'public/**.md'],
       manifest: {
         theme_color: '#F5F5F5',
         background_color: '#F5F5F5',

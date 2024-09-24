@@ -2,11 +2,6 @@ import * as fs from 'fs';
 import packageJson from '../package.json';
 import licenses from '../src/assets/licenses.json';
 import coverageSummary from '../coverage/coverage-summary.json';
-import path from 'path';
-import { read } from 'to-vfile';
-import { matter } from 'vfile-matter';
-
-const DOCUMENTATION_FOLDER = path.join(process.cwd(), 'src/assets/content');
 
 /**
  * Write out current build date to string for easy reference
@@ -52,35 +47,6 @@ function write_md(content: string) {
   fs.writeFileSync('README.md', content, 'utf-8');
 }
 
-async function outputFrontMatterData() {
-  const front_matter_data = {
-    information: [] as unknown[],
-  };
-
-  const files = fs.readdirSync(DOCUMENTATION_FOLDER);
-
-  for (const file of files) {
-    const filePath = path.join(DOCUMENTATION_FOLDER, file);
-    const fileContent = await read(filePath, 'utf-8');
-    matter(fileContent);
-
-    const fileContentString = fileContent.value.toString().split('---');
-
-    // eslint-disable-next-line prefer-const, @typescript-eslint/no-explicit-any
-    let novel_matter: any = fileContent.data.matter;
-    novel_matter.filename = file;
-
-    const full_out = {
-      value: fileContentString[2],
-      matter: novel_matter,
-    };
-
-    front_matter_data.information.push(full_out);
-  }
-
-  fs.writeFileSync('./src/assets/documentation.json', JSON.stringify(front_matter_data), 'utf-8');
-}
-
 const converage_pct = `${coverageSummary.total.lines.pct}_Percent`;
 const version_text = `Version ${packageJson.version}\r\n`;
 const software_pkg_text = populate_software().join('\r\n \r\n');
@@ -97,5 +63,3 @@ readme_md = readme_md.replace('{{PERCENTAGE_COLOR}}', coverage_color);
 write_md(readme_md);
 
 write_date();
-
-await outputFrontMatterData();

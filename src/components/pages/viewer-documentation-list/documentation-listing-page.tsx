@@ -8,14 +8,12 @@ import { cn } from '@/lib/utils';
 import { KeywordColors } from '@/types/colors';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-import documentation from '@/assets/documentation.json';
+import { DocumentationObjects } from '@/lib/docs';
 
 export default function DocumentationListingPage() {
-  const entries = documentation.information;
-  const FrontMatter = entries
-    .sort((a, b) => a.matter.index - b.matter.index)
-    .map((entry) => entry.matter as FrontMatterUniversalType);
+  const FrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(
+    (entry) => entry.matter as FrontMatterUniversalType
+  );
 
   const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
 
