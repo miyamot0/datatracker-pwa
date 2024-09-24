@@ -1,9 +1,8 @@
 ---
 title: Creating and Working with Group Folders
-filename: create_groups.mdx
 date: 09/01/2024
-keywords: "Data Organization, Study Planning/Management"
-author: "Shawn Gilroy"
+keywords: 'Data Organization, Study Planning/Management'
+author: 'Shawn Gilroy'
 index: 2
 ---
 

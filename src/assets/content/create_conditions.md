@@ -1,9 +1,8 @@
 ---
 title: Creating and Working with Condition Folders in Evaluations
-filename: create_conditions.mdx
 date: 09/03/2024
-keywords: "Data Management, Assessment, Intervention Evaluation"
-author: "Shawn Gilroy"
+keywords: 'Data Management, Assessment, Intervention Evaluation'
+author: 'Shawn Gilroy'
 index: 5
 ---
 

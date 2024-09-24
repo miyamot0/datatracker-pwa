@@ -1,9 +1,8 @@
 ---
 title: Reviewing and Exporting Saved Data
-filename: view_behavior_data.mdx
 date: 09/31/2024
-keywords: "Data Inspection, Data Export"
-author: "Shawn Gilroy"
+keywords: 'Data Inspection, Data Export'
+author: 'Shawn Gilroy'
 index: 9
 ---
 

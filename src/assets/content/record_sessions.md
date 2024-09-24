@@ -1,9 +1,8 @@
 ---
 title: Recording Behavior using Session Recorder Page
-filename: record_sessions.mdx
 date: 09/31/2024
-keywords: "Data Collection, Session Recording"
-author: "Shawn Gilroy"
+keywords: 'Data Collection, Session Recording'
+author: 'Shawn Gilroy'
 index: 8
 ---
 

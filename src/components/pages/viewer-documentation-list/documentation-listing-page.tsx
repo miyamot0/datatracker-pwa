@@ -62,7 +62,7 @@ export default function DocumentationListingPage() {
 
                 <Link
                   unstable_viewTransition
-                  to={`/documentation/${entry.filename.replaceAll('.mdx', '')}`}
+                  to={`/documentation/${entry.filename.replaceAll('.md', '')}`}
                   className="w-full md:w-fit"
                 >
                   <Button variant={'outline'} className="shadow w-full md:w-fit" size={'sm'}>

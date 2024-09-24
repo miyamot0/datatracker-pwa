@@ -1,19 +1,18 @@
 ---
 title: Program Use, Installation Options, and General Guidance
-filename: setup.mdx
 date: 08/31/2024
-keywords: "Program Use, Installation"
-author: "Shawn Gilroy"
+keywords: 'Program Use, Installation'
+author: 'Shawn Gilroy'
 index: 0
 ---
 
-First, thank you for your interest in the DataTracker data collection tool. 
+First, thank you for your interest in the DataTracker data collection tool.
 
-The DataTracker program is the result of various collaborations amongst single-case experimental design (SCED) researchers over the past several decades. The core aim of the program is to be *simple*, *useful*, *consistent*, and *reliable* for conducting realtime behavioral research and therapy. This documentation entry is designed to provide a brief overview of the software, the intended audience, common uses, and some of the conventions reflected in its design.
+The DataTracker program is the result of various collaborations amongst single-case experimental design (SCED) researchers over the past several decades. The core aim of the program is to be _simple_, _useful_, _consistent_, and _reliable_ for conducting realtime behavioral research and therapy. This documentation entry is designed to provide a brief overview of the software, the intended audience, common uses, and some of the conventions reflected in its design.
 
 ### Program Structure and Functionality
 
-The DataTracker program is, at its core, is a **website**. Specifically, the website functions as a **Progressive Web Application** or "PWA". Although distinct from typical compiled computer programs, there are many similarities between PWAs and typical programs (e.g., those downloaded and installed from the internet or 'app' marketplaces). DataTracker works as any website would; However, it can be *installed* on your computer and used as an offline program as well (e.g., 'pinned' to Dock, to Applications folder, etc.). This provide the flexibility of a website with the convenience of a traditional program.
+The DataTracker program is, at its core, is a **website**. Specifically, the website functions as a **Progressive Web Application** or "PWA". Although distinct from typical compiled computer programs, there are many similarities between PWAs and typical programs (e.g., those downloaded and installed from the internet or 'app' marketplaces). DataTracker works as any website would; However, it can be _installed_ on your computer and used as an offline program as well (e.g., 'pinned' to Dock, to Applications folder, etc.). This provide the flexibility of a website with the convenience of a traditional program.
 
 The decision to adopt a PWA approach was designed to balance some modern considerations of SCED clinicians and researchers. This approach means the program can be accessed through a web browser like any other website, but it also has additional features that allow it to be installed on your device like a traditional application (i.e., can quickly access from your device's home screen). This is also a way to ensure that the program is always up-to-date, as it will automatically update whenever you are connected to the internet.
 
@@ -43,4 +42,4 @@ Although native options for MacOS are possible, it is more universally supported
 
 ##### Installation on Apple Safari
 
-Installation on **Apple Safari** is only possible for those running the Sonoma build of MacOS. Additionally, this is not universally supported and may not be available in all regions. Should your machine meet the criteria for installation per Apple's standards, you would have to navigate to the DataTracker website and manually install the program as a PWA (i.e., File > "Add to Dock"). 
+Installation on **Apple Safari** is only possible for those running the Sonoma build of MacOS. Additionally, this is not universally supported and may not be available in all regions. Should your machine meet the criteria for installation per Apple's standards, you would have to navigate to the DataTracker website and manually install the program as a PWA (i.e., File > "Add to Dock").

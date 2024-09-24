@@ -1,9 +1,8 @@
 ---
 title: Customizing Session Parameters using Session Designer Page
-filename: design_sessions.mdx
 date: 09/31/2024
-keywords: "Session Designer, Session Conditions, Timers"
-author: "Shawn Gilroy"
+keywords: 'Session Designer, Session Conditions, Timers'
+author: 'Shawn Gilroy'
 index: 7
 ---
 

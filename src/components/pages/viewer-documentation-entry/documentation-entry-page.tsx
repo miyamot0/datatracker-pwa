@@ -38,12 +38,15 @@ export default function DocumentationEntryPage() {
   const { slug } = useParams();
 
   const entries = documentation.information.sort((a, b) => a.matter.index - b.matter.index);
-  const FrontMatter = entries.map((entry) => entry.matter as FrontMatterUniversalType);
-  const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
+
+  console.log(entries);
 
   const entry = entries.find((entry) => entry.matter.filename.replaceAll('.md', '') === slug);
 
-  if (!entry) throw new Error('Entry not found');
+  if (!entry || !entry.matter) throw new Error('Entry not found');
+
+  const FrontMatter = entries.map((entry) => entry.matter as FrontMatterUniversalType);
+  const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
 
   const prev_entry = entries.find((e) => e.matter.index === entry.matter.index - 1);
   const next_entry = entries.find((e) => e.matter.index === entry.matter.index + 1);

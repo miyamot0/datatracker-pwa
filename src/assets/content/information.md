@@ -1,9 +1,8 @@
 ---
 title: Organizational Structure and Design
-filename: information.mdx
 date: 08/31/2024
-keywords: "Program Introduction, Data Organization"
-author: "Shawn Gilroy"
+keywords: 'Program Introduction, Data Organization'
+author: 'Shawn Gilroy'
 index: 1
 ---
 

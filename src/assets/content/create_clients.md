@@ -1,9 +1,8 @@
 ---
 title: Creating and Working with Individual Client Folders
-filename: create_clients.mdx
 date: 09/02/2024
-keywords: "Data Organization, Client Case Management"
-author: "Shawn Gilroy"
+keywords: 'Data Organization, Client Case Management'
+author: 'Shawn Gilroy'
 index: 3
 ---
 

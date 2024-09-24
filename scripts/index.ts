@@ -66,9 +66,13 @@ async function outputFrontMatterData() {
 
     const fileContentString = fileContent.value.toString().split('---');
 
+    // eslint-disable-next-line prefer-const, @typescript-eslint/no-explicit-any
+    let novel_matter: any = fileContent.data.matter;
+    novel_matter.filename = file;
+
     const full_out = {
       value: fileContentString[2],
-      matter: fileContent.data.matter,
+      matter: novel_matter,
     };
 
     front_matter_data.information.push(full_out);
@@ -81,7 +85,7 @@ const converage_pct = `${coverageSummary.total.lines.pct}_Percent`;
 const version_text = `Version ${packageJson.version}\r\n`;
 const software_pkg_text = populate_software().join('\r\n \r\n');
 
-let coverage_color = coverageSummary.total.statements.pct < 80 ? 'orange' : 'green';
+const coverage_color = coverageSummary.total.statements.pct < 80 ? 'orange' : 'green';
 
 let readme_md = read_md();
 readme_md = readme_md.replace('{{VERSION}}', version_text);

@@ -1,9 +1,8 @@
 ---
 title: Reviewing Rater Reliability for Specific Evaluation Data
-filename: calculate_reliability.mdx
 date: 09/31/2024
-keywords: "Rater Reliability Inspection, Data Export"
-author: "Shawn Gilroy"
+keywords: 'Rater Reliability Inspection, Data Export'
+author: 'Shawn Gilroy'
 index: 10
 ---
 

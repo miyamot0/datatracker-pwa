@@ -1,9 +1,8 @@
 ---
 title: Creating and Managing Key/Behavior Mappings ("Keyboards")
-filename: create_keyboards.mdx
 date: 09/03/2024
-keywords: "Key/Behavior Mappings, Frequency Counting, Duration Tracking"
-author: "Shawn Gilroy"
+keywords: 'Key/Behavior Mappings, Frequency Counting, Duration Tracking'
+author: 'Shawn Gilroy'
 index: 6
 ---
 
