@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
+export const LIGHT = '#F2F2F2';
+export const DARK = '#333333';
+
 type Theme = 'dark' | 'light' | 'system';
 
 type ThemeProviderProps = {
@@ -41,6 +44,8 @@ export function ThemeProvider({
     }
 
     root.classList.add(theme);
+
+    document?.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? DARK : LIGHT);
   }, [theme]);
 
   const value = {
@@ -48,6 +53,8 @@ export function ThemeProvider({
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme);
       setTheme(theme);
+
+      document?.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? DARK : LIGHT);
     },
   };
 
