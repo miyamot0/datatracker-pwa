@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Version-{{VERSION_NUMBER}}-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple) ![Static Badge](https://img.shields.io/badge/Coverage-{{PERCENTAGE}}-{{PERCENTAGE_COLOR}})
+![Static Badge](https://img.shields.io/badge/Version-{{VERSION_NUMBER}}-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 # DataTracker (PWA Application)
 
@@ -8,15 +8,12 @@ The goal of DataTracker is provide an open source tool for support various aspec
 
 Features included in DataTracker include:
 
-- Cross-platform support for Windows, Mac, and Linux (only Ubuntu tested)
+- Cross-platform support for Windows, MacOS, and Linux (installable to Desktop via browser)
 - Customizable methods for designing measurement systems
 - Real-time recording of behavior with multiple observers
 - Tools for calculation of reliability indices
-- Optionally automate reliability measures and reports as new data is added
-- Automated update delivery, for keeping up to date with new features and bug fixes
-- Options for saving behavioral data in multiple locations and formats (JSON, xlsx, etc.)
-- Saving data in a range of common formats
-- Calculation of IOA/Reliability in multiple formats
+- Automated updates and delivery
+- Export behavioral data in multiple formats (JSON, xlsx, etc.)
 
 ## Changelog
 

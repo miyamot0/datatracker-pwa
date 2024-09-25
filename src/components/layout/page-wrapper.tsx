@@ -39,7 +39,7 @@ export default function PageWrapper({ children, className, breadcrumbs, label }:
           </Link>{' '}
           @ Louisiana State University
         </div>
-        <div className="font-semibold">{`Build Version ${BUILD_VERSION} (${BUILD_DATE})`}</div>
+        <div className="font-semibold">{`Build Version ${BUILD_VERSION}-${BUILD_DATE.replaceAll('/', '_')}`}</div>
         <div className="flex flex-row items-center justify-center gap-2">
           <Link aria-label="Link to Twitter/X page" to={'https://x.com/gilroy_shawn'} target="_blank">
             <Button

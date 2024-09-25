@@ -35,17 +35,13 @@ function write_md(content: string) {
   fs.writeFileSync('README.md', content, 'utf-8');
 }
 
-const converage_pct = `${coverageSummary.total.lines.pct}_Percent`;
 const version_text = `Version ${packageJson.version}\r\n`;
 const software_pkg_text = populate_software().join('\r\n \r\n');
 
-const coverage_color = coverageSummary.total.statements.pct < 80 ? 'orange' : 'green';
-
 let readme_md = read_md();
-readme_md = readme_md.replace('{{VERSION}}', version_text);
-readme_md = readme_md.replace('{{VERSION_NUMBER}}', packageJson.version);
-readme_md = readme_md.replace('{{LICENSES}}', software_pkg_text);
-readme_md = readme_md.replace('{{PERCENTAGE}}', converage_pct);
-readme_md = readme_md.replace('{{PERCENTAGE_COLOR}}', coverage_color);
+readme_md = readme_md
+  .replace('{{VERSION}}', version_text)
+  .replace('{{VERSION_NUMBER}}', packageJson.version)
+  .replace('{{LICENSES}}', software_pkg_text);
 
 write_md(readme_md);
