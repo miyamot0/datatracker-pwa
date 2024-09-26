@@ -53,10 +53,6 @@ export function SessionDesignerShim() {
 
   const { Group, Individual, Evaluation } = useParams();
 
-  //const group = searchParams?.get('group');
-  //const individual = searchParams?.get('individual');
-  //const evaluation = searchParams?.get('evaluation');
-
   useEffect(() => {
     if (!handle || !Group || !Individual || !Evaluation) {
       navigate(createHref({ type: 'Dashboard' }), {
@@ -115,7 +111,7 @@ export default function SessionDesigner({
       SessionTherapistID: '',
       SessionKeySet: '',
       SessionDurationS: 600,
-      SessionTerminationOption: 'End on Primary Timer',
+      SessionTerminationOption: 'End on Timer #1',
       SessionNumber: 1,
       SessionCondition: '',
       DataCollectorID: '',
@@ -423,7 +419,7 @@ export default function SessionDesigner({
                     <FormItem>
                       <FormLabel>Session Number</FormLabel>
                       <FormControl>
-                        <Input placeholder="600" type="number" {...field} />
+                        <Input placeholder="1" step={1} type="number" {...field} />
                       </FormControl>
                       <FormDescription>Assign the session number for the client (Default = 1)</FormDescription>
                       <FormMessage />

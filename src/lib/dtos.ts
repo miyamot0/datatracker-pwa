@@ -62,7 +62,7 @@ export const toSavedSettings = (data: SessionDesignerSchemaType) => {
     Role: data.DataCollectorRole,
     DurationS: data.SessionDurationS,
     TimerOption: data.SessionTerminationOption,
-    Session: data.SessionNumber,
+    Session: Math.floor(data.SessionNumber),
     KeySet: data.SessionKeySet,
     Condition: data.SessionCondition,
   } satisfies SavedSettings;
