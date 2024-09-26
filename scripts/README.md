@@ -31,6 +31,7 @@ Features included in DataTracker include:
 - 0.2.3 - Port over to Vite for core build (full offline)
 - 0.2.4 - Bring in wakelocks, screen/route transitions, to mirror native functionality
 - 0.2.5 - Streamline docs and build
+- 0.2.6 - Support for img in docs, add in fixes for session editor
 
 ## Features
 
