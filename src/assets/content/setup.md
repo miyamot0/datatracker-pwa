@@ -24,15 +24,27 @@ You _should_ be able to install DataTracker on your machine by using a browser o
 
 As a general note, it is **not required** to 'install' DataTracker on your device. The program can be accessed through your browser like any other website. However, installing the program on your device can provide a more native experience and allow for quicker access to the program (e.g., added to Desktop/Menubar, wakelock during recording). The installation process is straightforward and can be done in a few clicks, so it is generally recommended by default.
 
+Specific browsers provide numerous pathways to install DataTracker; however, the simplest and most direct method would be to use the button that displays on the homepage whenever it is deemed possible to install the program (i.e., not on mobile).
+
+<div align="center" width="100%">
+    <img src="/docs/install_button.png" alt="Image of install button"/>
+</div>
+
+Once installed, the program is a 'web app' that can be used similar to a natively installed program. Shown below is the DataTracker program pinned to the Task/Menu bar in Microsoft Windows.
+
+<div align="center" width="100%">
+    <img src="/docs/pin_taskbar.png" alt="Image of program pinned to task bar"/>
+</div>
+
 #### Installation for Windows Users
 
 ##### Installation on Microsoft Edge (Recommended)
 
-On a Windows machine, it is simplest to install DataTracker using **Microsoft Edge**. This is easiest for Windows users because there is no need to install any additional software (e.g., Google Chrome). You can install the program by selecting the 'Install' button on the home screen, or alternatively, you can install the program manually by selecting the 'Install' option in the browser menu.
+On a Windows machine, it is simplest to install DataTracker using **Microsoft Edge**. This is easiest for Windows users because there is no need to install any additional software (e.g., **Google Chrome**). You can install the program by selecting the 'Install' button on the home screen, or alternatively, you can install the program manually by selecting the 'Install' option in the browser menu.
 
 ##### Alternative Installation on Google Chrome
 
-The installation of DataTracker on **Google Chrome** is also straightforward. This is largely the same process as with **Microsoft Edge**, but would require the installation of Google Chrome if you do not already have it on your machine.
+The installation of DataTracker on **Google Chrome** is also straightforward. This is largely the same process as with **Microsoft Edge**, but would require the installation of **Google Chrome** if you do not already have it on your machine.
 
 #### Installation for MacOS Users
 
