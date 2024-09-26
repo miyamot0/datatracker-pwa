@@ -1,5 +1,3 @@
-'use client';
-
 import PageWrapper from '@/components/layout/page-wrapper';
 import { BuildGroupBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { Button } from '@/components/ui/button';

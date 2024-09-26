@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Version-0.2.5-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple) ![Static Badge](https://img.shields.io/badge/Coverage-65.26_Percent-orange)
+![Static Badge](https://img.shields.io/badge/Version-0.2.6-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 # DataTracker (PWA Application)
 
@@ -8,15 +8,12 @@ The goal of DataTracker is provide an open source tool for support various aspec
 
 Features included in DataTracker include:
 
-- Cross-platform support for Windows, Mac, and Linux (only Ubuntu tested)
+- Cross-platform support for Windows, MacOS, and Linux (installable to Desktop via browser)
 - Customizable methods for designing measurement systems
 - Real-time recording of behavior with multiple observers
 - Tools for calculation of reliability indices
-- Optionally automate reliability measures and reports as new data is added
-- Automated update delivery, for keeping up to date with new features and bug fixes
-- Options for saving behavioral data in multiple locations and formats (JSON, xlsx, etc.)
-- Saving data in a range of common formats
-- Calculation of IOA/Reliability in multiple formats
+- Automated updates and delivery
+- Export behavioral data in multiple formats (JSON, xlsx, etc.)
 
 ## Changelog
 
@@ -34,6 +31,7 @@ Features included in DataTracker include:
 - 0.2.3 - Port over to Vite for core build (full offline)
 - 0.2.4 - Bring in wakelocks, screen/route transitions, to mirror native functionality
 - 0.2.5 - Streamline docs and build
+- 0.2.6 - Support for img in docs, add in fixes for session editor
 
 ## Features
 
@@ -137,5 +135,5 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Version
 
-Version 0.2.5
+Version 0.2.6
 

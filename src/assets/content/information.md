@@ -10,7 +10,18 @@ The DataTracker program is designed to provide considerable flexibility in how d
 
 ### Approving DataTracker access
 
-DataTracker is a website at its core--it does not have access to your hard drive as an installable program would. For this reason, you are prompted to approve the program access to **a specific** folder on your hard drive whenever you use it. This is happen once **every time** you use the program for security purposes. As a general practice (Note: which can be disabled), you program will prompt you to use a Folder (wherever it is located) named DataTracker (e.g., "DataTracker" folder on your Desktop). This is largely as a prompt for users not to accidentally load a "Group" folder as if it were a "DataTracker" folder. This can be disabled, but for good practice, it is kept as a default setting.
+DataTracker is a website at its core--it does not have access to your hard drive as an installable program would. For this reason, you are prompted to approve the program access to **a specific** folder on your hard drive whenever you use it. This is happen once **every time** you use the program for security purposes. The interface will provide cues to indicate to the user if relevant access has or has not been authorized.
+
+<div align="center" width="100%">
+    <img src="/docs/access_not_authorized.png" alt="Image of access not being authorized"/>
+    <img src="/docs/access_authorized.png" alt="Image of access being authorized"/>
+</div>
+
+As a general practice (Note: which can be disabled), you program will prompt you to use a Folder (wherever it is located) named DataTracker (e.g., "DataTracker" folder on your Desktop). This is largely as a prompt for users not to accidentally load a "Group" folder as if it were a "DataTracker" folder. This can be disabled, but for good practice, it is kept as a default setting. Using **Google Chrome** in Windows, this appears as the following:
+
+<div align="center" width="100%">
+    <img src="/docs/approve_folder.png" alt="Image of relevant 'DataTracker' folder being selected"/>
+</div>
 
 ### Some General Rules for Working with DataTracker Data
 
