@@ -34,7 +34,7 @@ export default function DocumentationEntryPage() {
               Written {entry.matter.date} by {entry.matter.author}
             </CardDescription>
           </div>
-          <div className="flex flex-row gap-1 items-start">
+          <div className="flex flex-row gap-2 items-start">
             {entry.matter.keywords.split(',').map((kw: string, index: number) => {
               const keyword_obj = KeywordArray.find((obj) => obj.Keyword === kw.trim());
               const color_str = keyword_obj ? keyword_obj.Color : 'bg-gray-500';
