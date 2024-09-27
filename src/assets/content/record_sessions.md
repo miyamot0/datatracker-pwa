@@ -8,6 +8,12 @@ index: 8
 
 The **Session Recorder** page is the main interface for actively collecting data while session is underway. This page integrates the parameters set in the **Session Designer**, including the **Keyboard** (i.e., behavior/key mappings). Once the session begins, the data collector uses the pre-defined keys to log behaviors and manage timers in real-time. The interface is designed for efficiency and accuracy, ensuring that all relevant data is captured during the observation period.
 
+An example of a hypothetical session ready to begin is displayed below:
+
+<div align="center" width="100%">
+    <img src="/docs/session_recorder.png" alt="Image of DataTracker session recorder page"/>
+</div>
+
 ### Beginning and Ending the Session
 
 The session will begin when the data collector presses the 'Enter' key, which activates all the parameters configured in the **Session Designer**. The data collector can then start recording behaviors and managing timers using the designated keys. The session will continue until the user presses the 'Escape' key or until the termination criteria set in the **Session Designer** are met. Pressing 'Escape' will immediately stop all timers and end the session, ensuring that no further data is recorded beyond this point, and query whether the data collector would like to keep the data or not.
