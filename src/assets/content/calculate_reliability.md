@@ -1,6 +1,6 @@
 ---
 title: Reviewing Rater Reliability for Specific Evaluation Data
-date: 09/31/2024
+date: 09/27/2024
 keywords: 'Rater Reliability Inspection, Data Export'
 author: 'Shawn Gilroy'
 index: 10

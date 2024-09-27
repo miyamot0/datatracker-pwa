@@ -1,6 +1,6 @@
 ---
 title: Recording Behavior using Session Recorder Page
-date: 09/31/2024
+date: 09/26/2024
 keywords: 'Data Collection, Session Recording'
 author: 'Shawn Gilroy'
 index: 8

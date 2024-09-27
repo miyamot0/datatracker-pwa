@@ -1,6 +1,6 @@
 ---
 title: Customizing Session Parameters using Session Designer Page
-date: 09/31/2024
+date: 09/26/2024
 keywords: 'Session Designer, Session Conditions, Timers'
 author: 'Shawn Gilroy'
 index: 7
