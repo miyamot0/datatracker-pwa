@@ -20,11 +20,11 @@ export default function PageWrapper({ children, className, breadcrumbs, label }:
 
       {children}
 
-      <footer className="text-center text-sm text-gray-500 my-8 flex flex-col gap-4 select-none font-semibold">
+      <footer className="text-center text-sm text-gray-500 my-8 flex flex-col gap-4 select-none">
         <div>
           <Link
             to={`https://github.com/miyamot0/datatracker-pwa`}
-            className="text-blue-600 hover:text-blue-500 underline"
+            className="underline text-muted-foreground transition-colors hover:text-foreground"
             target="_blank"
           >
             DataTracker (PWA)
@@ -32,14 +32,14 @@ export default function PageWrapper({ children, className, breadcrumbs, label }:
           is FOSS developed by{' '}
           <Link
             to={'https://www.smallnstats.com'}
-            className="text-blue-600 hover:text-blue-500 underline"
+            className="underline text-muted-foreground transition-colors hover:text-foreground"
             target="_blank"
           >
             Shawn Gilroy
           </Link>{' '}
           @ Louisiana State University
         </div>
-        <div className="font-semibold">{`Build Version ${BUILD_VERSION}-${BUILD_DATE.replaceAll('/', '_')}`}</div>
+        <div className="">{`Build Version ${BUILD_VERSION} (${BUILD_DATE})`}</div>
         <div className="flex flex-row items-center justify-center gap-2">
           <Link aria-label="Link to Twitter/X page" to={'https://x.com/gilroy_shawn'} target="_blank">
             <Button
