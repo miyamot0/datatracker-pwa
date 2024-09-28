@@ -18,14 +18,6 @@ import { ResultsRateVisualsPageShim } from './components/pages/viewer-visuals/re
 import { ResultsProportionVisualsPageShim } from './components/pages/viewer-visuals/results-proportion-visuals-page';
 import { ReliabilityViewerPageShim } from './components/pages/viewer-agreement/reli-viewer-page';
 import { SessionRecorderPageShim } from './components/pages/session-recorder/session-recorder-page';
-import TagManager from 'react-gtm-module';
-import { useEffect } from 'react';
-
-const tagManagerArgs = {
-  gtmId: 'GTM-MZTK96KZ',
-};
-
-TagManager.initialize(tagManagerArgs);
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -55,17 +47,6 @@ const router = createBrowserRouter(
 );
 
 function App() {
-  const location = useLocation();
-
-  useEffect(() => {
-    const dataLayer = {
-      event: 'pageview',
-      pagePath: location.pathname + location.search,
-    };
-
-    TagManager.dataLayer({ dataLayer });
-  }, [location]);
-
   return (
     <>
       <ThemeProvider defaultTheme="system">
