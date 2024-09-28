@@ -112,11 +112,9 @@ react-use-pwa-install (1.0.1). Copyright Filip Chalupa chalupa.filip@gmail.com h
  
 recharts (2.12.7). Copyright recharts group -- MIT Licensed: [Repo](https://github.com/recharts/recharts.git) 
  
-rehype-pretty-code (0.14.0). Copyright https://github.com/atomiks -- MIT Licensed: [Repo](https://github.com/rehype-pretty/rehype-pretty-code.git) 
+rehype-highlight (7.0.0). Copyright Titus Wormer <tituswormer@gmail.com> (https://wooorm.com) -- MIT Licensed: [Repo](https://github.com/rehypejs/rehype-highlight.git) 
  
 scheduler (0.23.2). Copyright n/a -- MIT Licensed: [Repo](https://github.com/facebook/react.git) 
- 
-shiki (1.20.0). Copyright Pine Wu <octref@gmail.com>; Anthony Fu <anthonyfu117@hotmail.com> -- MIT Licensed: [Repo](https://github.com/shikijs/shiki.git) 
  
 sonner (1.5.0). Copyright Emil Kowalski <e@emilkowal.ski> -- MIT Licensed: [Repo](https://github.com/emilkowalski/sonner.git) 
  

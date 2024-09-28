@@ -1,5 +1,5 @@
 ---
-title: TODO Data File Fields and Types (Advanced)
+title: Data File Fields and Types (Advanced)
 date: 09/27/2024
 keywords: 'Research, Data Analysis/Synthesis'
 author: 'Shawn Gilroy'
@@ -14,30 +14,41 @@ For _all_ output data files, there is a common format that encompasses all infor
 
 The structure of individual session data files is provided below:
 
-```ts
+```js
 {
   /* Session Designer Settings */
   SessionSettings: SavedSettings;
+
   /* Particulars of the --current-- keyset for session */
   Keyset: KeySet;
+
   /* Keys recorded specific to system events (e.g., schedules)  */
   SystemKeyPresses: KeyManageType[];
+
   /* Keys recorded specific to frequency events */
   FrequencyKeyPresses: KeyManageType[];
+
   /* Keys recorded specific to duration events */
   DurationKeyPresses: KeyManageType[];
+
   /* Timestamp for when session started */
   SessionStart: string;
+
   /* Timestamp for when session concluded */
   SessionEnd: string;
+
   /* Flag for logging if session ended manually */
   EndedEarly: boolean;
+
   /* Duration for the Overall Session */
   TimerMain: number;
+
   /* Duration for the Primary/First Timer */
   TimerOne: number;
+
   /* Duration for the Secondary/Second Timer */
   TimerTwo: number;
+
   /* Duration for the Tertiary/Third Timer */
   TimerThree: number;
 }
@@ -49,122 +60,116 @@ The `SessionSettings` field of the data object features all of the information n
 
 Members of the `SessionSettings` field are noted below:
 
-```ts
+```js
 {
-  /* The number session */
+  /* The number for the session */
   Session: number;
+
   /* The condition name */
   Condition: string;
+
   /* The duration of programmed session */
   DurationS: number;
+
   /* The primary timer of interest */
   TimerOption: 'End on Primary Timer' | 'End on Timer #1' | 'End on Timer #2' | 'End on Timer #3';
+
   /* Session therapy initials/name */
   Therapist: string;
+
   /* Data collector initials/name */
   Initials: string;
+
   /* Name of assigned keyset */
   KeySet: string;
+
   /* The role served by data collector */
   Role: 'Primary' | 'Reliability';
 }
 ```
 
-### `FrequencyKeyPresses` and `DurationKeyPresses` - Recorded Behavior Keys
+### `FrequencyKeyPresses`, `DurationKeyPresses`, and `SystemKeyPresses` - Recorded Behavior Keys
 
-Both the `FrequencyKeyPresses` and `DurationKeyPresses` fields are array objects that contain relevant behavioral events. These are similar objects but are handled differently given the practicalities of scoring event vs. duration recording (e.g., total counts vs. cumulative onset-offset sums).
+The `FrequencyKeyPresses`, `DurationKeyPresses`, and `SystemKeyPresses` fields are array objects that contain relevant system and behavioral events. These are similar objects but are handled differently given the practicalities of scoring event vs. duration recording (e.g., total counts vs. cumulative onset-offset sums) and system events (e.g., onset vs. end of session/schedule).
 
 For _each key press_, the following structure will be appended to the respective array.
 
-```ts
+```js
 {
   /* Named letter/symbole associated with key */
   KeyName: string;
+
   /* Code assigned to respective key */
   KeyCode: The code representing the key (e.g., 49).
+
   /* Label supplied to describe the key (e.g., Aggression) */
   KeyDescription: string;
+
   /* The timestamp of when the key was pressed in ISO 8601 format (e.g., "2024-09-13T16:47:17.683Z"). */
   TimePressed: string;
+
   /* The schedule in white the keypress was recorded */
   KeyScheduleRecording: "Primary" | "Secondary" | "Tertiary"
+
   /* The type of event associated with key */
-  KeyType: "Frequency" | "Duration"
+  KeyType: "Frequency" | "Duration" | "System" | "Timing"
+
   /* The # of seconds since session began */
   TimeIntoSession: number;
 }
 ```
 
-### SystemKeyPresses
+### `KeySet` - Fields Included in the Keyset
 
-This array contains objects detailing system-level key events during the session.
+The `KeySet` field is a simple object that contains the details of the keyset used during the session. This includes the name of the keyset, the keys used for frequency data, the keys used for duration data, and the timestamps of when the keyset was created and last modified.
 
-KeyName: The system key pressed (e.g., "Enter" or "Escape").
+```js
+{
+  /* Unique identifier for the keyset */
+  id: string;
 
-KeyCode: The code representing the key (e.g., 13 or 0).
+  /* The name of the keyset */
+  Name: string;
 
-KeyDescription: Description of the system event (e.g., "Start of Session" or "End of Session").
+  /* Array of objects representing keys used for frequency data */
+  FrequencyKeys: KeyManageType[];
 
-TimePressed: The timestamp of when the system key was pressed in ISO 8601 format (e.g., "2024-09-13T16:47:09.970Z").
+  /* Array of objects representing keys used for duration data */
+  DurationKeys: KeyManageType[];
 
-KeyScheduleRecording: Indicates whether the recording was part of the "Primary" or "Secondary" schedule.
+  /* Timestamp when the keyset was created */
+  createdAt: string;
 
-KeyType: Indicates the type of data being recorded, which is "System" in this case.
+  /* Timestamp of the last modification to the keyset */
+  lastModified: string;
+}
+```
 
-TimeIntoSession: The elapsed time (in seconds) from the start of the session to the moment the key was pressed (e.g., 0).
+### Miscellaneous Fields Individual
 
-### SessionStart
+The `SessionStart`, `SessionEnd`, `EndedEarly`, `TimerMain`, `TimerOne`, `TimerTwo`, and `TimerThree` fields are all straightforward and provide the necessary information to understand the session's duration and any potential interruptions.
 
-The timestamp indicating the start time of the session in ISO 8601 format (e.g., "2024-09-13T16:47:09.970Z").
+```js
+{
+  /* Timestamp indicating the start time of the session */
+  SessionStart: string;
 
-### Keyset
+  /* Timestamp indicating the end time of the session */
+  SessionEnd: string;
 
-Details about the keyset used during the session.
+  /* Boolean indicating whether the session ended early */
+  EndedEarly: boolean;
 
-id: Unique identifier for the keyset (e.g., "ab2cdeec-630e-40c1-9610-66244549c758").
+  /* Total time of the main timer in seconds */
+  TimerMain: number;
 
-Name: The name of the keyset (e.g., "FA Keyset").
+  /* Elapsed time recorded on timer #1 in seconds */
+  TimerOne: number;
 
-FrequencyKeys: An array of objects representing keys used for frequency data:
+  /* Elapsed time recorded on timer #2 in seconds */
+  TimerTwo: number;
 
-KeyName: The key assigned (e.g., "1").
-
-KeyDescription: The behavior associated with the key (e.g., "Self Injury").
-
-KeyCode: The code for the key (e.g., 49).
-
-DurationKeys: An array of objects representing keys used for duration data:
-
-KeyName: The key assigned (e.g., "q").
-
-KeyDescription: The behavior associated with the key (e.g., "Reinforcement").
-
-KeyCode: The code for the key (e.g., 81).
-
-createdAt: The timestamp when the keyset was created in ISO 8601 format (e.g., "2024-08-29T15:25:12.812Z").
-
-lastModified: The timestamp of the last modification to the keyset in ISO 8601 format (e.g., "2024-08-29T15:25:12.812Z").
-
-### SessionEnd
-
-The timestamp indicating the end time of the session in ISO 8601 format (e.g., "2024-09-13T16:49:11.505Z").
-
-### EndedEarly
-
-A boolean indicating whether the session ended early (true or false).
-
-### TimerMain
-
-The total time of the main timer in seconds (e.g., 120).
-
-### TimerOne
-
-The elapsed time recorded on timer #1 in seconds (e.g., 61.4).
-
-### TimerTwo
-
-The elapsed time recorded on timer #2 in seconds (e.g., 58.9).
-
-### TimerThree
-
-The elapsed time recorded on timer #3 in seconds (e.g., 0).
+  /* Elapsed time recorded on timer #3 in seconds */
+  TimerThree: number;
+}
+```
