@@ -1,4 +1,4 @@
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, useLocation } from 'react-router-dom';
+import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
 import HomePage from './components/pages/home/home-page';
 import { FolderContextProvider } from './context/folder-context';
 import { ThemeProvider } from './components/ui/theme-provider';

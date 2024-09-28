@@ -104,8 +104,6 @@ react (18.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/faceboo
  
 react-dom (18.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/facebook/react.git) 
  
-react-gtm-module (2.0.11). Copyright Aline Morelli aline.morelliw@gmail.com https://github.com/alinemorelli -- MIT Licensed: [Repo](https://github.com/alinemorelli/react-gtm.git) 
- 
 react-hook-form (7.53.0). Copyright <bluebill1049@hotmail.com> -- MIT Licensed: [Repo](https://github.com/react-hook-form/react-hook-form.git) 
  
 react-router-dom (6.26.2). Copyright Remix Software <hello@remix.run> -- MIT Licensed: [Repo](https://github.com/remix-run/react-router.git) 
