@@ -1,6 +1,6 @@
 ---
 title: Customizing Session Parameters using Session Designer Page
-date: 09/31/2024
+date: 09/26/2024
 keywords: 'Session Designer, Session Conditions, Timers'
 author: 'Shawn Gilroy'
 index: 7
@@ -8,9 +8,17 @@ index: 7
 
 The **Session Designer** is a critical element of the DataTracker program. This interface allows users to set up and customize details for a specific type of session. This interface is designed to be used in relation to a particular **Evaluation** folder, which enabling users to configure the necessary parameters for recording and analyzing behavior during a session for that **Evaluation** (e.g., "Control" vs. "Test" **Condition**). The **Session Designer** is where users can define the session's structure (e.g., duration of session, how it should conclude), so that aspects of the data collection process are aligned with the study's goals and requirements. As a general default, the **Session Designer** supports the user by caching session parameters to simplify operations, such as incrementing session numbering after each session and automatically populating prior parameters.
 
+An illustration of a hypothetical session is displayed below:
+
+<div align="center" width="100%">
+    <img src="/docs/session_designer.png" alt="Image of DataTracker session design page"/>
+</div>
+
 ### Adding/Selection Evaluation Condition
 
-The first step in the **Session Designer** is selecting the relevant **Condition**. This corresponds with the various conditions outlined in the study/treatment protocol. This dropdown menu allows users to choose from conditions outlined by the user, such as "Baseline" or "Intervention". For example, if the session involves observing a child under the "Intervention" condition, the user would select this option to ensure that all data recorded during the session is associated with the correct experimental context. This ensures that the data collected can be accurately compared with other sessions under different conditions. As an added note, if a necessary condition is not present, the user can add a new condition to the list using the button provided on the **Session Designer** page.
+The first step in the **Session Designer** is selecting the relevant **Condition**. This corresponds with the various conditions outlined in the study/treatment protocol. This dropdown menu allows users to choose from conditions outlined by the user, such as "Baseline" or "Intervention". For example, if the session involves observing a child under the "Intervention" condition, the user would select this option to ensure that all data recorded during the session is associated with the correct experimental context. This ensures that the data collected can be accurately compared with other sessions under different conditions.
+
+If a necessary condition is not present, the user will need to add a new condition to the list using the "Add Condition" button provided on the upper right of **Session Designer** page.
 
 ### Choosing the Keyboard Configuration
 

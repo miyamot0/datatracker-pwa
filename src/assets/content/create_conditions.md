@@ -1,7 +1,7 @@
 ---
 title: Creating and Working with Condition Folders in Evaluations
 date: 09/03/2024
-keywords: 'Data Management, Assessment, Intervention Evaluation'
+keywords: 'Assessment, Intervention Evaluation'
 author: 'Shawn Gilroy'
 index: 5
 ---

@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Version-0.2.6-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge](https://img.shields.io/badge/Version-0.2.7-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 # DataTracker (PWA Application)
 
@@ -32,6 +32,7 @@ Features included in DataTracker include:
 - 0.2.4 - Bring in wakelocks, screen/route transitions, to mirror native functionality
 - 0.2.5 - Streamline docs and build
 - 0.2.6 - Support for img in docs, add in fixes for session editor
+- 0.2.7 - Add in support for syntax highlighting (docs related to data files)
 
 ## Features
 
@@ -111,6 +112,8 @@ react-use-pwa-install (1.0.1). Copyright Filip Chalupa chalupa.filip@gmail.com h
  
 recharts (2.12.7). Copyright recharts group -- MIT Licensed: [Repo](https://github.com/recharts/recharts.git) 
  
+rehype-highlight (7.0.0). Copyright Titus Wormer <tituswormer@gmail.com> (https://wooorm.com) -- MIT Licensed: [Repo](https://github.com/rehypejs/rehype-highlight.git) 
+ 
 scheduler (0.23.2). Copyright n/a -- MIT Licensed: [Repo](https://github.com/facebook/react.git) 
  
 sonner (1.5.0). Copyright Emil Kowalski <e@emilkowal.ski> -- MIT Licensed: [Repo](https://github.com/emilkowalski/sonner.git) 
@@ -135,5 +138,5 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Version
 
-Version 0.2.6
+Version 0.2.7
 
