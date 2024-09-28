@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 import package_json from './package.json';
+import { VitePluginRadar } from 'vite-plugin-radar';
 
 export default defineConfig({
   plugins: [
@@ -134,6 +135,11 @@ export default defineConfig({
             label: 'View of Session Inspection Page',
           },
         ],
+      },
+    }),
+    VitePluginRadar({
+      gtm: {
+        id: 'GTM-MZTK96KZ',
       },
     }),
   ],
