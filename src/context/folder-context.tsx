@@ -2,6 +2,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ApplicationSettingsTypes, DEFAULT_APPLICATION_SETTINGS } from '@/types/settings';
 import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react';
+import { GoogleTagManager } from '@next/third-parties/google';
 
 // Type definitions for folder handle context
 export type FolderHandleContextType = {
@@ -61,6 +62,7 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
         }}
       >
         {children}
+        <GoogleTagManager gtmId="GTM-MZTK96KZ" />
         <Toaster richColors expand={false} duration={3000} />
       </FolderHandleContext.Provider>
     </TooltipProvider>
