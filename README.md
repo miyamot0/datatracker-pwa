@@ -70,6 +70,8 @@ Electronic data collection can be performed for both event and duration recordin
  
 @mdx-js/mdx (3.0.1). Copyright John Otander <johnotander@gmail.com> (https://johno.com) -- MIT Licensed: [Repo](https://github.com/mdx-js/mdx.git) 
  
+@next/third-parties (14.2.13). Copyright n/a -- MIT Licensed: [Repo](https://github.com/vercel/next.js.git) 
+ 
 @radix-ui/react-dialog (1.1.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
 @radix-ui/react-dropdown-menu (2.1.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
@@ -101,6 +103,8 @@ lucide-react (0.429.0). Copyright Eric Fennis -- ISC Licensed: [Repo](https://gi
 react (18.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/facebook/react.git) 
  
 react-dom (18.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/facebook/react.git) 
+ 
+react-gtm-module (2.0.11). Copyright Aline Morelli aline.morelliw@gmail.com https://github.com/alinemorelli -- MIT Licensed: [Repo](https://github.com/alinemorelli/react-gtm.git) 
  
 react-hook-form (7.53.0). Copyright <bluebill1049@hotmail.com> -- MIT Licensed: [Repo](https://github.com/react-hook-form/react-hook-form.git) 
  
