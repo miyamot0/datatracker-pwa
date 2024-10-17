@@ -6,18 +6,22 @@ author: 'Shawn Gilroy'
 index: 1
 ---
 
-The DataTracker program is designed to provide considerable flexibility in how data are collected and managed. This flexibility allows you to structure your data in a way that makes sense for your specific needs and research questions. However, there are several critical and recommended organizational structures to follow to ensure that data are easily accessible and manageable. This document provides an overview of the recommended organizational structure for data within the DataTracker program and outlines some general rules to follow when using the program.
+The DataTracker program is designed to provide considerable flexibility in how data are collected and managed. This flexibility allows you to structure your data in a way that makes sense for your specific needs and research questions. However, there are several critical and recommended organizational practices to adopt to ensure that your data are easily accessible and manageable.
+
+This document provides an overview of the recommended organizational structure for data within the DataTracker program and outlines some general rules to follow when using the program.
 
 ### Approving DataTracker access
 
-DataTracker is a website at its core--it does not have access to your hard drive as an installable program would. For this reason, you are prompted to approve the program access to **a specific** folder on your hard drive whenever you use it. This is happen once **every time** you use the program for security purposes. The interface will provide cues to indicate to the user if relevant access has or has not been authorized.
+DataTracker is a website at its core. It does not have access to your hard drive as an installable program would (and for very good reason). Because of how this program is designed, you are prompted to approve the program access to **a specific** folder on your hard drive whenever you use it. This is happen once **every time** you use the program for security purposes. The interface will provide cues to indicate to the user if relevant access has or has not been authorized.
 
 <div align="center" width="100%">
     <img src="/docs/access_not_authorized.png" alt="Image of access not being authorized"/>
     <img src="/docs/access_authorized.png" alt="Image of access being authorized"/>
 </div>
 
-As a general practice (Note: which can be disabled), you program will prompt you to use a Folder (wherever it is located) named DataTracker (e.g., "DataTracker" folder on your Desktop). This is largely as a prompt for users not to accidentally load a "Group" folder as if it were a "DataTracker" folder. This can be disabled, but for good practice, it is kept as a default setting. Using **Google Chrome** in Windows, this appears as the following:
+As a general practice, the program will prompt you to use a Folder named DataTracker (e.g., "DataTracker" folder on your Desktop). This is largely as a prompt for users to avoid accidentally loading a "Group" folder as if it were a "DataTracker" folder.
+
+This can be disabled, but for good practice, it is kept as a default setting. Using **Google Chrome** in Windows, this could appear as the following:
 
 <div align="center" width="100%">
     <img src="/docs/approve_folder.png" alt="Image of relevant 'DataTracker' folder being selected"/>
@@ -25,31 +29,37 @@ As a general practice (Note: which can be disabled), you program will prompt you
 
 ### Some General Rules for Working with DataTracker Data
 
-Many aspects of the program can be customized to fit your specific needs (e.g., permissions for central folder, allowing for deletion of folders). However, there are certain types of behavior that are likely to cause problems or errors when using the program. The following are some general rules to follow when working with data in the DataTracker program.
+Various aspects of the program can be customized to fit your specific needs. For example, you can work with others from a common networked drive (e.g., a 'Shared Drive'). This allows for the convenience of centralizing data collection (e.g., both Primary rater and Reliability rater files are saved in correct destination).
 
-#### Hand-editing data files is not a good idea
+The DataTracker program is powerful, and can greatly simplify data collection, but several guidelines are suggested to maximize reliability and prevent data loss. For example, the DataTracker program disables the deletion of data to prevent accidental and unrecoverable loss of information; however, this can be temporarily authorized in Settings to assist with correctly removing specific data.
 
-The program saves files in JSON format, which is a universal data format that can be read by many different programs. It can be read from software such as browsers, statistical software, programming languages, etc. If you attempt to edit this file by hand, without knowing the implications of what you are changing, you will cause problems when attempting to archive/read/summarize that data in the future.
+Several general rules to follow when working with data in the DataTracker program are reviewed in the headings below.
+
+#### Hand-editing Data Files: <ins>Not a Good Idea</ins>
+
+The program saves files in JSON format (Javascript Object Notation), which is a universal data format that can be read by many different programs. It can be read from software such as browsers, statistical software, programming languages, etc. It's used virtually everywhere and by everything.
+
+If you attempt to edit this file by hand, without knowing the implications of what you are changing (e.g., type and content of fields), you will probably create problems when attempting to archive/read/summarize that data in the future.
 
 When in doubt--use the interface to manage/delete files.
 
-#### Dragging and Dropping Folders in DataTracker Folder is not a good idea
+#### Moving Folders Around in the DataTracker Folder: <ins>Not a Good Idea</ins>
 
 Certain operations in the DataTracker program are less impactful than others. For example, adding a new folder to a group with a Participant's ID as the title is unlikely to be problematic. However, copy/pasting/renaming folders is likely to be problematic because certain aspects of the program will _expect_ certain folders to be in certain locations. This is particularly relevant for the **Session Builder**, since it will attempt to _remember_ recent sessions and conditions that may no longer exist if you have edited/deleted those folder.
 
 If you make major changes to the folder structure, it introduces significant risks of program error.
 
-#### Copying a Keyboard (\*\*.json File) is Probably Okay
+#### Copying a Keyboard (\*\*.json File): <ins>Probably Okay</ins>
 
 It is often the case that a common set of targets is shared across Participants in a study. In this case, it is likely that you will want to copy a Keyboard file from one Participant to another. This is generally okay, but it is important to remember that the Keyboard file _must be in the correct location_.
 
 If you copy a Keyboard file to the wrong location, it will (1) not be accessible in the **Keyboard Designer** or **Session Designer** and (2) could cause the program to crash if the program reads it thinking it is a data file (e.g., when calculating Reliability or summarizing rates).
 
-#### Creating Evaluation Conditions by Hand is Probably Okay
+#### Creating Evaluation Conditions by Hand: <ins>Probably Okay</ins>
 
 It is likely that certain types of conditions will be used across Participants for a given **Evaluation**. For example, a "Baseline" condition is likely to be used for all Participants in a study. In this case, it is likely that you will want to create a "Baseline" by hand for each of the Participants. This is generally okay, but it is important to remember that the **Condition** folder _must be in the correct location_ and _must be empty_.
 
-#### Copying Reliability Files is Okay
+#### Copying Reliability Files: <ins>Probably Okay</ins>
 
 As a working default, files for the Reliability data collector will need to be moved to a central location for analysis. This is expected behavior, though it is important to remember that the Reliability file _must be in the correct location_ (i.e., correct **Evaluation** and **Condition**).
 
@@ -59,11 +69,11 @@ As a working default, files for the Reliability data collector will need to be m
 
   - Individual Folder (e.g., client name or identifier)
 
-    - 'Keyboard A.json' File (File associated with keys/behavior codes)
+    - 'Keyboard A.json' File (a file associated with keys/behavior codes)
 
     - Evaluation Folder (e.g., functional analysis, treatment evaluation)
 
-      - 'settings.json' File (File remembering on-going session designs)
+      - 'settings.json' File (a file for remembering on-going session designs)
 
       - Condition Folder (e.g., baseline, treatment, etc.)
 
