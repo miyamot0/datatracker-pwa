@@ -31,31 +31,31 @@ Features included in DataTracker include:
 
 The DataTracker application has been ported to a Progressive Web App (PWA), which is a way to flexibly manage strict requirements for data management as well as work within secure systems that require sandboxed applications.
 
-![DataTracker Visualization](screenshots/landing_page.png 'DataTracker Options for Data Display')
+![DataTracker Visualization](public/screenshots/landing_page.png 'DataTracker Options for Data Display')
 
 The DataTracker program features numerous strategious for summarizing and supporting the interpretation of individual behavior data.
 
-![DataTracker Within-Session Visualization](screenshots/within_session_preview.png 'DataTracker Options for Within-Session Data Display')
+![DataTracker Within-Session Visualization](public/screenshots/within_session_preview.png 'DataTracker Options for Within-Session Data Display')
 
 The program also provides support for analyzing performances _within-session_ and across multiple timers/changes in context.
 
-![DataTracker Landing Page](screenshots/landing_page.png 'DataTracker Home Page')
+![DataTracker Landing Page](public/screenshots/landing_page.png 'DataTracker Home Page')
 
 DataTracker mirrors existing conventions for electronic data collection (e.g., group-/study-level groupings).
 
-![Group-level Organization](screenshots/group_editor.png 'Participant Organization')
+![Group-level Organization](public/screenshots/group_editor.png 'Participant Organization')
 
 There is active support for managing Key/Behavior mappings through user-generated keysets.
 
-![Key Management](screenshots/key_editor.png 'Editor for Keyboards')
+![Key Management](public/screenshots/key_editor.png 'Editor for Keyboards')
 
 There are many options for designing sessions in real-time.
 
-![Session Designer Page](screenshots/session_designer.png 'Session Designer')
+![Session Designer Page](public/screenshots/session_designer.png 'Session Designer')
 
 Electronic data collection can be performed for both event and duration recording.
 
-![Session Recorder Page](screenshots/group_editor.png 'Session Recorder')
+![Session Recorder Page](public/screenshots/group_editor.png 'Session Recorder')
 
 ## Referenced Works
 
