@@ -49,49 +49,49 @@
     "id": "/",
     "screenshots": [
         {
-            "src": "screenshots/visualization.png",
+            "src": "/screenshots/visualization.png",
             "sizes": "1375x860",
             "type": "image/png",
             "form_factor": "wide",
             "label": "Illustration of recorded data"
         },
         {
-            "src": "screenshots/group_editor.png",
+            "src": "/screenshots/group_editor.png",
             "sizes": "1375x860",
             "type": "image/png",
             "form_factor": "wide",
             "label": "View of Group Editor Page"
         },
         {
-            "src": "screenshots/key_editor.png",
+            "src": "/screenshots/key_editor.png",
             "sizes": "1375x860",
             "type": "image/png",
             "form_factor": "wide",
             "label": "View of Keyboard Editor Page"
         },
         {
-            "src": "screenshots/landing_page.png",
+            "src": "/screenshots/landing_page.png",
             "sizes": "1375x860",
             "type": "image/png",
             "form_factor": "wide",
             "label": "View of Landing Page"
         },
         {
-            "src": "screenshots/session_designer.png",
+            "src": "/screenshots/session_designer.png",
             "sizes": "1375x860",
             "type": "image/png",
             "form_factor": "wide",
             "label": "View of Session Designer Page"
         },
         {
-            "src": "screenshots/session_recorder.png",
+            "src": "/screenshots/session_recorder.png",
             "sizes": "1375x860",
             "type": "image/png",
             "form_factor": "wide",
             "label": "View of Session Recorder Page"
         },
         {
-            "src": "screenshots/within_session_preview.png",
+            "src": "/screenshots/within_session_preview.png",
             "sizes": "1375x905",
             "type": "image/png",
             "form_factor": "wide",

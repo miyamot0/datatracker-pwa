@@ -122,7 +122,12 @@ export default function EvaluationsPage() {
           </div>
         </CardHeader>
 
-        <CardContent className="flex flex-col gap-1.5">
+        <CardContent className="flex flex-col gap-2">
+          <p>
+            This page provides a list of all evaluations for the respective individual. You may review individual data,
+            visualized data over time, or calculate measures of reliability by selecting the relevant action for each
+            evaluation (i.e., the 'down' arrow).
+          </p>
           <Table>
             <TableHeader>
               <TableRow>
