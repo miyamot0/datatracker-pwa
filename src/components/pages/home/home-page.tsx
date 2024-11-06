@@ -81,7 +81,7 @@ export default function HomePage() {
                       target="_blank"
                       className="text-blue-500 hover:underline hover:text-blue-600"
                     >
-                      Repo
+                      Link to Repository
                     </Link>
                   </div>
                 );
@@ -92,7 +92,7 @@ export default function HomePage() {
 
         {display === 'desktop' && (
           <Link to={createHref({ type: 'Dashboard' })} className="flex flex-row" unstable_viewTransition>
-            <Button className="w-full shadow-xl">
+            <Button variant={'outline'} className="w-full shadow-xl">
               <ChartLineIcon className="mr-2 h-4 w-4" />
               Load Application
             </Button>
@@ -104,7 +104,7 @@ export default function HomePage() {
         )}
 
         {display === 'desktop' && install && (
-          <Button className="w-full shadow-xl" variant={'default'} onClick={install}>
+          <Button className="w-full shadow-xl" variant={'outline'} onClick={install}>
             <HardDriveDownloadIcon className="mr-2 h-4 w-4" />
             Install Application
           </Button>

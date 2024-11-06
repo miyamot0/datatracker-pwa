@@ -282,7 +282,7 @@ export default function SessionDesigner({
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="dark:bg-background">
                             <SelectValue placeholder="Select condition for evaluation" />
                           </SelectTrigger>
                         </FormControl>
@@ -318,7 +318,7 @@ export default function SessionDesigner({
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="dark:bg-background">
                             <SelectValue placeholder="Select keyset for session" />
                           </SelectTrigger>
                         </FormControl>
@@ -374,7 +374,7 @@ export default function SessionDesigner({
                       <FormLabel>Role as Data Collector</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="dark:bg-background">
                             <SelectValue placeholder="Select role as data collector" />
                           </SelectTrigger>
                         </FormControl>
@@ -434,7 +434,7 @@ export default function SessionDesigner({
                       <FormLabel>Session Termination Option</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="dark:bg-background">
                             <SelectValue placeholder="Select role as data collector" />
                           </SelectTrigger>
                         </FormControl>
@@ -454,7 +454,7 @@ export default function SessionDesigner({
                     </FormItem>
                   )}
                 />
-                <Button className="w-full" type="submit">
+                <Button variant={'outline'} className="w-full" type="submit">
                   Run Session
                 </Button>
               </form>

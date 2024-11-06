@@ -10,6 +10,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { MdViewer } from '@/helpers/md-viewer';
 import { DocumentationObjects } from '@/lib/docs';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function DocumentationEntryPage() {
   const { slug } = useParams();
@@ -59,6 +60,7 @@ export default function DocumentationEntryPage() {
             })}
           >
             <Button disabled={!prev_entry} variant={'outline'} className="w-full shadow-xl">
+              <ChevronLeft className="w-4 h-4 mr-2" />
               Read Previous
             </Button>
           </Link>
@@ -72,6 +74,7 @@ export default function DocumentationEntryPage() {
           >
             <Button disabled={!next_entry} variant={'outline'} className="w-full shadow-xl">
               Read Next
+              <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
         </CardFooter>
