@@ -81,6 +81,12 @@ export default function AuthorizedDisplay({ Handle, Groups, AddCallback }: Props
       </CardHeader>
 
       <CardContent className="flex flex-col gap-1.5">
+        <p>
+          Each entry in this page represents a 'Grouping' of individuals. The specific grouping does not change any
+          functionality provided; however, this helps with organizing the collection and review of data. You must have
+          at least <i>one</i> group to begin collecting data.
+        </p>
+
         <Table>
           <TableHeader>
             <TableRow>
@@ -157,7 +163,7 @@ export default function AuthorizedDisplay({ Handle, Groups, AddCallback }: Props
                           }}
                         >
                           <FolderX className="mr-2 h-4 w-4" />
-                          Remove Group
+                          Delete Group
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

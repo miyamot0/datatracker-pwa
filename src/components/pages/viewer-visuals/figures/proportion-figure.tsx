@@ -203,7 +203,7 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
                 fill: 'black',
                 fontWeight: 'bold',
               }}
-              offset={10}
+              offset={5}
               position={'insideBottom'}
               value={'Session'}
             />

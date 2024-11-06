@@ -125,8 +125,9 @@ export default function EvaluationsPage() {
         <CardContent className="flex flex-col gap-2">
           <p>
             This page provides a list of all evaluations for the respective individual. You may review individual data,
-            visualized data over time, or calculate measures of reliability by selecting the relevant action for each
-            evaluation (i.e., the 'down' arrow).
+            visualize data over time, or calculate measures of reliability by selecting the relevant action for each
+            evaluation (i.e., the 'down' arrow). You must have at least <i>one</i> evaluation to begin recording client
+            data.
           </p>
           <Table>
             <TableHeader>
@@ -284,7 +285,7 @@ export default function EvaluationsPage() {
                             }}
                           >
                             <FolderX className="mr-2 h-4 w-4" />
-                            Remove Evaluation
+                            Delete ALL Evaluation Data
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

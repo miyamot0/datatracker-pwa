@@ -97,7 +97,7 @@ export function ResultsRateVisualsPage({ Handle, Group, Individual, Evaluation }
           Visible: true,
         };
 
-        let show_keys_base = [...keys, ctb_entry].map((key) => {
+        const show_keys_base = [...keys, ctb_entry].map((key) => {
           const should_disable = stored_prefs.KeyDescription.includes(key.KeyDescription);
 
           if (should_disable) {
@@ -110,7 +110,7 @@ export function ResultsRateVisualsPage({ Handle, Group, Individual, Evaluation }
           return key;
         });
 
-        let exclude_from_ctb = keys.map((key) => {
+        const exclude_from_ctb = keys.map((key) => {
           const should_disable = stored_prefs.CTBElements.includes(key.KeyDescription);
 
           if (should_disable) {

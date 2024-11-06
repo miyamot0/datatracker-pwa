@@ -106,6 +106,12 @@ export default function ClientsPage() {
         </CardHeader>
 
         <CardContent className="flex flex-col gap-1.5">
+          <p>
+            Each of the entries in the table below represent individual clients. You must have at least <i>one</i>{' '}
+            client added to the group before you can begin collecting data (e.g., designing evaluations, adding
+            conditions in evaluations).
+          </p>
+
           <Table>
             <TableHeader>
               <TableRow>
@@ -186,7 +192,7 @@ export default function ClientsPage() {
                             }}
                           >
                             <FolderX className="mr-2 h-4 w-4" />
-                            Remove Client
+                            Delete ALL Client Data
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

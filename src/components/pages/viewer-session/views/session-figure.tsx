@@ -1,6 +1,6 @@
-import { FIGURE_PATH_COLORS } from "@/lib/colors";
-import { getShape } from "@/lib/shapes";
-import React from "react";
+import { FIGURE_PATH_COLORS } from '@/lib/colors';
+import { getShape } from '@/lib/shapes';
+import React from 'react';
 import {
   ComposedChart,
   ReferenceLine,
@@ -12,9 +12,9 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from "recharts";
-import { ExpandedSavedSessionResult } from "../session-viewer-page";
-import { ExpandedKeySetInstance } from "../../viewer-visuals/figures/rate-figure";
+} from 'recharts';
+import { ExpandedSavedSessionResult } from '../session-viewer-page';
+import { ExpandedKeySetInstance } from '../../viewer-visuals/figures/rate-figure';
 
 type Props = {
   Session?: ExpandedSavedSessionResult;
@@ -22,28 +22,16 @@ type Props = {
   KeysHidden: ExpandedKeySetInstance[];
 };
 
-export default function SessionFigure({
-  Session,
-  PlotData,
-  KeysHidden,
-}: Props) {
+export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) {
   if (!Session || !PlotData) return <></>;
 
-  const CustomTooltip = ({
-    active,
-    payload,
-  }: {
-    active: boolean;
-    payload: any[];
-  }) => {
+  const CustomTooltip = ({ active, payload }: { active: boolean; payload: any[] }) => {
     if (active && payload && payload.length) {
       const main_payload = payload[0].payload;
 
       const { Condition } = main_payload;
       const relevant_payloads = payload.filter(
-        (entry) =>
-          entry.payload.Condition === Condition &&
-          !entry.name.includes("-Points_")
+        (entry) => entry.payload.Condition === Condition && !entry.name.includes('-Points_')
       );
       const relevant_payloads_unique = relevant_payloads
         .filter((entry, index, self) => {
@@ -59,14 +47,11 @@ export default function SessionFigure({
             {relevant_payloads_unique.map((entry, index) => {
               const cleaned_up_tag = entry.dataKey
                 .toString()
-                .replace(payload[0].payload.Condition, "")
-                .replace("-", "");
+                .replace(payload[0].payload.Condition, '')
+                .replace('-', '');
 
               return (
-                <div
-                  key={index}
-                  className="flex flex-row justify-between text-sm"
-                >
+                <div key={index} className="flex flex-row justify-between text-sm">
                   <span className="font-semibold mr-2">{cleaned_up_tag}</span>
                   <p key={`item-${index}`} className="text-sm">
                     {`${entry.value} Instances`}
@@ -82,17 +67,11 @@ export default function SessionFigure({
     return null;
   };
 
-  const keys_to_skip = KeysHidden.filter((k) => k.Visible === false).map(
-    (k) => k.KeyDescription
-  );
+  const keys_to_skip = KeysHidden.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <ResponsiveContainer
-        width="100%"
-        height={500}
-        className={"text-base text-primary bg-white"}
-      >
+      <ResponsiveContainer width="100%" height={500} className={'text-base text-primary bg-white'}>
         <ComposedChart
           width={600}
           height={300}
@@ -104,15 +83,11 @@ export default function SessionFigure({
             bottom: 10,
           }}
         >
-          <text x={"50%"} y={25} textAnchor="middle" dominantBaseline="central">
-            <tspan className="text-2xl font-bold">
-              Within-session Visualization of Session Data
-            </tspan>
+          <text x={'50%'} y={25} textAnchor="middle" dominantBaseline="central">
+            <tspan className="text-2xl font-bold">Within-session Visualization of Session Data</tspan>
           </text>
 
-          {Session.SystemKeyPresses.filter(
-            (k) => k.KeyScheduleRecording === "Secondary"
-          ).map((press, index_of_ref) => {
+          {Session.SystemKeyPresses.filter((k) => k.KeyScheduleRecording === 'Secondary').map((press, index_of_ref) => {
             return (
               <ReferenceLine
                 key={`ref-secondary-${index_of_ref}`}
@@ -121,9 +96,10 @@ export default function SessionFigure({
                 label={
                   index_of_ref % 2 === 0 ? (
                     <Label
-                      value={"Secondary Timer"}
-                      position={"insideTop"}
+                      value={'Timer #2'}
+                      position={{ x: press.TimeIntoSession, y: 0 }}
                       fill="black"
+                      style={{ textAnchor: 'middle' }}
                     />
                   ) : undefined
                 }
@@ -131,9 +107,7 @@ export default function SessionFigure({
             );
           })}
 
-          {Session.SystemKeyPresses.filter(
-            (k) => k.KeyScheduleRecording === "Tertiary"
-          ).map((press, index_of_ref) => {
+          {Session.SystemKeyPresses.filter((k) => k.KeyScheduleRecording === 'Tertiary').map((press, index_of_ref) => {
             return (
               <ReferenceLine
                 key={`ref-tertiary-${index_of_ref}`}
@@ -142,9 +116,10 @@ export default function SessionFigure({
                 label={
                   index_of_ref % 2 === 0 ? (
                     <Label
-                      value={"Tertiary Timer"}
-                      position={"insideTop"}
+                      value={'Timer #3'}
+                      position={{ x: press.TimeIntoSession, y: 0 }}
                       fill="black"
+                      style={{ textAnchor: 'middle' }}
                     />
                   ) : undefined
                 }
@@ -152,38 +127,38 @@ export default function SessionFigure({
             );
           })}
 
-          {Session.Keyset.FrequencyKeys.filter(
-            (k) => keys_to_skip.includes(k.KeyDescription) === false
-          ).map((key, index) => {
-            return (
-              <React.Fragment key={index}>
-                <Line
-                  animationDuration={100}
-                  connectNulls={true}
-                  name={`${key.KeyDescription}-Points_`}
-                  data={PlotData}
-                  type="linear"
-                  points={undefined}
-                  legendType="none"
-                  dataKey={`${key.KeyDescription}`}
-                  stroke={FIGURE_PATH_COLORS[index]}
-                />
-                <Scatter
-                  data={PlotData}
-                  animationDuration={100}
-                  dataKey={`${key.KeyDescription}`}
-                  fill={FIGURE_PATH_COLORS[index]}
-                  shape={getShape(index)}
-                />
-              </React.Fragment>
-            );
-          })}
+          {Session.Keyset.FrequencyKeys.filter((k) => keys_to_skip.includes(k.KeyDescription) === false).map(
+            (key, index) => {
+              return (
+                <React.Fragment key={index}>
+                  <Line
+                    animationDuration={100}
+                    connectNulls={true}
+                    name={`${key.KeyDescription}-Points_`}
+                    data={PlotData}
+                    type="linear"
+                    points={undefined}
+                    legendType="none"
+                    dataKey={`${key.KeyDescription}`}
+                    stroke={FIGURE_PATH_COLORS[index]}
+                  />
+                  <Scatter
+                    data={PlotData}
+                    animationDuration={100}
+                    dataKey={`${key.KeyDescription}`}
+                    fill={FIGURE_PATH_COLORS[index]}
+                    shape={getShape(index)}
+                  />
+                </React.Fragment>
+              );
+            }
+          )}
 
           <XAxis
             dataKey="second"
             domain={[0, Session.TimerMain]}
             height={50}
-            interval={"equidistantPreserveStart"}
+            interval={'equidistantPreserveStart'}
             minTickGap={25}
             type="number"
             dy={5}
@@ -192,41 +167,42 @@ export default function SessionFigure({
               right: 50,
             }}
             style={{
-              stroke: "black",
+              stroke: 'black',
               strokeWidth: 1,
             }}
           >
             <Label
               style={{
-                textAnchor: "middle",
-                fill: "black",
-                fontWeight: "bold",
+                textAnchor: 'middle',
+                fill: 'black',
+                fontWeight: 'bold',
               }}
-              offset={10}
-              position={"insideBottom"}
-              value={"Seconds Elapsed"}
+              offset={5}
+              position={'insideBottom'}
+              value={'Seconds Elapsed'}
             />
           </XAxis>
           <YAxis
             min={0}
             max={Session.MaxY}
             range={[0, Session.MaxY]}
-            ticks={Session.YTicks}
+            domain={[0, Session.MaxY]}
+            ticks={[...Session.YTicks, Session.MaxY]}
             padding={{ bottom: 10 }}
             style={{
-              stroke: "black",
+              stroke: 'black',
               strokeWidth: 1,
             }}
           >
             <Label
               style={{
-                textAnchor: "middle",
-                fill: "black",
-                fontWeight: "bold",
+                textAnchor: 'middle',
+                fill: 'black',
+                fontWeight: 'bold',
               }}
               position="insideLeft"
               angle={270}
-              value={"Event Recording During Session"}
+              value={'Event Recording During Session'}
             />
           </YAxis>
           <Tooltip
@@ -237,15 +213,15 @@ export default function SessionFigure({
             }
           />
           <Legend
-            payload={Session.Keyset.FrequencyKeys.filter(
-              (k) => keys_to_skip.includes(k.KeyDescription) === false
-            ).map((item, index) => ({
-              id: item.KeyDescription,
-              type: getShape(index),
-              value: item.KeyDescription,
+            payload={Session.Keyset.FrequencyKeys.filter((k) => keys_to_skip.includes(k.KeyDescription) === false).map(
+              (item, index) => ({
+                id: item.KeyDescription,
+                type: getShape(index),
+                value: item.KeyDescription,
 
-              color: FIGURE_PATH_COLORS[index % FIGURE_PATH_COLORS.length],
-            }))}
+                color: FIGURE_PATH_COLORS[index % FIGURE_PATH_COLORS.length],
+              })
+            )}
             align="center"
           />
         </ComposedChart>

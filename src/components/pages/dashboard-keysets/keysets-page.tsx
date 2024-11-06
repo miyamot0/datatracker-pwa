@@ -114,6 +114,12 @@ export default function KeySetsPage() {
         </CardHeader>
 
         <CardContent className="flex flex-col gap-1.5">
+          <p>
+            This page lists various keysets that have been created for the client. Each keyset is a collection of keys
+            that specify a key-behavior relationship. You must have at least <i>one</i> keyset to begin recording client
+            data.
+          </p>
+
           <Table>
             <TableHeader>
               <TableRow>
