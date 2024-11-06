@@ -2,10 +2,11 @@ import { CleanUpString } from './strings';
 import { DEFAULT_SESSION_SETTINGS, SavedSessionResult, SavedSettings } from './dtos';
 import { Dispatch, SetStateAction } from 'react';
 import { toast } from 'sonner';
-import { KeySet } from '@/types/keyset';
+import { KeySet, KeySetExtended } from '@/types/keyset';
 import { KeyManageType } from '@/components/pages/session-recorder/types/session-recorder-types';
 import { LoadingStructure, LoadingStructureKeysets } from '@/types/working';
 import { deserializeKeySet } from './keyset';
+import { readKeyboardParameters } from './reader';
 
 // --- Handles for Folders ---
 
@@ -104,6 +105,33 @@ export const GetResultsFromEvaluationFolder = async (
       results: [],
     };
   }
+};
+
+export const GetAllKeyboardsQuery = async (Handle?: FileSystemDirectoryHandle) => {
+  const keysets: KeySetExtended[] = [];
+
+  if (!Handle) return keysets;
+
+  for await (const entry of Handle.values()) {
+    const individual_handle = await Handle.getDirectoryHandle(CleanUpString(entry.name), { create: false });
+
+    for await (const entry2 of individual_handle.values()) {
+      const keyboard_folder = await GetHandleKeyboardsFolder(
+        Handle,
+        CleanUpString(entry.name),
+        CleanUpString(entry2.name)
+      );
+
+      for await (const entry3 of keyboard_folder.values()) {
+        const keyset_obj = await readKeyboardParameters(entry3);
+
+        if (keyset_obj)
+          keysets.push({ ...keyset_obj, Group: CleanUpString(entry.name), Individual: CleanUpString(entry2.name) });
+      }
+    }
+  }
+
+  return keysets;
 };
 
 // --- Folder/File Queries w/ Callbacks ---
