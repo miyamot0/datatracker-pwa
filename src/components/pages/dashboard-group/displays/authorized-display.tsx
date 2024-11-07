@@ -11,21 +11,19 @@ import {
 import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from '@/components/ui/table';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContext } from '@/context/folder-context';
-import { removeGroupFolder } from '@/lib/files';
 import createHref from '@/lib/links';
-import { displayConditionalNotification } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
 import { ChevronDown, FolderInput, FolderPlus, FolderX } from 'lucide-react';
 import { useContext } from 'react';
 import { Link } from 'react-router-dom';
 
 type Props = {
-  Handle: FileSystemDirectoryHandle;
   Groups: string[];
-  Refresh: () => void;
+  AddGroup: () => void;
+  RemoveGroup: (group: string) => void;
 };
 
-export default function AuthorizedDisplay({ Handle, Groups, Refresh }: Props) {
+export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup }: Props) {
   const { settings } = useContext(FolderHandleContext);
 
   return (
@@ -42,29 +40,7 @@ export default function AuthorizedDisplay({ Handle, Groups, Refresh }: Props) {
               variant={'outline'}
               className="shadow"
               onClick={async () => {
-                const input = window.prompt('Enter a name for the new group.');
-
-                if (!input || !Handle) return;
-
-                if (Groups.includes(input)) {
-                  alert('Group already exists.');
-                  return;
-                }
-
-                if (input.trim().length < 4) {
-                  alert('Group name must be at least 4 characters long.');
-                  return;
-                }
-
-                await Handle.getDirectoryHandle(input, { create: true });
-
-                displayConditionalNotification(
-                  settings,
-                  'Folder Created',
-                  'The new Group folder has been successfully created.'
-                );
-
-                Refresh();
+                await AddGroup();
               }}
             >
               <FolderPlus className="mr-2 h-4 w-4" />
@@ -123,32 +99,7 @@ export default function AuthorizedDisplay({ Handle, Groups, Refresh }: Props) {
                           )}
                           disabled={settings.EnableFileDeletion === false}
                           onClick={async () => {
-                            const confirm_delete = window.confirm(
-                              'Are you sure you want to delete this group?. This CANNOT be undone.'
-                            );
-
-                            if (confirm_delete) {
-                              try {
-                                await removeGroupFolder(Handle, group);
-
-                                displayConditionalNotification(
-                                  settings,
-                                  'Group Data Deleted',
-                                  'Group data has been successfully deleted.'
-                                );
-
-                                Refresh();
-                                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                              } catch (error: unknown) {
-                                displayConditionalNotification(
-                                  settings,
-                                  'Error Deleting Group Data',
-                                  'An error occurred while trying to delete the group folder.',
-                                  3000,
-                                  true
-                                );
-                              }
-                            }
+                            await RemoveGroup(group);
                           }}
                         >
                           <FolderX className="mr-2 h-4 w-4" />

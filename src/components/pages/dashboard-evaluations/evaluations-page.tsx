@@ -10,15 +10,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import LoadingDisplay from '@/components/ui/loading-display';
 import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from '@/components/ui/table';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContext } from '@/context/folder-context';
-import { getClientEvaluationFolders, removeClientEvaluationFolder } from '@/lib/files';
+import useQueryEvaluations from '@/hooks/useQueryEvaluations';
+import { removeClientEvaluationFolder } from '@/lib/files';
 import createHref from '@/lib/links';
 import { displayConditionalNotification } from '@/lib/notifications';
 import { CleanUpString } from '@/lib/strings';
 import { cn } from '@/lib/utils';
-import { LoadingStructure } from '@/types/working';
 import {
   ChartColumnIcon,
   ChevronDown,
@@ -30,18 +31,39 @@ import {
   SearchIcon,
   Table2Icon,
 } from 'lucide-react';
-import { useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 export default function EvaluationsPage() {
   const { Group, Individual } = useParams();
-  const { settings, handle } = useContext(FolderHandleContext);
+  const { settings } = useContext(FolderHandleContext);
+  const { data, status, error, handle, refresh } = useQueryEvaluations(Group, Individual);
+
+  /*
   const [evaluations, setEvaluations] = useState<LoadingStructure>({
     Status: 'loading',
     Values: [],
   });
+  */
   const navigate = useNavigate();
 
+  if (!handle || !Group || !Individual) {
+    navigate(createHref({ type: 'Dashboard' }), {
+      unstable_viewTransition: true,
+    });
+
+    return <></>;
+  }
+
+  if (status === 'loading') {
+    return <LoadingDisplay />;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
+
+  /*
   useEffect(() => {
     if (!handle || !Group || !Individual) {
       navigate(createHref({ type: 'Dashboard' }), {
@@ -56,6 +78,7 @@ export default function EvaluationsPage() {
   if (!Group || !Individual || !handle) {
     throw new Error('Params missing.');
   }
+  */
 
   return (
     <PageWrapper
@@ -78,7 +101,7 @@ export default function EvaluationsPage() {
 
                   if (!input || !handle) return;
 
-                  if (evaluations.Values.includes(input)) {
+                  if (data.includes(input)) {
                     alert('Evaluation already exists.');
                     return;
                   }
@@ -92,12 +115,22 @@ export default function EvaluationsPage() {
                   const client_dir = await group_dir.getDirectoryHandle(CleanUpString(Individual));
                   await client_dir.getDirectoryHandle(input, { create: true });
 
+                  /*
                   const new_state = {
                     ...evaluations,
                     Values: [...evaluations.Values, input],
                   };
 
                   setEvaluations(new_state);
+                  */
+
+                  displayConditionalNotification(
+                    settings,
+                    'New Evaluation Created',
+                    'A folder for the new evaluation has been created.'
+                  );
+
+                  refresh();
                 }}
               >
                 <FilePlus className="w-4 h-4 mr-2" />
@@ -137,7 +170,7 @@ export default function EvaluationsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {evaluations.Values.map((evaluation, index) => (
+              {data.map((evaluation, index) => (
                 <TableRow key={index} className="my-2">
                   <TableCell>{evaluation}</TableCell>
                   <TableCell className="flex flex-row justify-end">
@@ -259,18 +292,22 @@ export default function EvaluationsPage() {
                                 try {
                                   await removeClientEvaluationFolder(handle, Group, Individual, evaluation);
 
+                                  /*
                                   const new_state = {
                                     ...evaluations,
                                     Values: evaluations.Values.filter((item) => item !== evaluation),
                                   };
 
                                   setEvaluations(new_state);
+                                  */
 
                                   displayConditionalNotification(
                                     settings,
                                     'Evaluation Data Deleted',
                                     'Evaluation data has been successfully deleted.'
                                   );
+
+                                  refresh();
                                   // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                 } catch (error) {
                                   displayConditionalNotification(

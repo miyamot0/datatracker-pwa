@@ -14,43 +14,35 @@ import LoadingDisplay from '@/components/ui/loading-display';
 import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from '@/components/ui/table';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContext } from '@/context/folder-context';
-import { getIndividualClientFolders, removeClientFolder } from '@/lib/files';
+import useQueryClients from '@/hooks/clients/useQueryClients';
 import createHref from '@/lib/links';
-import { displayConditionalNotification } from '@/lib/notifications';
 import { CleanUpString } from '@/lib/strings';
 import { cn } from '@/lib/utils';
-import { LoadingStructure } from '@/types/working';
 import { ChevronDown, FolderInput, FolderPlus, FolderX } from 'lucide-react';
-import { useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 export default function ClientsPage() {
+  const { settings } = useContext(FolderHandleContext);
   const { Group } = useParams();
-  const { settings, handle } = useContext(FolderHandleContext);
-  const [individuals, setIndividuals] = useState<LoadingStructure>({
-    Status: 'loading',
-    Values: [],
-  });
-
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!handle || !Group) {
-      navigate(createHref({ type: 'Dashboard' }), {
-        unstable_viewTransition: true,
-      });
-      return;
-    }
+  const { data, status, error, handle, addClient, removeClient } = useQueryClients(Group);
 
-    getIndividualClientFolders(handle, Group, setIndividuals);
-  }, [handle, Group, navigate]);
+  if (!handle || !Group) {
+    navigate(createHref({ type: 'Dashboard' }), {
+      unstable_viewTransition: true,
+    });
 
-  if (individuals.Status === 'loading') {
+    return <></>;
+  }
+
+  if (status === 'loading') {
     return <LoadingDisplay />;
   }
 
-  if (!Group || !handle) {
-    throw new Error('Group not found.');
+  if (error) {
+    return <div>{error}</div>;
   }
 
   return (
@@ -67,35 +59,7 @@ export default function ClientsPage() {
                 variant={'outline'}
                 className="shadow"
                 onClick={async () => {
-                  const input = window.prompt('Enter a name for the new group.');
-
-                  if (!input || !handle) return;
-
-                  if (individuals.Values.includes(input)) {
-                    window.alert('Client already exists.');
-                    return;
-                  }
-
-                  if (input.trim().length < 4) {
-                    window.alert('Client name must be at least 4 characters long.');
-                    return;
-                  }
-
-                  const group_dir = await handle.getDirectoryHandle(CleanUpString(Group));
-                  await group_dir.getDirectoryHandle(input, { create: true });
-
-                  const new_state = {
-                    ...individuals,
-                    Values: [...individuals.Values, input],
-                  };
-
-                  setIndividuals(new_state);
-
-                  displayConditionalNotification(
-                    settings,
-                    'New Individual Created',
-                    'A folder for the new individual has been created.'
-                  );
+                  await addClient();
                 }}
               >
                 <FolderPlus className="mr-2 h-4 w-4" />
@@ -120,7 +84,7 @@ export default function ClientsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {individuals.Values.map((id, index) => (
+              {data.map((id, index) => (
                 <TableRow key={index} className="my-2">
                   <TableCell>{id}</TableCell>
                   <TableCell className="flex flex-row justify-end">
@@ -158,37 +122,7 @@ export default function ClientsPage() {
                             )}
                             disabled={settings.EnableFileDeletion === false}
                             onClick={async () => {
-                              const confirm_delete = window.confirm(
-                                'Are you sure you want to delete this client? This CANNOT be undone.'
-                              );
-
-                              if (confirm_delete) {
-                                try {
-                                  await removeClientFolder(handle, CleanUpString(Group), CleanUpString(id));
-
-                                  const new_state = {
-                                    ...individuals,
-                                    Values: individuals.Values.filter((item) => item !== id),
-                                  };
-
-                                  setIndividuals(new_state);
-
-                                  displayConditionalNotification(
-                                    settings,
-                                    'Client Data Deleted',
-                                    'Client data has been successfully deleted.'
-                                  );
-                                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                } catch (error: unknown) {
-                                  displayConditionalNotification(
-                                    settings,
-                                    'Client Data Deletion Error',
-                                    'An error occurred while deleting the client data.',
-                                    3000,
-                                    true
-                                  );
-                                }
-                              }
+                              await removeClient(id);
                             }}
                           >
                             <FolderX className="mr-2 h-4 w-4" />

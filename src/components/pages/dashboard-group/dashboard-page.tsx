@@ -1,10 +1,10 @@
 import PageWrapper from '@/components/layout/page-wrapper';
 import UnauthorizedDisplay from './displays/unauthorized-display';
 import AuthorizedDisplay from './displays/authorized-display';
-import useQueryGroups from '@/hooks/useQueryGroups';
+import useQueryGroups from '@/hooks/groups/useQueryGroups';
 
 export default function DashboardPage() {
-  const { data, status, error, handle, refresh } = useQueryGroups();
+  const { data, status, error, handle, addGroup, removeGroup } = useQueryGroups();
 
   if (status === 'loading')
     return (
@@ -17,7 +17,11 @@ export default function DashboardPage() {
 
   return (
     <PageWrapper label={'Group Dashboard'} className="select-none">
-      <AuthorizedDisplay Handle={handle} Groups={data} Refresh={refresh} />
+      <AuthorizedDisplay
+        Groups={data}
+        AddGroup={async () => await addGroup()}
+        RemoveGroup={(group: string) => removeGroup(group)}
+      />
     </PageWrapper>
   );
 }

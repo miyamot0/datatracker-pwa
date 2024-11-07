@@ -6,7 +6,7 @@ import SettingsPage from './components/pages/editor-settings/settings-page';
 import DocumentationListingPage from './components/pages/viewer-documentation-list/documentation-listing-page';
 import DocumentationEntryPage from './components/pages/viewer-documentation-entry/documentation-entry-page';
 import DashboardPage from './components/pages/dashboard-group/dashboard-page';
-import ClientsPage from './components/pages/dashboard-individuals/clients-page';
+import ClientsPage from './components/pages/dashboard-clients/clients-page';
 import EvaluationsPage from './components/pages/dashboard-evaluations/evaluations-page';
 import KeySetsPage from './components/pages/dashboard-keysets/keysets-page';
 import KeySetEditor from './components/pages/editor-keysets/keyset-editor';
