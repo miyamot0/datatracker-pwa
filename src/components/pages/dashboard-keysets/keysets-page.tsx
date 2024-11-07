@@ -6,13 +6,13 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import LoadingDisplay from '@/components/ui/loading-display';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Edit2, ImportIcon, Plus } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import useQueryKeyboards from '@/hooks/keyboards/useQueryKeyboards';
 import createHref from '@/lib/links';
-import { Edit2, ImportIcon, Plus } from 'lucide-react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import LoadingDisplay from '@/components/ui/loading-display';
 
 export default function KeySetsPage() {
   const { Group, Individual } = useParams();
@@ -95,7 +95,7 @@ export default function KeySetsPage() {
                 <TableHead>Duration Keys</TableHead>
                 <TableHead>Date Created</TableHead>
                 <TableHead>Date Modified</TableHead>
-                <TableHead className="flex flex-row justify-end">Manage Keyset</TableHead>
+                <TableHead className="flex flex-row justify-end items-center">Manage Keyset</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

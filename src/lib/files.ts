@@ -2,11 +2,10 @@ import { CleanUpString } from './strings';
 import { DEFAULT_SESSION_SETTINGS, SavedSessionResult, SavedSettings } from './dtos';
 import { Dispatch, SetStateAction } from 'react';
 import { toast } from 'sonner';
-import { KeySet, KeySetExtended } from '@/types/keyset';
+import { KeySet } from '@/types/keyset';
 import { KeyManageType } from '@/components/pages/session-recorder/types/session-recorder-types';
 import { LoadingStructure, LoadingStructureKeysets } from '@/types/working';
 import { deserializeKeySet } from './keyset';
-import { readKeyboardParameters } from './reader';
 
 // --- Handles for Folders ---
 
@@ -106,50 +105,6 @@ export const GetResultsFromEvaluationFolder = async (
     };
   }
 };
-
-export const GetAllKeyboardsQuery = async (Handle?: FileSystemDirectoryHandle) => {
-  const keysets: KeySetExtended[] = [];
-
-  if (!Handle) return keysets;
-
-  // Note: Handle = GROUPS
-  for await (const grp_entry of Handle.values()) {
-    const group_dir_handle = await Handle.getDirectoryHandle(CleanUpString(grp_entry.name), { create: false });
-
-    // Note: CLIENTS
-    for await (const client_entry of group_dir_handle.values()) {
-      const keyboard_folder = await GetHandleKeyboardsFolder(
-        Handle,
-        CleanUpString(grp_entry.name),
-        CleanUpString(client_entry.name)
-      );
-
-      // Note: KEYBOARDS
-      for await (const kb_entry of keyboard_folder.values()) {
-        if (kb_entry.kind === 'directory') continue;
-
-        if (kb_entry.name.includes('.json')) {
-          console.log(kb_entry.name);
-
-          const keyset_obj = await readKeyboardParameters(kb_entry);
-
-          console.log(keyset_obj);
-
-          if (keyset_obj)
-            keysets.push({
-              ...keyset_obj,
-              Group: CleanUpString(grp_entry.name),
-              Individual: CleanUpString(client_entry.name),
-            } satisfies KeySetExtended);
-        }
-      }
-    }
-  }
-
-  return keysets;
-};
-
-// --- Folder/File Queries w/ Callbacks ---
 
 /**
  * Get the group folders from the handle
