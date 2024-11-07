@@ -1,37 +1,23 @@
 import PageWrapper from '@/components/layout/page-wrapper';
-import { FolderHandleContext } from '@/context/folder-context';
-import { useContext, useEffect, useState } from 'react';
 import UnauthorizedDisplay from './displays/unauthorized-display';
 import AuthorizedDisplay from './displays/authorized-display';
-import { getGroupFolders } from '@/lib/files';
-import { LoadingStructure } from '@/types/working';
-import LoadingDisplay from '@/components/ui/loading-display';
+import useQueryGroups from '@/hooks/useQueryGroups';
 
 export default function DashboardPage() {
-  const { handle } = useContext(FolderHandleContext);
-  const [groups, setGroups] = useState<LoadingStructure>({
-    Status: 'loading',
-    Values: [],
-  });
+  const { data, status, error, handle, refresh } = useQueryGroups();
 
-  useEffect(() => {
-    if (handle) {
-      getGroupFolders(handle, setGroups);
-    }
-    return () => {};
-  }, [handle]);
+  if (status === 'loading')
+    return (
+      <PageWrapper label={'Folder Authorization'} className="select-none">
+        <UnauthorizedDisplay />
+      </PageWrapper>
+    );
 
-  if (handle && groups.Status === 'loading') {
-    return <LoadingDisplay />;
-  }
+  if (status === 'error' || !handle) return <div>{error}</div>;
 
   return (
-    <PageWrapper label={handle ? 'Group Dashboard' : 'Folder Authorization'} className="select-none">
-      {!handle ? (
-        <UnauthorizedDisplay />
-      ) : (
-        <AuthorizedDisplay Handle={handle} Groups={groups} AddCallback={setGroups} />
-      )}
+    <PageWrapper label={'Group Dashboard'} className="select-none">
+      <AuthorizedDisplay Handle={handle} Groups={data} Refresh={refresh} />
     </PageWrapper>
   );
 }

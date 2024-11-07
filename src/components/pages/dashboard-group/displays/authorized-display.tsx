@@ -15,18 +15,17 @@ import { removeGroupFolder } from '@/lib/files';
 import createHref from '@/lib/links';
 import { displayConditionalNotification } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
-import { LoadingStructure } from '@/types/working';
 import { ChevronDown, FolderInput, FolderPlus, FolderX } from 'lucide-react';
-import { Dispatch, SetStateAction, useContext } from 'react';
+import { useContext } from 'react';
 import { Link } from 'react-router-dom';
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
-  Groups: LoadingStructure;
-  AddCallback: Dispatch<SetStateAction<LoadingStructure>>;
+  Groups: string[];
+  Refresh: () => void;
 };
 
-export default function AuthorizedDisplay({ Handle, Groups, AddCallback }: Props) {
+export default function AuthorizedDisplay({ Handle, Groups, Refresh }: Props) {
   const { settings } = useContext(FolderHandleContext);
 
   return (
@@ -47,7 +46,7 @@ export default function AuthorizedDisplay({ Handle, Groups, AddCallback }: Props
 
                 if (!input || !Handle) return;
 
-                if (Groups.Values.includes(input)) {
+                if (Groups.includes(input)) {
                   alert('Group already exists.');
                   return;
                 }
@@ -59,18 +58,13 @@ export default function AuthorizedDisplay({ Handle, Groups, AddCallback }: Props
 
                 await Handle.getDirectoryHandle(input, { create: true });
 
-                const new_state = {
-                  ...Groups,
-                  Values: [...Groups.Values, input],
-                };
-
-                AddCallback(new_state);
-
                 displayConditionalNotification(
                   settings,
                   'Folder Created',
                   'The new Group folder has been successfully created.'
                 );
+
+                Refresh();
               }}
             >
               <FolderPlus className="mr-2 h-4 w-4" />
@@ -95,7 +89,7 @@ export default function AuthorizedDisplay({ Handle, Groups, AddCallback }: Props
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Groups.Values.map((group, index) => (
+            {Groups.map((group, index) => (
               <TableRow key={index} className="my-2">
                 <TableCell>{group}</TableCell>
                 <TableCell className="flex flex-row justify-end">
@@ -137,18 +131,13 @@ export default function AuthorizedDisplay({ Handle, Groups, AddCallback }: Props
                               try {
                                 await removeGroupFolder(Handle, group);
 
-                                const new_state = {
-                                  ...Groups,
-                                  Values: Groups.Values.filter((item) => item !== group),
-                                };
-
-                                AddCallback(new_state);
-
                                 displayConditionalNotification(
                                   settings,
                                   'Group Data Deleted',
                                   'Group data has been successfully deleted.'
                                 );
+
+                                Refresh();
                                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                               } catch (error: unknown) {
                                 displayConditionalNotification(
