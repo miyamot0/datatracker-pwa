@@ -99,23 +99,33 @@ export default function KeySetsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map((keys, index) => (
-                <TableRow key={index} className="my-2">
-                  <TableCell>{keys.Name}</TableCell>
-                  <TableCell>{keys.FrequencyKeys.length}</TableCell>
-                  <TableCell>{keys.DurationKeys.length}</TableCell>
-                  <TableCell>{keys.createdAt.toLocaleDateString()}</TableCell>
-                  <TableCell>{keys.lastModified.toLocaleDateString()}</TableCell>
-                  <TableCell className="flex flex-row justify-end">
-                    <Link unstable_viewTransition to={`/session/${Group}/${Individual}/keysets/${keys.Name}`}>
-                      <Button size={'sm'} variant={'outline'}>
-                        <Edit2 className="h-4 w-4 mr-2" />
-                        Edit KeySet
-                      </Button>
-                    </Link>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {data.map((keys, index) => {
+                const string_duration_keys = keys.DurationKeys.map((key) => {
+                  return `${key.KeyDescription} (${key.KeyName.toUpperCase()})`;
+                }).join(', ');
+
+                const string_frequency_keys = keys.FrequencyKeys.map((key) => {
+                  return `${key.KeyDescription} (${key.KeyName.toUpperCase()})`;
+                }).join(', ');
+
+                return (
+                  <TableRow key={index} className="my-2">
+                    <TableCell>{keys.Name}</TableCell>
+                    <TableCell>{string_frequency_keys}</TableCell>
+                    <TableCell>{string_duration_keys}</TableCell>
+                    <TableCell>{keys.createdAt.toLocaleDateString()}</TableCell>
+                    <TableCell>{keys.lastModified.toLocaleDateString()}</TableCell>
+                    <TableCell className="flex flex-row justify-end">
+                      <Link unstable_viewTransition to={`/session/${Group}/${Individual}/keysets/${keys.Name}`}>
+                        <Button size={'sm'} variant={'outline'}>
+                          <Edit2 className="h-4 w-4 mr-2" />
+                          Edit KeySet
+                        </Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>

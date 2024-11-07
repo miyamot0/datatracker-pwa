@@ -11,7 +11,7 @@ import { createRef, useContext, useState } from 'react';
 
 type Props = {
   KeySet: KeySet;
-  Callback: (key: KeySetInstance, type: 'Duration' | 'Frequency') => void;
+  Callback: (KeySet: KeySet, key: KeySetInstance, type: 'Duration' | 'Frequency') => void;
 };
 
 export default function DurationDialogKeyCreator({ KeySet, Callback }: Props) {
@@ -139,7 +139,7 @@ export default function DurationDialogKeyCreator({ KeySet, Callback }: Props) {
               return;
             }
 
-            Callback(keyInstance, 'Duration');
+            Callback(KeySet, keyInstance, 'Duration');
 
             setShow(false);
             setKeyInstance(DEFAULT_ENTRY);

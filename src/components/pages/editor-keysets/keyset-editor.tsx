@@ -1,10 +1,7 @@
 import PageWrapper from '@/components/layout/page-wrapper';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { KeySet, KeySetInstance } from '@/types/keyset';
-import { useContext, useEffect, useState } from 'react';
 import DurationDialogKeyCreator from './dialogs/duration-dialog';
-import { GetHandleKeyboardsFolder } from '@/lib/files';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import FrequencyDialogKeyCreator from './dialogs/frequency-dialog';
 import { DeleteIcon } from 'lucide-react';
@@ -14,117 +11,39 @@ import {
   BuildIndividualsBreadcrumb,
   BuildKeysetBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { displayConditionalNotification } from '@/lib/notifications';
-import { FolderHandleContext } from '@/context/folder-context';
-import { DEFAULT_KEY_SET, deserializeKeySet, serializeKeySet } from '@/lib/keyset';
 import { useNavigate, useParams } from 'react-router-dom';
-import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
-
-const PullKeySet = async (Handle: FileSystemDirectoryHandle, Group: string, Individual: string, KeySet: string) => {
-  const keyboard_folder = await GetHandleKeyboardsFolder(Handle, Group, Individual);
-
-  return keyboard_folder.getFileHandle(`${CleanUpString(KeySet)}.json`, {
-    create: true,
-  });
-};
+import useQuerySingleKeyboard from '@/hooks/keyboards/useQuerySingleKeyboard';
+import LoadingDisplay from '@/components/ui/loading-display';
+import createHref from '@/lib/links';
 
 export default function KeySetEditor() {
   const { Group, Individual, KeySet } = useParams();
-  const { handle, settings } = useContext(FolderHandleContext);
-  const [keyset, setKeyset] = useState<KeySet>(DEFAULT_KEY_SET);
   const navigate = useNavigate();
 
-  async function addKeySetCallback(new_key: KeySetInstance, type: 'Duration' | 'Frequency') {
-    if (!handle || !Group || !Individual || !KeySet) return;
+  const { data, error, status, handle, mutateKeySet, addKeyCallback } = useQuerySingleKeyboard(
+    Group,
+    Individual,
+    KeySet
+  );
 
-    let new_state = {
-      ...keyset,
-    };
-
-    if (type === 'Duration') {
-      new_state = {
-        ...new_state,
-        DurationKeys: [...keyset.DurationKeys, new_key],
-      };
-    } else {
-      new_state = {
-        ...new_state,
-        FrequencyKeys: [...keyset.FrequencyKeys, new_key],
-      };
-    }
-
-    try {
-      const keyboards_folder = await GetHandleKeyboardsFolder(handle, Group, Individual);
-
-      const key_board = await keyboards_folder.getFileHandle(`${CleanUpString(KeySet)}.json`);
-
-      const writer = await key_board.createWritable();
-      await writer.write(serializeKeySet(new_state));
-      await writer.close();
-
-      setKeyset(new_state);
-
-      displayConditionalNotification(settings, 'KeySet Updated', 'The current key set has been saved to file.');
-    } catch (e) {
-      console.error(e);
-
-      displayConditionalNotification(
-        settings,
-        'Error Updating Keys',
-        'There was an error mutating the keyset',
-        3000,
-        true
-      );
-    }
-  }
-
-  async function mutateKeySet(new_keyset: KeySet) {
-    if (!handle || !Group || !Individual || !KeySet) return;
-
-    try {
-      const keyboards_folder = await GetHandleKeyboardsFolder(handle, Group, Individual);
-
-      const key_board = await keyboards_folder.getFileHandle(`${CleanUpString(KeySet)}.json`);
-
-      const writer = await key_board.createWritable();
-      await writer.write(serializeKeySet(new_keyset));
-      await writer.close();
-
-      setKeyset(new_keyset);
-
-      displayConditionalNotification(settings, 'KeySet Updated', 'The current key set has been saved to file.');
-    } catch (e) {
-      console.error(e);
-
-      displayConditionalNotification(
-        settings,
-        'Error Updating Keys',
-        'There was an error mutating the keyset',
-        3000,
-        true
-      );
-    }
-  }
-
-  useEffect(() => {
-    if (!handle || !Group || !Individual || !KeySet) {
-      navigate(createHref({ type: 'Dashboard' }), {
-        unstable_viewTransition: true,
-      });
-      return;
-    }
-
-    PullKeySet(handle, Group, Individual, KeySet).then(async (entry) => {
-      const keyset = await entry.getFile();
-      const keyset_text = await keyset.text();
-      const keyset_json = deserializeKeySet(keyset_text);
-
-      if (keyset_json) setKeyset(keyset_json);
+  if (!handle || !Group || !Individual || !KeySet) {
+    navigate(createHref({ type: 'Dashboard' }), {
+      unstable_viewTransition: true,
     });
-  }, [Group, Individual, KeySet, handle, navigate]);
 
-  if (!Group || !Individual || !KeySet || !handle) {
+    return <></>;
+  }
+
+  if (status === 'loading') {
+    return <LoadingDisplay />;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
+
+  if (!Group || !Individual || !KeySet || !handle || !data) {
     throw new Error('Params missing.');
   }
 
@@ -146,7 +65,7 @@ export default function KeySetEditor() {
               <CardDescription>Manage Frequency Keys</CardDescription>
             </div>
 
-            <FrequencyDialogKeyCreator KeySet={keyset} Callback={addKeySetCallback} />
+            <FrequencyDialogKeyCreator KeySet={data} Callback={addKeyCallback} />
           </CardHeader>
           <CardContent className="flex-1">
             <Table>
@@ -158,7 +77,7 @@ export default function KeySetEditor() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {keyset.FrequencyKeys.map((key, index) => (
+                {data.FrequencyKeys.map((key, index) => (
                   <TableRow key={index}>
                     <TableCell>{key.KeyDescription}</TableCell>
                     <TableCell>{key.KeyName}</TableCell>
@@ -173,8 +92,8 @@ export default function KeySetEditor() {
                           if (!confirmation) return;
 
                           const new_state = {
-                            ...keyset,
-                            FrequencyKeys: keyset.FrequencyKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
+                            ...data,
+                            FrequencyKeys: data.FrequencyKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
                           };
 
                           mutateKeySet(new_state);
@@ -197,7 +116,7 @@ export default function KeySetEditor() {
               <CardTitle>Duration Keys</CardTitle>
               <CardDescription>Manage Duration Keys</CardDescription>
             </div>
-            <DurationDialogKeyCreator KeySet={keyset} Callback={addKeySetCallback} />
+            <DurationDialogKeyCreator KeySet={data} Callback={addKeyCallback} />
           </CardHeader>
           <CardContent className="flex-1">
             <Table>
@@ -209,7 +128,7 @@ export default function KeySetEditor() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {keyset.DurationKeys.map((key, index) => (
+                {data.DurationKeys.map((key, index) => (
                   <TableRow key={index}>
                     <TableCell>{key.KeyDescription}</TableCell>
                     <TableCell>{key.KeyName}</TableCell>
@@ -223,8 +142,8 @@ export default function KeySetEditor() {
                           if (!confirmation) return;
 
                           const new_state = {
-                            ...keyset,
-                            DurationKeys: keyset.DurationKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
+                            ...data,
+                            DurationKeys: data.DurationKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
                           };
 
                           mutateKeySet(new_state);
