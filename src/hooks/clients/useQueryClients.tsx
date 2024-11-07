@@ -1,44 +1,10 @@
 import { FolderHandleContext } from '@/context/folder-context';
 import { useContext, useEffect, useState } from 'react';
-import { QueryResponseStatus } from '../types/query-status';
 import { CleanUpString } from '@/lib/strings';
 import { displayConditionalNotification } from '@/lib/notifications';
-import { removeClientFolder } from '@/lib/files';
-
-type QueryResponseClients = {
-  status: QueryResponseStatus;
-  data: string[];
-  error?: string;
-};
-
-type QueryResponseClientsExpanded = QueryResponseClients & {
-  handle?: FileSystemDirectoryHandle;
-};
-
-const getClientFolders = async (Handle: FileSystemDirectoryHandle, Group: string): Promise<QueryResponseClients> => {
-  try {
-    const files = await Handle.getDirectoryHandle(CleanUpString(Group));
-    const entries = await files.values();
-    const temp_individuals = [] as string[];
-
-    for await (const entry of entries) {
-      if (entry.name === '.DS_Store') continue;
-
-      temp_individuals.push(entry.name);
-    }
-
-    return {
-      status: 'success',
-      data: temp_individuals,
-    };
-  } catch (error) {
-    return {
-      status: 'error',
-      data: [],
-      error: error as string,
-    };
-  }
-};
+import { QueryResponseClientsExpanded } from './types/query-response-type-clients';
+import { pullClientFolders } from './helpers/pull-client-folders';
+import { removeClientFolder } from './helpers/remove-client-folder';
 
 export default function useQueryClients(Group?: string) {
   const { handle, settings } = useContext(FolderHandleContext);
@@ -106,7 +72,7 @@ export default function useQueryClients(Group?: string) {
 
   useEffect(() => {
     if (handle && Group)
-      getClientFolders(handle, Group).then((response) => {
+      pullClientFolders(handle, Group).then((response) => {
         setData(response);
       });
     else setData({ status: 'error', data: [], error: 'No handle found' });

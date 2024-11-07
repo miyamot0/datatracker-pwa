@@ -14,10 +14,8 @@ import LoadingDisplay from '@/components/ui/loading-display';
 import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from '@/components/ui/table';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContext } from '@/context/folder-context';
-import useQueryEvaluations from '@/hooks/useQueryEvaluations';
-import { removeClientEvaluationFolder } from '@/lib/files';
+import useQueryEvaluations from '@/hooks/evaluations/useQueryEvaluations';
 import createHref from '@/lib/links';
-import { displayConditionalNotification } from '@/lib/notifications';
 import { CleanUpString } from '@/lib/strings';
 import { cn } from '@/lib/utils';
 import {
@@ -37,14 +35,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 export default function EvaluationsPage() {
   const { Group, Individual } = useParams();
   const { settings } = useContext(FolderHandleContext);
-  const { data, status, error, handle, refresh } = useQueryEvaluations(Group, Individual);
+  const { data, status, error, handle, addEvaluation, removeEvaluation } = useQueryEvaluations(Group, Individual);
 
-  /*
-  const [evaluations, setEvaluations] = useState<LoadingStructure>({
-    Status: 'loading',
-    Values: [],
-  });
-  */
   const navigate = useNavigate();
 
   if (!handle || !Group || !Individual) {
@@ -63,23 +55,6 @@ export default function EvaluationsPage() {
     return <div>{error}</div>;
   }
 
-  /*
-  useEffect(() => {
-    if (!handle || !Group || !Individual) {
-      navigate(createHref({ type: 'Dashboard' }), {
-        unstable_viewTransition: true,
-      });
-      return;
-    }
-
-    getClientEvaluationFolders(handle, Group, Individual, setEvaluations);
-  }, [handle, Group, Individual, navigate]);
-
-  if (!Group || !Individual || !handle) {
-    throw new Error('Params missing.');
-  }
-  */
-
   return (
     <PageWrapper
       breadcrumbs={[BuildGroupBreadcrumb(), BuildIndividualsBreadcrumb(Group)]}
@@ -97,40 +72,7 @@ export default function EvaluationsPage() {
                 variant={'outline'}
                 className="shadow"
                 onClick={async () => {
-                  const input = window.prompt('Enter a name for the new evaluation.');
-
-                  if (!input || !handle) return;
-
-                  if (data.includes(input)) {
-                    alert('Evaluation already exists.');
-                    return;
-                  }
-
-                  if (input.trim().length < 4) {
-                    alert('Evaluation name must be at least 4 characters long.');
-                    return;
-                  }
-
-                  const group_dir = await handle.getDirectoryHandle(CleanUpString(Group));
-                  const client_dir = await group_dir.getDirectoryHandle(CleanUpString(Individual));
-                  await client_dir.getDirectoryHandle(input, { create: true });
-
-                  /*
-                  const new_state = {
-                    ...evaluations,
-                    Values: [...evaluations.Values, input],
-                  };
-
-                  setEvaluations(new_state);
-                  */
-
-                  displayConditionalNotification(
-                    settings,
-                    'New Evaluation Created',
-                    'A folder for the new evaluation has been created.'
-                  );
-
-                  refresh();
+                  await addEvaluation();
                 }}
               >
                 <FilePlus className="w-4 h-4 mr-2" />
@@ -284,41 +226,7 @@ export default function EvaluationsPage() {
                             )}
                             disabled={settings.EnableFileDeletion === false}
                             onClick={async () => {
-                              const confirm_delete = window.confirm(
-                                'Are you sure you want to delete this evaluation?. This CANNOT be undone.'
-                              );
-
-                              if (confirm_delete) {
-                                try {
-                                  await removeClientEvaluationFolder(handle, Group, Individual, evaluation);
-
-                                  /*
-                                  const new_state = {
-                                    ...evaluations,
-                                    Values: evaluations.Values.filter((item) => item !== evaluation),
-                                  };
-
-                                  setEvaluations(new_state);
-                                  */
-
-                                  displayConditionalNotification(
-                                    settings,
-                                    'Evaluation Data Deleted',
-                                    'Evaluation data has been successfully deleted.'
-                                  );
-
-                                  refresh();
-                                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                } catch (error) {
-                                  displayConditionalNotification(
-                                    settings,
-                                    'Evaluation Data Deletion Error',
-                                    'An error occurred while deleting the evaluation data.',
-                                    3000,
-                                    true
-                                  );
-                                }
-                              }
+                              await removeEvaluation(evaluation);
                             }}
                           >
                             <FolderX className="mr-2 h-4 w-4" />

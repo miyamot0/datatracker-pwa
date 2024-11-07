@@ -112,21 +112,36 @@ export const GetAllKeyboardsQuery = async (Handle?: FileSystemDirectoryHandle) =
 
   if (!Handle) return keysets;
 
-  for await (const entry of Handle.values()) {
-    const individual_handle = await Handle.getDirectoryHandle(CleanUpString(entry.name), { create: false });
+  // Note: Handle = GROUPS
+  for await (const grp_entry of Handle.values()) {
+    const group_dir_handle = await Handle.getDirectoryHandle(CleanUpString(grp_entry.name), { create: false });
 
-    for await (const entry2 of individual_handle.values()) {
+    // Note: CLIENTS
+    for await (const client_entry of group_dir_handle.values()) {
       const keyboard_folder = await GetHandleKeyboardsFolder(
         Handle,
-        CleanUpString(entry.name),
-        CleanUpString(entry2.name)
+        CleanUpString(grp_entry.name),
+        CleanUpString(client_entry.name)
       );
 
-      for await (const entry3 of keyboard_folder.values()) {
-        const keyset_obj = await readKeyboardParameters(entry3);
+      // Note: KEYBOARDS
+      for await (const kb_entry of keyboard_folder.values()) {
+        if (kb_entry.kind === 'directory') continue;
 
-        if (keyset_obj)
-          keysets.push({ ...keyset_obj, Group: CleanUpString(entry.name), Individual: CleanUpString(entry2.name) });
+        if (kb_entry.name.includes('.json')) {
+          console.log(kb_entry.name);
+
+          const keyset_obj = await readKeyboardParameters(kb_entry);
+
+          console.log(keyset_obj);
+
+          if (keyset_obj)
+            keysets.push({
+              ...keyset_obj,
+              Group: CleanUpString(grp_entry.name),
+              Individual: CleanUpString(client_entry.name),
+            } satisfies KeySetExtended);
+        }
       }
     }
   }
@@ -291,59 +306,6 @@ export const getClientKeyboards = async (
     });
   }
 };
-
-// --- Folder Removal ---
-
-/**
- * Remove the individual client folder
- *
- * @param Handle The handle to the file system
- * @param Group The group name
- * @param Individual The individual name
- * @returns
- */
-export async function removeClientFolder(Handle: FileSystemDirectoryHandle, Group: string, Individual: string) {
-  const perms = await Handle.requestPermission({ mode: 'readwrite' });
-
-  if (perms === 'denied') {
-    toast.error('Permission denied to remove group folder.');
-    return;
-  }
-
-  const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
-
-  return await group_dir.removeEntry(Individual, { recursive: true });
-}
-
-/**
- * Remove the evaluation folder
- *
- * @param Handle The handle to the file system
- * @param Group The group name
- * @param Individual The individual name
- * @param Evaluation The evaluation name
- * @returns
- */
-export async function removeClientEvaluationFolder(
-  Handle: FileSystemDirectoryHandle,
-  Group: string,
-  Individual: string,
-  Evaluation: string
-) {
-  const perms = await Handle.requestPermission({ mode: 'readwrite' });
-
-  if (perms === 'denied') {
-    toast.error('Permission denied to remove group folder.');
-    return;
-  }
-
-  const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
-  const client_dir = await group_dir.getDirectoryHandle(CleanUpString(Individual));
-
-  return await client_dir.removeEntry(CleanUpString(Evaluation), {
-    recursive: true,
-  });
-}
 
 // --- File Management ---
 

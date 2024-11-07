@@ -1,5 +1,11 @@
 import { QueryResponseGroups } from '../types/query-response-type-groups';
 
+/**
+ * Pulls all group folders from the provided directory handle.
+ *
+ * @param Handle The handle to the file system
+ * @returns Groups in the relevant directory
+ */
 export const pullGroupFolders = async (Handle: FileSystemDirectoryHandle): Promise<QueryResponseGroups> => {
   try {
     const entries = await Handle.values();

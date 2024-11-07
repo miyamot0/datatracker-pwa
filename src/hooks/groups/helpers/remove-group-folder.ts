@@ -5,7 +5,6 @@ import { toast } from 'sonner';
  *
  * @param Handle The handle to the file system
  * @param Group The group name
- * @returns
  */
 export async function removeGroupFolder(Handle: FileSystemDirectoryHandle, Group: string) {
   const perms = await Handle.requestPermission({ mode: 'readwrite' });
