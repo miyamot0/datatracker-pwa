@@ -19,6 +19,7 @@ import { ResultsProportionVisualsPageShim } from './components/pages/viewer-visu
 import { ReliabilityViewerPageShim } from './components/pages/viewer-agreement/reli-viewer-page';
 import { SessionRecorderPageShim } from './components/pages/session-recorder/session-recorder-page';
 import ViewerKeysetPage from './components/pages/viewer-keysets/viewer-keysets-page';
+import ViewerEvaluationsPage from './components/pages/viewer-evaluations/viewer-evaluations-page';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -34,6 +35,7 @@ const router = createBrowserRouter(
       <Route path="/session/:Group/:Individual/keysets" element={<KeySetsPage />} />
       <Route path="/session/:Group/:Individual/keysets/import" element={<ViewerKeysetPage />} />
       <Route path="/session/:Group/:Individual/keysets/:KeySet" element={<KeySetEditor />} />
+      <Route path="/session/:Group/:Individual/import" element={<ViewerEvaluationsPage />} />
       <Route path="/session/:Group/:Individual/:Evaluation" element={<SessionDesignerShim />} />
       <Route path="/session/:Group/:Individual/:Evaluation/history" element={<DashboardHistoryPageShim />} />
       <Route path="/session/:Group/:Individual/:Evaluation/history/:Index" element={<SessionViewerPageShim />} />

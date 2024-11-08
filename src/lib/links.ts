@@ -35,6 +35,11 @@ export type RouteInformationType =
       individual: string;
     }
   | {
+      type: 'Evaluations Import';
+      group: string;
+      individual: string;
+    }
+  | {
       type: 'Session Designer';
       group: string;
       individual: string;
@@ -102,6 +107,8 @@ export default function createHref(route: RouteInformationType) {
       return `/session/${_(route.group)}`;
     case 'Evaluations':
       return `/session/${_(route.group)}/${_(route.individual)}`;
+    case 'Evaluations Import':
+      return `/session/${_(route.group)}/${_(route.individual)}/import`;
     case 'Session Designer':
       return `/session/${_(route.group)}/${_(route.individual)}/${_(route.evaluation)}`;
     case 'Evaluation Viewer':

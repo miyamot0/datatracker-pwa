@@ -24,6 +24,7 @@ import {
   Disc3,
   FilePlus,
   FolderX,
+  ImportIcon,
   KeyboardIcon,
   ScatterChartIcon,
   SearchIcon,
@@ -79,6 +80,23 @@ export default function EvaluationsPage() {
                 Create Evaluation
               </Button>
             </ToolTipWrapper>
+
+            <Link
+              unstable_viewTransition
+              to={createHref({
+                type: 'Evaluations Import',
+                group: Group,
+                individual: Individual,
+              })}
+            >
+              <ToolTipWrapper Label="Import an existing evaluation for the current individual">
+                <Button variant={'outline'} className="shadow">
+                  <ImportIcon className="w-4 h-4 mr-2" />
+                  Import Evaluation
+                </Button>
+              </ToolTipWrapper>
+            </Link>
+
             <Link
               unstable_viewTransition
               to={createHref({
