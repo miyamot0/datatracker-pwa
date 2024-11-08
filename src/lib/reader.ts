@@ -9,6 +9,7 @@ export async function readSavedSessionResult(file: FileSystemFileHandle) {
     const session_result = JSON.parse(file_text) as SavedSessionResult;
 
     return session_result ? session_result : undefined;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_) {
     return undefined;
   }

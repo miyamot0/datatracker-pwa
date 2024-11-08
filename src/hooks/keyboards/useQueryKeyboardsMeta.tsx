@@ -61,21 +61,31 @@ export default function useQueryKeyboardsMeta(Group?: string, Client?: string) {
   };
 
   useEffect(() => {
-    if (handle && Group && Client)
-      GetAllKeyboardsQuery(handle).then((keyboards) => {
-        // Note: Pull relevant keyboards to compare against
-        const client_keyboards = keyboards.filter(
-          (keyboard) => keyboard.Group === Group && keyboard.Individual === Client
-        );
-        const client_keyboards_by_name = client_keyboards.map((keyboard) => keyboard.Name);
+    try {
+      if (handle && Group && Client) {
+        GetAllKeyboardsQuery(handle).then((keyboards) => {
+          // Note: Pull relevant keyboards to compare against
+          try {
+            const client_keyboards = keyboards.filter(
+              (keyboard) => keyboard.Group === Group && keyboard.Individual === Client
+            );
+            const client_keyboards_by_name = client_keyboards.map((keyboard) => keyboard.Name);
 
-        // Note: Filter out duplicated names
-        const filteredKeyboards = keyboards.filter(
-          (keyboard) => keyboard.Individual !== Client && !client_keyboards_by_name.includes(keyboard.Name)
-        );
-        setData({ status: 'success', data: filteredKeyboards });
-      });
-    else setData({ status: 'error', data: [], error: 'No handle found' });
+            // Note: Filter out duplicated names
+            const filteredKeyboards = keyboards.filter(
+              (keyboard) => keyboard.Individual !== Client && !client_keyboards_by_name.includes(keyboard.Name)
+            );
+            setData({ status: 'success', data: filteredKeyboards });
+          } catch (err: unknown) {
+            setData({ status: 'error', data: [], error: (err as Error).message });
+          }
+        });
+      } else setData({ status: 'error', data: [], error: 'No handle found' });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setData({ status: 'error', data: [], error: err.message });
+      }
+    }
 
     return () => {};
   }, [handle, Group, Client, version]);
