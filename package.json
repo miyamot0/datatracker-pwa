@@ -114,5 +114,14 @@
     "vite": "^5.4.1",
     "vite-plugin-pwa": "^0.20.5",
     "vitest": "^2.1.1"
+  },
+  "findUnusedExports": {
+    "include": [
+      "./src/**/*.d.ts",
+      "src/**/*.{tsx,ts}"
+    ],
+    "exclude": [
+      "./src/components/ui/*.{tsx,ts}"
+    ]
   }
 }

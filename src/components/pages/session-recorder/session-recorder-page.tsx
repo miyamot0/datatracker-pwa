@@ -115,7 +115,7 @@ const TIME_UNIT = 1000;
 // Increment--Proportional to seconds change
 const INCREMENT = TIME_DELTA / TIME_UNIT;
 
-export default function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Settings }: Props) {
+function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Settings }: Props) {
   const navigator_ = useNavigate();
   const { settings: applicationSettings } = useContext(FolderHandleContext);
 

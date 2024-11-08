@@ -11,7 +11,7 @@ export type QueryResponseKeyboardsExpanded = QueryResponseKeyboards & {
   handle?: FileSystemDirectoryHandle;
 };
 
-export type QueryResponseKeyboardsMeta = {
+type QueryResponseKeyboardsMeta = {
   status: QueryResponseStatus;
   data: KeySetExtended[];
   error?: string;
@@ -25,8 +25,4 @@ export type QueryResponseSingleKeyboard = {
   status: QueryResponseStatus;
   data?: KeySet;
   error?: string;
-};
-
-export type QueryResponseSingleKeyboardExpanded = QueryResponseSingleKeyboard & {
-  handle?: FileSystemDirectoryHandle;
 };

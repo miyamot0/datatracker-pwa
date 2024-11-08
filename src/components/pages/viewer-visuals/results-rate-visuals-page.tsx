@@ -71,7 +71,7 @@ type Props = {
   Evaluation: string;
 };
 
-export function ResultsRateVisualsPage({ Handle, Group, Individual, Evaluation }: Props) {
+function ResultsRateVisualsPage({ Handle, Group, Individual, Evaluation }: Props) {
   const [results, setResults] = useState<SavedSessionResult[]>([]);
   const [keySet, setKeySet] = useState<KeySet>();
   const [filteredKeys, setFilteredKeys] = useState([] as ExpandedKeySetInstance[]);

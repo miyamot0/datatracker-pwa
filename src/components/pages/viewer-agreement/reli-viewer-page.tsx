@@ -60,13 +60,6 @@ export function ReliabilityViewerPageShim() {
 
   if (!handle) return <LoadingDisplay />;
 
-  //if (!Group || !Individual || !Evaluation) {
-  //  navigate(createHref({ type: 'Dashboard' }), {
-  //        unstable_viewTransition: true,
-  //      });
-  //  return;
-  // }
-
   if (handle && !keySet) {
     return (
       <ReliabilityBlank
@@ -124,7 +117,7 @@ type Props = {
   ScoredDuration: ScoredKey[][];
 };
 
-export default function ReliabilityViewerPage({
+function ReliabilityViewerPage({
   Group,
   Individual,
   Evaluation,

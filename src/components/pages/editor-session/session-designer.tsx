@@ -93,7 +93,7 @@ type Props = {
   SetConditions: Dispatch<SetStateAction<string[]>>;
 };
 
-export default function SessionDesigner({
+function SessionDesigner({
   Handle,
   Group,
   Individual,

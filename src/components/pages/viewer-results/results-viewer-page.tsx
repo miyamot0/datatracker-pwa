@@ -59,7 +59,7 @@ type Props = {
   Evaluation: string;
 };
 
-export default function ResultsViewerPage({ Handle, Group, Individual, Evaluation }: Props) {
+function ResultsViewerPage({ Handle, Group, Individual, Evaluation }: Props) {
   const [results, setResults] = useState<SavedSessionResult[]>([]);
   const [keySet, setKeySet] = useState<KeySet>();
   const [role, setRole] = useState<DataCollectorRolesType>('Primary');

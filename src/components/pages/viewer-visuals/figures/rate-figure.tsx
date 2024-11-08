@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { ResponsiveContainer, ComposedChart, Line, Scatter, XAxis, Label, YAxis, Tooltip, Legend } from 'recharts';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
@@ -6,7 +7,7 @@ import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-s
 import { generateChartPreparation, generateTicks, GetUniqueConditions } from '../helpers/filtering';
 import { SavedSessionResult } from '@/lib/dtos';
 
-export type DisplayMode = 'CTB' | 'Individual';
+//export type DisplayMode = 'CTB' | 'Individual';
 
 export type ExpandedKeySetInstance = {
   KeyDescription: string;
@@ -26,6 +27,7 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
   const { Data, MinX, MaxX } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Frequency');
 
   const preparedData = Data.map((data) => {
+    // eslint-disable-next-line prefer-const
     let temp_obj = {} as any;
     temp_obj.session = data.Session;
     temp_obj.Condition = data.Condition;
@@ -148,7 +150,7 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
             const index_dynamic = index_main % FIGURE_PATH_COLORS.length;
 
             const lines = KeySetFull.filter((key) => key.Visible === true).map((key, index) => {
-              let shape = getShape(index);
+              const shape = getShape(index);
 
               return (
                 <React.Fragment key={`${index_main}-${index}`}>
@@ -229,7 +231,7 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
           <Tooltip
             animationDuration={100}
             content={
-              //@ts-ignore
+              //@ts-expect-error - recharts is not typed correctly
               <CustomTooltip />
             }
           />

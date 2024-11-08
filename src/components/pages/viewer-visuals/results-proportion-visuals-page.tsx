@@ -72,7 +72,7 @@ type Props = {
   Evaluation: string;
 };
 
-export function ResultsProportionVisualsPage({ Handle, Group, Individual, Evaluation }: Props) {
+function ResultsProportionVisualsPage({ Handle, Group, Individual, Evaluation }: Props) {
   const [results, setResults] = useState<SavedSessionResult[]>([]);
   const [keySet, setKeySet] = useState<KeySet>();
 

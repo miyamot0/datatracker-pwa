@@ -61,7 +61,7 @@ type Props = {
   Evaluation: string;
 };
 
-export default function DashboardHistoryPage({ Handle, Group, Individual, Evaluation }: Props) {
+function DashboardHistoryPage({ Handle, Group, Individual, Evaluation }: Props) {
   const [sessions, setSessionsData] = useState<SavedSessionResult[]>([]);
 
   useEffect(() => {

@@ -11,7 +11,10 @@ export type KeyManageType = {
   ScheduleIndicator?: 'Start' | 'End';
 };
 
-export type SessionRecordingState = {
+export type TimerSetting = 'Primary' | 'Secondary' | 'Tertiary' | 'Stopped';
+
+/*
+type SessionRecordingState = {
   FrequencyKeys: {
     KeyName: string;
     KeyDescription: string;
@@ -27,9 +30,8 @@ export type SessionRecordingState = {
   }[];
 };
 
-export type TimerSetting = 'Primary' | 'Secondary' | 'Tertiary' | 'Stopped';
-
 export const DEFAULT_SESSION_RECORDING_STATE: SessionRecordingState = {
   FrequencyKeys: [],
   DurationKeys: [],
 };
+*/

@@ -84,7 +84,7 @@ export function SessionViewerPageShim() {
   );
 }
 
-export default function SessionViewerPage({ Handle, Group, Individual, Evaluation, FileString }: Props) {
+function SessionViewerPage({ Handle, Group, Individual, Evaluation, FileString }: Props) {
   const [session, setSessionData] = useState<ExpandedSavedSessionResult | undefined>(undefined);
   const [plot_object, setPlotObject] = useState<any[] | undefined>(undefined);
   const [filteredKeys, setFilteredKeys] = useState([] as ExpandedKeySetInstance[]);
