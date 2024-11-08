@@ -36,54 +36,34 @@ export const pullAllEvaluationFolders = async (
               if (eval_entry.name === '.DS_Store') continue;
 
               if (eval_entry.kind === 'directory') {
-                console.log(grp_entry.name);
-                console.log(indiv_entry.name);
-                console.log(eval_entry.name);
+                const evaluation_folder = await individual_folder.getDirectoryHandle(eval_entry.name);
+                const condition_entries = await evaluation_folder.values();
+
+                const conditions = [] as string[];
+
+                for await (const condition_entry of condition_entries) {
+                  if (condition_entry.name === '.DS_Store') continue;
+                  if (condition_entry.kind === 'file') continue;
+
+                  if (indiv_entry.kind === 'directory') {
+                    conditions.push(condition_entry.name);
+                  }
+                }
 
                 const eval_record = {
                   Group: grp_entry.name,
                   Individual: indiv_entry.name,
                   Evaluation: eval_entry.name,
-                  Conditions: [],
+                  Conditions: conditions,
                 } satisfies EvaluationRecord;
 
                 temp_evaluation_folders.push(eval_record);
-
-                // Note: This is for the Group folder
-                //const evaluation_folder = await individual_folder.getDirectoryHandle(grp_entry.name);
-                //const condition_entries = await evaluation_folder.values();
-
-                /*
-                for await (const indiv_entry of individual_entries) {
-                  if (indiv_entry.name === '.DS_Store') continue;
-
-                  if (indiv_entry.kind === 'directory') {
-                    // Note: This is for the Individual's folder
-                    const individual_folder = await Handle.getDirectoryHandle(indiv_entry.name);
-                    const evaluation_entries = await group_folder.values();
-                  }
-                }
-                */
               }
             }
           }
         }
       }
     }
-
-    //temp_evaluation_folders.push(entry.name);
-    /*
-    const group_folder = await Handle.getDirectoryHandle(CleanUpString(Group));
-    const individual_folder = await group_folder.getDirectoryHandle(CleanUpString(Client));
-    const entries = await individual_folder.values();
-
-
-    for await (const entry of entries) {
-      if (entry.name === '.DS_Store') continue;
-
-      if (entry.kind === 'directory') temp_evaluation_folders.push(entry.name);
-    }
-    */
 
     return {
       status: 'success',
