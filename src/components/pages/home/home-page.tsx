@@ -109,6 +109,13 @@ export default function HomePage() {
             Install Application
           </Button>
         )}
+
+        <Link to={'/dashboard/sync'} className="flex flex-row" unstable_viewTransition>
+          <Button variant={'outline'} className="w-full shadow-xl">
+            <ChartLineIcon className="mr-2 h-4 w-4" />
+            Sync (Beta)
+          </Button>
+        </Link>
       </div>
     </PageWrapper>
   );

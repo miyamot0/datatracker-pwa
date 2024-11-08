@@ -20,12 +20,14 @@ import { ReliabilityViewerPageShim } from './components/pages/viewer-agreement/r
 import { SessionRecorderPageShim } from './components/pages/session-recorder/session-recorder-page';
 import ViewerKeysetPage from './components/pages/viewer-keysets/viewer-keysets-page';
 import ViewerEvaluationsPage from './components/pages/viewer-evaluations/viewer-evaluations-page';
+import ViewSyncPage from './components/pages/viewer-sync-queue/view-sync-page';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">
       <Route index element={<HomePage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/dashboard/sync" element={<ViewSyncPage />} />
 
       <Route path="/documentation" element={<DocumentationListingPage />} />
       <Route path="/documentation/:slug" element={<DocumentationEntryPage />} />
