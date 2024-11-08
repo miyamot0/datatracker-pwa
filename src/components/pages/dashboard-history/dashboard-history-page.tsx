@@ -107,9 +107,11 @@ function DashboardHistoryPage({ Handle, Group, Individual, Evaluation }: Props) 
             <TableHeader>
               <TableRow>
                 <TableHead>Session (Recorder Role)</TableHead>
+                <TableHead>Data Collector</TableHead>
                 <TableHead>Condition</TableHead>
                 <TableHead>Total Duration</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead>Date Recorded</TableHead>
+                <TableHead>Termination</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -131,11 +133,15 @@ function DashboardHistoryPage({ Handle, Group, Individual, Evaluation }: Props) 
                       {`${session.SessionSettings.Role}`}
                     </p>
                   </TableCell>
+                  <TableCell>{session.SessionSettings.Initials}</TableCell>
                   <TableCell>{session.SessionSettings.Condition}</TableCell>
                   <TableCell>
                     {(session.TimerMain / 60).toFixed(2)} {`(${session.TimerMain.toFixed(2)}s)`}
                   </TableCell>
-                  <TableCell>{new Date(session.SessionStart).toLocaleDateString()}</TableCell>
+                  <TableCell>{`${new Date(session.SessionEnd).toLocaleDateString()} ${new Date(
+                    session.SessionEnd
+                  ).toLocaleTimeString()}`}</TableCell>
+                  <TableCell>{session.EndedEarly === true ? 'Manual Termination' : 'Planned Termination'}</TableCell>
                   <TableCell className="flex flex-row justify-end">
                     <Link
                       className="flex flex-row items-center"

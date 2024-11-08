@@ -30,7 +30,7 @@
     "research software"
   ],
   "license": "Apache-2.0",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
