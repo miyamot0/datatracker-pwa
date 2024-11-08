@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingDisplay from '@/components/ui/loading-display';
-import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import useQueryEvaluationsMeta from '@/hooks/evaluations/useQueryEvaluationsMeta';
 import createHref from '@/lib/links';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -65,7 +65,17 @@ export default function ViewerEvaluationsPage() {
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody></TableBody>
+            <TableBody>
+              {data.map((record) => (
+                <TableRow key={record.Evaluation}>
+                  <TableCell>{record.Group}</TableCell>
+                  <TableCell>{record.Individual}</TableCell>
+                  <TableCell>{record.Evaluation}</TableCell>
+                  <TableCell>{record.Conditions.join(', ')}</TableCell>
+                  <TableCell>...</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
           </Table>
         </CardContent>
       </Card>
