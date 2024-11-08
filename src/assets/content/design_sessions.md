@@ -3,7 +3,7 @@ title: Customizing Session Parameters using Session Designer Page
 date: 09/26/2024
 keywords: 'Session Designer, Session Conditions, Timers'
 author: 'Shawn Gilroy'
-index: 7
+index: 8
 ---
 
 The **Session Designer** is a critical element of the DataTracker program. This interface allows users to set up and customize details for a specific type of session. This interface is designed to be used in relation to a particular **Evaluation** folder, which enabling users to configure the necessary parameters for recording and analyzing behavior during a session for that **Evaluation** (e.g., "Control" vs. "Test" **Condition**). The **Session Designer** is where users can define the session's structure (e.g., duration of session, how it should conclude), so that aspects of the data collection process are aligned with the study's goals and requirements. As a general default, the **Session Designer** supports the user by caching session parameters to simplify operations, such as incrementing session numbering after each session and automatically populating prior parameters.

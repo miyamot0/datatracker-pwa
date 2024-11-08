@@ -12,16 +12,14 @@ This document provides an overview of the recommended organizational structure f
 
 ### Approving DataTracker access
 
-DataTracker is a website at its core. It does not have access to your hard drive as an installable program would (and for very good reason). Because of how this program is designed, you are prompted to approve the program access to **a specific** folder on your hard drive whenever you use it. This is happen once **every time** you use the program for security purposes. The interface will provide cues to indicate to the user if relevant access has or has not been authorized.
+DataTracker is a website at its core. It does not have access to your hard drive as an installable program would (and for very good reason). Because of how this program is designed, you are prompted to approve the program access to **a specific** folder on your hard drive whenever you use it. This is happen once **every time** you use the program for security purposes. The interface will provide cues to indicate to the user if relevant access has or has not been authorized. Images visualizing each status are shown below:
 
-<div align="center" width="100%">
-    <img src="/docs/access_not_authorized.png" alt="Image of access not being authorized"/>
-    <img src="/docs/access_authorized.png" alt="Image of access being authorized"/>
+<div align="middle" width="100%">
+    <img src="/docs/access_not_authorized.png" alt="Image of access not being authorized" />
+    <img src="/docs/access_authorized.png" alt="Image of access being authorized" />    
 </div>
 
-As a general practice, the program will prompt you to use a Folder named DataTracker (e.g., "DataTracker" folder on your Desktop). This is largely as a prompt for users to avoid accidentally loading a "Group" folder as if it were a "DataTracker" folder.
-
-This can be disabled, but for good practice, it is kept as a default setting. Using **Google Chrome** in Windows, this could appear as the following:
+As a general practice, the program will prompt you to use a Folder named DataTracker (e.g., "DataTracker" folder in your Documents folder or on your Desktop). This is largely as a prompt for users to avoid accidentally loading a "Group" folder as if it were a "DataTracker" folder. This can be disabled, but for good practice, it is kept as a default setting. Using **Google Chrome** in Windows, this could appear as the following:
 
 <div align="center" width="100%">
     <img src="/docs/approve_folder.png" alt="Image of relevant 'DataTracker' folder being selected"/>

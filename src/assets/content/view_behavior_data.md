@@ -3,7 +3,7 @@ title: Reviewing and Exporting Saved Data
 date: 09/27/2024
 keywords: 'Data Inspection, Data Export'
 author: 'Shawn Gilroy'
-index: 9
+index: 10
 ---
 
 The DataTracker provides a way to view the data from an **Evaluation**. This is useful for inspecting the data that was collected during for a session as well as across various sessions and conditions (e.g., Attention, Demand conditions of functional analysis). Options for working with saved **Evaluation** data can be found by selecting the "View Evaluation Data" from the dropdown menu in the **Evaluation** page. Clicking on this entry in the dropdown will navigate to the **View Evaluation Data** page.

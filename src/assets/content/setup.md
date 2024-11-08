@@ -40,18 +40,26 @@ Once installed, the program is a 'web app' that can be used similar to a nativel
 
 ##### Installation on Microsoft Edge (Recommended)
 
-On a Windows machine, it is simplest to install DataTracker using **Microsoft Edge**. This is easiest for Windows users because there is no need to install any additional software (e.g., **Google Chrome**). You can install the program by selecting the 'Install' button on the home screen, or alternatively, you can install the program manually by selecting the 'Install' option in the browser menu.
+On a Windows machine, it is simplest to install DataTracker using **Microsoft Edge**. This is easiest for Windows users because there is no need to install any additional software (e.g., **Google Chrome**). You can install the program by selecting the 'Install' button on the home screen, or alternatively, you can install the program manually by selecting the 'Install' option in the browser menu. A visual of the native support provided via **Microsoft Edge** is shown below.
+
+<div align="center" width="100%">
+    <img src="/docs/edge_install.png" alt="Image of DataTracker install option on Edge"/>
+</div>
 
 ##### Alternative Installation on Google Chrome
 
-The installation of DataTracker on **Google Chrome** is also straightforward. This is largely the same process as with **Microsoft Edge**, but would require the installation of **Google Chrome** if you do not already have it on your machine.
+The installation of DataTracker on **Google Chrome** is also straightforward. This is largely the same process as with **Microsoft Edge**, but would require the installation of **Google Chrome** if you do not already have it on your machine. You can install the program by selecting the 'Install' button on the home screen, or alternatively, you can install the program manually by selecting the 'Install' option in the browser menu. A visual of the native support provided via **Google Chrome** is shown below.
+
+<div align="center" width="100%">
+    <img src="/docs/chrome_install.png" alt="Image of DataTracker install option on Chrome"/>
+</div>
 
 #### Installation for MacOS Users
 
 ##### Installation on Google Chrome (Recommended)
 
-Although native options for MacOS are possible, it is more universally supported to install DataTracker using **Google Chrome**. This is the most straightforward option for MacOS users, as it is among the most widely used browsers and is well-supported for PWA installations. You can install the program by selecting the 'Install' button on the home screen, or alternatively, you can install the program manually by selecting the 'Install' option in the browser menu.
+Although native options for MacOS are possible, it is more universally supported to install DataTracker using **Google Chrome**. This is the most straightforward option for MacOS users, as it is among the most widely used browsers and is well-supported for PWA installations. You can install the program by selecting the 'Install' button on the home screen, or alternatively, you can install the program manually by selecting the 'Install' option in the browser menu. The process for doing so is identical to that on Windows machines.
 
 ##### Installation on Apple Safari
 
-Installation on **Apple Safari** is only possible for those running the Sonoma build of MacOS. Additionally, this is not universally supported and may not be available in all regions. Should your machine meet the criteria for installation per Apple's standards, you would have to navigate to the DataTracker website and manually install the program as a PWA (i.e., File > "Add to Dock").
+Installation on **Apple Safari** is only possible for those running the Sonoma build of MacOS. Additionally, this is not universally supported and may not be available in all regions. Should your machine meet the criteria for installation per Apple's standards, you would have to navigate to the DataTracker website and manually install the program as a PWA (i.e., File > "Add to Dock"). However, due to restrictions and limited support in MacOS, it is generally recommended to use **Google Chrome** for installation on MacOS at this time.

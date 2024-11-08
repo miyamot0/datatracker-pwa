@@ -25,6 +25,13 @@ export default function DocumentationEntryPage() {
   const prev_entry = DocumentationObjects.find((e) => e.matter.index === entry.matter.index - 1);
   const next_entry = DocumentationObjects.find((e) => e.matter.index === entry.matter.index + 1);
 
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
   return (
     <PageWrapper breadcrumbs={[BuildDocumentationBreadcrumb()]} label={entry.matter.title}>
       <Card className="w-full max-w-screen-2xl">
@@ -55,6 +62,7 @@ export default function DocumentationEntryPage() {
           <Link
             unstable_viewTransition
             to={`/documentation/${prev_entry?.matter.filename.replaceAll('.md', '')}`}
+            onClick={scrollToTop}
             className={cn('flex flex-row', {
               'pointer-events-none disabled': !prev_entry,
             })}
@@ -68,6 +76,7 @@ export default function DocumentationEntryPage() {
           <Link
             unstable_viewTransition
             to={`/documentation/${next_entry?.matter.filename.replaceAll('.md', '')}`}
+            onClick={scrollToTop}
             className={cn('flex flex-row', {
               'pointer-events-none disabled': !next_entry,
             })}
