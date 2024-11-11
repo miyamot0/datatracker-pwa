@@ -10,7 +10,7 @@ import {
 import AuthorizationStatus from './authorization-status';
 import createHref from '@/lib/links';
 import { Button } from '@/components/ui/button';
-import { MenuIcon, RefreshCcw } from 'lucide-react';
+import { BookTextIcon, MenuIcon, RefreshCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { FolderHandleContext } from '@/context/folder-context';
@@ -67,6 +67,17 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
 
       <div className="flex flex-row gap-2 items-center">
         <AuthorizationStatus />
+
+        <Link
+          to={createHref({ type: 'Documentation' })}
+          className="flex flex-row gap-2 items-center"
+          unstable_viewTransition
+        >
+          <Button variant={'outline'} className="shadow-xl text-primary h-10 p-0 m-0 w-10 xl:w-fit xl:px-4">
+            <BookTextIcon className="h-4 w-4" />
+            <span className={cn('ml-2 hidden xl:block xl:p-0')}>Docs</span>
+          </Button>
+        </Link>
 
         <Link
           unstable_viewTransition

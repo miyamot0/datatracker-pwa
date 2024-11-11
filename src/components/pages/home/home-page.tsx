@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { BookTextIcon, ChartLineIcon, HardDriveDownloadIcon, PackageIcon } from 'lucide-react';
+import { ChartLineIcon, HardDriveDownloadIcon, PackageIcon } from 'lucide-react';
 import PageWrapper from '@/components/layout/page-wrapper';
 import createHref from '@/lib/links';
 import {
@@ -42,13 +42,6 @@ export default function HomePage() {
       <ImageCarousel />
 
       <div className="max-w-lg flex flex-col w-full py-8 gap-4">
-        <Link to={createHref({ type: 'Documentation' })} className="flex flex-row" unstable_viewTransition>
-          <Button variant={'outline'} className="w-full shadow-xl">
-            <BookTextIcon className="mr-2 h-4 w-4" />
-            Documentation
-          </Button>
-        </Link>
-
         <Dialog>
           <DialogTrigger asChild>
             <Button variant={'outline'} className="w-full shadow-xl">
