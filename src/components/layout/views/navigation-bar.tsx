@@ -79,9 +79,10 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
             name="Sync button"
             aria-label="Sync Button"
             variant="navigation"
-            className="shadow-xl text-primary h-10 w-10 p-0 m-0"
+            className="shadow-xl text-primary h-10 p-0 m-0 w-10 xl:w-fit xl:px-4"
           >
             <RefreshCcw className="h-4 w-4" />
+            <span className={cn('ml-2 hidden xl:block xl:p-0')}>Sync</span>
           </Button>
         </Link>
 
@@ -94,9 +95,10 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
             name="Settings button"
             aria-label="Settings Button"
             variant="navigation"
-            className="shadow-xl text-primary h-10 w-10 p-0 m-0"
+            className="shadow-xl text-primary h-10 p-0 m-0 w-10 xl:w-fit xl:px-4"
           >
             <MenuIcon className="h-4 w-4" />
+            <span className={cn('ml-2 hidden xl:block xl:p-0')}>Settings</span>
           </Button>
         </Link>
       </div>
