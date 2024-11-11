@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Version-0.3.0-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge](https://img.shields.io/badge/Version-0.3.1-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 # DataTracker (PWA Application)
 
@@ -28,6 +28,7 @@ Features included in DataTracker include:
 - 0.2.8 - Tag manager to help with error logging, some UI changes for clarity
 - 0.2.9 - Add in support for importing keysets from other cases, cleaner hooks and workflow
 - 0.3.0 - Add in support for importing evaluations from other cases
+- 0.3.1 - Support for backing up data to a remote location
 
 ## Features
 
@@ -137,5 +138,5 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Version
 
-Version 0.3.0
+Version 0.3.1
 

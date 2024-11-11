@@ -5,9 +5,7 @@ import { FolderHandleContext } from '@/context/folder-context';
 import { useContext } from 'react';
 import { displayConditionalNotification } from '@/lib/notifications';
 
-type Props = {};
-
-export default function UnauthorizedDisplay({}: Props) {
+export default function UnauthorizedDisplay() {
   const { setHandle, settings } = useContext(FolderHandleContext);
 
   return (

@@ -28,6 +28,7 @@ Features included in DataTracker include:
 - 0.2.8 - Tag manager to help with error logging, some UI changes for clarity
 - 0.2.9 - Add in support for importing keysets from other cases, cleaner hooks and workflow
 - 0.3.0 - Add in support for importing evaluations from other cases
+- 0.3.1 - Support for backing up data to a remote location
 
 ## Features
 

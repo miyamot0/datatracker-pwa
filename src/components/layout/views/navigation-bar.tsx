@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -10,9 +10,10 @@ import {
 import AuthorizationStatus from './authorization-status';
 import createHref from '@/lib/links';
 import { Button } from '@/components/ui/button';
-import { MenuIcon } from 'lucide-react';
+import { MenuIcon, RefreshCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { FolderHandleContext } from '@/context/folder-context';
 
 export type BreadCrumbListing = {
   label: string;
@@ -25,6 +26,8 @@ type Props = {
 };
 
 export default function NavigationBar({ breadcrumbs, label }: Props) {
+  const { handle } = useContext(FolderHandleContext);
+
   return (
     <div className={cn('flex flex-row justify-between w-full max-w-screen-2xl py-4 items-center select-none')}>
       <Breadcrumb>
@@ -64,6 +67,23 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
 
       <div className="flex flex-row gap-2 items-center">
         <AuthorizationStatus />
+
+        <Link
+          unstable_viewTransition
+          to={createHref({ type: 'Sync Page' })}
+          className={cn('flex flex-row gap-2 items-center', {
+            'disabled cursor-default pointer-events-none opacity-50': !handle,
+          })}
+        >
+          <Button
+            name="Sync button"
+            aria-label="Sync Button"
+            variant="navigation"
+            className="shadow-xl text-primary h-10 w-10 p-0 m-0"
+          >
+            <RefreshCcw className="h-4 w-4" />
+          </Button>
+        </Link>
 
         <Link
           unstable_viewTransition

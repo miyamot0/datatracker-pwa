@@ -81,6 +81,9 @@ export type RouteInformationType =
       group: string;
       individual: string;
       evaluation: string;
+    }
+  | {
+      type: 'Sync Page';
     };
 
 /**
@@ -125,6 +128,8 @@ export default function createHref(route: RouteInformationType) {
       return `/session/${_(route.group)}/${_(route.individual)}/${_(route.evaluation)}/reli`;
     case 'Keysets':
       return `/session/${_(route.group)}/${_(route.individual)}/keysets`;
+    case 'Sync Page':
+      return '/dashboard/sync';
     default:
       return '/';
   }
