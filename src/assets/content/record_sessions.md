@@ -3,7 +3,7 @@ title: Recording Behavior using Session Recorder Page
 date: 09/26/2024
 keywords: 'Data Collection, Session Recording'
 author: 'Shawn Gilroy'
-index: 8
+index: 9
 ---
 
 The **Session Recorder** page is the main interface for actively collecting data while session is underway. This page integrates the parameters set in the **Session Designer**, including the **Keyboard** (i.e., behavior/key mappings). Once the session begins, the data collector uses the pre-defined keys to log behaviors and manage timers in real-time. The interface is designed for efficiency and accuracy, ensuring that all relevant data is captured during the observation period.
