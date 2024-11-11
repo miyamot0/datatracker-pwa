@@ -54,7 +54,7 @@ export function SyncOptionIndicator({
   return (
     <Button
       size={'sm'}
-      variant={'default'}
+      variant={'outline'}
       onClick={async () => {
         if (!remoteDirectory || !handle) return;
 

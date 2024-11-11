@@ -99,6 +99,8 @@ export default function ViewSyncPage() {
           <div className="flex flex-row gap-2">
             <Button
               disabled={!!remoteDirectory}
+              variant={'outline'}
+              className="shadow"
               size={'sm'}
               onClick={async () => {
                 const options = {
@@ -151,7 +153,7 @@ export default function ViewSyncPage() {
                     <TableRow key={index}>
                       <TableCell>{value.file}</TableCell>
                       <TableCell>
-                        <Badge>Available</Badge>
+                        <Badge variant={'outline'}>Available</Badge>
                       </TableCell>
                       <TableCell>
                         <SyncOptionIndicator
