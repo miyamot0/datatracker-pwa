@@ -3,7 +3,7 @@ title: Syncing Data to Shared a Location(s)
 date: 11/11/2024
 keywords: 'Data Export, Data Management, Syncing Data'
 author: 'Shawn Gilroy'
-index: 13
+index: 12
 ---
 
 The DataTracker program, by design, focuses on the collection and management of behavioral data on a single machine. Although this is typically the case for many research and clinical settings, there are instances where data needs to be shared across multiple devices or platforms. In such cases, it is required to have some method of syncing data to shared locations to ensure that all users have access to the most up-to-date information.
@@ -36,10 +36,16 @@ The screen for syncing files provides a button for authorizing the Remote Backup
     <img src="/docs/sync_screen_folder_auth.png" alt="Visual of sync screen with button auth"/>
 </div>
 
-Upon providing access to the Remote Backup location, the program will provide a list of files that can be moved to the selected location. The user can then indicate which files should be moved and which should be left in place. As a general default, files copied to the Remote Backup location are removed from the current page but are not deleted from the main DataTracker folder. An illustration of this is provided below.
+Upon providing access to the Remote Backup location, the program will provide a list of files that can be moved to the selected location. The user can then indicate which files should be moved and which should be left in place. As a general default, files copied to the Remote Backup location are removed from the current page but are not deleted from the main DataTracker folder. An illustration of the interface for moving data FROM the the main (i.e., 'Local') location to the secondary (i.e., 'Remote') location is provided below.
 
 <div align="center" width="100%">
-    <img src="/docs/sync_screen_folders_list.png" alt="Visual of sync screen with button auth"/>
+    <img src="/docs/sync_screen_folders_list.png" alt="Visual of sync screen TO remote"/>
+</div>
+
+Alternatively, the user can move files from the Remote Backup location to the main DataTracker folder. This is done by selecting the files to be moved and clicking the 'Move to Local' button. This is often useful when preparing a machine for a Reliability data collector (e.g., pulling KeySets to a new machine). An illustration of this interface is provided below.
+
+<div align="center" width="100%">
+    <img src="/docs/sync_screen_folders_list_from.png" alt="Visual of sync screen FROM remote"/>
 </div>
 
 This is the recommended approach for syncing data to shared locations, as it provides a straightforward and user-friendly way to keep data in sync across multiple devices.

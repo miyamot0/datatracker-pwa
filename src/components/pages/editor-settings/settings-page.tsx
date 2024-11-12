@@ -21,11 +21,9 @@ import {
 } from '@/types/settings';
 import { displayConditionalNotification } from '@/lib/notifications';
 import { useTheme } from '@/components/ui/theme-provider';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 export default function SettingsPage() {
-  const { settings, setSettings, remote_handle, setRemoteHandle, saveSettings } = useContext(FolderHandleContext);
+  const { settings, setSettings, saveSettings } = useContext(FolderHandleContext);
   const { setTheme, theme } = useTheme();
 
   return (
@@ -38,54 +36,6 @@ export default function SettingsPage() {
           </div>
         </CardHeader>
         <CardContent className="min-h-96 flex flex-col justify-start gap-6">
-          <SettingsFormItemWrapper
-            Label="Set Remote Directory"
-            Description={remote_handle ? `Current Folder: ${remote_handle.name}` : 'Current Folder: N/A'}
-          >
-            <Button
-              variant={'outline'}
-              className={cn('w-full md:max-w-[250px]', {
-                'border-red-600': !remote_handle,
-                'border-green-600': !!remote_handle,
-              })}
-              onClick={async () => {
-                const options = {
-                  startIn: 'documents',
-                  mode: 'readwrite',
-                } as DirectoryPickerOptions;
-
-                try {
-                  const directory_picker = await window.showDirectoryPicker(options);
-
-                  if (settings.EnforceDataFolderName === true && directory_picker.name !== 'DataTracker') {
-                    displayConditionalNotification(
-                      settings,
-                      'Error Authorizing Remote Directory',
-                      "Please select a remote folder named 'DataTracker' to continue.",
-                      3000,
-                      true
-                    );
-                    return;
-                  }
-
-                  if (directory_picker) {
-                    setRemoteHandle(directory_picker);
-
-                    displayConditionalNotification(
-                      settings,
-                      'Access Authorized',
-                      'You can you interact with files in the relevant folder.'
-                    );
-                  }
-                } catch (error) {
-                  console.error(error);
-                }
-              }}
-            >
-              {!remote_handle !== false ? 'Set Remote Backup' : 'Remote Backup Set'}
-            </Button>
-          </SettingsFormItemWrapper>
-
           <SettingsFormItemWrapper
             Label="Theme/Display Options"
             Description="Toggle light/dark/system Themes for preference"

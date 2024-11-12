@@ -7,8 +7,6 @@ import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useState
 export const FolderHandleContext = createContext({
   handle: undefined as FileSystemDirectoryHandle | undefined,
   setHandle: undefined as unknown as Dispatch<SetStateAction<FileSystemDirectoryHandle | undefined>>,
-  remote_handle: undefined as FileSystemDirectoryHandle | undefined,
-  setRemoteHandle: undefined as unknown as Dispatch<SetStateAction<FileSystemDirectoryHandle | undefined>>,
   settings: DEFAULT_APPLICATION_SETTINGS,
   setSettings: undefined as unknown as Dispatch<SetStateAction<ApplicationSettingsTypes>>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -23,7 +21,6 @@ export const FolderHandleContext = createContext({
  */
 export function FolderContextProvider({ children }: { children: ReactNode }) {
   const [handle, setHandle] = useState<FileSystemDirectoryHandle | undefined>();
-  const [remote_handle, setRemoteHandle] = useState<FileSystemDirectoryHandle | undefined>();
   const [settings, setSettings] = useState<ApplicationSettingsTypes>(DEFAULT_APPLICATION_SETTINGS);
   const saveSettings = (settings: ApplicationSettingsTypes) => {
     localStorage.setItem('data_tracker_settings', JSON.stringify(settings));
@@ -49,8 +46,6 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
         value={{
           handle,
           setHandle,
-          remote_handle,
-          setRemoteHandle,
           settings,
           setSettings,
           saveSettings,

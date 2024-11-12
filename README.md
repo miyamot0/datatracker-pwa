@@ -1,10 +1,10 @@
-![Static Badge](https://img.shields.io/badge/Version-0.3.1-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge](https://img.shields.io/badge/Version-0.3.2-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 # DataTracker (PWA Application)
 
-DataTracker (PWA) is a web-based application that assists researchers and clinicians in measuring behavior of interest. This program can be used by multiple observers to record, and and later compare, behavior in real-time. This tool provides multiples methods for assessing the reliability of measurements (e.g., exact interval agreement), session-by-session viewing and interpretation (e.g., basic data displays), and the automation of clinical responsibilities (e.g., calculating response rates across contexts within sessions).
+DataTracker (PWA) is a web-based application that assists researchers and clinicians in measuring behavior of interest. This program can be used by multiple observers to record, and and later compare, behavior in real-time. This tool provides multiples methods for assessing the reliability of measurements (e.g., exact interval agreement), session-by-session viewing and interpretation (e.g., basic data displays), and the automation of clinical responsibilities (e.g., calculating response rates across contexts within sessions). It also supports a rudimentary method for syncing data across multiple devices in a purely local context (e.g., shared networked drive in air-gapped arrangement).
 
-The goal of DataTracker is provide an open source tool for support various aspects of behavior therapy and behavioral research. This is an 'installable' program (i.e., it can be pinned to your desktop) that works in a more native fashion. **No data recorded or scored ever leaves your machine**.
+The goal of DataTracker is provide an open source tool for support various aspects of behavior therapy and behavioral research. This is an 'installable' program (i.e., it can be pinned to your desktop) that works in a native-like fashion that does not require accessing any app marketplace. It is presently platform-agnostic and **No data recorded or scored ever leaves your machine**.
 
 Features included in DataTracker include:
 
@@ -14,6 +14,7 @@ Features included in DataTracker include:
 - Tools for calculation of reliability indices
 - Automated updates and delivery
 - Export behavioral data in multiple formats (JSON, xlsx, etc.)
+- Quick visualization of behavior adata across sessions
 
 ## Changelog
 
@@ -29,10 +30,11 @@ Features included in DataTracker include:
 - 0.2.9 - Add in support for importing keysets from other cases, cleaner hooks and workflow
 - 0.3.0 - Add in support for importing evaluations from other cases
 - 0.3.1 - Support for backing up data to a remote location
+- 0.3.2 - Stable support for syncing data across folders
 
 ## Features
 
-The DataTracker application has been ported to a Progressive Web App (PWA), which is a way to flexibly manage strict requirements for data management as well as work within secure systems that require sandboxed applications.
+The DataTracker application has been ported to a Progressive Web App (PWA), which is a way to flexibly manage strict requirements for data management as well as work within secure systems that require sandboxed applications. This program is designed to be installed on your desktop and run as a standalone application. It is not a 'native' application nor is it designed for mobile devices (e.g., tablets, phones).
 
 ![DataTracker Visualization](public/screenshots/landing_page.png 'DataTracker Options for Data Display')
 
@@ -138,5 +140,5 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Version
 
-Version 0.3.1
+Version 0.3.2
 
