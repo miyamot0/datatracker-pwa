@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RefreshCcw } from 'lucide-react';
+import { toast } from 'sonner';
 
 function readFileAsync(file: File) {
   return new Promise((resolve, reject) => {
@@ -37,16 +38,16 @@ async function getFileHandle(
   }
 }
 
-export function SyncOptionIndicator({
+export function SyncFromRemoteOptionIndicator({
   value,
   remoteDirectory,
   handle,
-  setRemoteFileList,
+  setLocalFileList,
 }: {
   value: { status: string; file: string };
   remoteDirectory?: FileSystemDirectoryHandle;
   handle?: FileSystemDirectoryHandle;
-  setRemoteFileList: (value: string) => void;
+  setLocalFileList: (value: string) => void;
 }) {
   if (value.status === 'Unauthorized') return <></>;
   if (value.status === 'Synced') return <Badge variant={'outline'}>Synced</Badge>;
@@ -62,20 +63,22 @@ export function SyncOptionIndicator({
 
         if (path_parts.length === 0) return;
 
-        const file_lcl = await getFileHandle(handle, value.file);
-        const file_lcl_contents = await file_lcl?.getFile();
-        const text = await readFileAsync(file_lcl_contents!);
+        const file_rem = await getFileHandle(remoteDirectory, value.file);
+        const file_rem_contents = await file_rem?.getFile();
+        const text = await readFileAsync(file_rem_contents!);
 
-        const file_handle_rem = await getFileHandle(remoteDirectory, value.file);
-        const writer = await file_handle_rem?.createWritable();
+        const file_handle_lcl = await getFileHandle(handle, value.file);
+        const writer = await file_handle_lcl?.createWritable();
         await writer?.write(new Blob([text as string]));
         await writer?.close();
 
-        setRemoteFileList(value.file);
+        setLocalFileList(value.file);
+
+        toast.success('File Synced Successfully');
       }}
     >
       <RefreshCcw className="h-4 w-4 mr-2" />
-      Sync File
+      Sync File to Local
     </Button>
   );
 }

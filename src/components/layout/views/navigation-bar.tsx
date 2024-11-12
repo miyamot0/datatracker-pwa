@@ -26,7 +26,7 @@ type Props = {
 };
 
 export default function NavigationBar({ breadcrumbs, label }: Props) {
-  const { handle } = useContext(FolderHandleContext);
+  const { handle, remote_handle } = useContext(FolderHandleContext);
 
   return (
     <div className={cn('flex flex-row justify-between w-full max-w-screen-2xl py-4 items-center select-none')}>
@@ -83,7 +83,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
           unstable_viewTransition
           to={createHref({ type: 'Sync Page' })}
           className={cn('flex flex-row gap-2 items-center', {
-            'disabled cursor-default pointer-events-none opacity-50': !handle,
+            'disabled cursor-default pointer-events-none opacity-50': !handle || !remote_handle,
           })}
         >
           <Button

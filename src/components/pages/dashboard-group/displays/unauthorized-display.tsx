@@ -53,6 +53,7 @@ export default function UnauthorizedDisplay() {
                   'You can you interact with files in the relevant folder.'
                 );
               }
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (_error) {
               displayConditionalNotification(
                 settings,
