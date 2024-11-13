@@ -45,62 +45,68 @@ Several additional rules that are good to follow when working with the DataTrack
 
 #### Hand-editing Data Files: <ins>Not a Good Idea</ins>
 
-The program saves files in JSON format (Javascript Object Notation), which is a universal data format that can be read by many different programs. It can be read from software such as browsers, statistical software, programming languages, etc. It's used virtually everywhere and by everything. If you attempt to edit this file by hand, without knowing the implications of what you are changing (e.g., type and content of fields), you will probably create problems when attempting to archive/read/summarize that data in the future.
+The program saves files in JSON format (Javascript Object Notation), which is a universal data format that can be read by many different programs. It can be read from software such as browsers, statistical software, programming languages, etc. It's used virtually everywhere and by almost everything.
+
+If you attempt to edit this file by hand, without knowing the implications of what you are changing (e.g., type and content of fields), you can create problems when attempting to read data in the future. For this reason, it is recommended to _not_ edit these files by hand unless you are positive that you understand the implications of these changes.
 
 If you need to _delete files or folders_, it is advised to use the built-in interface to do so.
 
 #### Moving Folders Around in the DataTracker Folder: <ins>Probably Not a Good Idea</ins>
 
-Certain operations in the DataTracker program are less impactful than others. For example, adding a new folder to a group with a Participant's ID as the title is unlikely to be problematic. However, copy/pasting/renaming folders is likely to be problematic because certain aspects of the program will _expect_ certain folders to be in certain locations. This is particularly relevant for the **Session Builder**, since it will attempt to _remember_ recent sessions and conditions that may no longer exist if you have edited/deleted those folder.
+Certain manual operations in the DataTracker program are less impactful than others. For example, adding a folder in an "Evaluation" directory would add a new "Condition" without requiring direct interactions with the program. Likewise, adding a folder in the "Client" directory would similarly add a new individual with the associated folder name. Although these operations have the potential to simplify certain operations, copy/pasting folders in bulk is likely to be problematic.
 
-If you make major changes to the folder structure, it introduces significant risks of program error.
+Various aspects of the program will attempt to 'remember' certain selections, and if previously referenced files/folders are not accessible, this can introduce unpredictable errors. This is because the program will _expect_ certain folders to be in certain locations. This is especially relevant for the **Session Builder**, since it will attempt to _remember_ recent sessions and conditions that may no longer exist if you have edited/deleted those folder.
 
-#### Copying a Keyboard (\*\*.json File): <ins>Probably Okay</ins>
+If you make major changes to the folder structure, this can introduce significant risks of program error.
 
-It is often the case that a common set of targets is shared across Participants in a study. In this case, it is likely that you will want to copy a Keyboard file from one Participant to another. This is generally okay, but it is important to remember that the Keyboard file _must be in the correct location_.
+#### Copying a KeySet (\*\*.json File): <ins>Probably Okay</ins>
 
-If you copy a Keyboard file to the wrong location, it will (1) not be accessible in the **Keyboard Designer** or **Session Designer** and (2) could cause the program to crash if the program reads it thinking it is a data file (e.g., when calculating Reliability or summarizing rates).
+It is often the case that a common set of targets is shared across Participants in a study. In this case, it is likely that you will want to copy a KeySet file from one case to another. This is generally okay, but it is important to remember that the Keyboard file _must be in the correct location_. If you copy a KeySet file to the wrong location, it will (1) not be accessible in the **Keyboard Designer** or **Session Designer** and (2) could cause the program to crash if the program reads it thinking it is a data file (e.g., when calculating Reliability or summarizing rates).
+
+Although it is possible to copy/paste KeySet files to save time (if you understand how the program is designed to work), it is generally recommended to use the built-in KeySet import functionality or to sync the individual's folder from a more current remote directory (i.e., files on a shared drive).
 
 #### Creating Evaluation Conditions by Hand: <ins>Probably Okay</ins>
 
-It is likely that certain types of conditions will be used across Participants for a given **Evaluation**. For example, a "Baseline" condition is likely to be used for all Participants in a study. In this case, it is likely that you will want to create a "Baseline" by hand for each of the Participants. This is generally okay, but it is important to remember that the **Condition** folder _must be in the correct location_ and _must be empty_.
+It is likely that certain types of conditions will be used across Participants for a given **Evaluation**. For example, a "Baseline" condition is likely to be used for all Participants in a study. In this case, it is likely that you will want to create a "Baseline" folder by hand for each of the Participants. This is generally okay, but it is important to remember that the **Condition** folder _must be in the correct location_ and _must be empty_.
 
 #### Copying Reliability Files: <ins>Probably Okay</ins>
 
-As a working default, files for the Reliability data collector will need to be moved to a central location for analysis. This is expected behavior, though it is important to remember that the Reliability file _must be in the correct location_ (i.e., correct **Evaluation** and **Condition**).
+As a working default, files for the Reliability data collector will need to be moved to a central location for analysis. This is expected behavior, though it is important to remember that the Reliability file _must be in the correct location_ (i.e., correct **Evaluation** and **Condition**). Users can copy/paste these files; however, it is recommended to use the built-in sync functionality to ensure that files are migrated properly.
 
 ### Structure and Hierarchy of Data Tracker Information
 
-- Group Folder (e.g., clinic, study grouping, etc.)
+The program infers data file structure based on _how its named_ and _where it is stored_. For this reason, it is important not to unintentionally move files into locations that may prompt confusion. A simple outline of the basic 'DataTracker' folder structure is illustrated below.
 
-  - Individual Folder (e.g., client name or identifier)
+- _Group_ Folder (e.g., clinic, study grouping, etc.)
 
-    - 'Keyboard A.json' File (a file associated with keys/behavior codes)
+  - _Individual_ Folder (e.g., client name or identifier)
 
-    - Evaluation Folder (e.g., functional analysis, treatment evaluation)
+    - '{_KeySet Name Here_}.json' File (a file associated with keys/behavior codes)
+
+    - _Evaluation_ Folder (e.g., functional analysis, treatment evaluation)
 
       - 'settings.json' File (a file for remembering on-going session designs)
 
-      - Condition Folder (e.g., baseline, treatment, etc.)
+      - _Condition_ Folder (e.g., baseline, treatment, etc.)
 
         - Session Data File, e.g. '[Session Number]_[Condition Name]_[Primary/Reliability].json' (File recording session performances)
 
 ### Descriptions for Each Level of File Hierarchy
 
-As a working default, individual data files are organized semantically on your hard drive. This means that the structure of the data files on your hard drive should reflect the structure of the data in the program. This is done to make it easier to find and manage data files outside of the program. The following is a description of the different levels of the file hierarchy and what they represent.
+Individual data files and folders are organized semantically on your hard drive. This means that the structure of the data files on your hard drive should reflect the structure of the data in the program. This is done to make it easier to find and manage data files outside of the program. The following sections provide a description of the different levels of the file hierarchy and what they each represent.
 
 #### Group-Level Folder (Grouping by Clinic, Study, etc.)
 
-The highest organizational level is the **Group** folder, which serves as a container for all data related to a specific study, clinical group, or research project. Each Group folder can be named however you wish, though it is recommended to be short and easily discriminable. For example, a Group folder might be labeled "Novel Preference Study 2024" as a means of grouping individual that are specific to this study in this area on your hard drive.
+The highest organizational level is the **Group** folder, which serves as a container for all data related to a specific study, clinical group, or research project. Each **Group** folder can be named however you wish, though it is recommended to be short and easily discriminated. For example, a **Group** folder might be labeled "Novel Preference Study 2024" as a means of grouping individual that are specific to this study in this area on your hard drive.
 
 #### Individual-Level Folder (Grouping by Individuals)
 
-Within each Group folder, there are **Individual** folders that each representing a unique participant or subject. These folders are named after the individual they pertain to, often using a participant ID or name, such as "Participant_001" or "Subject_A." These folders contain all data collected for that specific individual throughout the study, which are further delineated in terms of specific procedures.
+Within each Group folder, there are **Individual** folders that each representing a unique participant or subject. These folders are named after the individual they pertain to, often using a participant ID or name, such as "Participant_001" or "Subject_A." These folders contain all data collected for that specific individual throughout the study, which are further delineated in terms of specific procedures. For the sake of data organization and clarity, it is recommended to have one **Individual** folder for a client and various "Evaluation" folders for various procedures (e.g., preference assessment, functional analysis).
 
 #### Evaluation-Level Folder (Grouping by Purpose of Data)
 
-Nested within each Individual folder are **Evaluation** folders. Each Evaluation folder corresponds to a distinct procedure (e.g., functional analysis). For example, data for one individual may emerge from a preference assessment in one Evaluation folder and a treatment evaluation in another. These folders are labeled according to the procedure or assessment they contain, such as "Functional Analysis" or "Treatment Evaluation." This level organizes the data collected from each session.
+Nested within each Individual folder are various **Evaluation** folders. Each Evaluation folder corresponds to a distinct procedure (e.g., functional analysis). For example, data for one individual may emerge from a preference assessment in one **Evaluation** folder and a "treatment evaluation" in another. These folders are labeled according to the procedure or assessment they contain, such as "Functional Analysis" or "Treatment Evaluation." This level organizes the data collected from each session so that data can be meaningfully visualized and summarized.
 
 #### Condition-Level Folder (Grouping by condition; e.g., baseline, treatment, etc.)
 
-At the most granular folder level is the **Condition** folder. Each Condition folder represents a specific condition, task, or experimental setup under which the individual's behavior was recorded during the evaluation. For example, a Condition folder might be named "Baseline" or "Intervention" to distinguish between data collected in varying contexts within a specific evaluation (e.g., conditions of functional analysis).
+At the most granular folder level is the **Condition** folder. Each **Condition** folder represents a specific condition, task, or experimental setup under which the individual's behavior was recorded during the "Evaluation". For example, a **Condition** folder might be named "Baseline" or "Intervention" to distinguish between data collected in varying contexts within a specific evaluation (e.g., conditions of functional analysis). Grouping data by this way assists with summarizing and visualizing behavior as a function of specific environmental conditions.
