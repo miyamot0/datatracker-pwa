@@ -10,6 +10,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true,
+      },
       workbox: {
         globPatterns: ['**/*'],
         cleanupOutdatedCaches: true,

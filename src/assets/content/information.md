@@ -99,7 +99,7 @@ Within each Group folder, there are **Individual** folders that each representin
 
 #### Evaluation-Level Folder (Grouping by Purpose of Data)
 
-Nested within each Individual folder are **Evaluation** folders. Each Evaluation folder corresponds to a distinct procedure (e.g., functional analysis). For example, data for one individual may emerge from a preference assesment in one Evaluation folder and a treatment evaluation in another. These folders are labeled according to the procedure or assessment they contain, such as "Functional Analysis" or "Treatment Evaluation." This level organizes the data collected from each session.
+Nested within each Individual folder are **Evaluation** folders. Each Evaluation folder corresponds to a distinct procedure (e.g., functional analysis). For example, data for one individual may emerge from a preference assessment in one Evaluation folder and a treatment evaluation in another. These folders are labeled according to the procedure or assessment they contain, such as "Functional Analysis" or "Treatment Evaluation." This level organizes the data collected from each session.
 
 #### Condition-Level Folder (Grouping by condition; e.g., baseline, treatment, etc.)
 
