@@ -1,7 +1,7 @@
 ---
 title: Creating and Working with Individual Client Folders
 date: 09/02/2024
-keywords: 'Data Organization, Client Case Management'
+keywords: 'Client Case Management, Data Organization'
 author: 'Shawn Gilroy'
 index: 3
 ---

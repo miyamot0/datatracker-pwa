@@ -4,17 +4,17 @@ import { FrontMatterUniversalType } from '../types/mdx';
 export const FIGURE_PATH_COLORS = ['#9061C2', '#4E9CB5', '#4BC599', '#F9A826', '#EB540A', '#C86F98', '#14B694'];
 
 export const COLOR_LIST = [
-  'bg-blue-600 hover:bg-blue-700',
-  'bg-green-600 hover:bg-green-700',
-  'bg-yellow-600 hover:bg-yellow-700',
-  'bg-purple-600 hover:bg-purple-700',
-  'bg-pink-600 hover:bg-pink-700',
-  'bg-indigo-600 hover:bg-indigo-700',
-  'bg-teal-600 hover:bg-teal-700',
-  'bg-orange-600 hover:bg-orange-700',
-  'bg-rose-600 hover:bg-rose-700',
-  'bg-cyan-600 hover:bg-cyan-700',
-  'bg-amber-600 hover:bg-amber-700',
+  'bg-blue-600 hover:bg-blue-600',
+  'bg-green-600 hover:bg-green-600',
+  'bg-yellow-600 hover:bg-yellow-600',
+  'bg-purple-600 hover:bg-purple-600',
+  'bg-pink-600 hover:bg-pink-600',
+  'bg-indigo-600 hover:bg-indigo-600',
+  'bg-teal-600 hover:bg-teal-600',
+  'bg-orange-600 hover:bg-orange-600',
+  'bg-rose-600 hover:bg-rose-600',
+  'bg-cyan-600 hover:bg-cyan-600',
+  'bg-amber-600 hover:bg-amber-600',
 ];
 
 /**

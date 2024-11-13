@@ -1,7 +1,7 @@
 ---
 title: Creating and Working with Group Folders
 date: 09/01/2024
-keywords: 'Data Organization, Study Planning/Management'
+keywords: 'Study Planning/Management, Data Organization'
 author: 'Shawn Gilroy'
 index: 2
 ---
