@@ -3,7 +3,6 @@ title: Options to Import Existing KeySets
 date: 11/08/2024
 keywords: 'Key/Behavior Mappings, Data Organization'
 author: 'Shawn Gilroy'
-index: 7
 ---
 
 The DataTracker program allows for the importing of _existing_ **KeySets** saved in the program to facilitate quick and efficient design of session conditions and behavior recording. In certain situations, it may be more efficient to import **KeySets** from other individuals rather than re-create a new keyset. This article will provide a brief overview of the process of importing **KeySets** in DataTracker. As a brief review, DataTracker provides multiple ways to create **KeySets**. A visual example of this interface is provided below:

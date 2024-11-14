@@ -3,7 +3,6 @@ title: Creating and Working with Evaluation Folders for Individuals
 date: 09/03/2024
 keywords: 'Behavioral Procedures, Data Organization'
 author: 'Shawn Gilroy'
-index: 4
 ---
 
 The **Evaluation** folders, which are found within respective **Individual** folders, are essential for organizing data from specific sessions conducted with a client/participant. These folders capture snapshots of a participant's behavior in a specific context (e.g., assessment vs. treatment) at distinct points in time. Each **Evaluation** folder is typically labeled according to the procedure or method. For example, one evaluation might consist of a "Functional Analysis" while another might consist of a "Treatment Evaluation." This naming convention helps researchers and clinicians quickly identify the purpose of each Evaluation and understand the context from which recorded data had emerged.

@@ -1,9 +1,8 @@
 ---
 title: Syncing Data to Shared a Location(s)
 date: 11/11/2024
-keywords: 'Data Export, Data Management, Syncing Data'
+keywords: 'Data Organization, Data Synchronization'
 author: 'Shawn Gilroy'
-index: 12
 ---
 
 The DataTracker program, by design, focuses on the collection and management of behavioral data on a single machine. Although this is typically the case for many research and clinical settings, there are instances where data needs to be shared across multiple devices or platforms. In such cases, it is required to have some method of syncing data to shared locations to ensure that all users have access to the most up-to-date information.

@@ -1,9 +1,8 @@
 ---
 title: Creating and Working with Individual Client Folders
 date: 09/02/2024
-keywords: 'Client Case Management, Data Organization'
+keywords: 'Data Organization'
 author: 'Shawn Gilroy'
-index: 3
 ---
 
 The **Individual** folders, which are nested under respective **Group** folders, are a critical part of the data management strategy and hierarchy. These folders are dedicated to housing _all_ data related to a specific participant or subject within the larger context of a research study or clinical service (e.g., inpatient vs. outpatient care). Each **Individual** folder is named after the participant it represents, typically using a unique identifier such as a participant ID or name, like "Participant_001" or "Subject_A." This structure ensures that all data collected from a particular individual is systematically stored in one location, facilitating easy access and analysis. As a note, you must follow research and clinical data management practices for your institution when naming and storing data; however, DataTracker works only on local data and no information is ever transmitted to the internet.

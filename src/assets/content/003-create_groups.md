@@ -1,9 +1,8 @@
 ---
 title: Creating and Working with Group Folders
 date: 09/01/2024
-keywords: 'Study Planning/Management, Data Organization'
+keywords: 'Data Organization'
 author: 'Shawn Gilroy'
-index: 2
 ---
 
 The **Group** folder is the largest element in the organizational hierarchy of the Data Tracker program. For these categories/groups, these are likely to function as the primary container for data collected in a specific study, a research project, or as a part of clinical service (e.g., inpatient vs. outpatient). The goal of this distinction is to encapsulate context and make it easier to find and manage data files outside of the program (if necessary, _not recommended_). The following is a description of the different levels of the file hierarchy and what they represent.

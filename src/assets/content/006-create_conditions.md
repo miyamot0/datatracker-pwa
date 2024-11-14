@@ -1,9 +1,8 @@
 ---
 title: Creating and Working with Condition Folders in Evaluations
 date: 09/03/2024
-keywords: 'Intervention Evaluation, Data Organization'
+keywords: 'Behavioral Procedures, Data Organization'
 author: 'Shawn Gilroy'
-index: 5
 ---
 
 The **Condition** folders, which are located within specific **Evaluation** folders, are critical for organizing data according to some specific condition or experimental arrangement under which behavior was observed. Separating observed data into these folders allows clinicians/researchers to differentiate between various scenarios or interventions that a client had participated within. Each **Condition** folder is labeled based on the particular arrangement/modification it represents, such as "Baseline" or "Intervention" in an intervention evaluation. This organization is especially useful in behavioral studies, where understanding the impact of different conditions on a participant's behavior is often essential (e.g., functional analysis across multiple conditions).

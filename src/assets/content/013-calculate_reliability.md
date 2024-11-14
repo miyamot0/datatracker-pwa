@@ -1,9 +1,8 @@
 ---
 title: Reviewing Rater Reliability for Specific Evaluation Data
 date: 09/27/2024
-keywords: 'Rater Reliability Inspection, Data Export'
+keywords: 'Data Collection, Inter-Rater Reliability, Data Export'
 author: 'Shawn Gilroy'
-index: 11
 ---
 
 The DataTracker program makes it easy to calculated several forms of Interrater Reliability. This is a measure of the agreement between two or more raters. The program can calculate several forms of agreement. As a general default, agreement is estimated using 10s bins of data recorded in real time through the session.

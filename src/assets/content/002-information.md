@@ -1,9 +1,8 @@
 ---
 title: Organizational Structure and Design
 date: 08/31/2024
-keywords: 'Program Introduction, Data Organization'
+keywords: 'Program Use, Data Organization'
 author: 'Shawn Gilroy'
-index: 1
 ---
 
 The DataTracker program is designed to provide considerable flexibility in how data are collected and managed. This flexibility allows you to structure your data in a way that makes sense for your specific needs and research questions. However, there are several critical and recommended organizational practices to adopt to ensure that your data are easily accessible and manageable.

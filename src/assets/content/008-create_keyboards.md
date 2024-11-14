@@ -1,9 +1,8 @@
 ---
 title: Creating and Managing Key/Behavior Mappings ("KeySets")
 date: 09/03/2024
-keywords: 'Key/Behavior Mappings, Frequency Counting, Duration Tracking'
+keywords: 'Key/Behavior Mappings, Data Organization'
 author: 'Shawn Gilroy'
-index: 6
 ---
 
 The **KeySet** functionality offered by Data Tracker allows users to efficiently record and track specific behaviors during observation sessions in real time. By mapping keys on a **KeySet** to particular behaviors (e.g., "1" represents and instance of "Aggression"), the program can be used to perform data collection across multiple targets as behavior occurs. Each **KeySet** (i.e., mappings of keys to behavior, of which there can be multiple) customized to include _two_ types of key/behavior mappings: "Frequency Keys" and "Duration Keys". These mappings help users accurately record behaviors that are best measured either by how often they occur (Frequency) or by how long they last (Duration).

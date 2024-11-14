@@ -3,7 +3,6 @@ title: Program Use, Installation Options, and General Guidance
 date: 08/31/2024
 keywords: 'Program Use, Installation'
 author: 'Shawn Gilroy'
-index: 0
 ---
 
 Thank you for your interest in the DataTracker electronic data collection program!

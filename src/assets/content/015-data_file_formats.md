@@ -1,9 +1,8 @@
 ---
 title: Data File Fields and Types (Advanced)
 date: 09/27/2024
-keywords: 'Research, Data Analysis/Synthesis'
+keywords: 'Data Organization, Data Export, Data Parsing'
 author: 'Shawn Gilroy'
-index: 13
 ---
 
 The DataTracker program uses a consistent structure for output files to support consistent parsing as well as flexibility in archiving/compiling outcomes. For example, the systematic format would allow current or future researchers to directly access event-level recording (e.g., times associated with specific targets) rather than relying on aggregated metrics (e.g., rate without specific event-level details).
