@@ -91,6 +91,7 @@ function DashboardHistoryPage({ Handle, Group, Individual, Evaluation }: Props) 
         BuildEvaluationsBreadcrumb(Group, Individual),
       ]}
       label={'Session History'}
+      className="select-none"
     >
       <Card className="w-full">
         <CardHeader>

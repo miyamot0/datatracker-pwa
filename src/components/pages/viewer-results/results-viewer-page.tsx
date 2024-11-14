@@ -87,6 +87,7 @@ function ResultsViewerPage({ Handle, Group, Individual, Evaluation }: Props) {
         BuildEvaluationsBreadcrumb(CleanUpString(Group), CleanUpString(Individual)),
       ]}
       label={`View ${CleanUpString(CleanUpString(Evaluation))} Data`}
+      className="select-none"
     >
       <div className="flex flex-col w-full gap-4">
         <div className="flex flex-row items-center">

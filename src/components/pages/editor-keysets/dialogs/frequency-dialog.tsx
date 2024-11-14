@@ -35,7 +35,7 @@ export default function FrequencyDialogKeyCreator({ KeySet, Callback }: Props) {
           </Button>
         </ToolTipWrapper>
       </div>
-      <DialogContent className="bg-card">
+      <DialogContent className="bg-card select-none">
         <DialogHeader>
           <DialogTitle>Frequency Key Creator</DialogTitle>
           <DialogDescription>Set key and relevant description</DialogDescription>

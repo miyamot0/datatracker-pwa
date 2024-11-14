@@ -60,6 +60,7 @@ export default function EvaluationsPage() {
     <PageWrapper
       breadcrumbs={[BuildGroupBreadcrumb(), BuildIndividualsBreadcrumb(Group)]}
       label={CleanUpString(Individual)}
+      className="select-none"
     >
       <Card className="w-full max-w-screen-2xl">
         <CardHeader className="flex flex-col md:flex-row w-full justify-between">

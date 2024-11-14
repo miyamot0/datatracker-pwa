@@ -143,6 +143,7 @@ function ResultsRateVisualsPage({ Handle, Group, Individual, Evaluation }: Props
         BuildEvaluationsBreadcrumb(CleanUpString(Group), CleanUpString(Individual)),
       ]}
       label={`${CleanUpString(CleanUpString(Evaluation))}: Target Rates`}
+      className="select-none"
     >
       <Card className="w-full">
         <CardHeader>

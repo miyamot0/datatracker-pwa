@@ -56,6 +56,7 @@ export default function KeySetEditor() {
         BuildKeysetBreadcrumb(Group, Individual),
       ]}
       label={CleanUpString(KeySet)}
+      className="select-none"
     >
       <div className="w-full max-w-screen-2xl grid grid-cols-2 gap-2">
         <Card className="w-full flex flex-col justify-between">

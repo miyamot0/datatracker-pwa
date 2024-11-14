@@ -44,6 +44,7 @@ export default function KeySetsPage() {
         BuildEvaluationsBreadcrumb(Group, Individual),
       ]}
       label={'Keysets'}
+      className="select-none"
     >
       <Card className="w-full max-w-screen-2xl">
         <CardHeader className="flex flex-col md:flex-row w-full justify-between">

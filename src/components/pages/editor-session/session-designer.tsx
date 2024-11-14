@@ -206,6 +206,7 @@ function SessionDesigner({
         BuildEvaluationsBreadcrumb(Group, Individual),
       ]}
       label={`Design ${CleanUpString(Evaluation)} Session`}
+      className="select-none"
     >
       <div className="w-full grid grid-cols-3 gap-2 max-w-screen-2xl">
         <Card className="w-full col-span-2">

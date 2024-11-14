@@ -232,6 +232,7 @@ function ReliabilityViewerPage({
         BuildEvaluationsBreadcrumb(Group, Individual),
       ]}
       label={`Reliability for ${CleanUpString(Evaluation)}`}
+      className="select-none"
     >
       <div className="flex flex-col w-full gap-4">
         <Card className="w-full">

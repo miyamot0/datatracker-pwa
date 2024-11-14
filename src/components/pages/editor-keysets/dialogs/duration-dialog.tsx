@@ -35,7 +35,7 @@ export default function DurationDialogKeyCreator({ KeySet, Callback }: Props) {
           </Button>
         </ToolTipWrapper>
       </div>
-      <DialogContent className="bg-card">
+      <DialogContent className="bg-card select-none">
         <DialogHeader>
           <DialogTitle>Duration Key Creator</DialogTitle>
           <DialogDescription>Set key and relevant description</DialogDescription>

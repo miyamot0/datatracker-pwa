@@ -33,7 +33,7 @@ export default function DocumentationEntryPage() {
   };
 
   return (
-    <PageWrapper breadcrumbs={[BuildDocumentationBreadcrumb()]} label={entry.matter.title}>
+    <PageWrapper breadcrumbs={[BuildDocumentationBreadcrumb()]} label={entry.matter.title} className="select-none">
       <Card className="w-full max-w-screen-2xl">
         <CardHeader className="flex flex-col md:flex-row md:justify-between">
           <div className="flex flex-col gap-1.5">

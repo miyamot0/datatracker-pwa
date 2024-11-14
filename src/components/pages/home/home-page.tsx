@@ -28,7 +28,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <PageWrapper className="flex flex-col gap-6">
+    <PageWrapper className="flex flex-col gap-6 select-none">
       <div className="pb-4">
         <div className="text-center mx-auto">
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">DataTracker</h1>
@@ -60,7 +60,7 @@ export default function HomePage() {
               Software Licenses
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-screen-md">
+          <DialogContent className="max-w-screen-md select-none">
             <DialogHeader>
               <DialogTitle>Open Source Software</DialogTitle>
               <DialogDescription>Licensing information for relevant software is provided below</DialogDescription>

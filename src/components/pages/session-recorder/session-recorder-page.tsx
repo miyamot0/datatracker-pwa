@@ -507,6 +507,7 @@ function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Se
         BuildSessionDesignerBreadcrumb(Group, Individual, Evaluation),
       ]}
       label={`Record ${Evaluation} Session`}
+      className="select-none"
     >
       <div className="flex flex-col w-full gap-4 max-w-screen-2xl">
         <div className="w-full flex flex-row justify-between select-none">

@@ -217,6 +217,7 @@ function SessionViewerPage({ Handle, Group, Individual, Evaluation, FileString }
         BuildSessionHistoryBreadcrumb(Group, Individual, Evaluation),
       ]}
       label={'Session Viewer'}
+      className="select-none"
     >
       <div className="w-full flex flex-row justify-between mb-4">
         <div className="flex flex-row gap-4">

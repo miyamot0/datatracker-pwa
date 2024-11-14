@@ -18,7 +18,7 @@ export default function DocumentationListingPage() {
   const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
 
   return (
-    <PageWrapper label={'Documentation'}>
+    <PageWrapper label={'Documentation'} className="select-none">
       <Card className="w-full max-w-screen-2xl">
         <CardHeader>
           <CardTitle>Software Documentation</CardTitle>

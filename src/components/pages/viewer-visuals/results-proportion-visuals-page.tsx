@@ -126,6 +126,7 @@ function ResultsProportionVisualsPage({ Handle, Group, Individual, Evaluation }:
         BuildEvaluationsBreadcrumb(CleanUpString(Group), CleanUpString(Individual)),
       ]}
       label={`${CleanUpString(CleanUpString(Evaluation))}: Interval Proportions`}
+      className="select-none"
     >
       <Card className="w-full">
         <CardHeader>
