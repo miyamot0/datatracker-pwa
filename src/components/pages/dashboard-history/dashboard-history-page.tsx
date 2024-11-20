@@ -10,14 +10,15 @@ import { SavedSessionResult } from '@/lib/dtos';
 import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import createHref from '@/lib/links';
 import { cn } from '@/lib/utils';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, SearchIcon } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { useEffect, useState } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
 import LoadingDisplay from '@/components/ui/loading-display';
 import { CleanUpString } from '@/lib/strings';
 import { GenerateSavedFileName } from '@/lib/writer';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 export function DashboardHistoryPageShim() {
   const { handle } = useContext(FolderHandleContext);
@@ -60,7 +61,7 @@ type Props = {
   Evaluation: string;
 };
 
-export default function DashboardHistoryPage({ Handle, Group, Individual, Evaluation }: Props) {
+function DashboardHistoryPage({ Handle, Group, Individual, Evaluation }: Props) {
   const [sessions, setSessionsData] = useState<SavedSessionResult[]>([]);
 
   useEffect(() => {
@@ -90,59 +91,80 @@ export default function DashboardHistoryPage({ Handle, Group, Individual, Evalua
         BuildEvaluationsBreadcrumb(Group, Individual),
       ]}
       label={'Session History'}
+      className="select-none"
     >
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Session History</CardTitle>
           <CardDescription>Select Individual Sessions to View More</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-5 gap-2 items-center justify-start">
-          <>
-            <div className="font-bold">Session</div>
-            <div className="font-bold">Condition</div>
-            <div className="font-bold">Total Duration</div>
-            <div className="font-bold">Date</div>
-            <div className="font-bold"></div>
-          </>
-          {sessions.map((session, index) => (
-            <React.Fragment key={index}>
-              <div className="flex flex-row gap-2">
-                {session.SessionSettings.Session}
+        <CardContent className="flex flex-col gap-2">
+          <p>
+            This page provides a summary of the data currently saved on your machine. You may view behavior recorded
+            from each session in greater detail by using the 'Inspect Session' button.
+          </p>
 
-                <p
-                  className={cn(
-                    'transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
-                    {
-                      'bg-green-600 text-white': session.SessionSettings.Role === 'Primary',
-                      'bg-purple-400 text-white': session.SessionSettings.Role === 'Reliability',
-                    }
-                  )}
-                >
-                  {`${session.SessionSettings.Role}`}
-                </p>
-              </div>
-              <div>{session.SessionSettings.Condition}</div>
-              <div>
-                {(session.TimerMain / 60).toFixed(2)} {`(${session.TimerMain.toFixed(2)}s)`}
-              </div>
-              <div>{new Date(session.SessionStart).toLocaleDateString()}</div>
-              <Link
-                className="flex flex-row items-center"
-                to={createHref({
-                  type: 'Evaluation Session Analysis',
-                  group: Group,
-                  individual: Individual,
-                  evaluation: Evaluation,
-                  index: GenerateSavedFileName(session.SessionSettings).replaceAll('.json', ''),
-                })}
-              >
-                <Button variant={'outline'} className="shadow" size={'sm'}>
-                  Inspect Session
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
-            </React.Fragment>
-          ))}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Session (Recorder Role)</TableHead>
+                <TableHead>Data Collector</TableHead>
+                <TableHead>Condition</TableHead>
+                <TableHead>Total Duration</TableHead>
+                <TableHead>Date Recorded</TableHead>
+                <TableHead>Termination</TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessions.map((session, index) => (
+                <TableRow key={index}>
+                  <TableCell className="flex flex-row gap-2">
+                    {session.SessionSettings.Session}
+
+                    <p
+                      className={cn(
+                        'transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
+                        {
+                          'bg-green-600 text-white': session.SessionSettings.Role === 'Primary',
+                          'bg-purple-400 text-white': session.SessionSettings.Role === 'Reliability',
+                        }
+                      )}
+                    >
+                      {`${session.SessionSettings.Role}`}
+                    </p>
+                  </TableCell>
+                  <TableCell>{session.SessionSettings.Initials}</TableCell>
+                  <TableCell>{session.SessionSettings.Condition}</TableCell>
+                  <TableCell>
+                    {(session.TimerMain / 60).toFixed(2)} {`(${session.TimerMain.toFixed(2)}s)`}
+                  </TableCell>
+                  <TableCell>{`${new Date(session.SessionEnd).toLocaleDateString()} ${new Date(
+                    session.SessionEnd
+                  ).toLocaleTimeString()}`}</TableCell>
+                  <TableCell>{session.EndedEarly === true ? 'Manual Termination' : 'Planned Termination'}</TableCell>
+                  <TableCell className="flex flex-row justify-end">
+                    <Link
+                      className="flex flex-row items-center"
+                      to={createHref({
+                        type: 'Evaluation Session Analysis',
+                        group: Group,
+                        individual: Individual,
+                        evaluation: Evaluation,
+                        index: GenerateSavedFileName(session.SessionSettings).replaceAll('.json', ''),
+                      })}
+                    >
+                      <Button variant={'outline'} className="shadow" size={'sm'}>
+                        <SearchIcon className="mr-2 h-4 w-4" />
+                        Inspect Session
+                        <ChevronRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </PageWrapper>

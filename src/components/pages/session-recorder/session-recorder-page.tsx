@@ -115,7 +115,7 @@ const TIME_UNIT = 1000;
 // Increment--Proportional to seconds change
 const INCREMENT = TIME_DELTA / TIME_UNIT;
 
-export default function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Settings }: Props) {
+function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Settings }: Props) {
   const navigator_ = useNavigate();
   const { settings: applicationSettings } = useContext(FolderHandleContext);
 
@@ -507,6 +507,7 @@ export default function SessionRecorderPage({ Handle, Group, Individual, Evaluat
         BuildSessionDesignerBreadcrumb(Group, Individual, Evaluation),
       ]}
       label={`Record ${Evaluation} Session`}
+      className="select-none"
     >
       <div className="flex flex-col w-full gap-4 max-w-screen-2xl">
         <div className="w-full flex flex-row justify-between select-none">

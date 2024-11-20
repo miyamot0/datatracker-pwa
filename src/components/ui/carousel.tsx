@@ -5,6 +5,8 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
+const autoplayDefaultInterval = 3000; //ms
+
 type CarouselApi = UseEmblaCarouselType[1];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
 type CarouselOptions = UseCarouselParameters[0];
@@ -101,6 +103,23 @@ const Carousel = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
         api?.off('select', onSelect);
       };
     }, [api, onSelect]);
+
+    React.useEffect(() => {
+      if (!api) {
+        return;
+      }
+
+      const intervalId = setInterval(() => {
+        api.scrollNext();
+        if (api.selectedScrollSnap() === api.scrollSnapList().length - 1) {
+          api.scrollTo(0);
+        }
+      }, autoplayDefaultInterval); // Use the autoplayInterval prop
+
+      return () => {
+        clearInterval(intervalId);
+      };
+    }, [api]);
 
     return (
       <CarouselContext.Provider

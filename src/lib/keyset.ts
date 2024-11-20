@@ -1,14 +1,5 @@
-import { KeySet, KeySetSerialize } from "@/types/keyset";
-import { v4 as uuidv4 } from "uuid";
-
-export const DEFAULT_KEY_SET: KeySet = {
-  id: "",
-  Name: "",
-  FrequencyKeys: [],
-  DurationKeys: [],
-  createdAt: new Date(),
-  lastModified: new Date(),
-};
+import { KeySet, KeySetSerialize } from '@/types/keyset';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Create a new key set

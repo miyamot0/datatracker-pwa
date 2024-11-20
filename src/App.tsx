@@ -6,7 +6,7 @@ import SettingsPage from './components/pages/editor-settings/settings-page';
 import DocumentationListingPage from './components/pages/viewer-documentation-list/documentation-listing-page';
 import DocumentationEntryPage from './components/pages/viewer-documentation-entry/documentation-entry-page';
 import DashboardPage from './components/pages/dashboard-group/dashboard-page';
-import ClientsPage from './components/pages/dashboard-individuals/clients-page';
+import ClientsPage from './components/pages/dashboard-clients/clients-page';
 import EvaluationsPage from './components/pages/dashboard-evaluations/evaluations-page';
 import KeySetsPage from './components/pages/dashboard-keysets/keysets-page';
 import KeySetEditor from './components/pages/editor-keysets/keyset-editor';
@@ -18,12 +18,16 @@ import { ResultsRateVisualsPageShim } from './components/pages/viewer-visuals/re
 import { ResultsProportionVisualsPageShim } from './components/pages/viewer-visuals/results-proportion-visuals-page';
 import { ReliabilityViewerPageShim } from './components/pages/viewer-agreement/reli-viewer-page';
 import { SessionRecorderPageShim } from './components/pages/session-recorder/session-recorder-page';
+import ViewerKeysetPage from './components/pages/viewer-keysets/viewer-keysets-page';
+import ViewerEvaluationsPage from './components/pages/viewer-evaluations/viewer-evaluations-page';
+import ViewSyncPage from './components/pages/viewer-sync-queue/view-sync-page';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">
       <Route index element={<HomePage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/dashboard/sync" element={<ViewSyncPage />} />
 
       <Route path="/documentation" element={<DocumentationListingPage />} />
       <Route path="/documentation/:slug" element={<DocumentationEntryPage />} />
@@ -31,7 +35,9 @@ const router = createBrowserRouter(
       <Route path="/session/:Group" element={<ClientsPage />} />
       <Route path="/session/:Group/:Individual" element={<EvaluationsPage />} />
       <Route path="/session/:Group/:Individual/keysets" element={<KeySetsPage />} />
+      <Route path="/session/:Group/:Individual/keysets/import" element={<ViewerKeysetPage />} />
       <Route path="/session/:Group/:Individual/keysets/:KeySet" element={<KeySetEditor />} />
+      <Route path="/session/:Group/:Individual/import" element={<ViewerEvaluationsPage />} />
       <Route path="/session/:Group/:Individual/:Evaluation" element={<SessionDesignerShim />} />
       <Route path="/session/:Group/:Individual/:Evaluation/history" element={<DashboardHistoryPageShim />} />
       <Route path="/session/:Group/:Individual/:Evaluation/history/:Index" element={<SessionViewerPageShim />} />

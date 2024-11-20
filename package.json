@@ -30,7 +30,7 @@
     "research software"
   ],
   "license": "Apache-2.0",
-  "version": "0.2.8",
+  "version": "0.4.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -73,7 +73,6 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^10.0.0",
-    "vite-plugin-radar": "^0.9.6",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -114,5 +113,14 @@
     "vite": "^5.4.1",
     "vite-plugin-pwa": "^0.20.5",
     "vitest": "^2.1.1"
+  },
+  "findUnusedExports": {
+    "include": [
+      "./src/**/*.d.ts",
+      "src/**/*.{tsx,ts}"
+    ],
+    "exclude": [
+      "./src/components/ui/*.{tsx,ts}"
+    ]
   }
 }

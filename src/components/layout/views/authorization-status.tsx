@@ -7,7 +7,7 @@ const NotAuthorized = () => (
   <Tooltip>
     <TooltipTrigger>
       <Badge
-        className="text-center justify-center cursor-default select-none whitespace-nowrap"
+        className="text-center justify-center cursor-default select-none whitespace-nowrap hover:bg-destructive"
         variant={'destructive'}
       >
         Access Not Authorized
@@ -22,7 +22,7 @@ const NotAuthorized = () => (
 const Authorized = ({ Handle }: { Handle: FileSystemDirectoryHandle }) => (
   <Tooltip>
     <TooltipTrigger>
-      <Badge className="bg-green-500 text-white hover:bg-green-400 cursor-default select-none whitespace-nowrap">
+      <Badge className="bg-green-500 text-white hover:bg-green-500 cursor-default select-none whitespace-nowrap">
         Access Authorized
       </Badge>
     </TooltipTrigger>

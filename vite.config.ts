@@ -3,13 +3,21 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 import package_json from './package.json';
-import { VitePluginRadar } from 'vite-plugin-radar';
+
+const common_screenshot_params = {
+  sizes: '1148x969',
+  type: 'image/png',
+  //form_factor: 'wide' as 'narrow' | 'wide',
+};
 
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: {
+        enabled: false,
+      },
       workbox: {
         globPatterns: ['**/*'],
         cleanupOutdatedCaches: true,
@@ -86,60 +94,41 @@ export default defineConfig({
         id: '/',
         screenshots: [
           {
-            src: 'screenshots/visualization.png',
-            sizes: '1375x860',
-            type: 'image/png',
-            form_factor: 'wide',
-            label: 'Illustration of recorded data',
-          },
-          {
-            src: 'screenshots/group_editor.png',
-            sizes: '1375x860',
-            type: 'image/png',
-            form_factor: 'wide',
-            label: 'View of Group Editor Page',
-          },
-          {
-            src: 'screenshots/key_editor.png',
-            sizes: '1375x860',
-            type: 'image/png',
-            form_factor: 'wide',
-            label: 'View of Keyboard Editor Page',
-          },
-          {
-            src: 'screenshots/landing_page.png',
-            sizes: '1375x860',
-            type: 'image/png',
-            form_factor: 'wide',
-            label: 'View of Landing Page',
-          },
-          {
+            ...common_screenshot_params,
             src: 'screenshots/session_designer.png',
-            sizes: '1375x860',
-            type: 'image/png',
-            form_factor: 'wide',
             label: 'View of Session Designer Page',
           },
           {
+            ...common_screenshot_params,
+            src: 'screenshots/visualization.png',
+            label: 'Illustration of recorded data',
+          },
+          {
+            ...common_screenshot_params,
+            src: 'screenshots/group_editor.png',
+            label: 'View of Group Editor Page',
+          },
+          {
+            ...common_screenshot_params,
+            src: 'screenshots/key_editor.png',
+            label: 'View of Keyboard Editor Page',
+          },
+          {
+            ...common_screenshot_params,
+            src: 'screenshots/landing_page.png',
+            label: 'View of Landing Page',
+          },
+          {
+            ...common_screenshot_params,
             src: 'screenshots/session_recorder.png',
-            sizes: '1375x860',
-            type: 'image/png',
-            form_factor: 'wide',
             label: 'View of Session Recorder Page',
           },
           {
+            ...common_screenshot_params,
             src: 'screenshots/within_session_preview.png',
-            sizes: '1375x905',
-            type: 'image/png',
-            form_factor: 'wide',
             label: 'View of Session Inspection Page',
           },
         ],
-      },
-    }),
-    VitePluginRadar({
-      gtm: {
-        id: 'GTM-MZTK96KZ',
       },
     }),
   ],

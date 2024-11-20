@@ -28,6 +28,7 @@ import { getLocalCachedPrefs, setLocalCachedPrefs } from '@/lib/local_storage';
 import createHref from '@/lib/links';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FolderHandleContext } from '@/context/folder-context';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function ResultsRateVisualsPageShim() {
   const { handle } = useContext(FolderHandleContext);
@@ -70,7 +71,7 @@ type Props = {
   Evaluation: string;
 };
 
-export function ResultsRateVisualsPage({ Handle, Group, Individual, Evaluation }: Props) {
+function ResultsRateVisualsPage({ Handle, Group, Individual, Evaluation }: Props) {
   const [results, setResults] = useState<SavedSessionResult[]>([]);
   const [keySet, setKeySet] = useState<KeySet>();
   const [filteredKeys, setFilteredKeys] = useState([] as ExpandedKeySetInstance[]);
@@ -97,7 +98,7 @@ export function ResultsRateVisualsPage({ Handle, Group, Individual, Evaluation }
           Visible: true,
         };
 
-        let show_keys_base = [...keys, ctb_entry].map((key) => {
+        const show_keys_base = [...keys, ctb_entry].map((key) => {
           const should_disable = stored_prefs.KeyDescription.includes(key.KeyDescription);
 
           if (should_disable) {
@@ -110,7 +111,7 @@ export function ResultsRateVisualsPage({ Handle, Group, Individual, Evaluation }
           return key;
         });
 
-        let exclude_from_ctb = keys.map((key) => {
+        const exclude_from_ctb = keys.map((key) => {
           const should_disable = stored_prefs.CTBElements.includes(key.KeyDescription);
 
           if (should_disable) {
@@ -142,147 +143,168 @@ export function ResultsRateVisualsPage({ Handle, Group, Individual, Evaluation }
         BuildEvaluationsBreadcrumb(CleanUpString(Group), CleanUpString(Individual)),
       ]}
       label={`${CleanUpString(CleanUpString(Evaluation))}: Target Rates`}
+      className="select-none"
     >
-      <div className="w-full flex flex-row justify-between mb-4">
-        <div className="flex flex-row gap-4">
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-fit">
-                <KeyboardIcon className="mr-2 w-4 h-4" />
-                Edit Keys Displayed
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {filteredKeys.map((key, index) => (
-                <DropdownMenuCheckboxItem
-                  key={`key-${index}`}
-                  checked={key.Visible}
-                  onCheckedChange={(checked) => {
-                    const updatedKeys = filteredKeys.map((k) => {
-                      if (k.KeyDescription === key.KeyDescription) {
-                        return {
-                          ...k,
-                          Visible: checked,
-                        };
-                      }
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Visualization of Behavioral Rates</CardTitle>
+          <CardDescription>Options for Visualizing Data Provided Below</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2">
+          <div className="w-full flex flex-row justify-between mb-4">
+            <div className="flex flex-row gap-4">
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-fit">
+                    <KeyboardIcon className="mr-2 w-4 h-4" />
+                    Edit Keys Displayed
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {filteredKeys.map((key, index) => (
+                    <DropdownMenuCheckboxItem
+                      key={`key-${index}`}
+                      checked={key.Visible}
+                      onCheckedChange={(checked) => {
+                        const updatedKeys = filteredKeys.map((k) => {
+                          if (k.KeyDescription === key.KeyDescription) {
+                            return {
+                              ...k,
+                              Visible: checked,
+                            };
+                          }
 
-                      return k;
-                    });
+                          return k;
+                        });
 
-                    setFilteredKeys(updatedKeys);
+                        setFilteredKeys(updatedKeys);
 
-                    const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+                        const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
 
-                    const exclude_from_ctb = ctbSumKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+                        const exclude_from_ctb = ctbSumKeys
+                          .filter((k) => k.Visible === false)
+                          .map((k) => k.KeyDescription);
 
-                    setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
-                      KeyDescription: hidden_keys,
-                      CTBElements: exclude_from_ctb,
-                      Schedule: schedule,
-                    });
-                  }}
-                >
-                  {key.KeyDescription}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                        setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
+                          KeyDescription: hidden_keys,
+                          CTBElements: exclude_from_ctb,
+                          Schedule: schedule,
+                        });
+                      }}
+                    >
+                      {key.KeyDescription}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-fit">
-                <PointerIcon className="mr-2 w-4 h-4" />
-                Select Keys for CTB Calculation
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Toggle Inclusion</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {ctbSumKeys.map((key, index) => (
-                <DropdownMenuCheckboxItem
-                  key={`key-${index}`}
-                  checked={key.Visible}
-                  onCheckedChange={(checked: boolean) => {
-                    const updatedKeys = ctbSumKeys.map((k) => {
-                      if (k.KeyDescription === key.KeyDescription) {
-                        return {
-                          ...k,
-                          Visible: checked,
-                        };
-                      }
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-fit">
+                    <PointerIcon className="mr-2 w-4 h-4" />
+                    Select Keys for CTB Calculation
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuLabel>Toggle Inclusion</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {ctbSumKeys.map((key, index) => (
+                    <DropdownMenuCheckboxItem
+                      key={`key-${index}`}
+                      checked={key.Visible}
+                      onCheckedChange={(checked: boolean) => {
+                        const updatedKeys = ctbSumKeys.map((k) => {
+                          if (k.KeyDescription === key.KeyDescription) {
+                            return {
+                              ...k,
+                              Visible: checked,
+                            };
+                          }
 
-                      return k;
-                    });
+                          return k;
+                        });
 
-                    const hidden_keys = filteredKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+                        const hidden_keys = filteredKeys
+                          .filter((k) => k.Visible === false)
+                          .map((k) => k.KeyDescription);
 
-                    const exclude_from_ctb = updatedKeys
-                      .filter((k) => k.Visible === false)
-                      .map((k) => k.KeyDescription);
+                        const exclude_from_ctb = updatedKeys
+                          .filter((k) => k.Visible === false)
+                          .map((k) => k.KeyDescription);
 
-                    setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
-                      KeyDescription: hidden_keys,
-                      CTBElements: exclude_from_ctb,
-                      Schedule: schedule,
-                    });
+                        setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
+                          KeyDescription: hidden_keys,
+                          CTBElements: exclude_from_ctb,
+                          Schedule: schedule,
+                        });
 
-                    setCTBSumKeys(updatedKeys);
-                  }}
-                >
-                  {key.KeyDescription}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+                        setCTBSumKeys(updatedKeys);
+                      }}
+                    >
+                      {key.KeyDescription}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
-        <div className="flex flex-row items-center gap-2 w-fit">
-          <p>Select Timer to Reference:</p>
-          <Select
-            value={schedule}
-            onValueChange={(value: SessionTerminationOptionsType) => {
-              setSchedule(value);
+            <div className="flex flex-row items-center gap-2 w-fit">
+              <p>Select Timer to Reference:</p>
+              <Select
+                value={schedule}
+                onValueChange={(value: SessionTerminationOptionsType) => {
+                  setSchedule(value);
 
-              const hidden_keys = filteredKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+                  const hidden_keys = filteredKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
 
-              const exclude_from_ctb = ctbSumKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+                  const exclude_from_ctb = ctbSumKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
 
-              setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
-                KeyDescription: hidden_keys,
-                CTBElements: exclude_from_ctb,
-                Schedule: value,
-              });
-            }}
-          >
-            <SelectTrigger className="w-fit">
-              <SelectValue placeholder="Data Collector Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value={'End on Timer #1' as SessionTerminationOptionsType}>
-                  Score on Timer #1 Time
-                </SelectItem>
-                <SelectItem value={'End on Timer #2' as SessionTerminationOptionsType}>
-                  Score on Timer #2 Time
-                </SelectItem>
-                <SelectItem value={'End on Timer #3' as SessionTerminationOptionsType}>
-                  Score on Timer #3 Time
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      {keySet && (
-        <RateFigureVisualization
-          FilteredSessions={results_filtered}
-          ScheduleOption={schedule}
-          CTBKeys={ctbSumKeys}
-          KeySetFull={filteredKeys}
-        />
-      )}
+                  setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
+                    KeyDescription: hidden_keys,
+                    CTBElements: exclude_from_ctb,
+                    Schedule: value,
+                  });
+                }}
+              >
+                <SelectTrigger className="w-fit">
+                  <SelectValue placeholder="Data Collector Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value={'End on Timer #1' as SessionTerminationOptionsType}>
+                      Score on Timer #1 Time
+                    </SelectItem>
+                    <SelectItem value={'End on Timer #2' as SessionTerminationOptionsType}>
+                      Score on Timer #2 Time
+                    </SelectItem>
+                    <SelectItem value={'End on Timer #3' as SessionTerminationOptionsType}>
+                      Score on Timer #3 Time
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <p>
+            This page provides a visual of the available data regarding <i>rate</i>. For convenience, series of data can
+            be enabled or disabled for viewing. Similarly, an omnibus measure of behavior can be calculated by selecting
+            which types of events to combine together (i.e., a combined target behavior [CTB] metric). Options set here
+            will persist for future visits.
+          </p>
+
+          {keySet && (
+            <RateFigureVisualization
+              FilteredSessions={results_filtered}
+              ScheduleOption={schedule}
+              CTBKeys={ctbSumKeys}
+              KeySetFull={filteredKeys}
+            />
+          )}
+        </CardContent>
+      </Card>
     </PageWrapper>
   );
 }

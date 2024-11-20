@@ -93,7 +93,7 @@ type Props = {
   SetConditions: Dispatch<SetStateAction<string[]>>;
 };
 
-export default function SessionDesigner({
+function SessionDesigner({
   Handle,
   Group,
   Individual,
@@ -206,6 +206,7 @@ export default function SessionDesigner({
         BuildEvaluationsBreadcrumb(Group, Individual),
       ]}
       label={`Design ${CleanUpString(Evaluation)} Session`}
+      className="select-none"
     >
       <div className="w-full grid grid-cols-3 gap-2 max-w-screen-2xl">
         <Card className="w-full col-span-2">
@@ -282,7 +283,7 @@ export default function SessionDesigner({
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="dark:bg-background">
                             <SelectValue placeholder="Select condition for evaluation" />
                           </SelectTrigger>
                         </FormControl>
@@ -318,7 +319,7 @@ export default function SessionDesigner({
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="dark:bg-background">
                             <SelectValue placeholder="Select keyset for session" />
                           </SelectTrigger>
                         </FormControl>
@@ -374,7 +375,7 @@ export default function SessionDesigner({
                       <FormLabel>Role as Data Collector</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="dark:bg-background">
                             <SelectValue placeholder="Select role as data collector" />
                           </SelectTrigger>
                         </FormControl>
@@ -434,7 +435,7 @@ export default function SessionDesigner({
                       <FormLabel>Session Termination Option</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="dark:bg-background">
                             <SelectValue placeholder="Select role as data collector" />
                           </SelectTrigger>
                         </FormControl>
@@ -454,7 +455,7 @@ export default function SessionDesigner({
                     </FormItem>
                   )}
                 />
-                <Button className="w-full" type="submit">
+                <Button variant={'outline'} className="w-full" type="submit">
                   Run Session
                 </Button>
               </form>

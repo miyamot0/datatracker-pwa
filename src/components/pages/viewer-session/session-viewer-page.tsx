@@ -84,7 +84,7 @@ export function SessionViewerPageShim() {
   );
 }
 
-export default function SessionViewerPage({ Handle, Group, Individual, Evaluation, FileString }: Props) {
+function SessionViewerPage({ Handle, Group, Individual, Evaluation, FileString }: Props) {
   const [session, setSessionData] = useState<ExpandedSavedSessionResult | undefined>(undefined);
   const [plot_object, setPlotObject] = useState<any[] | undefined>(undefined);
   const [filteredKeys, setFilteredKeys] = useState([] as ExpandedKeySetInstance[]);
@@ -217,6 +217,7 @@ export default function SessionViewerPage({ Handle, Group, Individual, Evaluatio
         BuildSessionHistoryBreadcrumb(Group, Individual, Evaluation),
       ]}
       label={'Session Viewer'}
+      className="select-none"
     >
       <div className="w-full flex flex-row justify-between mb-4">
         <div className="flex flex-row gap-4">
@@ -269,7 +270,13 @@ export default function SessionViewerPage({ Handle, Group, Individual, Evaluatio
           <CardTitle>Session Inspector</CardTitle>
           <CardDescription>Information Regarding Keys Illustrated Below</CardDescription>
         </CardHeader>
-        <CardContent className="w-full">
+        <CardContent className="w-full flex flex-col gap-2">
+          <p>
+            This page provides a visual and summary of the events recorded during the session. Due to differences in how
+            duration and events are recorded, only events recorded reference the Y-axis. Duration keys are illustrated
+            in terms of onset-offset visuals.
+          </p>
+
           <SessionFigure Session={session} PlotData={plot_object} KeysHidden={filteredKeys} />
 
           {session && (
@@ -332,16 +339,7 @@ export default function SessionViewerPage({ Handle, Group, Individual, Evaluatio
             </div>
           )}
 
-          <div className="grid grid-cols-4 gap-2">
-            <div className="font-bold">Event</div>
-            <div className="font-bold">Timer/Schedule</div>
-            <div className="font-bold">Key Information</div>
-            <div className="font-bold">Time Into Session</div>
-
-            <hr className="col-span-4 dark:border-white" />
-
-            <SessionKeyList Session={session} />
-          </div>
+          <SessionKeyList Session={session} />
         </CardContent>
       </Card>
     </PageWrapper>

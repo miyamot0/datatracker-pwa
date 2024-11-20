@@ -11,22 +11,19 @@ import {
 import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from '@/components/ui/table';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContext } from '@/context/folder-context';
-import { removeGroupFolder } from '@/lib/files';
 import createHref from '@/lib/links';
-import { displayConditionalNotification } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
-import { LoadingStructure } from '@/types/working';
 import { ChevronDown, FolderInput, FolderPlus, FolderX } from 'lucide-react';
-import { Dispatch, SetStateAction, useContext } from 'react';
+import { useContext } from 'react';
 import { Link } from 'react-router-dom';
 
 type Props = {
-  Handle: FileSystemDirectoryHandle;
-  Groups: LoadingStructure;
-  AddCallback: Dispatch<SetStateAction<LoadingStructure>>;
+  Groups: string[];
+  AddGroup: () => void;
+  RemoveGroup: (group: string) => void;
 };
 
-export default function AuthorizedDisplay({ Handle, Groups, AddCallback }: Props) {
+export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup }: Props) {
   const { settings } = useContext(FolderHandleContext);
 
   return (
@@ -43,34 +40,7 @@ export default function AuthorizedDisplay({ Handle, Groups, AddCallback }: Props
               variant={'outline'}
               className="shadow"
               onClick={async () => {
-                const input = window.prompt('Enter a name for the new group.');
-
-                if (!input || !Handle) return;
-
-                if (Groups.Values.includes(input)) {
-                  alert('Group already exists.');
-                  return;
-                }
-
-                if (input.trim().length < 4) {
-                  alert('Group name must be at least 4 characters long.');
-                  return;
-                }
-
-                await Handle.getDirectoryHandle(input, { create: true });
-
-                const new_state = {
-                  ...Groups,
-                  Values: [...Groups.Values, input],
-                };
-
-                AddCallback(new_state);
-
-                displayConditionalNotification(
-                  settings,
-                  'Folder Created',
-                  'The new Group folder has been successfully created.'
-                );
+                await AddGroup();
               }}
             >
               <FolderPlus className="mr-2 h-4 w-4" />
@@ -81,6 +51,12 @@ export default function AuthorizedDisplay({ Handle, Groups, AddCallback }: Props
       </CardHeader>
 
       <CardContent className="flex flex-col gap-1.5">
+        <p>
+          Each entry in this page represents a 'Grouping' of individuals. The specific grouping does not change any
+          functionality provided; however, this helps with organizing the collection and review of data. You must have
+          at least <i>one</i> group to begin collecting data.
+        </p>
+
         <Table>
           <TableHeader>
             <TableRow>
@@ -89,7 +65,7 @@ export default function AuthorizedDisplay({ Handle, Groups, AddCallback }: Props
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Groups.Values.map((group, index) => (
+            {Groups.map((group, index) => (
               <TableRow key={index} className="my-2">
                 <TableCell>{group}</TableCell>
                 <TableCell className="flex flex-row justify-end">
@@ -123,41 +99,11 @@ export default function AuthorizedDisplay({ Handle, Groups, AddCallback }: Props
                           )}
                           disabled={settings.EnableFileDeletion === false}
                           onClick={async () => {
-                            const confirm_delete = window.confirm(
-                              'Are you sure you want to delete this group?. This CANNOT be undone.'
-                            );
-
-                            if (confirm_delete) {
-                              try {
-                                await removeGroupFolder(Handle, group);
-
-                                const new_state = {
-                                  ...Groups,
-                                  Values: Groups.Values.filter((item) => item !== group),
-                                };
-
-                                AddCallback(new_state);
-
-                                displayConditionalNotification(
-                                  settings,
-                                  'Group Data Deleted',
-                                  'Group data has been successfully deleted.'
-                                );
-                                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                              } catch (error: unknown) {
-                                displayConditionalNotification(
-                                  settings,
-                                  'Error Deleting Group Data',
-                                  'An error occurred while trying to delete the group folder.',
-                                  3000,
-                                  true
-                                );
-                              }
-                            }
+                            await RemoveGroup(group);
                           }}
                         >
                           <FolderX className="mr-2 h-4 w-4" />
-                          Remove Group
+                          Delete Group
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

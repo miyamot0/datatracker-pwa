@@ -10,6 +10,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { MdViewer } from '@/helpers/md-viewer';
 import { DocumentationObjects } from '@/lib/docs';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function DocumentationEntryPage() {
   const { slug } = useParams();
@@ -24,8 +25,15 @@ export default function DocumentationEntryPage() {
   const prev_entry = DocumentationObjects.find((e) => e.matter.index === entry.matter.index - 1);
   const next_entry = DocumentationObjects.find((e) => e.matter.index === entry.matter.index + 1);
 
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
   return (
-    <PageWrapper breadcrumbs={[BuildDocumentationBreadcrumb()]} label={entry.matter.title}>
+    <PageWrapper breadcrumbs={[BuildDocumentationBreadcrumb()]} label={entry.matter.title} className="select-none">
       <Card className="w-full max-w-screen-2xl">
         <CardHeader className="flex flex-col md:flex-row md:justify-between">
           <div className="flex flex-col gap-1.5">
@@ -54,11 +62,13 @@ export default function DocumentationEntryPage() {
           <Link
             unstable_viewTransition
             to={`/documentation/${prev_entry?.matter.filename.replaceAll('.md', '')}`}
+            onClick={scrollToTop}
             className={cn('flex flex-row', {
               'pointer-events-none disabled': !prev_entry,
             })}
           >
-            <Button disabled={!prev_entry} variant={'outline'} className="w-full shadow-xl">
+            <Button disabled={!prev_entry} className="w-full shadow-xl">
+              <ChevronLeft className="w-4 h-4 mr-2" />
               Read Previous
             </Button>
           </Link>
@@ -66,12 +76,14 @@ export default function DocumentationEntryPage() {
           <Link
             unstable_viewTransition
             to={`/documentation/${next_entry?.matter.filename.replaceAll('.md', '')}`}
+            onClick={scrollToTop}
             className={cn('flex flex-row', {
               'pointer-events-none disabled': !next_entry,
             })}
           >
-            <Button disabled={!next_entry} variant={'outline'} className="w-full shadow-xl">
+            <Button disabled={!next_entry} className="w-full shadow-xl">
               Read Next
+              <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
         </CardFooter>

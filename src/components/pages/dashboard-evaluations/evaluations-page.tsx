@@ -10,57 +10,57 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import LoadingDisplay from '@/components/ui/loading-display';
 import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from '@/components/ui/table';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContext } from '@/context/folder-context';
-import { getClientEvaluationFolders, removeClientEvaluationFolder } from '@/lib/files';
+import useQueryEvaluations from '@/hooks/evaluations/useQueryEvaluations';
 import createHref from '@/lib/links';
-import { displayConditionalNotification } from '@/lib/notifications';
 import { CleanUpString } from '@/lib/strings';
 import { cn } from '@/lib/utils';
-import { LoadingStructure } from '@/types/working';
 import {
   ChartColumnIcon,
   ChevronDown,
   Disc3,
   FilePlus,
   FolderX,
+  ImportIcon,
   KeyboardIcon,
   ScatterChartIcon,
   SearchIcon,
   Table2Icon,
 } from 'lucide-react';
-import { useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 export default function EvaluationsPage() {
   const { Group, Individual } = useParams();
-  const { settings, handle } = useContext(FolderHandleContext);
-  const [evaluations, setEvaluations] = useState<LoadingStructure>({
-    Status: 'loading',
-    Values: [],
-  });
+  const { settings } = useContext(FolderHandleContext);
+  const { data, status, error, handle, addEvaluation, removeEvaluation } = useQueryEvaluations(Group, Individual);
+
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!handle || !Group || !Individual) {
-      navigate(createHref({ type: 'Dashboard' }), {
-        unstable_viewTransition: true,
-      });
-      return;
-    }
+  if (!handle || !Group || !Individual) {
+    navigate(createHref({ type: 'Dashboard' }), {
+      unstable_viewTransition: true,
+    });
 
-    getClientEvaluationFolders(handle, Group, Individual, setEvaluations);
-  }, [handle, Group, Individual, navigate]);
+    return <></>;
+  }
 
-  if (!Group || !Individual || !handle) {
-    throw new Error('Params missing.');
+  if (status === 'loading') {
+    return <LoadingDisplay />;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
   }
 
   return (
     <PageWrapper
       breadcrumbs={[BuildGroupBreadcrumb(), BuildIndividualsBreadcrumb(Group)]}
       label={CleanUpString(Individual)}
+      className="select-none"
     >
       <Card className="w-full max-w-screen-2xl">
         <CardHeader className="flex flex-col md:flex-row w-full justify-between">
@@ -74,36 +74,30 @@ export default function EvaluationsPage() {
                 variant={'outline'}
                 className="shadow"
                 onClick={async () => {
-                  const input = window.prompt('Enter a name for the new evaluation.');
-
-                  if (!input || !handle) return;
-
-                  if (evaluations.Values.includes(input)) {
-                    alert('Evaluation already exists.');
-                    return;
-                  }
-
-                  if (input.trim().length < 4) {
-                    alert('Evaluation name must be at least 4 characters long.');
-                    return;
-                  }
-
-                  const group_dir = await handle.getDirectoryHandle(CleanUpString(Group));
-                  const client_dir = await group_dir.getDirectoryHandle(CleanUpString(Individual));
-                  await client_dir.getDirectoryHandle(input, { create: true });
-
-                  const new_state = {
-                    ...evaluations,
-                    Values: [...evaluations.Values, input],
-                  };
-
-                  setEvaluations(new_state);
+                  await addEvaluation();
                 }}
               >
                 <FilePlus className="w-4 h-4 mr-2" />
                 Create Evaluation
               </Button>
             </ToolTipWrapper>
+
+            <Link
+              unstable_viewTransition
+              to={createHref({
+                type: 'Evaluations Import',
+                group: Group,
+                individual: Individual,
+              })}
+            >
+              <ToolTipWrapper Label="Import an existing evaluation for the current individual">
+                <Button variant={'outline'} className="shadow">
+                  <ImportIcon className="w-4 h-4 mr-2" />
+                  Import Evaluation
+                </Button>
+              </ToolTipWrapper>
+            </Link>
+
             <Link
               unstable_viewTransition
               to={createHref({
@@ -125,8 +119,9 @@ export default function EvaluationsPage() {
         <CardContent className="flex flex-col gap-2">
           <p>
             This page provides a list of all evaluations for the respective individual. You may review individual data,
-            visualized data over time, or calculate measures of reliability by selecting the relevant action for each
-            evaluation (i.e., the 'down' arrow).
+            visualize data over time, or calculate measures of reliability by selecting the relevant action for each
+            evaluation (i.e., the 'down' arrow). You must have at least <i>one</i> evaluation to begin recording client
+            data.
           </p>
           <Table>
             <TableHeader>
@@ -136,7 +131,7 @@ export default function EvaluationsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {evaluations.Values.map((evaluation, index) => (
+              {data.map((evaluation, index) => (
                 <TableRow key={index} className="my-2">
                   <TableCell>{evaluation}</TableCell>
                   <TableCell className="flex flex-row justify-end">
@@ -250,41 +245,11 @@ export default function EvaluationsPage() {
                             )}
                             disabled={settings.EnableFileDeletion === false}
                             onClick={async () => {
-                              const confirm_delete = window.confirm(
-                                'Are you sure you want to delete this evaluation?. This CANNOT be undone.'
-                              );
-
-                              if (confirm_delete) {
-                                try {
-                                  await removeClientEvaluationFolder(handle, Group, Individual, evaluation);
-
-                                  const new_state = {
-                                    ...evaluations,
-                                    Values: evaluations.Values.filter((item) => item !== evaluation),
-                                  };
-
-                                  setEvaluations(new_state);
-
-                                  displayConditionalNotification(
-                                    settings,
-                                    'Evaluation Data Deleted',
-                                    'Evaluation data has been successfully deleted.'
-                                  );
-                                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                                } catch (error) {
-                                  displayConditionalNotification(
-                                    settings,
-                                    'Evaluation Data Deletion Error',
-                                    'An error occurred while deleting the evaluation data.',
-                                    3000,
-                                    true
-                                  );
-                                }
-                              }
+                              await removeEvaluation(evaluation);
                             }}
                           >
                             <FolderX className="mr-2 h-4 w-4" />
-                            Remove Evaluation
+                            Delete ALL Evaluation Data
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

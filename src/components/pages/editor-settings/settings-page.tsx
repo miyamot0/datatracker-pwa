@@ -27,7 +27,7 @@ export default function SettingsPage() {
   const { setTheme, theme } = useTheme();
 
   return (
-    <PageWrapper label="Settings">
+    <PageWrapper label="Settings" className="select-none">
       <Card className="w-full">
         <CardHeader className="flex flex-row justify-between">
           <div className="flex flex-col gap-1.5">
@@ -37,8 +37,8 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="min-h-96 flex flex-col justify-start gap-6">
           <SettingsFormItemWrapper
-            Label="Theme/Display Options"
-            Description="Toggle light/dark/system Themes for preference"
+            Label="Options for Theme/Displays"
+            Description="Toggle light/dark/system themes based on preference (e.g., dark mode)"
           >
             <Select
               value={theme ?? 'system'}
@@ -64,8 +64,8 @@ export default function SettingsPage() {
           </SettingsFormItemWrapper>
 
           <SettingsFormItemWrapper
-            Label="After-Session Options"
-            Description="Set practices for advancing for each session"
+            Label="After-Session Program Behavior"
+            Description="Set preferences for how the program should respond after each session"
           >
             <Select
               value={settings.PostSessionBx}
@@ -96,40 +96,8 @@ export default function SettingsPage() {
           </SettingsFormItemWrapper>
 
           <SettingsFormItemWrapper
-            Label="Notification Settings"
-            Description="Set the level of notifications to display"
-          >
-            <Select
-              value={settings.NotificationSettings}
-              onValueChange={(value: NotificationSettingsTypes) => {
-                const newSettings = {
-                  ...settings,
-                  NotificationSettings: value,
-                } satisfies ApplicationSettingsTypes;
-                setSettings(newSettings);
-                saveSettings(newSettings);
-
-                displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
-              }}
-            >
-              <SelectTrigger className="w-full md:max-w-[250px]">
-                <SelectValue placeholder="Select Notification Level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {NOTIFICATION_SETTINGS_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </SettingsFormItemWrapper>
-
-          <SettingsFormItemWrapper
-            Label="Privilege Settings"
-            Description="Enable deletion of files and folders (Warning: Risk of accidental data loss)"
+            Label="Provide Elevated Privileges"
+            Description="Override typical behavior and allow the deletion of data (Warning: Risk of permanent data loss)"
           >
             <Select
               value={settings.EnableFileDeletion ? 'true' : 'false'}
@@ -160,8 +128,8 @@ export default function SettingsPage() {
           </SettingsFormItemWrapper>
 
           <SettingsFormItemWrapper
-            Label="Data Folder Naming"
-            Description="By default, the appropriate folder must be named 'DataTracker'"
+            Label="Enforce Strict Data Folder Names"
+            Description="Override typical behavior to use folders named other than 'DataTracker'"
           >
             <Select
               value={settings.EnforceDataFolderName ? 'true' : 'false'}
@@ -191,7 +159,42 @@ export default function SettingsPage() {
             </Select>
           </SettingsFormItemWrapper>
 
-          <SettingsFormItemWrapper Label="Tooltip Instructions" Description="Add or disable tooltips for new users">
+          <SettingsFormItemWrapper
+            Label="Level of Alert Notification"
+            Description="Set whether the program should provide frequent notifications"
+          >
+            <Select
+              value={settings.NotificationSettings}
+              onValueChange={(value: NotificationSettingsTypes) => {
+                const newSettings = {
+                  ...settings,
+                  NotificationSettings: value,
+                } satisfies ApplicationSettingsTypes;
+                setSettings(newSettings);
+                saveSettings(newSettings);
+
+                displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+              }}
+            >
+              <SelectTrigger className="w-full md:max-w-[250px]">
+                <SelectValue placeholder="Select Notification Level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {NOTIFICATION_SETTINGS_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </SettingsFormItemWrapper>
+
+          <SettingsFormItemWrapper
+            Label="Level of Tooltip Notification"
+            Description="Set whether the program should provide enhanced tooltip guidance (i.e., messages on hover)"
+          >
             <Select
               value={settings.EnableToolTip === true ? 'All' : 'None'}
               onValueChange={(value: ToolTipOptionTypes) => {

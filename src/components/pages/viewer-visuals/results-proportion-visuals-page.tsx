@@ -29,6 +29,7 @@ import { FolderHandleContext } from '@/context/folder-context';
 import { useNavigate, useParams } from 'react-router-dom';
 import createHref from '@/lib/links';
 import ProportionFigureVisualization from './figures/proportion-figure';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function ResultsProportionVisualsPageShim() {
   const { handle } = useContext(FolderHandleContext);
@@ -71,7 +72,7 @@ type Props = {
   Evaluation: string;
 };
 
-export function ResultsProportionVisualsPage({ Handle, Group, Individual, Evaluation }: Props) {
+function ResultsProportionVisualsPage({ Handle, Group, Individual, Evaluation }: Props) {
   const [results, setResults] = useState<SavedSessionResult[]>([]);
   const [keySet, setKeySet] = useState<KeySet>();
 
@@ -125,93 +126,109 @@ export function ResultsProportionVisualsPage({ Handle, Group, Individual, Evalua
         BuildEvaluationsBreadcrumb(CleanUpString(Group), CleanUpString(Individual)),
       ]}
       label={`${CleanUpString(CleanUpString(Evaluation))}: Interval Proportions`}
+      className="select-none"
     >
-      <div className="w-full flex flex-row justify-between mb-4">
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-fit">
-              <Edit3Icon className="mr-2 w-4 h-4" />
-              Edit Keys Displayed
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {filteredKeys.map((key, index) => (
-              <DropdownMenuCheckboxItem
-                key={`key-${index}`}
-                checked={key.Visible}
-                onCheckedChange={(checked) => {
-                  const updatedKeys = filteredKeys.map((k) => {
-                    if (k.KeyDescription === key.KeyDescription) {
-                      return {
-                        ...k,
-                        Visible: checked,
-                      };
-                    }
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Visualization of Behavioral Rates</CardTitle>
+          <CardDescription>Options for Visualizing Data Provided Below</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-2">
+          <div className="w-full flex flex-row justify-between mb-4">
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-fit">
+                  <Edit3Icon className="mr-2 w-4 h-4" />
+                  Edit Keys Displayed
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {filteredKeys.map((key, index) => (
+                  <DropdownMenuCheckboxItem
+                    key={`key-${index}`}
+                    checked={key.Visible}
+                    onCheckedChange={(checked) => {
+                      const updatedKeys = filteredKeys.map((k) => {
+                        if (k.KeyDescription === key.KeyDescription) {
+                          return {
+                            ...k,
+                            Visible: checked,
+                          };
+                        }
 
-                    return k;
-                  });
+                        return k;
+                      });
 
-                  setFilteredKeys(updatedKeys);
+                      setFilteredKeys(updatedKeys);
 
-                  const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+                      const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+
+                      setLocalCachedPrefs(Group, Individual, Evaluation, 'Duration', {
+                        KeyDescription: hidden_keys,
+                        CTBElements: [],
+                        Schedule: schedule,
+                      });
+                    }}
+                  >
+                    {key.KeyDescription}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <div className="flex flex-row items-center gap-2 w-fit">
+              <p>Select Timer to Reference:</p>
+              <Select
+                value={schedule}
+                onValueChange={(value: SessionTerminationOptionsType) => {
+                  setSchedule(value);
+
+                  const hidden_keys = filteredKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
 
                   setLocalCachedPrefs(Group, Individual, Evaluation, 'Duration', {
                     KeyDescription: hidden_keys,
                     CTBElements: [],
-                    Schedule: schedule,
+                    Schedule: value,
                   });
                 }}
               >
-                {key.KeyDescription}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+                <SelectTrigger className="w-fit">
+                  <SelectValue placeholder="Data Collector Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value={'End on Timer #1' as SessionTerminationOptionsType}>
+                      Score on Timer #1 Time
+                    </SelectItem>
+                    <SelectItem value={'End on Timer #2' as SessionTerminationOptionsType}>
+                      Score on Timer #2 Time
+                    </SelectItem>
+                    <SelectItem value={'End on Timer #3' as SessionTerminationOptionsType}>
+                      Score on Timer #3 Time
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-        <div className="flex flex-row items-center gap-2 w-fit">
-          <p>Select Timer to Reference:</p>
-          <Select
-            value={schedule}
-            onValueChange={(value: SessionTerminationOptionsType) => {
-              setSchedule(value);
+          <p>
+            This page provides a visual of the available data regarding <i>prooprtion of session time</i>. For
+            convenience, series of data can be enabled or disabled for viewing. Options set here will persist for future
+            visits.
+          </p>
 
-              const hidden_keys = filteredKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
-
-              setLocalCachedPrefs(Group, Individual, Evaluation, 'Duration', {
-                KeyDescription: hidden_keys,
-                CTBElements: [],
-                Schedule: value,
-              });
-            }}
-          >
-            <SelectTrigger className="w-fit">
-              <SelectValue placeholder="Data Collector Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value={'End on Timer #1' as SessionTerminationOptionsType}>
-                  Score on Timer #1 Time
-                </SelectItem>
-                <SelectItem value={'End on Timer #2' as SessionTerminationOptionsType}>
-                  Score on Timer #2 Time
-                </SelectItem>
-                <SelectItem value={'End on Timer #3' as SessionTerminationOptionsType}>
-                  Score on Timer #3 Time
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      {keySet && (
-        <ProportionFigureVisualization
-          FilteredSessions={results_filtered}
-          ScheduleOption={schedule}
-          KeySetFull={filteredKeys}
-        />
-      )}
+          {keySet && (
+            <ProportionFigureVisualization
+              FilteredSessions={results_filtered}
+              ScheduleOption={schedule}
+              KeySetFull={filteredKeys}
+            />
+          )}
+        </CardContent>
+      </Card>
     </PageWrapper>
   );
 }

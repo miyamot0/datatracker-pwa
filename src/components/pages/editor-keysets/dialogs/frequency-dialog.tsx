@@ -11,7 +11,7 @@ import { createRef, useContext, useState } from 'react';
 
 type Props = {
   KeySet: KeySet;
-  Callback: (key: KeySetInstance, type: 'Duration' | 'Frequency') => void;
+  Callback: (key_set: KeySet, key: KeySetInstance, type: 'Duration' | 'Frequency') => void;
 };
 
 export default function FrequencyDialogKeyCreator({ KeySet, Callback }: Props) {
@@ -35,7 +35,7 @@ export default function FrequencyDialogKeyCreator({ KeySet, Callback }: Props) {
           </Button>
         </ToolTipWrapper>
       </div>
-      <DialogContent className="bg-card">
+      <DialogContent className="bg-card select-none">
         <DialogHeader>
           <DialogTitle>Frequency Key Creator</DialogTitle>
           <DialogDescription>Set key and relevant description</DialogDescription>
@@ -139,7 +139,7 @@ export default function FrequencyDialogKeyCreator({ KeySet, Callback }: Props) {
               return;
             }
 
-            Callback(keyInstance, 'Frequency');
+            Callback(KeySet, keyInstance, 'Frequency');
 
             setShow(false);
             setKeyInstance(DEFAULT_ENTRY);

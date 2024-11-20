@@ -1,6 +1,6 @@
 const all_md_files = import.meta.glob('/src/assets/content/*.md', { query: '?raw', eager: true, import: 'default' });
 
-export const DocumentationObjects = Object.entries(all_md_files).map(([key, value]) => {
+export const DocumentationObjects = Object.entries(all_md_files).map(([key, value], index) => {
   const filename = key.split('/').pop();
   const content = (value as string).split('---');
 
@@ -13,7 +13,7 @@ export const DocumentationObjects = Object.entries(all_md_files).map(([key, valu
     matter[key.trim()] = value.trim().replaceAll("'", '');
   });
 
-  matter.index = parseInt(matter.index as unknown as string);
+  matter.index = index;
   matter.filename = filename;
 
   return {

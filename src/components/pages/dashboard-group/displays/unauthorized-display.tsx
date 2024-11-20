@@ -5,9 +5,7 @@ import { FolderHandleContext } from '@/context/folder-context';
 import { useContext } from 'react';
 import { displayConditionalNotification } from '@/lib/notifications';
 
-type Props = {};
-
-export default function UnauthorizedDisplay({}: Props) {
+export default function UnauthorizedDisplay() {
   const { setHandle, settings } = useContext(FolderHandleContext);
 
   return (
@@ -55,6 +53,7 @@ export default function UnauthorizedDisplay({}: Props) {
                   'You can you interact with files in the relevant folder.'
                 );
               }
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (_error) {
               displayConditionalNotification(
                 settings,

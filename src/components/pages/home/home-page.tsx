@@ -28,7 +28,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <PageWrapper className="flex flex-col gap-6">
+    <PageWrapper className="flex flex-col gap-6 select-none">
       <div className="pb-4">
         <div className="text-center mx-auto">
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">DataTracker</h1>
@@ -42,10 +42,14 @@ export default function HomePage() {
       <ImageCarousel />
 
       <div className="max-w-lg flex flex-col w-full py-8 gap-4">
-        <Link to={createHref({ type: 'Documentation' })} className="flex flex-row" unstable_viewTransition>
+        <Link
+          to={createHref({ type: 'Documentation' })}
+          className="flex flex-row gap-2 items-center"
+          unstable_viewTransition
+        >
           <Button variant={'outline'} className="w-full shadow-xl">
             <BookTextIcon className="mr-2 h-4 w-4" />
-            Documentation
+            Program Documentation
           </Button>
         </Link>
 
@@ -56,7 +60,7 @@ export default function HomePage() {
               Software Licenses
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-screen-md">
+          <DialogContent className="max-w-screen-md select-none">
             <DialogHeader>
               <DialogTitle>Open Source Software</DialogTitle>
               <DialogDescription>Licensing information for relevant software is provided below</DialogDescription>
@@ -81,7 +85,7 @@ export default function HomePage() {
                       target="_blank"
                       className="text-blue-500 hover:underline hover:text-blue-600"
                     >
-                      Repo
+                      Link to Repository
                     </Link>
                   </div>
                 );
@@ -104,7 +108,7 @@ export default function HomePage() {
         )}
 
         {display === 'desktop' && install && (
-          <Button className="w-full shadow-xl" variant={'default'} onClick={install}>
+          <Button className="w-full shadow-xl" variant={'outline'} onClick={install}>
             <HardDriveDownloadIcon className="mr-2 h-4 w-4" />
             Install Application
           </Button>

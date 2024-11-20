@@ -6,7 +6,7 @@ import { generateKeywordColors } from '@/lib/colors';
 import { FrontMatterUniversalType } from '@/types/mdx';
 import { cn } from '@/lib/utils';
 import { KeywordColors } from '@/types/colors';
-import { ChevronRight } from 'lucide-react';
+import { BookIcon, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DocumentationObjects } from '@/lib/docs';
 
@@ -18,7 +18,7 @@ export default function DocumentationListingPage() {
   const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
 
   return (
-    <PageWrapper label={'Documentation'}>
+    <PageWrapper label={'Documentation'} className="select-none">
       <Card className="w-full max-w-screen-2xl">
         <CardHeader>
           <CardTitle>Software Documentation</CardTitle>
@@ -63,7 +63,8 @@ export default function DocumentationListingPage() {
                   to={`/documentation/${entry.filename.replaceAll('.md', '')}`}
                   className="w-full md:w-fit"
                 >
-                  <Button variant={'outline'} className="shadow w-full md:w-fit" size={'sm'}>
+                  <Button variant={'outline'} className="shadow w-full md:w-fit " size={'sm'}>
+                    <BookIcon className="w-4 h-4 mr-2" />
                     Read More
                     <ChevronRight className="w-4 h-4 ml-2" />
                   </Button>

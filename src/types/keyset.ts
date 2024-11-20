@@ -20,6 +20,11 @@ export type KeySet = {
 };
 
 /**
+ * Type for extending keyset
+ */
+export type KeySetExtended = KeySet & { Group: string; Individual: string };
+
+/**
  * Keyset type more amenable to serialization
  */
 export type KeySetSerialize = {

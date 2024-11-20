@@ -60,13 +60,6 @@ export function ReliabilityViewerPageShim() {
 
   if (!handle) return <LoadingDisplay />;
 
-  //if (!Group || !Individual || !Evaluation) {
-  //  navigate(createHref({ type: 'Dashboard' }), {
-  //        unstable_viewTransition: true,
-  //      });
-  //  return;
-  // }
-
   if (handle && !keySet) {
     return (
       <ReliabilityBlank
@@ -124,7 +117,7 @@ type Props = {
   ScoredDuration: ScoredKey[][];
 };
 
-export default function ReliabilityViewerPage({
+function ReliabilityViewerPage({
   Group,
   Individual,
   Evaluation,
@@ -239,6 +232,7 @@ export default function ReliabilityViewerPage({
         BuildEvaluationsBreadcrumb(Group, Individual),
       ]}
       label={`Reliability for ${CleanUpString(Evaluation)}`}
+      className="select-none"
     >
       <div className="flex flex-col w-full gap-4">
         <Card className="w-full">
