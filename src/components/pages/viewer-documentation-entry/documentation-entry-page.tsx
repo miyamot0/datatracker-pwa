@@ -67,7 +67,7 @@ export default function DocumentationEntryPage() {
               'pointer-events-none disabled': !prev_entry,
             })}
           >
-            <Button disabled={!prev_entry} variant={'outline'} className="w-full shadow-xl">
+            <Button disabled={!prev_entry} className="w-full shadow-xl">
               <ChevronLeft className="w-4 h-4 mr-2" />
               Read Previous
             </Button>
@@ -81,7 +81,7 @@ export default function DocumentationEntryPage() {
               'pointer-events-none disabled': !next_entry,
             })}
           >
-            <Button disabled={!next_entry} variant={'outline'} className="w-full shadow-xl">
+            <Button disabled={!next_entry} className="w-full shadow-xl">
               Read Next
               <ChevronRight className="w-4 h-4 ml-2" />
             </Button>

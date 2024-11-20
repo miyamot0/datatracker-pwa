@@ -19,7 +19,7 @@ The DataTracker interface will provide cues to indicate if the required access h
 
 <div align="middle" width="100%">
     <img src="/docs/access_not_authorized.png" alt="Image of access not being authorized" />
-    <img src="/docs/access_authorized.png" alt="Image of access being authorized" />    
+    <img src="/docs/access_authorized.png" alt="Image of access being authorized" />
 </div>
 
 ### Approving the 'DataTracker' Folder
@@ -80,7 +80,7 @@ The program infers data file structure based on _how its named_ and _where it is
 
   - _Individual_ Folder (e.g., client name or identifier)
 
-    - '{_KeySet Name Here_}.json' File (a file associated with keys/behavior codes)
+    - '[_KeySet Name Here_].json' File (a file associated with keys/behavior codes)
 
     - _Evaluation_ Folder (e.g., functional analysis, treatment evaluation)
 
@@ -88,7 +88,7 @@ The program infers data file structure based on _how its named_ and _where it is
 
       - _Condition_ Folder (e.g., baseline, treatment, etc.)
 
-        - Session Data File, e.g. '[Session Number]_[Condition Name]_[Primary/Reliability].json' (File recording session performances)
+        - Session Data File, e.g. '[Session Number]\_[Condition Name]\_[Primary/Reliability].json' (File recording session performances)
 
 ### Descriptions for Each Level of File Hierarchy
 

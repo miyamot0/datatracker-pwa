@@ -124,8 +124,6 @@ tailwindcss-animate (1.0.7). Copyright Jamie Kyle <me@thejameskyle.com> -- MIT L
  
 uuid (10.0.0). Copyright n/a -- MIT Licensed: [Repo](https://github.com/uuidjs/uuid.git) 
  
-vite-plugin-radar (0.9.6). Copyright stafyniaksacha -- MIT Licensed: [Repo](https://github.com/stafyniaksacha/vite-plugin-radar.git) 
- 
 zod (3.23.8). Copyright Colin McDonnell <colin@colinhacks.com> -- MIT Licensed: [Repo](https://github.com/colinhacks/zod.git) 
 
 ## Acknowledgements

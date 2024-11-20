@@ -96,7 +96,7 @@ export default function HomePage() {
 
         {display === 'desktop' && (
           <Link to={createHref({ type: 'Dashboard' })} className="flex flex-row" unstable_viewTransition>
-            <Button variant={'outline'} className="w-full shadow-xl">
+            <Button className="w-full shadow-xl">
               <ChartLineIcon className="mr-2 h-4 w-4" />
               Load Application
             </Button>

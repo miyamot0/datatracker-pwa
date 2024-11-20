@@ -7,7 +7,7 @@ import package_json from './package.json';
 const common_screenshot_params = {
   sizes: '1148x969',
   type: 'image/png',
-  form_factor: 'wide' as 'narrow' | 'wide',
+  //form_factor: 'wide' as 'narrow' | 'wide',
 };
 
 export default defineConfig({
@@ -16,7 +16,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
-        enabled: true,
+        enabled: false,
       },
       workbox: {
         globPatterns: ['**/*'],
