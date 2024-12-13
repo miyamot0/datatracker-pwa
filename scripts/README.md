@@ -32,6 +32,7 @@ Features included in DataTracker (PWA) include:
 - 0.3.1 - Support for backing up data to a remote location
 - 0.3.2 - Stable support for syncing data across folders
 - 0.4.0 - Stable beta build with docs and features included
+- 0.4.1 - Expanding on summary output--more data available for basic export
 
 ## Features
 

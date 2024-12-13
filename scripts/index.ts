@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import packageJson from '../package.json';
 import licenses from '../src/assets/licenses.json';
-import coverageSummary from '../coverage/coverage-summary.json';
+//import coverageSummary from '../coverage/coverage-summary.json';
 
 /**
  * Populate the software section of the README with the licenses

@@ -26,11 +26,18 @@ export default function ViewDurationResults({ Keyset, Results }: Props) {
   };
 
   Results.map((result) => {
+    const system_events = result.SystemKeyPresses.map((press) => new Date(press.TimePressed)).sort(
+      (a, b) => a.getTime() - b.getTime()
+    );
+
+    if (system_events.length === 0) throw new Error('No system events found');
+
     const session_minutes = result.TimerMain / 60;
     const temp_array: string[] = [];
 
     const temp_result = {
       Session: result.SessionSettings.Session,
+      Date: system_events[0],
       Condition: result.SessionSettings.Condition,
       DataCollector: result.SessionSettings.Initials,
       Therapist: result.SessionSettings.Therapist,
@@ -85,7 +92,7 @@ export default function ViewDurationResults({ Keyset, Results }: Props) {
 
   const csv_string = exportHumanReadableToCSV(hr_results);
 
-  const columnLabels = ['Session #', 'Condition', 'Data Collector', 'Therapist'];
+  const columnLabels = ['Session #', 'Date', 'Time', 'Condition', 'Data Collector', 'Therapist'];
   hr_results.keys.forEach((entry) => {
     columnLabels.push(entry.Value + ' (Timer #1 S)');
     columnLabels.push(entry.Value + ' (Timer #2 S)');
@@ -107,6 +114,8 @@ export default function ViewDurationResults({ Keyset, Results }: Props) {
 
     return [
       { value: datum.Session.toString(), readOnly: true },
+      { value: datum.Date.toLocaleDateString(), readOnly: true },
+      { value: datum.Date.toLocaleTimeString(), readOnly: true },
       { value: datum.Condition.toString(), readOnly: true },
       { value: datum.DataCollector.toString(), readOnly: true },
       { value: datum.Therapist.toString(), readOnly: true },
@@ -116,7 +125,7 @@ export default function ViewDurationResults({ Keyset, Results }: Props) {
       { value: datum.Timer2.toFixed(2), readOnly: true },
       { value: datum.Timer3.toFixed(2), readOnly: true },
     ];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }) as Matrix<CellBase<any>>;
 
   return (
