@@ -9,6 +9,8 @@ import { HumanReadableResults } from '@/types/export';
 export function exportHumanReadableToCSV(results: HumanReadableResults) {
   const header_row = [
     'Session #',
+    'Date',
+    'Time',
     'Condition',
     'Data Collector',
     'Therapist',
@@ -26,6 +28,8 @@ export function exportHumanReadableToCSV(results: HumanReadableResults) {
   const data_rows = results.results.map((result) => {
     return [
       result.Session.toString().replace(/,/g, ''),
+      result.Date.toLocaleDateString().replace(/,/g, ''),
+      result.Date.toLocaleTimeString().replace(/,/g, ''),
       result.Condition.toString().replace(/,/g, ''),
       result.DataCollector.toString().replace(/,/g, ''),
       result.Therapist.toString().replace(/,/g, ''),

@@ -3,6 +3,10 @@ import { HumanReadableResults } from '../../types/export';
 
 describe('exportHumanReadableToCSV', () => {
   it('should generate a CSV string with the correct header and data rows', () => {
+    const date_test = new Date();
+    const date_string = date_test.toLocaleDateString();
+    const time_string = date_test.toLocaleTimeString();
+
     const input: HumanReadableResults = {
       keys: [
         { Key: 'key1', Value: 'Behavior1' },
@@ -12,6 +16,7 @@ describe('exportHumanReadableToCSV', () => {
       results: [
         {
           Session: 1,
+          Date: date_test,
           Condition: 'Condition1',
           DataCollector: 'Collector1',
           Therapist: 'Therapist1',
@@ -29,7 +34,7 @@ describe('exportHumanReadableToCSV', () => {
 
     const expectedCSV = [
       'Session #,Condition,Data Collector,Therapist,Behavior1 (Timer #1 Basis),Behavior1 (Timer #2 Basis),Behavior1 (Timer #3 Basis),Behavior1 (Total),Behavior2 (Timer #1 Basis),Behavior2 (Timer #2 Basis),Behavior2 (Timer #3 Basis),Behavior2 (Total),Session Duration (Minutes)',
-      '1,Condition1,Collector1,Therapist1,5,10,30',
+      `1,${date_string},${time_string},Condition1,Collector1,Therapist1,5,10,30`,
     ].join('\r\n');
 
     const result = exportHumanReadableToCSV(input);
@@ -52,12 +57,17 @@ describe('exportHumanReadableToCSV', () => {
   });
 
   it('should correctly handle multiple rows in the results', () => {
+    const date_test = new Date();
+    const date_string = date_test.toLocaleDateString();
+    const time_string = date_test.toLocaleTimeString();
+
     const input: HumanReadableResults = {
       keys: [{ Key: 'key1', Value: 'Behavior1' }],
       type: 'Frequency',
       results: [
         {
           Session: 1,
+          Date: date_test,
           Condition: 'Condition1',
           DataCollector: 'Collector1',
           Therapist: 'Therapist1',
@@ -69,6 +79,7 @@ describe('exportHumanReadableToCSV', () => {
         },
         {
           Session: 2,
+          Date: date_test,
           Condition: 'Condition2',
           DataCollector: 'Collector2',
           Therapist: 'Therapist2',
@@ -83,8 +94,8 @@ describe('exportHumanReadableToCSV', () => {
 
     const expectedCSV = [
       'Session #,Condition,Data Collector,Therapist,Behavior1 (Timer #1 Basis),Behavior1 (Timer #2 Basis),Behavior1 (Timer #3 Basis),Behavior1 (Total),Session Duration (Minutes)',
-      '1,Condition1,Collector1,Therapist1,5,30',
-      '2,Condition2,Collector2,Therapist2,7,45',
+      `1,${date_string},${time_string},Condition1,Collector1,Therapist1,5,30`,
+      `2,${date_string},${time_string},Condition2,Collector2,Therapist2,7,45`,
     ].join('\r\n');
 
     const result = exportHumanReadableToCSV(input);
@@ -92,12 +103,17 @@ describe('exportHumanReadableToCSV', () => {
   });
 
   it('should correctly escape commas in data fields', () => {
+    const date_test = new Date();
+    const date_string = date_test.toLocaleDateString();
+    const time_string = date_test.toLocaleTimeString();
+
     const input: HumanReadableResults = {
       keys: [{ Key: 'key1', Value: 'Behavior1' }],
       type: 'Frequency',
       results: [
         {
           Session: 1,
+          Date: date_test,
           Condition: 'Condition,1',
           DataCollector: 'Collector,1',
           Therapist: 'Therapist,1',
@@ -111,8 +127,8 @@ describe('exportHumanReadableToCSV', () => {
     };
 
     const expectedCSV = [
-      'Session #,Condition,Data Collector,Therapist,Behavior1 (Timer #1 Basis),Behavior1 (Timer #2 Basis),Behavior1 (Timer #3 Basis),Behavior1 (Total),Session Duration (Minutes)',
-      '1,Condition1,Collector1,Therapist1,5000,30',
+      'Session #,Date,Time,Condition,Data Collector,Therapist,Behavior1 (Timer #1 Basis),Behavior1 (Timer #2 Basis),Behavior1 (Timer #3 Basis),Behavior1 (Total),Session Duration (Minutes)',
+      `1,${date_string},${time_string},Condition1,Collector1,Therapist1,5000,30`,
     ].join('\r\n');
 
     const result = exportHumanReadableToCSV(input);
@@ -120,12 +136,17 @@ describe('exportHumanReadableToCSV', () => {
   });
 
   it('should handle cases where the keys array is empty', () => {
+    const date_test = new Date();
+    const date_string = date_test.toLocaleDateString();
+    const time_string = date_test.toLocaleTimeString();
+
     const input: HumanReadableResults = {
       keys: [],
       type: 'Duration',
       results: [
         {
           Session: 1,
+          Date: date_test,
           Condition: 'Condition1',
           DataCollector: 'Collector1',
           Therapist: 'Therapist1',
@@ -139,8 +160,8 @@ describe('exportHumanReadableToCSV', () => {
     };
 
     const expectedCSV = [
-      'Session #,Condition,Data Collector,Therapist,Session Duration (Minutes)',
-      '1,Condition1,Collector1,Therapist1,30',
+      'Session #,Date,Time,Condition,Data Collector,Therapist,Session Duration (Minutes)',
+      `1,${date_string},${time_string},Condition1,Collector1,Therapist1,30`,
     ].join('\r\n');
 
     const result = exportHumanReadableToCSV(input);

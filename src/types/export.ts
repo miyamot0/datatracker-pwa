@@ -11,6 +11,7 @@ export type EntryHolder = {
  */
 export type HumanReadableResultsRow = {
   Session: number;
+  Date: Date;
   Condition: string;
   DataCollector: string;
   Therapist: string;
@@ -27,6 +28,6 @@ export type HumanReadableResultsRow = {
  */
 export type HumanReadableResults = {
   keys: EntryHolder[];
-  type: "Frequency" | "Duration";
+  type: 'Frequency' | 'Duration';
   results: HumanReadableResultsRow[];
 };
