@@ -215,7 +215,7 @@ function ResultsProportionVisualsPage({ Handle, Group, Individual, Evaluation }:
           </div>
 
           <p>
-            This page provides a visual of the available data regarding <i>prooprtion of session time</i>. For
+            This page provides a visual of the available data regarding <i>proportion of session time</i>. For
             convenience, series of data can be enabled or disabled for viewing. Options set here will persist for future
             visits.
           </p>
