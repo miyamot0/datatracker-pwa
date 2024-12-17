@@ -25,7 +25,9 @@ export default function SessionKeyList({ Session }: Props) {
               <TableCell>{`${k.KeyDescription} (Key = ${k.KeyName})`}</TableCell>
               <TableCell>{k.KeyScheduleRecording}</TableCell>
               <TableCell>{k.KeyType}</TableCell>
-              <TableCell>{`${k.TimeIntoSession.toFixed(3)}s (${(k.TimeIntoSession / 60).toFixed(3)} min)`}</TableCell>
+              <TableCell>{`${k.TimeIntoSession.toFixed(3)}s (${(k.TimeIntoSession / 60).toFixed(3)} min; ${new Date(
+                k.TimePressed
+              ).toLocaleTimeString()})`}</TableCell>
             </TableRow>
           );
         })}

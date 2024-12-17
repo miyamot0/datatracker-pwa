@@ -1,5 +1,6 @@
 ---
 title: Creating and Working with Individual Client Folders
+description: This documentation entry provides an overview of the individual client folders within the Data Tracker program, including its purpose, structure, and how to create and delete Individual folders.
 date: 09/02/2024
 keywords: 'Data Organization'
 author: 'Shawn Gilroy'

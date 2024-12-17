@@ -1,5 +1,6 @@
 ---
 title: Syncing Data to Shared a Location(s)
+description: This documentation entry provides an overview of the process of syncing data to shared locations in DataTracker and steps to sync data across multiple devices.
 date: 11/11/2024
 keywords: 'Data Organization, Data Synchronization'
 author: 'Shawn Gilroy'

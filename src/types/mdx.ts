@@ -7,5 +7,6 @@ export type FrontMatterUniversalType = {
   date: string;
   keywords: string;
   author: string;
+  description: string;
   index: number;
 };

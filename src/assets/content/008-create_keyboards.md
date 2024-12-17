@@ -1,5 +1,6 @@
 ---
 title: Creating and Managing Key/Behavior Mappings ("KeySets")
+description: This documentation entry provides an overview of the KeySet functionality within Data Tracker, including its purpose, structure, and how to create and manage KeySets for efficient data collection.
 date: 09/03/2024
 keywords: 'Key/Behavior Mappings, Data Organization'
 author: 'Shawn Gilroy'

@@ -1,5 +1,6 @@
 ---
 title: Creating and Working with Condition Folders in Evaluations
+description: This documentation entry provides an overview of the Condition folders within the Data Tracker program, including its purpose, structure, and how to create and delete Condition folders.
 date: 09/03/2024
 keywords: 'Behavioral Procedures, Data Organization'
 author: 'Shawn Gilroy'

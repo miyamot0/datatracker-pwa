@@ -1,5 +1,6 @@
 ---
 title: Customizing Session Parameters using Session Designer Page
+description: This documentation entry provides an overview of the Session Designer interface within DataTracker, including its purpose, structure, and how to customize session parameters for efficient data collection.
 date: 09/26/2024
 keywords: 'Session Designer, Session Conditions'
 author: 'Shawn Gilroy'

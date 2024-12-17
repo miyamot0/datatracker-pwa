@@ -40,6 +40,7 @@ export default function DocumentationListingPage() {
                   <div className="flex flex-row gap-1 flex-1 items-end font-semibold">
                     <span>{`${entry.index + 1}. ${entry.title}`}</span>
                   </div>
+                  <span className="text-sm text-muted-foreground">{entry.description}</span>
                   <span className="text-sm text-muted-foreground">
                     Written {entry.date} by {entry.author}
                   </span>

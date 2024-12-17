@@ -1,5 +1,6 @@
 ---
 title: Recording Behavior using Session Recorder Page
+description: This documentation entry provides an overview of the Session Recorder page within DataTracker, including its purpose, structure, and how to record behaviors and manage timers during observation sessions.
 date: 09/26/2024
 keywords: 'Data Collection, Session Conditions'
 author: 'Shawn Gilroy'
