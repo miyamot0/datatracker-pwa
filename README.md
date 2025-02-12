@@ -1,4 +1,4 @@
-![Static Badge](https://img.shields.io/badge/Version-0.4.1-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge](https://img.shields.io/badge/Version-0.4.2-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 # DataTracker (Installable PWA Build)
 
@@ -33,6 +33,7 @@ Features included in DataTracker (PWA) include:
 - 0.3.2 - Stable support for syncing data across folders
 - 0.4.0 - Stable beta build with docs and features included
 - 0.4.1 - Expanding on summary output--more data available for basic export
+- 0.4.2 - Add in more robust tolerance for naming of keys in reliability calculations
 
 ## Features
 
@@ -140,5 +141,5 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Version
 
-Version 0.4.1
+Version 0.4.2
 

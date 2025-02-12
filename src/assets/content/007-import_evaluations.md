@@ -1,5 +1,6 @@
 ---
 title: Options to Import Existing Evaluations
+description: This documentation entry provides an overview of the process of importing existing Evaluations in DataTracker, including the purpose, benefits, and steps to import Evaluations from other individuals.
 date: 11/14/2024
 keywords: 'Behavioral Procedures, Data Organization'
 author: 'Shawn Gilroy'

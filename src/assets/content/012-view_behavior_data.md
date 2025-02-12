@@ -1,5 +1,6 @@
 ---
 title: Reviewing and Exporting Behavioral Data
+description: This documentation entry provides an overview of the DataTracker's 'View Evaluation Data' page, including its purpose, structure, and how to interpret and export data from an Evaluation.
 date: 09/27/2024
 keywords: 'Data Collection, Visual Analysis, Data Export'
 author: 'Shawn Gilroy'

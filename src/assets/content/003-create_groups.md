@@ -1,5 +1,6 @@
 ---
 title: Creating and Working with Group Folders
+description: This documentation entry provides an overview of the Group folder within the Data Tracker program, including its purpose, structure, and how to create and delete Group folders.
 date: 09/01/2024
 keywords: 'Data Organization'
 author: 'Shawn Gilroy'

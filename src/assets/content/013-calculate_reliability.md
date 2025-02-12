@@ -1,5 +1,6 @@
 ---
 title: Reviewing Rater Reliability for Specific Evaluation Data
+description: This documentation entry provides an overview of the process of calculating inter-rater reliability for specific evaluation data in DataTracker, including the purpose, methods, and types of agreement calculations available.
 date: 09/27/2024
 keywords: 'Data Collection, Inter-Rater Reliability, Data Export'
 author: 'Shawn Gilroy'
