@@ -17,6 +17,7 @@ describe('generateKeywordColors', () => {
         keywords: 'alpha, beta, gamma',
         author: 'Author 1',
         index: 1,
+        description: '',
       },
       {
         title: 'Test 2',
@@ -25,6 +26,7 @@ describe('generateKeywordColors', () => {
         keywords: 'delta, epsilon, alpha',
         author: 'Author 2',
         index: 2,
+        description: '',
       },
     ];
 
@@ -49,6 +51,7 @@ describe('generateKeywordColors', () => {
         keywords: 'alpha, beta, gamma, alpha ',
         author: 'Author 1',
         index: 1,
+        description: '',
       },
       {
         title: 'Test 2',
@@ -57,6 +60,7 @@ describe('generateKeywordColors', () => {
         keywords: 'delta, beta',
         author: 'Author 2',
         index: 2,
+        description: '',
       },
     ];
 
@@ -80,6 +84,7 @@ describe('generateKeywordColors', () => {
         keywords: '  ,   , ',
         author: 'Author 1',
         index: 1,
+        description: '',
       },
       {
         title: 'Test 2',
@@ -88,6 +93,7 @@ describe('generateKeywordColors', () => {
         keywords: '',
         author: 'Author 2',
         index: 2,
+        description: '',
       },
     ];
 
@@ -104,6 +110,7 @@ describe('generateKeywordColors', () => {
         keywords: 'alpha, beta, gamma, delta, epsilon',
         author: 'Author 1',
         index: 1,
+        description: '',
       },
     ];
 

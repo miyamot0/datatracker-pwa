@@ -237,12 +237,12 @@ export function calculateReliabilityFrequency(pair: ReliabilityPairType, keys_to
   keys_to_code_f.forEach((key) => {
     const binCounts = Math.round(primary.TimerMain / 10);
 
-    const primary_relevant_key = primary.FrequencyKeyPresses.filter((k) => k.KeyDescription === key.KeyDescription).map(
-      (k: KeyManageType) => addBinToKeyData(k)
-    );
-
+    // Note: You can't trust users to name accurately or copy keys accurately. Go by lower case and description
+    const primary_relevant_key = primary.FrequencyKeyPresses.filter(
+      (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase()
+    ).map((k: KeyManageType) => addBinToKeyData(k));
     const reliability_relevant_key = reli.FrequencyKeyPresses.filter(
-      (k) => k.KeyDescription === key.KeyDescription
+      (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase()
     ).map((k: KeyManageType) => addBinToKeyData(k));
 
     const key_bins_p = generateEmptyBinArray(binCounts);
@@ -293,13 +293,14 @@ export function calculateReliabilityDuration(pair: ReliabilityPairType, keys_to_
   keys_to_code_d.forEach((key) => {
     const binCounts = Math.round(primary.TimerMain / 10);
 
-    const primary_relevant_key = primary.DurationKeyPresses.filter((k) => k.KeyDescription === key.KeyDescription).map(
-      (k: KeyManageType) => addBinToKeyData(k)
-    );
+    // Note: Same as before, you can't trust users to name accurately or copy keys accurately. Go by lower case and description
+    const primary_relevant_key = primary.DurationKeyPresses.filter(
+      (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase()
+    ).map((k: KeyManageType) => addBinToKeyData(k));
 
-    const reliability_relevant_key = reli.DurationKeyPresses.filter((k) => k.KeyDescription === key.KeyDescription).map(
-      (k: KeyManageType) => addBinToKeyData(k)
-    );
+    const reliability_relevant_key = reli.DurationKeyPresses.filter(
+      (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase()
+    ).map((k: KeyManageType) => addBinToKeyData(k));
 
     const key_bins_p = generateEmptyBinArray(binCounts);
     const key_bins_r = generateEmptyBinArray(binCounts);
