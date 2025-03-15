@@ -33,7 +33,7 @@ describe('exportHumanReadableToCSV', () => {
     };
 
     const expectedCSV = [
-      'Session #,Condition,Data Collector,Therapist,Behavior1 (Timer #1 Basis),Behavior1 (Timer #2 Basis),Behavior1 (Timer #3 Basis),Behavior1 (Total),Behavior2 (Timer #1 Basis),Behavior2 (Timer #2 Basis),Behavior2 (Timer #3 Basis),Behavior2 (Total),Session Duration (Minutes)',
+      'Session #,Date,Time,Condition,Data Collector,Therapist,Behavior1 (Timer #1 Basis),Behavior1 (Timer #2 Basis),Behavior1 (Timer #3 Basis),Behavior1 (Total),Behavior2 (Timer #1 Basis),Behavior2 (Timer #2 Basis),Behavior2 (Timer #3 Basis),Behavior2 (Total),Session Duration (Minutes)',
       `1,${date_string},${time_string},Condition1,Collector1,Therapist1,5,10,30`,
     ].join('\r\n');
 
@@ -49,7 +49,7 @@ describe('exportHumanReadableToCSV', () => {
     };
 
     const expectedCSV = [
-      'Session #,Condition,Data Collector,Therapist,Behavior1 (Timer #1 Basis),Behavior1 (Timer #2 Basis),Behavior1 (Timer #3 Basis),Behavior1 (Total),Session Duration (Minutes)',
+      'Session #,Date,Time,Condition,Data Collector,Therapist,Behavior1 (Timer #1 Basis),Behavior1 (Timer #2 Basis),Behavior1 (Timer #3 Basis),Behavior1 (Total),Session Duration (Minutes)',
     ].join('\r\n');
 
     const result = exportHumanReadableToCSV(input);
@@ -93,7 +93,7 @@ describe('exportHumanReadableToCSV', () => {
     };
 
     const expectedCSV = [
-      'Session #,Condition,Data Collector,Therapist,Behavior1 (Timer #1 Basis),Behavior1 (Timer #2 Basis),Behavior1 (Timer #3 Basis),Behavior1 (Total),Session Duration (Minutes)',
+      'Session #,Date,Time,Condition,Data Collector,Therapist,Behavior1 (Timer #1 Basis),Behavior1 (Timer #2 Basis),Behavior1 (Timer #3 Basis),Behavior1 (Total),Session Duration (Minutes)',
       `1,${date_string},${time_string},Condition1,Collector1,Therapist1,5,30`,
       `2,${date_string},${time_string},Condition2,Collector2,Therapist2,7,45`,
     ].join('\r\n');
