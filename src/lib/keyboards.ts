@@ -1,7 +1,7 @@
 import { LoadingStructureKeysets } from '@/types/working';
 import { Dispatch, SetStateAction } from 'react';
-import { GetHandleKeyboardsFolder } from './files';
 import { readKeyboardParameters } from './reader';
+import { GetHandleKeyboardsFolder } from './files';
 
 /**
  * Get the keysets from the handle

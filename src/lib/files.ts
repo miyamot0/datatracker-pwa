@@ -6,7 +6,7 @@ import { KeySet } from '@/types/keyset';
 import { KeyManageType } from '@/components/pages/session-recorder/types/session-recorder-types';
 import { deserializeKeySet } from './keyset';
 
-// --- Handles for Folders ---
+// --- Handles ---
 
 /**
  * Get the handle for the evaluation folder

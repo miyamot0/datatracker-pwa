@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import packageJson from '../package.json';
 import licenses from '../src/assets/licenses.json';
-//import coverageSummary from '../coverage/coverage-summary.json';
+import coverageSummary from '../coverage/coverage-summary.json';
 
 /**
  * Populate the software section of the README with the licenses
@@ -37,11 +37,13 @@ function write_md(content: string) {
 
 const version_text = `Version ${packageJson.version}\r\n`;
 const software_pkg_text = populate_software().join('\r\n \r\n');
+const value = `${coverageSummary.total.lines.pct.toFixed(2)}%`;
 
 let readme_md = read_md();
 readme_md = readme_md
   .replace('{{VERSION}}', version_text)
   .replace('{{VERSION_NUMBER}}', packageJson.version)
-  .replace('{{LICENSES}}', software_pkg_text);
+  .replace('{{LICENSES}}', software_pkg_text)
+  .replace('{{PCT}}', value);
 
 write_md(readme_md);

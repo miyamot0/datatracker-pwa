@@ -2,9 +2,9 @@ import { saveSessionSettingsToFile, saveSessionOutcomesToFile } from '../writer'
 import { SavedSettings } from '../dtos';
 import { KeyManageType } from '../../components/pages/session-recorder/types/session-recorder-types';
 import { KeySet } from '../../types/keyset';
-import { GetHandleEvaluationFolder } from '../files';
 import { CleanUpString } from '../strings';
 import { Mock } from 'vitest';
+import { GetHandleEvaluationFolder } from '../files';
 
 // Mock the dependencies
 vi.mock('../files');
