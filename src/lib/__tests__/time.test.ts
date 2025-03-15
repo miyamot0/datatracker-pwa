@@ -38,31 +38,31 @@ describe('formatTimeSeconds', () => {
 });
 
 describe('formatTimeOfDay', () => {
-  it.skip('should format a date at midnight as 12:00:00 AM', () => {
+  it('should format a date at midnight as 12:00:00 AM', () => {
     const date = new Date('2024-09-07T00:00:00');
     const output = formatTimeOfDay(date);
     expect(output).toEqual('12:00:00 AM');
   });
 
-  it.skip('should format a date at noon as 12:00:00 PM', () => {
+  it('should format a date at noon as 12:00:00 PM', () => {
     const date = new Date('2024-09-07T12:00:00');
     const output = formatTimeOfDay(date);
     expect(output).toEqual('12:00:00 PM');
   });
 
-  it.skip('should format a date in the morning as 09:15:30 AM', () => {
+  it('should format a date in the morning as 09:15:30 AM', () => {
     const date = new Date('2024-09-07T09:15:30');
     const output = formatTimeOfDay(date);
     expect(output).toEqual('09:15:30 AM');
   });
 
-  it.skip('should format a date in the evening as 07:45:55 PM', () => {
+  it('should format a date in the evening as 07:45:55 PM', () => {
     const date = new Date('2024-09-07T19:45:55');
     const output = formatTimeOfDay(date);
     expect(output).toEqual('07:45:55 PM');
   });
 
-  it.skip('should format a date with seconds correctly', () => {
+  it('should format a date with seconds correctly', () => {
     const date = new Date('2024-09-07T14:30:15');
     const output = formatTimeOfDay(date);
     expect(output).toEqual('02:30:15 PM');

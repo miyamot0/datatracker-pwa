@@ -56,6 +56,14 @@ describe('createHref', () => {
     expect(href).toBe('/session/group1/individual1');
   });
 
+  it('should return correct URL for Evaluations Import route', () => {
+    const route = { type: 'Evaluations Import', group: 'group1', individual: 'individual1' } as RouteInformationType;
+    const href = createHref(route);
+    expect(CleanUpString).toHaveBeenCalledWith('group1');
+    expect(CleanUpString).toHaveBeenCalledWith('individual1');
+    expect(href).toBe('/session/group1/individual1/import');
+  });
+
   it('should return correct URL for Session Designer route', () => {
     const route = {
       type: 'Session Designer',
@@ -145,6 +153,14 @@ describe('createHref', () => {
     } as RouteInformationType;
     const href = createHref(route);
     expect(href).toBe('/session/group1/individual1/keysets');
+  });
+
+  it('should return correct URL for Keysets route', () => {
+    const route = {
+      type: 'Sync Page',
+    } as RouteInformationType;
+    const href = createHref(route);
+    expect(href).toBe('/dashboard/sync');
   });
 
   it('should return "/" for unknown route type', () => {
