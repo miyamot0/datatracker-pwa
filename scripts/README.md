@@ -1,4 +1,4 @@
-![Static Badge](<https://img.shields.io/badge/Coverage_(Lines)-{{STPCT}}-green>) ![Static Badge](<https://img.shields.io/badge/Coverage_(Branches)-{{BRPCT}}-green>) ![Static Badge](<https://img.shields.io/badge/Coverage_(Functions)-{{FNPCT}}-green>)
+![Static Badge](https://img.shields.io/badge/Coverage_(Lines)-{{STPCT}}-green) ![Static Badge](https://img.shields.io/badge/Coverage_(Branches)-{{BRPCT}}-green) ![Static Badge](https://img.shields.io/badge/Coverage_(Functions)-{{FNPCT}}-green)
 
 ![Static Badge](https://img.shields.io/badge/Version-{{VERSION_NUMBER}}-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple)
 
