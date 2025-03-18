@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import packageJson from '../package.json';
 import licenses from '../src/assets/licenses.json';
-//import coverageSummary from '../coverage/coverage-summary.json';
+import coverageSummary from '../coverage/coverage-summary.json';
 
 /**
  * Populate the software section of the README with the licenses
@@ -35,13 +35,19 @@ function write_md(content: string) {
   fs.writeFileSync('README.md', content, 'utf-8');
 }
 
-const version_text = `Version ${packageJson.version}\r\n`;
+//const version_text = `Version ${packageJson.version}\r\n`;
 const software_pkg_text = populate_software().join('\r\n \r\n');
+const st_lines = `${coverageSummary.total.statements.pct.toFixed(2)}%`;
+const br_lines = `${coverageSummary.total.branches.pct.toFixed(2)}%`;
+const fn_lines = `${coverageSummary.total.functions.pct.toFixed(2)}%`;
 
 let readme_md = read_md();
 readme_md = readme_md
-  .replace('{{VERSION}}', version_text)
+  //.replace('{{VERSION}}', version_text)
   .replace('{{VERSION_NUMBER}}', packageJson.version)
-  .replace('{{LICENSES}}', software_pkg_text);
+  .replace('{{LICENSES}}', software_pkg_text)
+  .replace('{{STPCT}}', st_lines)
+  .replace('{{BRPCT}}', br_lines)
+  .replace('{{FNPCT}}', fn_lines);
 
 write_md(readme_md);

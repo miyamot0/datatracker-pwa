@@ -23,11 +23,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import {
-  GetHandleEvaluationFolder,
-  GetSettingsFileFromEvaluationFolder,
-  pullSessionDesignerParameters,
-} from '@/lib/files';
+import { GetSettingsFileFromEvaluationFolder, pullSessionDesignerParameters } from '@/lib/files';
 import { toSavedSettings } from '@/lib/dtos';
 import { KeySet } from '@/types/keyset';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -43,6 +39,7 @@ import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { useNavigate, useParams } from 'react-router-dom';
 import LoadingDisplay from '@/components/ui/loading-display';
 import createHref from '@/lib/links';
+import { GetHandleEvaluationFolder } from '@/lib/files';
 
 export function SessionDesignerShim() {
   const { handle } = useContext(FolderHandleContext);

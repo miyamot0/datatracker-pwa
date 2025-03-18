@@ -1,8 +1,8 @@
 import { KeyManageType } from '../components/pages/session-recorder/types/session-recorder-types';
 import { SavedSessionResult, SavedSettings } from './dtos';
-import { GetHandleEvaluationFolder } from './files';
 import { CleanUpString } from './strings';
 import { KeySet } from '../types/keyset';
+import { GetHandleEvaluationFolder } from './files';
 
 /**
  * Save the updated session settings to a file

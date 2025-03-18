@@ -6,8 +6,6 @@ import { KeySet } from '@/types/keyset';
 import { useState, useRef, useEffect, useContext } from 'react';
 import { KeyManageType, KeyTiming, TimerSetting } from './types/session-recorder-types';
 import {
-  GetHandleEvaluationFolder,
-  GetHandleKeyboardsFolder,
   GetSettingsFileFromEvaluationFolder,
   pullSessionSettings,
   saveSessionOutcomesToFile,
@@ -29,6 +27,7 @@ import { displayConditionalNotification } from '@/lib/notifications';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useNavigate, useParams } from 'react-router-dom';
 import { deserializeKeySet } from '@/lib/keyset';
+import { GetHandleEvaluationFolder, GetHandleKeyboardsFolder } from '@/lib/files';
 
 const PullKeySet = async (Handle: FileSystemDirectoryHandle, Group: string, Individual: string, KeySet: string) => {
   const keyboard_folder = await GetHandleKeyboardsFolder(Handle, Group, Individual);

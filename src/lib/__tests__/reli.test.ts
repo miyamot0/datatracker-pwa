@@ -42,11 +42,11 @@ const mockPrimarySession: SavedSessionResult = {
   } as KeySet,
   SessionSettings: { Session: 1 } as SavedSettings,
   SystemKeyPresses: [],
-  FrequencyKeyPresses: [{ KeyDescription: 'Key1', TimeIntoSession: 30 }] as KeyManageType[],
+  FrequencyKeyPresses: [{ KeyDescription: 'Key1', KeyName: 'A', TimeIntoSession: 30 }] as KeyManageType[],
   DurationKeyPresses: [
-    { KeyDescription: 'Key1', TimeIntoSession: 30 },
-    { KeyDescription: 'Key1', TimeIntoSession: 60 },
-    { KeyDescription: 'Key1', TimeIntoSession: 61 },
+    { KeyDescription: 'Key1', KeyName: 'A', TimeIntoSession: 30 },
+    { KeyDescription: 'Key1', KeyName: 'A', TimeIntoSession: 60 },
+    { KeyDescription: 'Key1', KeyName: 'A', TimeIntoSession: 61 },
   ] as KeyManageType[],
   SessionStart: '2024-01-01T00:00:00Z',
   SessionEnd: '2024-01-01T00:30:00Z',
@@ -59,11 +59,11 @@ const mockPrimarySession: SavedSessionResult = {
 
 const mockReliabilitySession: SavedSessionResult = {
   ...mockPrimarySession,
-  FrequencyKeyPresses: [{ KeyDescription: 'Key1', TimeIntoSession: 30 }] as KeyManageType[],
+  FrequencyKeyPresses: [{ KeyDescription: 'Key1', KeyName: 'A', TimeIntoSession: 30 }] as KeyManageType[],
   DurationKeyPresses: [
-    { KeyDescription: 'Key1', TimeIntoSession: 30 },
-    { KeyDescription: 'Key1', TimeIntoSession: 60 },
-    { KeyDescription: 'Key1', TimeIntoSession: 61 },
+    { KeyDescription: 'Key1', KeyName: 'A', TimeIntoSession: 30 },
+    { KeyDescription: 'Key1', KeyName: 'A', TimeIntoSession: 60 },
+    { KeyDescription: 'Key1', KeyName: 'A', TimeIntoSession: 61 },
   ] as KeyManageType[],
 };
 
@@ -111,6 +111,7 @@ describe('Reliability Calculations', () => {
   it('should add a bin to the key data', () => {
     const keyData: KeyManageType = {
       KeyDescription: 'Key1',
+      KeyName: 'A',
       TimeIntoSession: 35,
     } as KeyManageType;
     const result = addBinToKeyData(keyData, 10);
@@ -146,16 +147,16 @@ describe('Reliability Calculations', () => {
     const mockPrimarySession_trim = {
       ...mockPrimarySession,
       DurationKeyPresses: [
-        { KeyDescription: 'Key1', TimeIntoSession: 30 },
-        { KeyDescription: 'Key1', TimeIntoSession: 60 },
+        { KeyDescription: 'Key1', KeyName: 'A', TimeIntoSession: 30 },
+        { KeyDescription: 'Key1', KeyName: 'A', TimeIntoSession: 60 },
       ],
     };
 
     const mockReliabilitySession_trim = {
       ...mockReliabilitySession,
       DurationKeyPresses: [
-        { KeyDescription: 'Key1', TimeIntoSession: 30 },
-        { KeyDescription: 'Key1', TimeIntoSession: 60 },
+        { KeyDescription: 'Key1', KeyName: 'A', TimeIntoSession: 30 },
+        { KeyDescription: 'Key1', KeyName: 'A', TimeIntoSession: 60 },
       ],
     };
 
@@ -174,12 +175,12 @@ describe('generateBinsProportion', () => {
   const mockPrimarySession2: SavedSessionResult = {
     TimerMain: 120, // 120 seconds
     DurationKeyPresses: [
-      { KeyDescription: 'key1', TimeIntoSession: 5 },
-      { KeyDescription: 'key1', TimeIntoSession: 20 },
-      { KeyDescription: 'key2', TimeIntoSession: 30 },
-      { KeyDescription: 'key2', TimeIntoSession: 50 },
-      { KeyDescription: 'key1', TimeIntoSession: 70 },
-      { KeyDescription: 'key1', TimeIntoSession: 90 },
+      { KeyDescription: 'key1', KeyName: 'A', TimeIntoSession: 5 },
+      { KeyDescription: 'key1', KeyName: 'A', TimeIntoSession: 20 },
+      { KeyDescription: 'key2', KeyName: 'B', TimeIntoSession: 30 },
+      { KeyDescription: 'key2', KeyName: 'B', TimeIntoSession: 50 },
+      { KeyDescription: 'key1', KeyName: 'A', TimeIntoSession: 70 },
+      { KeyDescription: 'key1', KeyName: 'A', TimeIntoSession: 90 },
     ] as KeyManageType[],
   } as SavedSessionResult;
 
@@ -218,9 +219,9 @@ describe('generateBinsProportion', () => {
     const oddKeyPressSession: SavedSessionResult = {
       ...mockPrimarySession2,
       DurationKeyPresses: [
-        { KeyDescription: 'key1', TimeIntoSession: 5 },
-        { KeyDescription: 'key1', TimeIntoSession: 20 },
-        { KeyDescription: 'key1', TimeIntoSession: 70 }, // Odd number of presses for key1
+        { KeyDescription: 'key1', KeyName: 'A', TimeIntoSession: 5 },
+        { KeyDescription: 'key1', KeyName: 'A', TimeIntoSession: 20 },
+        { KeyDescription: 'key1', KeyName: 'A', TimeIntoSession: 70 }, // Odd number of presses for key1
       ] as KeyManageType[],
     };
 
@@ -236,8 +237,8 @@ describe('generateBinsProportion', () => {
       ...mockPrimarySession2,
       TimerMain: 5, // Only 5 seconds
       DurationKeyPresses: [
-        { KeyDescription: 'key1', TimeIntoSession: 1 },
-        { KeyDescription: 'key1', TimeIntoSession: 3 },
+        { KeyDescription: 'key1', KeyName: 'A', TimeIntoSession: 1 },
+        { KeyDescription: 'key1', KeyName: 'A', TimeIntoSession: 3 },
       ] as KeyManageType[],
     };
 
