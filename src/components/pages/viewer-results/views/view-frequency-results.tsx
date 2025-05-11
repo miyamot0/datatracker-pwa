@@ -56,17 +56,17 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
 
       temp_result.values.push({
         Key: key.KeyDescription,
-        Value: (primary.Value / (result.TimerOne / 60)).toPrecision(2),
+        Value: (primary.Value / (result.TimerOne / 60)).toFixed(2),
       });
 
       temp_result.values.push({
         Key: key.KeyDescription,
-        Value: (secondary.Value / (result.TimerTwo / 60)).toPrecision(2),
+        Value: (secondary.Value / (result.TimerTwo / 60)).toFixed(2),
       });
 
       temp_result.values.push({
         Key: key.KeyDescription,
-        Value: (tertiary.Value / (result.TimerThree / 60)).toPrecision(2),
+        Value: (tertiary.Value / (result.TimerThree / 60)).toFixed(2),
       });
 
       temp_result.values.push({
