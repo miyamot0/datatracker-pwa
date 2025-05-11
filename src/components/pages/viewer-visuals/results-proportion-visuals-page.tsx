@@ -9,7 +9,7 @@ import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-s
 import { SavedSessionResult } from '@/lib/dtos';
 import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import { CleanUpString } from '@/lib/strings';
-import { KeySet } from '@/types/keyset';
+import { KeySet, KeySetInstance } from '@/types/keyset';
 import { useContext, useEffect, useState } from 'react';
 import { FilterByPrimaryRole } from './helpers/filtering';
 import { Button } from '@/components/ui/button';
@@ -84,11 +84,35 @@ function ResultsProportionVisualsPage({ Handle, Group, Individual, Evaluation }:
     const load_data = async () => {
       const { keyset, results } = await GetResultsFromEvaluationFolder(Handle, Group, Individual, Evaluation);
 
-      setKeySet(keyset);
+      const all_keysets = results.map((result) => result.Keyset);
+      const all_fkeys = all_keysets.map((keyset) => keyset.FrequencyKeys).flat();
+      const all_dkeys = all_keysets.map((keyset) => keyset.DurationKeys).flat();
+
+      const targeted_fkeys: KeySetInstance[] = [];
+      all_fkeys.forEach((key) => {
+        if (!targeted_fkeys.some((k) => k.KeyCode === key.KeyCode)) {
+          targeted_fkeys.push(key);
+        }
+      });
+
+      const targeted_dkeys: KeySetInstance[] = [];
+      all_dkeys.forEach((key) => {
+        if (!targeted_dkeys.some((k) => k.KeyCode === key.KeyCode)) {
+          targeted_dkeys.push(key);
+        }
+      });
+
+      const dynamic_keyset = {
+        ...keyset,
+        FrequencyKeys: targeted_fkeys,
+        DurationKeys: targeted_dkeys,
+      } as unknown as KeySet;
+
+      setKeySet(dynamic_keyset);
       setResults(results);
 
-      if (keyset) {
-        const keys = keyset.DurationKeys.map((key) => ({
+      if (dynamic_keyset) {
+        const keys = dynamic_keyset.DurationKeys.map((key) => ({
           KeyDescription: key.KeyDescription,
           Visible: true,
         }));
