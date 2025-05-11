@@ -28,8 +28,9 @@ export default function useQueryKeyboardsMeta(Group?: string, Client?: string) {
     let keyboard_exists = false;
 
     const entries = await keyboards_folder.values();
+
     for await (const entry of entries) {
-      if (entry.name === keyset_base.Name) {
+      if (entry.kind !== 'directory' && entry.name === keyset_base.Name) {
         keyboard_exists = true;
         break;
       }
