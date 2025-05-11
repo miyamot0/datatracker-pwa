@@ -152,8 +152,6 @@ function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Se
       const save_output = async () => {
         if (!startTime) throw new Error('No start time found.');
 
-        secondsElapsedTotal.current += INCREMENT;
-
         const ended_early = runningState === 'Cancelled';
 
         const final_system_keys = [
@@ -209,6 +207,8 @@ function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Se
           secondsElapsedThird.current,
           ended_early
         );
+
+        secondsElapsedTotal.current += INCREMENT;
 
         const settings = await pullSessionSettings(Handle, Group, Individual, Evaluation);
 
