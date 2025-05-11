@@ -7,7 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Edit2, ImportIcon, Plus } from 'lucide-react';
+import { Copy, Edit2, ImportIcon, Plus } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import useQueryKeyboards from '@/hooks/keyboards/useQueryKeyboards';
@@ -16,7 +16,7 @@ import LoadingDisplay from '@/components/ui/loading-display';
 
 export default function KeySetsPage() {
   const { Group, Individual } = useParams();
-  const { data, status, error, handle, addKeyboard } = useQueryKeyboards(Group, Individual);
+  const { data, status, error, handle, addKeyboard, duplicateKeyboard } = useQueryKeyboards(Group, Individual);
 
   const navigate = useNavigate();
 
@@ -96,7 +96,7 @@ export default function KeySetsPage() {
                 <TableHead>Duration Keys</TableHead>
                 <TableHead>Date Created</TableHead>
                 <TableHead>Date Modified</TableHead>
-                <TableHead className="flex flex-row justify-end items-center">Manage Keyset</TableHead>
+                <TableHead className="flex flex-row justify-end items-center">Keyset Management</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -116,11 +116,21 @@ export default function KeySetsPage() {
                     <TableCell>{string_duration_keys}</TableCell>
                     <TableCell>{keys.createdAt.toLocaleDateString()}</TableCell>
                     <TableCell>{keys.lastModified.toLocaleDateString()}</TableCell>
-                    <TableCell className="flex flex-row justify-end">
+                    <TableCell className="flex flex-row justify-end gap-2">
+                      <Button
+                        size={'sm'}
+                        variant={'outline'}
+                        onClick={async () => {
+                          await duplicateKeyboard(keys);
+                        }}
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Duplicate
+                      </Button>
                       <Link unstable_viewTransition to={`/session/${Group}/${Individual}/keysets/${keys.Name}`}>
                         <Button size={'sm'} variant={'outline'}>
                           <Edit2 className="h-4 w-4 mr-2" />
-                          Edit KeySet
+                          Edit
                         </Button>
                       </Link>
                     </TableCell>
