@@ -63,29 +63,29 @@ export default function ViewDurationResults({ Keyset, Results }: Props) {
 
       temp_result.values.push({
         Key: key.KeyDescription,
-        Value: primary.Value.toPrecision(2),
+        Value: primary.Value.toFixed(2),
       });
 
       temp_result.values.push({
         Key: key.KeyDescription,
-        Value: secondary.Value.toPrecision(2),
+        Value: secondary.Value.toFixed(2),
       });
 
       temp_result.values.push({
         Key: key.KeyDescription,
-        Value: tertiary.Value.toPrecision(2),
+        Value: tertiary.Value.toFixed(2),
       });
 
       temp_result.values.push({
         Key: key.KeyDescription,
-        Value: total_duration.toPrecision(2),
+        Value: total_duration.toFixed(2),
       });
 
       temp_array.push(key_obj.length.toString());
-      temp_array.push((key_obj.length / session_minutes).toPrecision(2));
+      temp_array.push((key_obj.length / session_minutes).toFixed(2));
     });
 
-    temp_array.push(session_minutes.toPrecision(2));
+    temp_array.push(session_minutes.toFixed(2));
 
     hr_results.results.push(temp_result);
   });

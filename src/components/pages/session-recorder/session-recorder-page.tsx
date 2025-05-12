@@ -208,6 +208,8 @@ function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Se
           ended_early
         );
 
+        secondsElapsedTotal.current += INCREMENT;
+
         const settings = await pullSessionSettings(Handle, Group, Individual, Evaluation);
 
         if (wakelockRef.current) wakelockRef.current.release();
