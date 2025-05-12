@@ -37,9 +37,9 @@ function write_md(content: string) {
 
 //const version_text = `Version ${packageJson.version}\r\n`;
 const software_pkg_text = populate_software().join('\r\n \r\n');
-const st_lines = `${coverageSummary.total.statements.pct.toFixed(2)}%`;
-const br_lines = `${coverageSummary.total.branches.pct.toFixed(2)}%`;
-const fn_lines = `${coverageSummary.total.functions.pct.toFixed(2)}%`;
+const st_lines = `${coverageSummary.total.statements.pct.toFixed(2)}_Percent`;
+const br_lines = `${coverageSummary.total.branches.pct.toFixed(2)}_Percent`;
+const fn_lines = `${coverageSummary.total.functions.pct.toFixed(2)}_Percent`;
 
 let readme_md = read_md();
 readme_md = readme_md
