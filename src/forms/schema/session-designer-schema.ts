@@ -28,6 +28,25 @@ export const SessionTerminationOptions = {
   Timer3: 'End on Timer #3',
 } as const;
 
+export const SessionTerminationOptionsDescriptions = [
+  {
+    value: SessionTerminationOptions.TimerMain,
+    description: 'End on TOTAL Session Time (Independent of Active Timer)',
+  },
+  {
+    value: SessionTerminationOptions.Timer1,
+    description: 'End on Timer #1 Time Specifically (When Timer #1 > Duration)',
+  },
+  {
+    value: SessionTerminationOptions.Timer2,
+    description: 'End on Timer #2 Time Specifically (When Timer #2 > Duration)',
+  },
+  {
+    value: SessionTerminationOptions.Timer3,
+    description: 'End on Timer #3 Time Specifically (When Timer #3 > Duration)',
+  },
+];
+
 // Type for session termination options
 export type SessionTerminationOptionsType = (typeof SessionTerminationOptions)[keyof typeof SessionTerminationOptions];
 

@@ -15,7 +15,7 @@ import {
   DataCollectorRoles,
   SessionDesignerSchema,
   SessionDesignerSchemaType,
-  SessionTerminationOptions,
+  SessionTerminationOptionsDescriptions,
 } from '@/forms/schema/session-designer-schema';
 import { CleanUpString } from '@/lib/strings';
 import { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
@@ -450,9 +450,9 @@ function SessionDesigner({
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Session Timers</SelectLabel>
-                            {Object.values(SessionTerminationOptions).map((role) => (
-                              <SelectItem key={role} value={role}>
-                                {role}
+                            {SessionTerminationOptionsDescriptions.map((role) => (
+                              <SelectItem key={role.value} value={role.value}>
+                                {role.description}
                               </SelectItem>
                             ))}
                           </SelectGroup>
