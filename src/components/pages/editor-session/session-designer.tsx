@@ -263,7 +263,14 @@ function SessionDesigner({
                 </Button>
               </ToolTipWrapper>
 
-              <BackButton Label="Back" />
+              <BackButton
+                Label="Back to Evaluation"
+                Href={createHref({
+                  type: 'Evaluations',
+                  group: Group,
+                  individual: Individual,
+                })}
+              />
             </div>
           </CardHeader>
 
