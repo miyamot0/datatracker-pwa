@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { MdViewer } from '@/helpers/md-viewer';
 import { DocumentationObjects } from '@/lib/docs';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import BackButton from '@/components/ui/back-button';
+import createHref from '@/lib/links';
 
 export default function DocumentationEntryPage() {
   const { slug } = useParams();
@@ -41,19 +43,21 @@ export default function DocumentationEntryPage() {
             <CardDescription>
               Written {entry.matter.date} by {entry.matter.author}
             </CardDescription>
-          </div>
-          <div className="flex flex-row gap-2 items-start">
-            {entry.matter.keywords.split(',').map((kw: string, index: number) => {
-              const keyword_obj = KeywordArray.find((obj) => obj.Keyword === kw.trim());
-              const color_str = keyword_obj ? keyword_obj.Color : 'bg-gray-500';
+            <div className="flex flex-row gap-2 items-start pt-1">
+              <span>Tags: </span>
+              {entry.matter.keywords.split(',').map((kw: string, index: number) => {
+                const keyword_obj = KeywordArray.find((obj) => obj.Keyword === kw.trim());
+                const color_str = keyword_obj ? keyword_obj.Color : 'bg-gray-500';
 
-              return (
-                <Badge key={index} className={cn(color_str, 'select-none text-white whitespace-nowrap')}>
-                  {kw}
-                </Badge>
-              );
-            })}
+                return (
+                  <Badge key={index} className={cn(color_str, 'select-none text-white whitespace-nowrap')}>
+                    {kw}
+                  </Badge>
+                );
+              })}
+            </div>
           </div>
+          <BackButton Label="Back to Documentation" Href={createHref({ type: 'Documentation' })} />
         </CardHeader>
         <CardContent className="prose dark:prose-invert !max-w-none">
           <MdViewer source={entry.value} />

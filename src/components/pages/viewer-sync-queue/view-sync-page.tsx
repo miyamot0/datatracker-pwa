@@ -12,6 +12,7 @@ import { RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { displayConditionalNotification } from '@/lib/notifications';
 import { Badge } from '@/components/ui/badge';
+import BackButton from '@/components/ui/back-button';
 
 const WrappedButton = ({ active, children }: { active: boolean; children: ReactNode }) => {
   return (
@@ -50,6 +51,8 @@ export default function ViewSyncPage() {
     return (
       <Button
         variant={'outline'}
+        className="shadow"
+        size={'sm'}
         onClick={() => setDirectionalSync((prev) => (prev === 'to_remote' ? 'from_remote' : 'to_remote'))}
       >
         <RefreshCw className="w-4 h-4 mr-2" />
@@ -62,7 +65,8 @@ export default function ViewSyncPage() {
     return (
       <Button
         variant={'outline'}
-        className={cn('w-full md:max-w-[250px]')}
+        size={'sm'}
+        className={cn('w-full md:max-w-[250px] shadow')}
         onClick={async () => {
           if (remote_handle) {
             return (
@@ -120,6 +124,8 @@ export default function ViewSyncPage() {
         {!!remote_handle !== false && buttonChangeDirection}
 
         {!remote_handle && buttonSetRemote}
+
+        <BackButton Label="Back" />
       </WrappedButton>
     );
   }, [remote_handle, buttonChangeDirection, buttonSetRemote]);

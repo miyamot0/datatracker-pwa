@@ -21,6 +21,7 @@ import {
 } from '@/types/settings';
 import { displayConditionalNotification } from '@/lib/notifications';
 import { useTheme } from '@/components/ui/theme-provider';
+import BackButton from '@/components/ui/back-button';
 
 export default function SettingsPage() {
   const { settings, setSettings, saveSettings } = useContext(FolderHandleContext);
@@ -30,11 +31,13 @@ export default function SettingsPage() {
     <PageWrapper label="Settings" className="select-none">
       <Card className="w-full">
         <CardHeader className="flex flex-row justify-between">
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 grow">
             <CardTitle>Application Settings</CardTitle>
             <CardDescription>Manage and Update Settings for Data Tracker</CardDescription>
           </div>
+          <BackButton Label="Back" />
         </CardHeader>
+
         <CardContent className="min-h-96 flex flex-col justify-start gap-6">
           <SettingsFormItemWrapper
             Label="Options for Theme/Displays"

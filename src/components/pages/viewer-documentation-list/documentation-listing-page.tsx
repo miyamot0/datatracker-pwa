@@ -9,6 +9,8 @@ import { KeywordColors } from '@/types/colors';
 import { BookIcon, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DocumentationObjects } from '@/lib/docs';
+import BackButton from '@/components/ui/back-button';
+import createHref from '@/lib/links';
 
 export default function DocumentationListingPage() {
   const FrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(
@@ -20,11 +22,14 @@ export default function DocumentationListingPage() {
   return (
     <PageWrapper label={'Documentation'} className="select-none">
       <Card className="w-full max-w-screen-2xl">
-        <CardHeader>
-          <CardTitle>Software Documentation</CardTitle>
-          <CardDescription>
-            Information on this page provides guidelines and instructions for DataTracker
-          </CardDescription>
+        <CardHeader className="flex flex-row justify-between">
+          <div className="flex flex-col gap-1.5 grow">
+            <CardTitle>Software Documentation</CardTitle>
+            <CardDescription>
+              Information on this page provides guidelines and instructions for DataTracker
+            </CardDescription>
+          </div>
+          <BackButton Label="Back to Home" Href={createHref({ type: 'Home' })} />
         </CardHeader>
 
         <CardContent className="flex flex-col divide-y divide-solid">
