@@ -8,6 +8,9 @@ import { EntryHolder, HumanReadableResults, HumanReadableResultsRow } from '@/ty
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import Spreadsheet, { CellBase, Matrix } from 'react-spreadsheet';
 import { walkSessionDurationKey } from '../helpers/schedule_parser';
+import BackButton from '@/components/ui/back-button';
+import createHref from '@/lib/links';
+import { useParams } from 'react-router-dom';
 
 type Props = {
   Keyset: KeySet;
@@ -15,6 +18,8 @@ type Props = {
 };
 
 export default function ViewDurationResults({ Keyset, Results }: Props) {
+  const { Group, Individual } = useParams();
+
   const hr_results: HumanReadableResults = {
     type: 'Duration',
     keys: Keyset.DurationKeys.map((key) => ({
@@ -181,6 +186,11 @@ export default function ViewDurationResults({ Keyset, Results }: Props) {
               Download
             </Button>
           </ToolTipWrapper>
+
+          <BackButton
+            Label="Back to Evaluations"
+            Href={createHref({ type: 'Evaluations', group: Group!, individual: Individual! })}
+          />
         </div>
       </CardHeader>
       <CardContent className="overflow-x-auto">

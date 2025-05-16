@@ -69,7 +69,7 @@ export default function ClientsPage() {
               </Button>
             </ToolTipWrapper>
 
-            <BackButton Label="Back" />
+            <BackButton Label="Back to Groups" Href={createHref({ type: 'Dashboard' })} />
           </div>
         </CardHeader>
 

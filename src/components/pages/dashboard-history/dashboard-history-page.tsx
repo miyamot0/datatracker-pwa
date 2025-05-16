@@ -19,6 +19,7 @@ import LoadingDisplay from '@/components/ui/loading-display';
 import { CleanUpString } from '@/lib/strings';
 import { GenerateSavedFileName } from '@/lib/writer';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import BackButton from '@/components/ui/back-button';
 
 export function DashboardHistoryPageShim() {
   const { handle } = useContext(FolderHandleContext);
@@ -94,10 +95,17 @@ function DashboardHistoryPage({ Handle, Group, Individual, Evaluation }: Props) 
       className="select-none"
     >
       <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Session History</CardTitle>
-          <CardDescription>Select Individual Sessions to View More</CardDescription>
+        <CardHeader className="flex flex-row justify-between">
+          <div className="flex flex-col gap-1.5 grow">
+            <CardTitle>Session History</CardTitle>
+            <CardDescription>Select Individual Sessions to View More</CardDescription>
+          </div>
+          <BackButton
+            Label="Back to Evaluations"
+            Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
+          />
         </CardHeader>
+
         <CardContent className="flex flex-col gap-2">
           <p>
             This page provides a summary of the data currently saved on your machine. You may view behavior recorded

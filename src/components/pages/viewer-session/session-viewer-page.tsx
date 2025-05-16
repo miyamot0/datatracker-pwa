@@ -33,6 +33,7 @@ import createHref from '@/lib/links';
 import LoadingDisplay from '@/components/ui/loading-display';
 import { CleanUpString } from '@/lib/strings';
 import { getLocalCachedPrefs, setLocalCachedPrefs } from '@/lib/local_storage';
+import BackButton from '@/components/ui/back-button';
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
@@ -266,10 +267,22 @@ function SessionViewerPage({ Handle, Group, Individual, Evaluation, FileString }
         </div>
       </div>
       <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Session Inspector</CardTitle>
-          <CardDescription>Information Regarding Keys Illustrated Below</CardDescription>
+        <CardHeader className="flex flex-row justify-between">
+          <div className="flex flex-col gap-1.5 grow">
+            <CardTitle>Session Inspector</CardTitle>
+            <CardDescription>Information Regarding Keys Illustrated Below</CardDescription>
+          </div>
+          <BackButton
+            Label="Back to Session History"
+            Href={createHref({
+              type: 'Evaluation Session Viewer',
+              group: Group,
+              individual: Individual,
+              evaluation: Evaluation,
+            })}
+          />
         </CardHeader>
+
         <CardContent className="w-full flex flex-col gap-2">
           <p>
             This page provides a visual and summary of the events recorded during the session. Due to differences in how

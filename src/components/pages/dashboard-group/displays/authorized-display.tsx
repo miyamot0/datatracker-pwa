@@ -50,7 +50,7 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup }: Pro
             </Button>
           </ToolTipWrapper>
 
-          <BackButton Label="Back" />
+          <BackButton Label="Back to Home" Href={createHref({ type: 'Home' })} />
         </div>
       </CardHeader>
 

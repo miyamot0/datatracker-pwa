@@ -116,7 +116,7 @@ export default function EvaluationsPage() {
               </ToolTipWrapper>
             </Link>
 
-            <BackButton Label="Back" />
+            <BackButton Label="Back to Clients" Href={createHref({ type: 'Individuals', group: Group })} />
           </div>
         </CardHeader>
 

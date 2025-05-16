@@ -57,7 +57,10 @@ export default function ViewerEvaluationsPage() {
             <CardTitle>Evaluation Import</CardTitle>
             <CardDescription>Import an existing evaluation/conditions.</CardDescription>
           </div>
-          <BackButton Label="Back" />
+          <BackButton
+            Label="Back to Evaluations"
+            Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
+          />
         </CardHeader>
 
         <CardContent className="flex flex-col gap-1.5">

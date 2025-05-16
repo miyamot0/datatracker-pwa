@@ -18,6 +18,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Spreadsheet from 'react-spreadsheet';
 import ReliabilityBlank from './alternates/reli-blank';
 import { calculateReliabilityDuration, calculateReliabilityFrequency, getCorrespondingSessionPairs } from '@/lib/reli';
+import BackButton from '@/components/ui/back-button';
 
 export function ReliabilityViewerPageShim() {
   const { handle } = useContext(FolderHandleContext);
@@ -236,10 +237,17 @@ function ReliabilityViewerPage({
     >
       <div className="flex flex-col w-full gap-4">
         <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Reliability Estimates: Frequency</CardTitle>
-            <CardDescription>Estimates of various indices are presented below in 10s bins</CardDescription>
+          <CardHeader className="flex flex-row justify-between">
+            <div className="flex flex-col gap-1.5 grow">
+              <CardTitle>Reliability Estimates: Frequency</CardTitle>
+              <CardDescription>Estimates of various indices are presented below in 10s bins</CardDescription>
+            </div>
+            <BackButton
+              Label="Back to Evaluations"
+              Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
+            />
           </CardHeader>
+
           <CardContent className="overflow-x-auto">
             <Spreadsheet
               data={f_rows}
@@ -252,10 +260,17 @@ function ReliabilityViewerPage({
         </Card>
 
         <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Reliability Estimates: Duration</CardTitle>
-            <CardDescription>Estimates of various indices are presented below in 10s bins</CardDescription>
+          <CardHeader className="flex flex-row justify-between">
+            <div className="flex flex-col gap-1.5 grow">
+              <CardTitle>Reliability Estimates: Duration</CardTitle>
+              <CardDescription>Estimates of various indices are presented below in 10s bins</CardDescription>
+            </div>
+            <BackButton
+              Label="Back to Evaluations"
+              Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
+            />
           </CardHeader>
+
           <CardContent className="overflow-x-auto">
             <Spreadsheet
               data={d_rows}

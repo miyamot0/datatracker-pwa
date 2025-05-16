@@ -81,7 +81,10 @@ export default function KeySetsPage() {
               </Button>
             </ToolTipWrapper>
 
-            <BackButton Label="Back" />
+            <BackButton
+              Label="Back to Evaluations"
+              Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
+            />
           </div>
         </CardHeader>
 
