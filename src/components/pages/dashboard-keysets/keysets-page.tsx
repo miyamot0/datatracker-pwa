@@ -13,6 +13,7 @@ import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import useQueryKeyboards from '@/hooks/keyboards/useQueryKeyboards';
 import createHref from '@/lib/links';
 import LoadingDisplay from '@/components/ui/loading-display';
+import BackButton from '@/components/ui/back-button';
 
 export default function KeySetsPage() {
   const { Group, Individual } = useParams();
@@ -54,7 +55,7 @@ export default function KeySetsPage() {
           </div>
           <div className="flex flex-row gap-2">
             <ToolTipWrapper Label="Import an existing KeySet for this client">
-              <Button variant={'outline'} className="shadow">
+              <Button variant={'outline'} className="shadow" size={'sm'}>
                 <Link
                   to={`/session/${Group}/${Individual}/keysets/import`}
                   unstable_viewTransition
@@ -70,6 +71,7 @@ export default function KeySetsPage() {
               <Button
                 variant={'outline'}
                 className="shadow"
+                size={'sm'}
                 onClick={async () => {
                   await addKeyboard();
                 }}
@@ -78,6 +80,8 @@ export default function KeySetsPage() {
                 Create Keyset
               </Button>
             </ToolTipWrapper>
+
+            <BackButton Label="Back" />
           </div>
         </CardHeader>
 

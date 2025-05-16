@@ -1,4 +1,5 @@
 import PageWrapper from '@/components/layout/page-wrapper';
+import BackButton from '@/components/ui/back-button';
 import {
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,
@@ -48,10 +49,14 @@ export default function ViewerKeysetPage() {
       className="select-none"
     >
       <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Keyset Import</CardTitle>
-          <CardDescription>Import a keyset file to use in your evaluations.</CardDescription>
+        <CardHeader className="flex flex-row justify-between">
+          <div className="flex flex-col gap-1.5 grow">
+            <CardTitle>Keyset Import</CardTitle>
+            <CardDescription>Import a keyset file to use in your evaluations.</CardDescription>
+          </div>
+          <BackButton Label="Back" />
         </CardHeader>
+
         <CardContent className="flex flex-col gap-1.5">
           <p>
             This page lists keysets that have been created for those <i>other than</i> the current client. Each keyset

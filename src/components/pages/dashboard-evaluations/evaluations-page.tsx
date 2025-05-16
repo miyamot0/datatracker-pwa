@@ -1,4 +1,5 @@
 import PageWrapper from '@/components/layout/page-wrapper';
+import BackButton from '@/components/ui/back-button';
 import { BuildGroupBreadcrumb, BuildIndividualsBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -72,6 +73,7 @@ export default function EvaluationsPage() {
             <ToolTipWrapper Label="Add an a new evaluation for current individual">
               <Button
                 variant={'outline'}
+                size={'sm'}
                 className="shadow"
                 onClick={async () => {
                   await addEvaluation();
@@ -91,7 +93,7 @@ export default function EvaluationsPage() {
               })}
             >
               <ToolTipWrapper Label="Import an existing evaluation for the current individual">
-                <Button variant={'outline'} className="shadow">
+                <Button variant={'outline'} className="shadow" size={'sm'}>
                   <ImportIcon className="w-4 h-4 mr-2" />
                   Import Evaluation
                 </Button>
@@ -107,12 +109,14 @@ export default function EvaluationsPage() {
               })}
             >
               <ToolTipWrapper Label="Manage KeySets across evaluations">
-                <Button variant={'outline'} className="shadow">
+                <Button variant={'outline'} className="shadow" size={'sm'}>
                   <KeyboardIcon className="w-4 h-4 mr-2" />
-                  Manage KeySets
+                  KeySets
                 </Button>
               </ToolTipWrapper>
             </Link>
+
+            <BackButton Label="Back" />
           </div>
         </CardHeader>
 

@@ -1,4 +1,5 @@
 import PageWrapper from '@/components/layout/page-wrapper';
+import BackButton from '@/components/ui/back-button';
 import {
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,
@@ -51,10 +52,14 @@ export default function ViewerEvaluationsPage() {
       className="select-none"
     >
       <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Evaluation Import</CardTitle>
-          <CardDescription>Import an existing evaluation/conditions.</CardDescription>
+        <CardHeader className="flex flex-row justify-between">
+          <div className="flex flex-col gap-1.5 grow">
+            <CardTitle>Evaluation Import</CardTitle>
+            <CardDescription>Import an existing evaluation/conditions.</CardDescription>
+          </div>
+          <BackButton Label="Back" />
         </CardHeader>
+
         <CardContent className="flex flex-col gap-1.5">
           <p>
             This page lists Evaluations that have been created for those <i>other than</i> the current client. Each

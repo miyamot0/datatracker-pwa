@@ -16,7 +16,7 @@ import BackButton from '@/components/ui/back-button';
 
 const WrappedButton = ({ active, children }: { active: boolean; children: ReactNode }) => {
   return (
-    <div className="flex flex-row items-center gap-2">
+    <div className="flex flex-row items-center gap-2 h-fit">
       <Badge
         className={cn('text-nowrap text-white', {
           'bg-green-500 hover:bg-green-400': active,
@@ -72,6 +72,7 @@ export default function ViewSyncPage() {
             return (
               <Button
                 variant={'outline'}
+                size={'sm'}
                 onClick={() => setDirectionalSync((prev) => (prev === 'to_remote' ? 'from_remote' : 'to_remote'))}
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
@@ -133,7 +134,7 @@ export default function ViewSyncPage() {
   return (
     <PageWrapper breadcrumbs={[]} label={'File Sync'} className="select-none">
       <Card className="w-full">
-        <CardHeader className="flex flex-row justify-between items-center">
+        <CardHeader className="flex flex-row justify-between">
           <div className="flex flex-col gap-1.5">
             <CardTitle>File Sync Assistant</CardTitle>
             <CardDescription>Sync Files as Necessary across Folders</CardDescription>

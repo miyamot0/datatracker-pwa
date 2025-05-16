@@ -16,6 +16,7 @@ import { CleanUpString } from '@/lib/strings';
 import useQuerySingleKeyboard from '@/hooks/keyboards/useQuerySingleKeyboard';
 import LoadingDisplay from '@/components/ui/loading-display';
 import createHref from '@/lib/links';
+import BackButton from '@/components/ui/back-button';
 
 export default function KeySetEditor() {
   const { Group, Individual, KeySet } = useParams();
@@ -66,7 +67,11 @@ export default function KeySetEditor() {
               <CardDescription>Manage Frequency Keys</CardDescription>
             </div>
 
-            <FrequencyDialogKeyCreator KeySet={data} Callback={addKeyCallback} />
+            <div className="flex flex-row gap-2">
+              <FrequencyDialogKeyCreator KeySet={data} Callback={addKeyCallback} />
+
+              <BackButton Label="Back" />
+            </div>
           </CardHeader>
           <CardContent className="flex-1">
             <Table>
@@ -117,7 +122,12 @@ export default function KeySetEditor() {
               <CardTitle>Duration Keys</CardTitle>
               <CardDescription>Manage Duration Keys</CardDescription>
             </div>
-            <DurationDialogKeyCreator KeySet={data} Callback={addKeyCallback} />
+
+            <div className="flex flex-row gap-2">
+              <DurationDialogKeyCreator KeySet={data} Callback={addKeyCallback} />
+
+              <BackButton Label="Back" />
+            </div>
           </CardHeader>
           <CardContent className="flex-1">
             <Table>

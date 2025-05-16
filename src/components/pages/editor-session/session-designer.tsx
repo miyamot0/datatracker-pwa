@@ -40,6 +40,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import LoadingDisplay from '@/components/ui/loading-display';
 import createHref from '@/lib/links';
 import { GetHandleEvaluationFolder } from '@/lib/files';
+import BackButton from '@/components/ui/back-button';
 
 export function SessionDesignerShim() {
   const { handle } = useContext(FolderHandleContext);
@@ -212,11 +213,12 @@ function SessionDesigner({
               <CardTitle>Session Designer</CardTitle>
               <CardDescription>Specify your conditions for the session on this page</CardDescription>
             </div>
-            <div>
+            <div className="flex flex-row gap-2">
               <ToolTipWrapper Label="Add a new Condition for this Evaluation">
                 <Button
                   variant={'outline'}
                   className="shadow"
+                  size={'sm'}
                   onClick={async () => {
                     const input = window.prompt('Enter the name for the new condition.');
 
@@ -260,6 +262,8 @@ function SessionDesigner({
                   Add Condition
                 </Button>
               </ToolTipWrapper>
+
+              <BackButton Label="Back" />
             </div>
           </CardHeader>
 

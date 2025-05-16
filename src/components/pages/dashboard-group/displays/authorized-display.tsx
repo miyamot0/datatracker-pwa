@@ -1,3 +1,4 @@
+import BackButton from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -34,10 +35,11 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup }: Pro
           <CardDescription>Select group to load relevant client data</CardDescription>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col md:flex-row gap-2">
           <ToolTipWrapper Label="Create a new group folder">
             <Button
               variant={'outline'}
+              size={'sm'}
               className="shadow"
               onClick={async () => {
                 await AddGroup();
@@ -47,6 +49,8 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup }: Pro
               Create Group
             </Button>
           </ToolTipWrapper>
+
+          <BackButton Label="Back" />
         </div>
       </CardHeader>
 

@@ -1,4 +1,5 @@
 import PageWrapper from '@/components/layout/page-wrapper';
+import BackButton from '@/components/ui/back-button';
 import { BuildGroupBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -53,11 +54,12 @@ export default function ClientsPage() {
             <CardTitle>Client Directory: {CleanUpString(Group)}</CardTitle>
             <CardDescription>Select clients to develop and evaluate outcomes</CardDescription>
           </div>
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-2">
             <ToolTipWrapper Label="Add a new client to current group">
               <Button
                 variant={'outline'}
                 className="shadow"
+                size={'sm'}
                 onClick={async () => {
                   await addClient();
                 }}
@@ -66,6 +68,8 @@ export default function ClientsPage() {
                 Create Individual
               </Button>
             </ToolTipWrapper>
+
+            <BackButton Label="Back" />
           </div>
         </CardHeader>
 

@@ -57,7 +57,7 @@ export default function DocumentationEntryPage() {
               })}
             </div>
           </div>
-          <BackButton Label="Back to Documentation" Href={createHref({ type: 'Documentation' })} />
+          <BackButton Label="Back to Documentation List" Href={createHref({ type: 'Documentation' })} />
         </CardHeader>
         <CardContent className="prose dark:prose-invert !max-w-none">
           <MdViewer source={entry.value} />
