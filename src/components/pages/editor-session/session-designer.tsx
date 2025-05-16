@@ -415,7 +415,7 @@ function SessionDesigner({
                         <Input placeholder="600" type="number" {...field} />
                       </FormControl>
                       <FormDescription>
-                        Assign the length of the session in seconds (Default = 600s or 10m)
+                        Assign the length of the session in seconds (Default = 600 seconds)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
