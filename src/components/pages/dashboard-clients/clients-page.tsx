@@ -144,7 +144,7 @@ export default function ClientsPage() {
                   }}
                 >
                   <FolderPlus className="mr-2 h-4 w-4" />
-                  Create Individual
+                  Create
                 </Button>
               </ToolTipWrapper>
             }
