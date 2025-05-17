@@ -17,6 +17,7 @@ describe('displayConditionalNotification', () => {
     EnableFileDeletion: false,
     EnforceDataFolderName: true,
     EnableToolTip: true,
+    IsReturningUser: true,
   };
 
   beforeEach(() => {

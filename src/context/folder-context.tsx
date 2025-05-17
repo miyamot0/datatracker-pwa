@@ -28,7 +28,9 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const settings = localStorage.getItem('data_tracker_settings');
+
     if (settings) {
+      // At least *something* exists
       const parsedSettings = JSON.parse(settings);
 
       if (parsedSettings) {
@@ -37,6 +39,11 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
           ...parsedSettings,
         });
       }
+    } else {
+      setSettings({
+        ...DEFAULT_APPLICATION_SETTINGS,
+        IsReturningUser: false,
+      });
     }
   }, []);
 

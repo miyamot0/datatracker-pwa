@@ -84,7 +84,7 @@ export type ApplicationSettingsTypes = {
   EnableFileDeletion: boolean;
   EnforceDataFolderName: boolean;
   EnableToolTip: boolean;
-  IsReturningUser?: boolean;
+  IsReturningUser: boolean;
 };
 
 export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
@@ -93,5 +93,5 @@ export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
   EnableFileDeletion: false,
   EnforceDataFolderName: true,
   EnableToolTip: true,
-  IsReturningUser: false,
+  IsReturningUser: true,
 };
