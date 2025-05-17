@@ -264,7 +264,7 @@ function SessionDesigner({
               </ToolTipWrapper>
 
               <BackButton
-                Label="Back to Evaluation"
+                Label="Back to Evaluations"
                 Href={createHref({
                   type: 'Evaluations',
                   group: Group,

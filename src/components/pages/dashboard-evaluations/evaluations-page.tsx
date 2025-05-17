@@ -70,7 +70,6 @@ export default function EvaluationsPage() {
     },
     {
       accessorKey: 'Actions',
-
       header: () => <div className="text-right">Client Folder Actions</div>,
       cell: ({ row }) => (
         <div className="flex flex-row justify-end">

@@ -24,10 +24,8 @@ export default function DocumentationListingPage() {
       <Card className="w-full max-w-screen-2xl">
         <CardHeader className="flex flex-row justify-between">
           <div className="flex flex-col gap-1.5 grow">
-            <CardTitle>Software Documentation</CardTitle>
-            <CardDescription>
-              Information on this page provides guidelines and instructions for DataTracker
-            </CardDescription>
+            <CardTitle>Program Documentation</CardTitle>
+            <CardDescription>Guidelines and Instructions for using DataTracker</CardDescription>
           </div>
           <BackButton Label="Back to Home" Href={createHref({ type: 'Home' })} />
         </CardHeader>
