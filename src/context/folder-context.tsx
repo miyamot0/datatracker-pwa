@@ -13,6 +13,8 @@ export const FolderHandleContext = createContext({
   saveSettings: (_: ApplicationSettingsTypes) => {},
 });
 
+export type FolderHandleContextType = typeof FolderHandleContext;
+
 /**
  * Folder context provider
  *

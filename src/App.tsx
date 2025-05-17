@@ -1,6 +1,6 @@
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
 import HomePage from './components/pages/home/home-page';
-import { FolderContextProvider } from './context/folder-context';
+import { FolderContextProvider, FolderHandleContext, FolderHandleContextType } from './context/folder-context';
 import { ThemeProvider } from './components/ui/theme-provider';
 import SettingsPage from './components/pages/editor-settings/settings-page';
 import DocumentationListingPage from './components/pages/viewer-documentation-list/documentation-listing-page';
@@ -21,43 +21,57 @@ import { SessionRecorderPageShim } from './components/pages/session-recorder/ses
 import ViewerKeysetPage from './components/pages/viewer-keysets/viewer-keysets-page';
 import ViewerEvaluationsPage from './components/pages/viewer-evaluations/viewer-evaluations-page';
 import ViewSyncPage from './components/pages/viewer-sync-queue/view-sync-page';
+import { useContext, useMemo } from 'react';
 
-const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Route path="/">
-      <Route index element={<HomePage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/dashboard/sync" element={<ViewSyncPage />} />
+const AppRoot = () => {
+  const dataContext = useContext(FolderHandleContext) as unknown as FolderHandleContextType;
 
-      <Route path="/documentation" element={<DocumentationListingPage />} />
-      <Route path="/documentation/:slug" element={<DocumentationEntryPage />} />
+  const router = useMemo(
+    () =>
+      createBrowserRouter(
+        createRoutesFromElements(
+          <Route path="/">
+            <Route index element={<HomePage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/dashboard/sync" element={<ViewSyncPage />} />
 
-      <Route path="/session/:Group" element={<ClientsPage />} />
-      <Route path="/session/:Group/:Individual" element={<EvaluationsPage />} />
-      <Route path="/session/:Group/:Individual/keysets" element={<KeySetsPage />} />
-      <Route path="/session/:Group/:Individual/keysets/import" element={<ViewerKeysetPage />} />
-      <Route path="/session/:Group/:Individual/keysets/:KeySet" element={<KeySetEditor />} />
-      <Route path="/session/:Group/:Individual/import" element={<ViewerEvaluationsPage />} />
-      <Route path="/session/:Group/:Individual/:Evaluation" element={<SessionDesignerShim />} />
-      <Route path="/session/:Group/:Individual/:Evaluation/history" element={<DashboardHistoryPageShim />} />
-      <Route path="/session/:Group/:Individual/:Evaluation/history/:Index" element={<SessionViewerPageShim />} />
-      <Route path="/session/:Group/:Individual/:Evaluation/proportion" element={<ResultsProportionVisualsPageShim />} />
-      <Route path="/session/:Group/:Individual/:Evaluation/rate" element={<ResultsRateVisualsPageShim />} />
-      <Route path="/session/:Group/:Individual/:Evaluation/reli" element={<ReliabilityViewerPageShim />} />
-      <Route path="/session/:Group/:Individual/:Evaluation/run" element={<SessionRecorderPageShim />} />
-      <Route path="/session/:Group/:Individual/:Evaluation/view" element={<ResultsViewerPageShim />} />
+            <Route path="/documentation" element={<DocumentationListingPage />} />
+            <Route path="/documentation/:slug" element={<DocumentationEntryPage />} />
 
-      <Route path="/settings" element={<SettingsPage />} />
-    </Route>
-  )
-);
+            <Route path="/session/:Group" element={<ClientsPage />} />
+            <Route path="/session/:Group/:Individual" element={<EvaluationsPage />} />
+            <Route path="/session/:Group/:Individual/keysets" element={<KeySetsPage />} />
+            <Route path="/session/:Group/:Individual/keysets/import" element={<ViewerKeysetPage />} />
+            <Route path="/session/:Group/:Individual/keysets/:KeySet" element={<KeySetEditor />} />
+            <Route path="/session/:Group/:Individual/import" element={<ViewerEvaluationsPage />} />
+            <Route path="/session/:Group/:Individual/:Evaluation" element={<SessionDesignerShim />} />
+            <Route path="/session/:Group/:Individual/:Evaluation/history" element={<DashboardHistoryPageShim />} />
+            <Route path="/session/:Group/:Individual/:Evaluation/history/:Index" element={<SessionViewerPageShim />} />
+            <Route
+              path="/session/:Group/:Individual/:Evaluation/proportion"
+              element={<ResultsProportionVisualsPageShim />}
+            />
+            <Route path="/session/:Group/:Individual/:Evaluation/rate" element={<ResultsRateVisualsPageShim />} />
+            <Route path="/session/:Group/:Individual/:Evaluation/reli" element={<ReliabilityViewerPageShim />} />
+            <Route path="/session/:Group/:Individual/:Evaluation/run" element={<SessionRecorderPageShim />} />
+            <Route path="/session/:Group/:Individual/:Evaluation/view" element={<ResultsViewerPageShim />} />
+
+            <Route path="/settings" element={<SettingsPage />} />
+          </Route>
+        )
+      ),
+    [dataContext]
+  );
+
+  return <RouterProvider future={{ v7_startTransition: true }} router={router} />;
+};
 
 function App() {
   return (
     <>
       <ThemeProvider defaultTheme="system">
         <FolderContextProvider>
-          <RouterProvider future={{ v7_startTransition: true }} router={router} />
+          <AppRoot />
         </FolderContextProvider>
       </ThemeProvider>
     </>
