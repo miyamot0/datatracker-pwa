@@ -1,6 +1,6 @@
-![Static Badge](https://img.shields.io/badge/Coverage_(Lines)-{{STPCT}}-green) ![Static Badge](https://img.shields.io/badge/Coverage_(Branches)-{{BRPCT}}-green) ![Static Badge](https://img.shields.io/badge/Coverage_(Functions)-{{FNPCT}}-green)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-{{STPCT}}-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-{{BRPCT}}-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-{{FNPCT}}-green>)
 
-![Static Badge](https://img.shields.io/badge/Version-{{VERSION_NUMBER}}-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge Version](https://img.shields.io/badge/Version-{{VERSION_NUMBER}}-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 # DataTracker (Installable PWA Build)
 
@@ -10,7 +10,7 @@ DataTracker is a web-based application (installable PWA) designed to assist rese
 
 ## Purpose and Rationale
 
-The goal of DataTracker was to provide an open source tool for support various aspects of behavior therapy and behavioral research. This is an 'installable' program (i.e., it can be pinned to your desktop) that works in a native-like fashion that does not require accessing any app marketplace. It is presently platform-agnostic and **No data recorded or scored ever leaves your machine**. It is designed to be used by clinicians and researchers using Single-Case Experimental Design (SCEDs) to evaluate the effectiveness of interventions.
+The goal of DataTracker was to provide an open source tool for support various aspects of behavior therapy and behavioral research. This is an 'installable' program (i.e., it can be pinned to your desktop) that works in a native-like fashion that does not require accessing any app marketplace. It is presently platform-agnostic, and **No data recorded or scored ever leaves your machine**. It is designed to be used by clinicians and researchers using Single-Case Experimental Design (SCEDs) to evaluate the effectiveness of interventions.
 
 This tool supports multiple methods of assessing reliability of behavioral measurement (e.g., exact interval agreement), session-by-session viewing and interpretation of data (e.g., basic data displays), and some automation of clinical responsibilities (e.g., calculating response rates across contexts within sessions). The tool also supports syncing data across multiple locations in a local context (e.g., shared networked drive in secure settings).
 
@@ -48,7 +48,7 @@ Features include the following:
 
 ## Program Support
 
-The PWA approach allows for easy installation and seamless updates over time. For support, there is a dedicated slack channel for users to ask questions and troubleshoot issues. There is also a formal bug tracker available through GitHub to assist with identifying issues and submitting feature requests.
+The PWA approach allows for easy installation and seamless updates over time. For support, there is a dedicated Slack channel for users to ask questions and troubleshoot issues. There is also a formal bug tracker available through GitHub to assist with identifying issues and submitting feature requests.
 
 PRs will be considered on a case-by-case basis, but the project is primarily maintained by a single developer.
 
@@ -58,7 +58,7 @@ PRs will be considered on a case-by-case basis, but the project is primarily mai
 
 The DataTracker project has been shaped by a range of behavior recording tools that have emerged over the years. Notable inspirations include:
 
-Bullock, C. E., Fisher, W. W., & Hagopian, L. P. (2017). Description and validation of a computerized behavioral data program:"BDataPro". The Behavior Analyst, 40, 275-285. doi: [10.1007/s40614-016-0079-0](https://doi.org/10.1007%2Fs40614-016-0079-0)
+Bullock, C. E., Fisher, W. W., & Hagopian, L. P. (2017). Description and validation of a computerized behavioral data program:"BDataPro". The Behavior Analyst, 40, 275-285. DOI: [10.1007/s40614-016-0079-0](https://doi.org/10.1007%2Fs40614-016-0079-0)
 
 Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/miyamot0/DataTracker3)
 

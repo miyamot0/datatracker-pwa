@@ -1,5 +1,5 @@
 ---
-title: Syncing Data to Shared a Location(s)
+title: Syncing Data to Shared Location(s)
 description: This documentation entry provides an overview of the process of syncing data to shared locations in DataTracker and steps to sync data across multiple devices.
 date: 11/11/2024
 keywords: 'Data Organization, Data Synchronization'
@@ -36,7 +36,7 @@ The screen for syncing files provides a button for authorizing the Remote Backup
     <img src="/docs/sync_screen_folder_auth.png" alt="Visual of sync screen with button auth"/>
 </div>
 
-Upon providing access to the Remote Backup location, the program will provide a list of files that can be moved to the selected location. The user can then indicate which files should be moved and which should be left in place. As a general default, files copied to the Remote Backup location are removed from the current page but are not deleted from the main DataTracker folder. An illustration of the interface for moving data FROM the the main (i.e., 'Local') location to the secondary (i.e., 'Remote') location is provided below.
+Upon providing access to the Remote Backup location, the program will provide a list of files that can be moved to the selected location. The user can then indicate which files should be moved and which should be left in place. As a general default, files copied to the Remote Backup location are removed from the current page but are not deleted from the main DataTracker folder. An illustration of the interface for moving data FROM the main (i.e., 'Local') location to the secondary (i.e., 'Remote') location is provided below.
 
 <div align="center" width="100%">
     <img src="/docs/sync_screen_folders_list.png" alt="Visual of sync screen TO remote"/>
@@ -54,4 +54,4 @@ This is the recommended approach for syncing data to shared locations, as it pro
 
 The second option for syncing data to shared locations is to manually copy the necessary folders and files to the desired location. This approach is more advanced in the sense that the user must have a good understanding of the program's file structure and how/where data should be stored.
 
-In general, this approach is not recommended for most users, as it can be error-prone and may result in data loss if not done correctly. However, for users who are comfortable with managing files and folders, this approach would be the most efficient way to sync and backup data across multiple locations.
+In general, this approach is not recommended for most users, as it can be error-prone and may result in data loss if not done correctly. However, for users who are comfortable managing files and folders, this approach would be the most efficient way to sync and backup data across multiple locations.

@@ -30,6 +30,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import createHref from '@/lib/links';
 import ProportionFigureVisualization from './figures/proportion-figure';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import BackButton from '@/components/ui/back-button';
 
 export function ResultsProportionVisualsPageShim() {
   const { handle } = useContext(FolderHandleContext);
@@ -153,10 +154,17 @@ function ResultsProportionVisualsPage({ Handle, Group, Individual, Evaluation }:
       className="select-none"
     >
       <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Visualization of Behavioral Rates</CardTitle>
-          <CardDescription>Options for Visualizing Data Provided Below</CardDescription>
+        <CardHeader className="flex flex-row justify-between">
+          <div className="flex flex-col gap-1.5 grow">
+            <CardTitle>Visualization of Behavioral Rates</CardTitle>
+            <CardDescription>Options for Visualizing Data Provided Below</CardDescription>
+          </div>
+          <BackButton
+            Label="Back to Evaluations"
+            Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
+          />
         </CardHeader>
+
         <CardContent className="flex flex-col gap-2">
           <div className="w-full flex flex-row justify-between mb-4">
             <DropdownMenu modal={false}>

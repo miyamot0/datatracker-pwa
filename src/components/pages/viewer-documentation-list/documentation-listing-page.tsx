@@ -9,6 +9,8 @@ import { KeywordColors } from '@/types/colors';
 import { BookIcon, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DocumentationObjects } from '@/lib/docs';
+import BackButton from '@/components/ui/back-button';
+import createHref from '@/lib/links';
 
 export default function DocumentationListingPage() {
   const FrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(
@@ -20,14 +22,15 @@ export default function DocumentationListingPage() {
   return (
     <PageWrapper label={'Documentation'} className="select-none">
       <Card className="w-full max-w-screen-2xl">
-        <CardHeader>
-          <CardTitle>Software Documentation</CardTitle>
-          <CardDescription>
-            Information on this page provides guidelines and instructions for DataTracker
-          </CardDescription>
+        <CardHeader className="flex flex-row justify-between">
+          <div className="flex flex-col gap-1.5 grow">
+            <CardTitle>Program Documentation</CardTitle>
+            <CardDescription>Guidelines and Instructions for using DataTracker</CardDescription>
+          </div>
+          <BackButton Label="Back to Home" Href={createHref({ type: 'Home' })} />
         </CardHeader>
 
-        <CardContent className="flex flex-col divide-y divide-solid">
+        <CardContent className="flex flex-col divide-y divide-solid dark:divide-white">
           {FrontMatter.map((entry, index) => {
             const kw_badges = entry.keywords
               .split(',')
@@ -36,7 +39,7 @@ export default function DocumentationListingPage() {
 
             return (
               <div key={index} className="flex flex-col md:flex-row md:justify-between md:items-center py-5 gap-2">
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-2">
                   <div className="flex flex-row gap-1 flex-1 items-end font-semibold">
                     <span>{`${entry.index + 1}. ${entry.title}`}</span>
                   </div>

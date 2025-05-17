@@ -4,6 +4,7 @@ import AuthorizationInstructions from '../views/authorization-instructions';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useContext } from 'react';
 import { displayConditionalNotification } from '@/lib/notifications';
+import BackButton from '@/components/ui/back-button';
 
 export default function UnauthorizedDisplay() {
   const { setHandle, settings } = useContext(FolderHandleContext);
@@ -15,6 +16,8 @@ export default function UnauthorizedDisplay() {
           <CardTitle>Program Access and Authorization</CardTitle>
           <CardDescription>You need to authorize the program to work with the desired local folder</CardDescription>
         </div>
+
+        <BackButton Label="Back" />
       </CardHeader>
 
       <CardContent className="flex flex-col gap-1.5">

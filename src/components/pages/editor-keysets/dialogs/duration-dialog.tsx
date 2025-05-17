@@ -30,7 +30,7 @@ export default function DurationDialogKeyCreator({ KeySet, Callback }: Props) {
     >
       <div>
         <ToolTipWrapper Label="Add a new Duration Key">
-          <Button className="w-fit shadow" variant={'outline'} onClick={() => setShow(true)}>
+          <Button className="w-fit shadow" variant={'outline'} onClick={() => setShow(true)} size={'sm'}>
             <PlusIcon className="w-4 h-4 mr-2" /> Add Key
           </Button>
         </ToolTipWrapper>

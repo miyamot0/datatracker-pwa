@@ -8,7 +8,7 @@ author: 'Shawn Gilroy'
 
 The **KeySet** functionality offered by Data Tracker allows users to efficiently record and track specific behaviors during observation sessions in real time. By mapping keys on a **KeySet** to particular behaviors (e.g., "1" represents and instance of "Aggression"), the program can be used to perform data collection across multiple targets as behavior occurs. Each **KeySet** (i.e., mappings of keys to behavior, of which there can be multiple) customized to include _two_ types of key/behavior mappings: "Frequency Keys" and "Duration Keys". These mappings help users accurately record behaviors that are best measured either by how often they occur (Frequency) or by how long they last (Duration).
 
-An example of multiple 'KeySets' for a specific client are illustrated below:
+An example of multiple "KeySet's" for a specific client are illustrated below:
 
 <div align="center" width="100%">
     <img src="/docs/keyboards_ui.png" alt="Visual of available keyboards"/>

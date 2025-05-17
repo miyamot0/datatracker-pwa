@@ -15,7 +15,7 @@ import {
   DataCollectorRoles,
   SessionDesignerSchema,
   SessionDesignerSchemaType,
-  SessionTerminationOptions,
+  SessionTerminationOptionsDescriptions,
 } from '@/forms/schema/session-designer-schema';
 import { CleanUpString } from '@/lib/strings';
 import { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
@@ -40,6 +40,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import LoadingDisplay from '@/components/ui/loading-display';
 import createHref from '@/lib/links';
 import { GetHandleEvaluationFolder } from '@/lib/files';
+import BackButton from '@/components/ui/back-button';
 
 export function SessionDesignerShim() {
   const { handle } = useContext(FolderHandleContext);
@@ -212,11 +213,12 @@ function SessionDesigner({
               <CardTitle>Session Designer</CardTitle>
               <CardDescription>Specify your conditions for the session on this page</CardDescription>
             </div>
-            <div>
+            <div className="flex flex-row gap-2">
               <ToolTipWrapper Label="Add a new Condition for this Evaluation">
                 <Button
                   variant={'outline'}
                   className="shadow"
+                  size={'sm'}
                   onClick={async () => {
                     const input = window.prompt('Enter the name for the new condition.');
 
@@ -260,6 +262,15 @@ function SessionDesigner({
                   Add Condition
                 </Button>
               </ToolTipWrapper>
+
+              <BackButton
+                Label="Back to Evaluations"
+                Href={createHref({
+                  type: 'Evaluations',
+                  group: Group,
+                  individual: Individual,
+                })}
+              />
             </div>
           </CardHeader>
 
@@ -404,7 +415,7 @@ function SessionDesigner({
                         <Input placeholder="600" type="number" {...field} />
                       </FormControl>
                       <FormDescription>
-                        Assign the length of the session in seconds (Default = 600s or 10m)
+                        Assign the length of the session in seconds (Default = 600 seconds)
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -439,9 +450,9 @@ function SessionDesigner({
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Session Timers</SelectLabel>
-                            {Object.values(SessionTerminationOptions).map((role) => (
-                              <SelectItem key={role} value={role}>
-                                {role}
+                            {SessionTerminationOptionsDescriptions.map((role) => (
+                              <SelectItem key={role.value} value={role.value}>
+                                {role.description}
                               </SelectItem>
                             ))}
                           </SelectGroup>

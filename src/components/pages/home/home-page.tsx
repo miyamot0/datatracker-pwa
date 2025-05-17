@@ -11,21 +11,45 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import licenseInformation from '@/assets/licenses.json';
 import { cn } from '@/lib/utils';
 import { usePWAInstall } from 'react-use-pwa-install';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { isOnMobilePlatform } from '@/lib/user-agent';
 import ImageCarousel from './views/img-carousel';
+import { FolderHandleContext } from '@/context/folder-context';
+import { ApplicationSettingsTypes } from '@/types/settings';
+import { toast } from 'sonner';
 
 export default function HomePage() {
   const install = usePWAInstall();
   const [display, setDisplay] = useState<'loading' | 'desktop' | 'mobile'>('loading');
+  const { settings, saveSettings, setSettings } = useContext(FolderHandleContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setDisplay(isOnMobilePlatform() === true ? 'mobile' : 'desktop');
-  }, []);
+
+    if (settings && settings.IsReturningUser === false) {
+      toast('Welcome! View Program Documentation for information on initial setup and use.', {
+        duration: 10000,
+        action: {
+          label: 'Read Docs',
+          onClick: () => navigate(createHref({ type: 'Documentation' }), { unstable_viewTransition: true }),
+        },
+        onAutoClose: () => {
+          const newSettings = {
+            ...settings,
+            IsReturningUser: true,
+          } satisfies ApplicationSettingsTypes;
+
+          setSettings(newSettings);
+          saveSettings(newSettings);
+        },
+      });
+    }
+  }, [settings]);
 
   return (
     <PageWrapper className="flex flex-col gap-6 select-none">

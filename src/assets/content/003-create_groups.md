@@ -6,7 +6,7 @@ keywords: 'Data Organization'
 author: 'Shawn Gilroy'
 ---
 
-The **Group** folder is the largest element in the organizational hierarchy of the Data Tracker program. For these categories/groups, these are likely to function as the primary container for data collected in a specific study, a research project, or as a part of clinical service (e.g., inpatient vs. outpatient). The goal of this distinction is to encapsulate context and make it easier to find and manage data files outside of the program (if necessary, _not recommended_). The following is a description of the different levels of the file hierarchy and what they represent.
+The **Group** folder is the largest element in the organizational hierarchy of the Data Tracker program. For these categories/groups, these are likely to function as the primary container for data collected in a specific study, a research project, or as a part of clinical service (e.g., inpatient vs. outpatient). The goal of this distinction is to encapsulate context and make it easier to find and manage data files outside the program (if necessary, _not recommended_). The following is a description of the different levels of the file hierarchy and what they represent.
 
 ### Overview of Folder Structure
 
@@ -24,7 +24,7 @@ To create a new **Group** folder, you can do so by clicking the "Create Group" b
     <img src="/docs/folder_preview_groups.png" alt="Image Group Dashboard interface"/>
 </div>
 
-If you need to delete a **Group** folder, you can do so by selecting the relevant option from the dropdown asssociated with the group (i.e., the "Delete" option). Pressing this button with cause a confirmation dialog will appear to ensure that you want to delete the **Group** folder and all its contents. Once you confirm the deletion, the **Group** folder and all its subfolders will be permanently removed from the program. Please exercise caution when deleting **Group** folders, as this action cannot be undone, and all data within the folder will be lost.
+If you need to delete a **Group** folder, you can do so by selecting the relevant option from the dropdown associated with the group (i.e., the "Delete" option). Pressing this button with cause a confirmation dialog will appear to ensure that you want to delete the **Group** folder and all its contents. Once you confirm the deletion, the **Group** folder and all its subfolders will be permanently removed from the program. Please exercise caution when deleting **Group** folders, as this action cannot be undone, and all data within the folder will be lost.
 
 As a base default, users are not authorized to delete any information. This may be enabled, as necessary, by selecting the relevant option in the _Settings_ page. It is generally recommended to restrict deletion permissions to prevent accidental data loss and maintain data integrity. A relevant visual for this is provided below:
 

@@ -20,7 +20,7 @@ The session will begin when the data collector presses the 'Enter' key, which ac
 
 ### Recording Behavioral Targets
 
-The **Session Recorder** provides the data collector with information on all relevant keys and behavior mapped in the **Keyboard**. For example, if the data collector is observing a child for instances of "Verbal Aggression" and the duration of "Tantrums," these behaviors are mapped to specific keys (e.g., "F" for Verbal Aggression and "D" for Tantrum Duration). The data collector can press these keys to record each instance of the behavior or start/stop the duration timer for the behavior. This process is seamlessly integrated with the timers, ensuring that behaviors are accurately recorded in relation to the ongoing time frames. For ease of operation, 'active' or 'on-going' targets (e.g., tantrum episodes) are highlighted in green to illustrate that an on-going event is being recorded.
+The **Session Recorder** provides the data collector with information on all relevant keys and behavior mapped in the **Keyboard**. For example, if the data collector is observing a child for instances of "Verbal Aggression" and the duration of "Tantrums," these behaviors are mapped to specific keys (e.g., "F" for Verbal Aggression and "D" for Tantrum Duration). The data collector can press these keys to record each instance of the behavior or start/stop the duration timer for the behavior. This process is seamlessly integrated with the timers, ensuring that behaviors are accurately recorded in relation to the ongoing time frames. For ease of operation, 'active' or 'ongoing' targets (e.g., tantrum episodes) are highlighted in green to illustrate that an ongoing event is being recorded.
 
 ### Managing Timers
 

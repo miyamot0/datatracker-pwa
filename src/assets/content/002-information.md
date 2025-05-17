@@ -6,13 +6,13 @@ keywords: 'Program Use, Data Organization'
 author: 'Shawn Gilroy'
 ---
 
-The DataTracker program is designed to provide considerable flexibility in how data are collected and managed. This flexibility allows you to structure your data in a way that makes sense for your specific needs and research questions. However, there are several critical and recommended organizational practices to adopt to ensure that your data are easily accessible and manageable.
+The DataTracker program is designed to provide considerable flexibility in how data are collected and managed. This flexibility allows you to structure your data in a way that makes sense for your specific needs and research questions. However, there are several critical and recommended organizational practices that ensure that your data are easily accessible and manageable.
 
 This document provides an overview of the recommended organizational structure for data within the DataTracker program. It also outlines several conventions to follow when using the program.
 
 ### DataTracker Folder Access
 
-DataTracker is a website at its core. It does not have access to your hard drive as an installable program would. This is a security feature of web browsers that is designed to protect your data. Fortunately, at the users discretion, you may authorize _very specific_ access to your hard drive when working with websites. This is a common feature of many web-based programs that need to save data locally on your machine.
+DataTracker is a website at its core. It does not have access to your hard drive as an installable program would. This is a security feature of web browsers that is designed to protect your data. Fortunately, at the user's discretion, you may authorize _very specific_ access to your hard drive when working with websites. This is a common feature of many web-based programs that need to save data locally on your machine.
 
 Because of how this program is designed, you will be prompted to approve the program access to **a specific** folder on your hard drive whenever you use it. This must happen once **every time** you use the program. This is a critical aspect of web security that is common across all browsers.
 
@@ -45,7 +45,7 @@ Several additional rules that are good to follow when working with the DataTrack
 
 #### Hand-editing Data Files: <ins>Not a Good Idea</ins>
 
-The program saves files in JSON format (Javascript Object Notation), which is a universal data format that can be read by many different programs. It can be read from software such as browsers, statistical software, programming languages, etc. It's used virtually everywhere and by almost everything.
+The program saves files in JSON format (JavaScript Object Notation), which is a universal data format that can be read by many programs. It can be read from software such as browsers, statistical software, programming languages, etc. It's used virtually everywhere and by almost everything.
 
 If you attempt to edit this file by hand, without knowing the implications of what you are changing (e.g., type and content of fields), you can create problems when attempting to read data in the future. For this reason, it is recommended to _not_ edit these files by hand unless you are positive that you understand the implications of these changes.
 
@@ -55,7 +55,7 @@ If you need to _delete files or folders_, it is advised to use the built-in inte
 
 Certain manual operations in the DataTracker program are less impactful than others. For example, adding a folder in an "Evaluation" directory would add a new "Condition" without requiring direct interactions with the program. Likewise, adding a folder in the "Client" directory would similarly add a new individual with the associated folder name. Although these operations have the potential to simplify certain operations, copy/pasting folders in bulk is likely to be problematic.
 
-Various aspects of the program will attempt to 'remember' certain selections, and if previously referenced files/folders are not accessible, this can introduce unpredictable errors. This is because the program will _expect_ certain folders to be in certain locations. This is especially relevant for the **Session Builder**, since it will attempt to _remember_ recent sessions and conditions that may no longer exist if you have edited/deleted those folder.
+Various aspects of the program will attempt to 'remember' certain selections, and if previously referenced files/folders are not accessible, this can introduce unpredictable errors. This is because the program will _expect_ certain folders to be in certain locations. This is especially relevant for the **Session Builder**, since it will attempt to _remember_ recent sessions and conditions that may no longer exist if you have edited/deleted those folders.
 
 If you make major changes to the folder structure, this can introduce significant risks of program error.
 
@@ -63,7 +63,7 @@ If you make major changes to the folder structure, this can introduce significan
 
 It is often the case that a common set of targets is shared across Participants in a study. In this case, it is likely that you will want to copy a KeySet file from one case to another. This is generally okay, but it is important to remember that the Keyboard file _must be in the correct location_. If you copy a KeySet file to the wrong location, it will (1) not be accessible in the **Keyboard Designer** or **Session Designer** and (2) could cause the program to crash if the program reads it thinking it is a data file (e.g., when calculating Reliability or summarizing rates).
 
-Although it is possible to copy/paste KeySet files to save time (if you understand how the program is designed to work), it is generally recommended to use the built-in KeySet import functionality or to sync the individual's folder from a more current remote directory (i.e., files on a shared drive).
+Although it is possible to copy/paste KeySet files to save time (if you understand how the program is designed to work), it is recommended to use the built-in KeySet import functionality or to sync the individual's folder from a more current remote directory (i.e., files on a shared drive).
 
 #### Creating Evaluation Conditions by Hand: <ins>Probably Okay</ins>
 
@@ -85,7 +85,7 @@ The program infers data file structure based on _how its named_ and _where it is
 
     - _Evaluation_ Folder (e.g., functional analysis, treatment evaluation)
 
-      - 'settings.json' File (a file for remembering on-going session designs)
+      - 'settings.json' File (a file for remembering ongoing session designs)
 
       - _Condition_ Folder (e.g., baseline, treatment, etc.)
 
@@ -93,7 +93,7 @@ The program infers data file structure based on _how its named_ and _where it is
 
 ### Descriptions for Each Level of File Hierarchy
 
-Individual data files and folders are organized semantically on your hard drive. This means that the structure of the data files on your hard drive should reflect the structure of the data in the program. This is done to make it easier to find and manage data files outside of the program. The following sections provide a description of the different levels of the file hierarchy and what they each represent.
+Individual data files and folders are organized semantically on your hard drive. This means that the structure of the data files on your hard drive should reflect the structure of the data in the program. This is done to make it easier to find and manage data files outside the program. The following sections provide a description of the different levels of the file hierarchy and what they each represent.
 
 #### Group-Level Folder (Grouping by Clinic, Study, etc.)
 

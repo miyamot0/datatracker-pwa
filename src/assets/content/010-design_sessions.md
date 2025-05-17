@@ -36,13 +36,13 @@ In addition, the **Data Collector Role** for the current data collector is also 
 
 ### Setting the Session Duration
 
-Users can also define the **Session Duration** by specifying the duration of the session in seconds (e.g., 10m = 600s). This parameter sets the total time for the session, which helps to standardize the length of session. For example, if the session is intended to last 600 seconds (10 minutes), this value is entered to ensure that all data collected fits within this time frame, providing a consistent basis for comparison with other sessions (e.g., consistent interpretation of 'rates', with common amount of time).
+Users can also define the **Session Duration** by specifying the duration of the session in seconds (e.g., 600s = 10 minutes). This parameter sets the total time for the session, which helps to standardize the length of session. For example, if the session is intended to last 600 seconds (10 minutes), this value is entered to ensure that all data collected fits within this time frame, providing a consistent basis for comparison with other sessions (e.g., consistent interpretation of 'rates', with common amount of time).
 
 ### Setting Session Termination Rules
 
 The user must specify how the session should terminate by selecting _which_ timer should be used to conclude the session (e.g., Total time reaching **Session Duration** vs. Timer #1 reaching **Session Duration**). By default, the option for "End on Primary Timer" means that the session will conclude when the primary timer reaches the session duration. However, DataTracker provides multiple timers that can be used to end session under specific conditions, allowing for flexibility in how the session is terminated. This ensures that the session ends at the appropriate time based on the specific requirements of the study.
 
-For example, it may be necessary to distinguish between "time spent working" from "time when reinforcers were being accessed/consumed." In this example, Timer #1 (the 'main timer') would correspond with 'work time' and another timer (e.g., Timer #2) would correspond with 'reinforcement time.' In this arrangement, one might choose to have the session 'End on Timer #1' meeting the session duration, since it would partial out 'work time' from 'reinforcement time' in the calculations of behavior rates.
+For example, it may be necessary to distinguish between "time spent working" from "time when reinforcers were being accessed/consumed." In this example, Timer #1 (the 'main timer') would correspond with 'work time' and another timer (e.g., Timer #2) would correspond with 'reinforcement time.' In this arrangement, one might choose to have the session 'End on Timer #1' meeting the session duration, since it would separate out 'work time' from 'reinforcement time' in the calculations of behavior rates.
 
 DataTracker allows for the use of up to _three_ timers; with each timer providing flexibility in the customization of session termination rules. These are purely optional and useful insofar as they meet the specific needs of studies and evaluations.
 
