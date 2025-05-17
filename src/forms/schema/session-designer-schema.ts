@@ -25,6 +25,7 @@ export const SessionTerminationOptions = {
   TimerMain: 'End on Primary Timer',
   Timer1: 'End on Timer #1',
   Timer2: 'End on Timer #2',
+  Timer12: 'End on Timer #1 and #2 Total',
   Timer3: 'End on Timer #3',
 } as const;
 
@@ -40,6 +41,10 @@ export const SessionTerminationOptionsDescriptions = [
   {
     value: SessionTerminationOptions.Timer2,
     description: 'End on Timer #2 Time Specifically (When Timer #2 > Duration)',
+  },
+  {
+    value: SessionTerminationOptions.Timer12,
+    description: 'End on Combined Duration of Timer #1/#2 (When Timer #1 + Timer #2 > Duration)',
   },
   {
     value: SessionTerminationOptions.Timer3,

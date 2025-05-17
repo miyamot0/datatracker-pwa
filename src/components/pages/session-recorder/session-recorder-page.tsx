@@ -345,6 +345,12 @@ function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Se
         setRunningState('Completed');
 
         return;
+      } else if (
+        Settings.TimerOption === 'End on Timer #1 and #2 Total' &&
+        secondsElapsedFirst.current + secondsElapsedSecond.current + INCREMENT > Settings.DurationS
+      ) {
+        clearInterval(totalTimerRef.current);
+        setRunningState('Completed');
       }
 
       secondsElapsedTotal.current += INCREMENT;
