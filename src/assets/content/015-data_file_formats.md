@@ -19,8 +19,8 @@ The structure of individual session data files is provided below:
   /* Session Designer Settings */
   SessionSettings: SavedSettings;
 
-  /* Particulars of the --current-- keyset for session */
-  Keyset: KeySet;
+  /* Particulars of the --current-- KeySet for session */
+  KeySet: KeySet;
 
   /* Keys recorded specific to system events (e.g., schedules)  */
   SystemKeyPresses: KeyManageType[];
@@ -56,7 +56,7 @@ The structure of individual session data files is provided below:
 
 ### `SessionSettings` - Features of the Session and its Design
 
-The `SessionSettings` field of the data object features all of the information needed to contextualized the behavior recorded. It is necessary to highlight that the Group/Individual/Evaluation information is not contained here and this is by design. These parameters are _inherited_ by the local filesystem, so parsers would simply pipe such information as necessary.
+The `SessionSettings` field of the data object features all the information needed to contextualize the behavior recorded. It is necessary to highlight that the Group/Individual/Evaluation information is not contained here and this is by design. These parameters are _inherited_ by the local file system, so parsers would simply pipe such information as necessary.
 
 Members of the `SessionSettings` field are noted below:
 
@@ -80,7 +80,7 @@ Members of the `SessionSettings` field are noted below:
   /* Data collector initials/name */
   Initials: string;
 
-  /* Name of assigned keyset */
+  /* Name of assigned KeySet */
   KeySet: string;
 
   /* The role served by data collector */
@@ -119,16 +119,16 @@ For _each key press_, the following structure will be appended to the respective
 }
 ```
 
-### `KeySet` - Fields Included in the Keyset
+### `KeySet` - Fields Included in the KeySet
 
-The `KeySet` field is a simple object that contains the details of the keyset used during the session. This includes the name of the keyset, the keys used for frequency data, the keys used for duration data, and the timestamps of when the keyset was created and last modified.
+The `KeySet` field is a simple object that contains the details of the KeySet used during the session. This includes the name of the KeySet, the keys used for frequency data, the keys used for duration data, and the timestamps of when the KeySet was created and last modified.
 
 ```js
 {
-  /* Unique identifier for the keyset */
+  /* Unique identifier for the KeySet */
   id: string;
 
-  /* The name of the keyset */
+  /* The name of the KeySet */
   Name: string;
 
   /* Array of objects representing keys used for frequency data */
@@ -137,10 +137,10 @@ The `KeySet` field is a simple object that contains the details of the keyset us
   /* Array of objects representing keys used for duration data */
   DurationKeys: KeyManageType[];
 
-  /* Timestamp when the keyset was created */
+  /* Timestamp when the KeySet was created */
   createdAt: string;
 
-  /* Timestamp of the last modification to the keyset */
+  /* Timestamp of the last modification to the KeySet */
   lastModified: string;
 }
 ```
