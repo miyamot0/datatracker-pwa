@@ -21,7 +21,7 @@ export type RowSelectOptions = 'None';
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  filterCol: string;
+  filterCol?: string;
   rowSelectOptions?: RowSelectOptions;
   optionalButtons?: React.ReactNode;
 }
@@ -57,12 +57,14 @@ export function DataTable<TData, TValue>({
   return (
     <div className="">
       <div className="flex justify-between items-center py-4">
-        <Input
-          placeholder={`Filter by ${filterCol}`}
-          value={table.getColumn(filterCol)?.getFilterValue() as string}
-          onChange={(event) => table.getColumn(filterCol)?.setFilterValue(event.target.value)}
-          className="max-w-sm"
-        />
+        {filterCol && (
+          <Input
+            placeholder={`Filter by ${filterCol}`}
+            value={table.getColumn(filterCol)?.getFilterValue() as string}
+            onChange={(event) => table.getColumn(filterCol)?.setFilterValue(event.target.value)}
+            className="max-w-sm"
+          />
+        )}
 
         {optionalButtons}
       </div>
