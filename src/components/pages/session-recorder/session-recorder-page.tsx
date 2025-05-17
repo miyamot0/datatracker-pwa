@@ -538,6 +538,7 @@ function SessionRecorderPage({ Handle, Group, Individual, Evaluation, Keyset, Se
                   'bg-green-400 text-white': Settings.TimerOption === 'End on Timer #1',
                   'bg-orange-400 text-white': Settings.TimerOption === 'End on Timer #2',
                   'bg-red-400 text-white': Settings.TimerOption === 'End on Timer #3',
+                  'bg-blue-400 text-white': Settings.TimerOption === 'End on Timer #1 and #2 Total',
                 }
               )}
             >

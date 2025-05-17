@@ -389,7 +389,7 @@ function SessionDesigner({
                         </FormControl>
                         <SelectContent>
                           <SelectGroup>
-                            <SelectLabel>Session Termination Option</SelectLabel>
+                            <SelectLabel>Data Collection Role</SelectLabel>
                             {Object.values(DataCollectorRoles).map((role) => (
                               <SelectItem key={role} value={role}>
                                 {role} Data Collector
