@@ -1,7 +1,6 @@
 import BackButton from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import createHref from '@/lib/links';
 import { ChevronDown, FolderInput, FolderPlus, FolderX } from 'lucide-react';
 import { DataTable } from '../../../ui/data-table-common';

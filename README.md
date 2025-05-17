@@ -1,6 +1,6 @@
 ![Static Badge](https://img.shields.io/badge/Coverage_(Lines)-99.88_Percent-green) ![Static Badge](https://img.shields.io/badge/Coverage_(Branches)-97.66_Percent-green) ![Static Badge](https://img.shields.io/badge/Coverage_(Functions)-100.00_Percent-green)
 
-![Static Badge](https://img.shields.io/badge/Version-0.4.3-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge](https://img.shields.io/badge/Version-0.4.4-blue) ![Static Badge](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 # DataTracker (Installable PWA Build)
 
@@ -89,6 +89,8 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
 @radix-ui/react-switch (1.1.0). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
 @radix-ui/react-tooltip (1.1.2). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
+ 
+@tanstack/react-table (8.21.3). Copyright Tanner Linsley -- MIT Licensed: [Repo](https://github.com/TanStack/table.git) 
  
 class-variance-authority (0.7.0). Copyright Joe Bell (https://joebell.co.uk) -- Apache-2.0 Licensed: [Repo](https://github.com/joe-bell/cva.git) 
  
