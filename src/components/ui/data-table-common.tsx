@@ -14,7 +14,7 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 
 export type RowSelectOptions = 'None';
 
@@ -23,12 +23,14 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   filterCol: string;
   rowSelectOptions?: RowSelectOptions;
+  optionalButtons?: React.ReactNode;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   filterCol,
+  optionalButtons,
   rowSelectOptions = 'None',
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -54,13 +56,15 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="">
-      <div className="flex items-center py-4">
+      <div className="flex justify-between items-center py-4">
         <Input
           placeholder={`Filter by ${filterCol}`}
           value={table.getColumn(filterCol)?.getFilterValue() as string}
           onChange={(event) => table.getColumn(filterCol)?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
+
+        {optionalButtons}
       </div>
       <Table>
         <TableHeader>
@@ -94,7 +98,7 @@ export function DataTable<TData, TValue>({
           )}
         </TableBody>
       </Table>
-      <DataTablePagination table={table} rowSelectOptions="None" />
+      <DataTablePagination table={table} rowSelectOptions={rowSelectOptions} />
     </div>
   );
 }

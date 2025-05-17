@@ -3,6 +3,8 @@ import BackButton from '@/components/ui/back-button';
 import { BuildGroupBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import { DataTable } from '@/components/ui/data-table-common';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,16 +14,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import LoadingDisplay from '@/components/ui/loading-display';
-import { TableHeader, TableRow, TableHead, TableBody, TableCell, Table } from '@/components/ui/table';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContext } from '@/context/folder-context';
 import useQueryClients from '@/hooks/clients/useQueryClients';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { cn } from '@/lib/utils';
+import { ColumnDef } from '@tanstack/react-table';
 import { ChevronDown, FolderInput, FolderPlus, FolderX } from 'lucide-react';
 import { useContext } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+
+type ClientTableRow = {
+  Individual: string;
+};
 
 export default function ClientsPage() {
   const { settings } = useContext(FolderHandleContext);
@@ -46,6 +52,61 @@ export default function ClientsPage() {
     return <div>{error}</div>;
   }
 
+  const columns: ColumnDef<ClientTableRow>[] = [
+    {
+      accessorKey: 'Individual',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Client Name/ID" />,
+    },
+    {
+      accessorKey: 'Actions',
+
+      header: () => <div className="text-right">Client Folder Actions</div>,
+      cell: ({ row }) => (
+        <div className="flex flex-row justify-end">
+          <Button size={'sm'} variant={'outline'} className="flex flex-row divide-x justify-between mx-0 px-0 shadow">
+            <Link
+              unstable_viewTransition
+              className="px-3 hover:underline flex flex-row items-center"
+              to={createHref({
+                type: 'Evaluations',
+                group: Group,
+                individual: row.original.Individual,
+              })}
+            >
+              <FolderInput className="mr-2 h-4 w-4" />
+              Open Evaluations
+            </Link>
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <ChevronDown className="w-fit px-2" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" side="bottom" align="end" sideOffset={12}>
+                <DropdownMenuLabel>Data Management</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className={cn(
+                    'bg-red-500 text-white hover:bg-red-400 focus:bg-red-400 focus:text-white rounded cursor-pointer',
+                    {
+                      disabled: settings.EnableFileDeletion === false,
+                      'pointer-events-none': settings.EnableFileDeletion === false,
+                    }
+                  )}
+                  disabled={settings.EnableFileDeletion === false}
+                  onClick={async () => {
+                    await removeClient(row.original.Individual);
+                  }}
+                >
+                  <FolderX className="mr-2 h-4 w-4" />
+                  Delete ALL Client Data
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <PageWrapper breadcrumbs={[BuildGroupBreadcrumb()]} label={CleanUpString(Group)} className="select-none">
       <Card className="w-full max-w-screen-2xl">
@@ -55,20 +116,6 @@ export default function ClientsPage() {
             <CardDescription>Select clients to develop and evaluate outcomes</CardDescription>
           </div>
           <div className="flex flex-col md:flex-row gap-2">
-            <ToolTipWrapper Label="Add a new client to current group">
-              <Button
-                variant={'outline'}
-                className="shadow"
-                size={'sm'}
-                onClick={async () => {
-                  await addClient();
-                }}
-              >
-                <FolderPlus className="mr-2 h-4 w-4" />
-                Create Individual
-              </Button>
-            </ToolTipWrapper>
-
             <BackButton Label="Back to Groups" Href={createHref({ type: 'Dashboard' })} />
           </div>
         </CardHeader>
@@ -80,66 +127,28 @@ export default function ClientsPage() {
             conditions in evaluations).
           </p>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Client Names</TableHead>
-                <TableHead className="text-right">Client Folder Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((id, index) => (
-                <TableRow key={index} className="my-2">
-                  <TableCell>{id}</TableCell>
-                  <TableCell className="flex flex-row justify-end">
-                    <Button
-                      size={'sm'}
-                      variant={'outline'}
-                      className="flex flex-row divide-x justify-between mx-0 px-0 shadow"
-                    >
-                      <Link
-                        unstable_viewTransition
-                        className="px-3 hover:underline flex flex-row items-center"
-                        to={createHref({
-                          type: 'Evaluations',
-                          group: Group,
-                          individual: id,
-                        })}
-                      >
-                        <FolderInput className="mr-2 h-4 w-4" />
-                        Open Evaluations
-                      </Link>
-                      <DropdownMenu modal={false}>
-                        <DropdownMenuTrigger asChild>
-                          <ChevronDown className="w-fit px-2" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-56" side="bottom" align="end" sideOffset={12}>
-                          <DropdownMenuLabel>Data Management</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className={cn(
-                              'bg-red-500 text-white hover:bg-red-400 focus:bg-red-400 focus:text-white rounded cursor-pointer',
-                              {
-                                disabled: settings.EnableFileDeletion === false,
-                                'pointer-events-none': settings.EnableFileDeletion === false,
-                              }
-                            )}
-                            disabled={settings.EnableFileDeletion === false}
-                            onClick={async () => {
-                              await removeClient(id);
-                            }}
-                          >
-                            <FolderX className="mr-2 h-4 w-4" />
-                            Delete ALL Client Data
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <DataTable
+            columns={columns}
+            data={data.map((g) => {
+              return { Individual: g };
+            })}
+            filterCol="Individual"
+            optionalButtons={
+              <ToolTipWrapper Label="Add a new client to current group">
+                <Button
+                  variant={'outline'}
+                  className="shadow"
+                  size={'sm'}
+                  onClick={async () => {
+                    await addClient();
+                  }}
+                >
+                  <FolderPlus className="mr-2 h-4 w-4" />
+                  Create Individual
+                </Button>
+              </ToolTipWrapper>
+            }
+          />
         </CardContent>
       </Card>
     </PageWrapper>

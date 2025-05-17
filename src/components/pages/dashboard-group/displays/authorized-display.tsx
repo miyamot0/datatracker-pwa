@@ -89,24 +89,10 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup }: Pro
       <CardHeader className="flex flex-col md:flex-row w-full justify-between">
         <div className="flex flex-col gap-1.5">
           <CardTitle>Directory of Client Groups</CardTitle>
-          <CardDescription>Select group to load relevant client data</CardDescription>
+          <CardDescription>Open Group to Load Relevant Client Data</CardDescription>
         </div>
 
         <div className="flex flex-col md:flex-row gap-2">
-          <ToolTipWrapper Label="Create a new group folder">
-            <Button
-              variant={'outline'}
-              size={'sm'}
-              className="shadow"
-              onClick={async () => {
-                await AddGroup();
-              }}
-            >
-              <FolderPlus className="mr-2 h-4 w-4" />
-              Create Group
-            </Button>
-          </ToolTipWrapper>
-
           <BackButton Label="Back to Home" Href={createHref({ type: 'Home' })} />
         </div>
       </CardHeader>
@@ -124,6 +110,19 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup }: Pro
             return { Group: g };
           })}
           filterCol="Group"
+          optionalButtons={
+            <Button
+              variant={'outline'}
+              size={'sm'}
+              className="shadow"
+              onClick={async () => {
+                await AddGroup();
+              }}
+            >
+              <FolderPlus className="mr-2 h-4 w-4" />
+              Create Group
+            </Button>
+          }
         />
       </CardContent>
     </Card>
