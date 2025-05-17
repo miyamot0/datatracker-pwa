@@ -6,7 +6,6 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Copy, Edit2, ImportIcon, Plus } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
@@ -14,6 +13,10 @@ import useQueryKeyboards from '@/hooks/keyboards/useQueryKeyboards';
 import createHref from '@/lib/links';
 import LoadingDisplay from '@/components/ui/loading-display';
 import BackButton from '@/components/ui/back-button';
+import { ColumnDef } from '@tanstack/react-table';
+import { KeySet } from '@/types/keyset';
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import { DataTable } from '@/components/ui/data-table-common';
 
 export default function KeySetsPage() {
   const { Group, Individual } = useParams();
@@ -37,6 +40,73 @@ export default function KeySetsPage() {
     return <div>{error}</div>;
   }
 
+  const columns: ColumnDef<KeySet>[] = [
+    {
+      accessorKey: 'Name',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Keyset Name" />,
+      enableHiding: true,
+    },
+    {
+      accessorKey: 'FrequencyKeys',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Frequency Keys" />,
+      cell: ({ row }) => {
+        return (
+          <div className="flex flex-col">
+            {row.original.FrequencyKeys.map((key) => {
+              return `${key.KeyDescription} (${key.KeyName.toUpperCase()})`;
+            }).join(', ')}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'DurationKeys',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Duration Keys" />,
+      cell: ({ row }) => {
+        return (
+          <div className="flex flex-col">
+            {row.original.DurationKeys.map((key) => {
+              return `${key.KeyDescription} (${key.KeyName.toUpperCase()})`;
+            }).join(', ')}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'createdAt',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Date Created" />,
+      cell: ({ row }) => {
+        return <span>{row.original.createdAt.toLocaleDateString()}</span>;
+      },
+    },
+    {
+      accessorKey: 'Actions',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Actions" className="justify-end" />,
+      cell: ({ row }) => {
+        return (
+          <div className="flex flex-row justify-end gap-2">
+            <Button
+              size={'sm'}
+              variant={'outline'}
+              onClick={async () => {
+                await duplicateKeyboard(row.original);
+              }}
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              Duplicate
+            </Button>
+            <Link unstable_viewTransition to={`/session/${Group}/${Individual}/keysets/${row.original.Name}`}>
+              <Button size={'sm'} variant={'outline'}>
+                <Edit2 className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            </Link>
+          </div>
+        );
+      },
+    },
+  ];
+
   return (
     <PageWrapper
       breadcrumbs={[
@@ -54,33 +124,6 @@ export default function KeySetsPage() {
             <CardDescription>Create or Edit Current Keysets</CardDescription>
           </div>
           <div className="flex flex-row gap-2">
-            <ToolTipWrapper Label="Import an existing KeySet for this client">
-              <Button variant={'outline'} className="shadow" size={'sm'}>
-                <Link
-                  to={`/session/${Group}/${Individual}/keysets/import`}
-                  unstable_viewTransition
-                  className="flex flex-row items-center"
-                >
-                  <ImportIcon className="mr-2 h-4 w-4" />
-                  Import Keyset
-                </Link>
-              </Button>
-            </ToolTipWrapper>
-
-            <ToolTipWrapper Label="Create a new KeySet for individual">
-              <Button
-                variant={'outline'}
-                className="shadow"
-                size={'sm'}
-                onClick={async () => {
-                  await addKeyboard();
-                }}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Create Keyset
-              </Button>
-            </ToolTipWrapper>
-
             <BackButton
               Label="Back to Evaluations"
               Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
@@ -95,57 +138,40 @@ export default function KeySetsPage() {
             data.
           </p>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Keyset</TableHead>
-                <TableHead>Frequency Keys</TableHead>
-                <TableHead>Duration Keys</TableHead>
-                <TableHead>Date Created</TableHead>
-                <TableHead>Date Modified</TableHead>
-                <TableHead className="flex flex-row justify-end items-center">Keyset Management</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((keys, index) => {
-                const string_duration_keys = keys.DurationKeys.map((key) => {
-                  return `${key.KeyDescription} (${key.KeyName.toUpperCase()})`;
-                }).join(', ');
-
-                const string_frequency_keys = keys.FrequencyKeys.map((key) => {
-                  return `${key.KeyDescription} (${key.KeyName.toUpperCase()})`;
-                }).join(', ');
-
-                return (
-                  <TableRow key={index} className="my-2">
-                    <TableCell>{keys.Name}</TableCell>
-                    <TableCell>{string_frequency_keys}</TableCell>
-                    <TableCell>{string_duration_keys}</TableCell>
-                    <TableCell>{keys.createdAt.toLocaleDateString()}</TableCell>
-                    <TableCell>{keys.lastModified.toLocaleDateString()}</TableCell>
-                    <TableCell className="flex flex-row justify-end gap-2">
-                      <Button
-                        size={'sm'}
-                        variant={'outline'}
-                        onClick={async () => {
-                          await duplicateKeyboard(keys);
-                        }}
-                      >
-                        <Copy className="h-4 w-4 mr-2" />
-                        Duplicate
-                      </Button>
-                      <Link unstable_viewTransition to={`/session/${Group}/${Individual}/keysets/${keys.Name}`}>
-                        <Button size={'sm'} variant={'outline'}>
-                          <Edit2 className="h-4 w-4 mr-2" />
-                          Edit
-                        </Button>
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          <DataTable
+            columns={columns}
+            data={data}
+            filterCol="Name"
+            optionalButtons={
+              <div className="flex flex-row gap-2">
+                <ToolTipWrapper Label="Create a new KeySet for individual">
+                  <Button
+                    variant={'outline'}
+                    className="shadow"
+                    size={'sm'}
+                    onClick={async () => {
+                      await addKeyboard();
+                    }}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create
+                  </Button>
+                </ToolTipWrapper>
+                <ToolTipWrapper Label="Import an existing KeySet for this client">
+                  <Button variant={'outline'} className="shadow" size={'sm'}>
+                    <Link
+                      to={`/session/${Group}/${Individual}/keysets/import`}
+                      unstable_viewTransition
+                      className="flex flex-row items-center"
+                    >
+                      <ImportIcon className="mr-2 h-4 w-4" />
+                      Import
+                    </Link>
+                  </Button>
+                </ToolTipWrapper>
+              </div>
+            }
+          />
         </CardContent>
       </Card>
     </PageWrapper>

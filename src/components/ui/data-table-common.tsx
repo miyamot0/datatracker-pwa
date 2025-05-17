@@ -1,7 +1,6 @@
 import { DataTablePagination } from '@/components/ui/data-table-pagination';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FolderHandleContext } from '@/context/folder-context';
 import {
   ColumnDef,
   ColumnFiltersState,
