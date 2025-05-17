@@ -32,7 +32,7 @@ export default function DocumentationListingPage() {
           <BackButton Label="Back to Home" Href={createHref({ type: 'Home' })} />
         </CardHeader>
 
-        <CardContent className="flex flex-col divide-y divide-solid">
+        <CardContent className="flex flex-col divide-y divide-solid dark:divide-white">
           {FrontMatter.map((entry, index) => {
             const kw_badges = entry.keywords
               .split(',')
