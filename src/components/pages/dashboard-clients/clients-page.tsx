@@ -15,28 +15,57 @@ import {
 } from '@/components/ui/dropdown-menu';
 import LoadingDisplay from '@/components/ui/loading-display';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import { FolderHandleContext } from '@/context/folder-context';
+import { FolderHandleContextType } from '@/context/folder-context';
 import useQueryClients from '@/hooks/clients/useQueryClients';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { cn } from '@/lib/utils';
+import { ApplicationSettingsTypes } from '@/types/settings';
 import { ColumnDef } from '@tanstack/react-table';
 import { ChevronDown, FolderInput, FolderPlus, FolderX } from 'lucide-react';
-import { useContext } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, redirect, useLoaderData, useNavigate } from 'react-router-dom';
+
+type LoaderResult = {
+  Group: string;
+  Handle: FileSystemHandle;
+  Settings: ApplicationSettingsTypes;
+};
+
+export const clientsPageLoader = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
+
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const { Group } = params;
+
+    if (!Group || !handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
+
+    return {
+      Group: CleanUpString(Group!),
+      Handle: handle,
+      Settings: ctx.settings,
+    } satisfies LoaderResult;
+  };
+};
 
 type ClientTableRow = {
   Individual: string;
 };
 
 export default function ClientsPage() {
-  const { settings } = useContext(FolderHandleContext);
-  const { Group } = useParams();
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Group, Settings } = loaderResult;
+
   const navigate = useNavigate();
+
+  // TODO: Hooks are nice, but might just be cleaner with loaders
 
   const { data, status, error, handle, addClient, removeClient } = useQueryClients(Group);
 
-  if (!handle || !Group) {
+  if (!handle) {
     navigate(createHref({ type: 'Dashboard' }), {
       unstable_viewTransition: true,
     });
@@ -87,11 +116,11 @@ export default function ClientsPage() {
                   className={cn(
                     'bg-red-500 text-white hover:bg-red-400 focus:bg-red-400 focus:text-white rounded cursor-pointer',
                     {
-                      disabled: settings.EnableFileDeletion === false,
-                      'pointer-events-none': settings.EnableFileDeletion === false,
+                      disabled: Settings.EnableFileDeletion === false,
+                      'pointer-events-none': Settings.EnableFileDeletion === false,
                     }
                   )}
-                  disabled={settings.EnableFileDeletion === false}
+                  disabled={Settings.EnableFileDeletion === false}
                   onClick={async () => {
                     await removeClient(row.original.Individual);
                   }}

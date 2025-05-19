@@ -5,63 +5,109 @@ import {
   BuildIndividualsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import LoadingDisplay from '@/components/ui/loading-display';
-import { FolderHandleContext } from '@/context/folder-context';
+import { FolderHandleContextType } from '@/context/folder-context';
 import { SavedSessionResult } from '@/lib/dtos';
 import { castSavedFilesToSessionResults } from '@/lib/files';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { KeySet } from '@/types/keyset';
 import { ScoredKey } from '@/types/reli';
-import { useContext, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { redirect, useLoaderData } from 'react-router-dom';
 import Spreadsheet from 'react-spreadsheet';
 import ReliabilityBlank from './alternates/reli-blank';
 import { calculateReliabilityDuration, calculateReliabilityFrequency, getCorrespondingSessionPairs } from '@/lib/reli';
 import BackButton from '@/components/ui/back-button';
 
-export function ReliabilityViewerPageShim() {
-  const { handle } = useContext(FolderHandleContext);
-  const [results, setResults] = useState<SavedSessionResult[]>([]);
-  const [keySet, setKeySet] = useState<KeySet>();
-  const navigate = useNavigate();
+type LoaderResult = {
+  Group: string;
+  Individual: string;
+  Evaluation: string;
+  Handle: FileSystemHandle;
+  Results: SavedSessionResult[];
+  KeySet?: KeySet;
+  Sessions?: number[];
+  ScoredFrequency?: ScoredKey[][];
+  ScoredDuration?: ScoredKey[][];
+};
 
-  const { Group, Individual, Evaluation } = useParams();
+export const reliViewerLoader = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
 
-  useEffect(() => {
-    if (!handle || !Group || !Individual || !Evaluation) {
-      navigate(createHref({ type: 'Dashboard' }), {
-        unstable_viewTransition: true,
-      });
-      return;
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const { Group, Individual, Evaluation } = params;
+
+    if (!Group || !Individual || !Evaluation || !handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
     }
 
-    const returner = async () => {
-      const result = await castSavedFilesToSessionResults(
-        handle,
-        CleanUpString(Group!),
-        CleanUpString(Individual!),
-        CleanUpString(Evaluation!)
-      );
+    const result = await castSavedFilesToSessionResults(
+      handle,
+      CleanUpString(Group!),
+      CleanUpString(Individual!),
+      CleanUpString(Evaluation!)
+    );
 
-      if (result.length > 0) {
-        const time_sorted = result.sort(
-          (a, b) => new Date(a.SessionStart).getTime() - new Date(b.SessionStart).getTime()
-        );
+    if (result.length === 0) {
+      return {
+        Group: CleanUpString(Group!),
+        Individual: CleanUpString(Individual!),
+        Evaluation: CleanUpString(Evaluation!),
+        Handle: handle,
+        Results: result,
+      } satisfies LoaderResult;
+    }
 
-        // Most recent keyset
-        setKeySet(time_sorted.slice(-1)[0].Keyset);
-      }
+    const sorted_results = result.sort(
+      (a, b) => new Date(a.SessionStart).getTime() - new Date(b.SessionStart).getTime()
+    );
 
-      setResults(result);
-    };
+    const recent_keyset = sorted_results.slice(-1)[0].Keyset;
 
-    returner();
-  }, [Evaluation, Group, Individual, handle, navigate]);
+    const results_primary = result
+      .sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session)
+      .filter((result) => result.SessionSettings.Role === 'Primary');
 
-  if (!handle) return <LoadingDisplay />;
+    const results_reli = result
+      .sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session)
+      .filter((result) => result.SessionSettings.Role === 'Reliability');
 
-  if (handle && !keySet) {
+    const pairedSessionData = getCorrespondingSessionPairs(results_primary, results_reli);
+
+    const sessions_scored_frequency = pairedSessionData.map((pair) =>
+      calculateReliabilityFrequency(pair, recent_keyset.FrequencyKeys)
+    );
+
+    const sessions_scored_duration = pairedSessionData.map((pair) =>
+      calculateReliabilityDuration(pair, recent_keyset.DurationKeys)
+    );
+
+    const sessions = pairedSessionData
+      .map((pair) => pair.primary.SessionSettings.Session)
+      .filter((value, index, array) => {
+        return array.indexOf(value) === index;
+      });
+
+    return {
+      Group: CleanUpString(Group!),
+      Individual: CleanUpString(Individual!),
+      Evaluation: CleanUpString(Evaluation!),
+      Handle: handle,
+      Results: sorted_results,
+      KeySet: recent_keyset,
+      Sessions: sessions,
+      ScoredFrequency: sessions_scored_frequency,
+      ScoredDuration: sessions_scored_duration,
+    } satisfies LoaderResult;
+  };
+};
+
+export default function ReliabilityViewerPage() {
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Group, Individual, Evaluation, KeySet, Sessions, ScoredDuration, ScoredFrequency } = loaderResult;
+
+  if (!KeySet || !Sessions || !ScoredFrequency || !ScoredDuration) {
     return (
       <ReliabilityBlank
         Group={CleanUpString(Group!)}
@@ -71,63 +117,7 @@ export function ReliabilityViewerPageShim() {
     );
   }
 
-  const results_primary = results
-    .sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session)
-    .filter((result) => result.SessionSettings.Role === 'Primary');
-
-  const results_reli = results
-    .sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session)
-    .filter((result) => result.SessionSettings.Role === 'Reliability');
-
-  const pairedSessionData = getCorrespondingSessionPairs(results_primary, results_reli);
-
-  const sessions_scored_frequency = pairedSessionData.map((pair) =>
-    calculateReliabilityFrequency(pair, keySet!.FrequencyKeys)
-  );
-
-  const sessions_scored_duration = pairedSessionData.map((pair) =>
-    calculateReliabilityDuration(pair, keySet!.DurationKeys)
-  );
-
-  const sessions = pairedSessionData
-    .map((pair) => pair.primary.SessionSettings.Session)
-    .filter((value, index, array) => {
-      return array.indexOf(value) === index;
-    });
-
-  return (
-    <ReliabilityViewerPage
-      Group={CleanUpString(Group!)}
-      Individual={CleanUpString(Individual!)}
-      Evaluation={CleanUpString(Evaluation!)}
-      Keyset={keySet!}
-      Sessions={sessions}
-      ScoredFrequency={sessions_scored_frequency}
-      ScoredDuration={sessions_scored_duration}
-    />
-  );
-}
-
-type Props = {
-  Group: string;
-  Individual: string;
-  Evaluation: string;
-  Keyset: KeySet;
-  Sessions: number[];
-  ScoredFrequency: ScoredKey[][];
-  ScoredDuration: ScoredKey[][];
-};
-
-function ReliabilityViewerPage({
-  Group,
-  Individual,
-  Evaluation,
-  Keyset,
-  Sessions,
-  ScoredFrequency,
-  ScoredDuration,
-}: Props) {
-  const f_headings = Keyset.FrequencyKeys.flatMap((key) => {
+  const f_headings = KeySet.FrequencyKeys.flatMap((key) => {
     return [
       `${key.KeyDescription} (EIA)`,
       `${key.KeyDescription} (PIA)`,
@@ -143,7 +133,7 @@ function ReliabilityViewerPage({
   const f_rows = Sessions.map((session) => {
     const temp_array = [{ value: session.toString(), readOnly: true }];
 
-    Keyset.FrequencyKeys.forEach((key) => {
+    KeySet.FrequencyKeys.forEach((key) => {
       const session_to_show = ScoredFrequency.flat().find((s) => s.Session === session && s.KeyName === key.KeyName);
 
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -176,7 +166,7 @@ function ReliabilityViewerPage({
     return temp_array;
   });
 
-  const d_headings = Keyset.DurationKeys.flatMap((key) => {
+  const d_headings = KeySet.DurationKeys.flatMap((key) => {
     return [
       `${key.KeyDescription} (EIA)`,
       `${key.KeyDescription} (PIA)`,
@@ -192,7 +182,7 @@ function ReliabilityViewerPage({
   const d_rows = Sessions.map((session) => {
     const temp_array = [{ value: session.toString(), readOnly: true }];
 
-    Keyset.DurationKeys.forEach((key) => {
+    KeySet.DurationKeys.forEach((key) => {
       const session_to_show = ScoredDuration.flat().find((s) => s.Session === session && s.KeyName === key.KeyName);
 
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions

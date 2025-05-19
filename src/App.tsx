@@ -6,14 +6,14 @@ import SettingsPage from './components/pages/editor-settings/settings-page';
 import DocumentationListingPage from './components/pages/viewer-documentation-list/documentation-listing-page';
 import DocumentationEntryPage from './components/pages/viewer-documentation-entry/documentation-entry-page';
 import DashboardPage from './components/pages/dashboard-group/dashboard-page';
-import ClientsPage from './components/pages/dashboard-clients/clients-page';
+import ClientsPage, { clientsPageLoader } from './components/pages/dashboard-clients/clients-page';
 import EvaluationsPage from './components/pages/dashboard-evaluations/evaluations-page';
 import KeySetsPage from './components/pages/dashboard-keysets/keysets-page';
 import KeySetEditor from './components/pages/editor-keysets/keyset-editor';
 import { SessionDesignerShim } from './components/pages/editor-session/session-designer';
 import ResultsViewerPage, { resultsViewerLoader } from './components/pages/viewer-results/results-viewer-page';
 import ResultsRateVisualsPage, { resultsViewerRate } from './components/pages/viewer-visuals/results-rate-visuals-page';
-import { ReliabilityViewerPageShim } from './components/pages/viewer-agreement/reli-viewer-page';
+import ReliabilityViewerPage, { reliViewerLoader } from './components/pages/viewer-agreement/reli-viewer-page';
 import { SessionRecorderPageShim } from './components/pages/session-recorder/session-recorder-page';
 import ViewerKeysetPage from './components/pages/viewer-keysets/viewer-keysets-page';
 import ViewerEvaluationsPage from './components/pages/viewer-evaluations/viewer-evaluations-page';
@@ -36,53 +36,50 @@ const AppRoot = () => {
         createRoutesFromElements(
           <Route path="/">
             <Route index element={<HomePage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/dashboard/sync" element={<ViewSyncPage />} />
 
-            <Route path="/documentation" element={<DocumentationListingPage />} />
-            <Route path="/documentation/:slug" element={<DocumentationEntryPage />} />
+            {/* These can be ported */}
 
-            <Route path="/session/:Group" element={<ClientsPage />} />
             <Route path="/session/:Group/:Individual" element={<EvaluationsPage />} />
             <Route path="/session/:Group/:Individual/keysets" element={<KeySetsPage />} />
             <Route path="/session/:Group/:Individual/keysets/import" element={<ViewerKeysetPage />} />
             <Route path="/session/:Group/:Individual/keysets/:KeySet" element={<KeySetEditor />} />
             <Route path="/session/:Group/:Individual/import" element={<ViewerEvaluationsPage />} />
-
             <Route path="/session/:Group/:Individual/:Evaluation" element={<SessionDesignerShim />} />
-
-            <Route path="/session/:Group/:Individual/:Evaluation/reli" element={<ReliabilityViewerPageShim />} />
             <Route path="/session/:Group/:Individual/:Evaluation/run" element={<SessionRecorderPageShim />} />
 
-            <Route path="/settings" element={<SettingsPage />} />
-
             {/* These updated w/ loaders */}
-
-            <Route
-              path="/session/:Group/:Individual/:Evaluation/view"
-              element={<ResultsViewerPage />}
-              loader={resultsViewerLoader(dataContext)}
-            />
-            <Route
-              path="/session/:Group/:Individual/:Evaluation/history"
-              element={<DashboardHistoryPage />}
-              loader={sessionHistoryLoader(dataContext)}
-            />
-            <Route
-              path="/session/:Group/:Individual/:Evaluation/history/:Index"
-              element={<SessionViewerPage />}
-              loader={sessionViewerLoader(dataContext)}
-            />
-            <Route
-              path="/session/:Group/:Individual/:Evaluation/proportion"
-              element={<ResultsProportionVisualsPage />}
-              loader={resultsViewerProportion(dataContext)}
-            />
-            <Route
-              path="/session/:Group/:Individual/:Evaluation/rate"
-              element={<ResultsRateVisualsPage />}
-              loader={resultsViewerRate(dataContext)}
-            />
+            <Route path="/dashboard">
+              <Route index element={<DashboardPage />} />
+              <Route path="sync" element={<ViewSyncPage />} />
+            </Route>
+            <Route path="/documentation">
+              <Route index element={<DocumentationListingPage />} />
+              <Route path=":slug" element={<DocumentationEntryPage />} />
+            </Route>
+            <Route path="/session">
+              <Route path=":Group">
+                <Route index element={<ClientsPage />} loader={clientsPageLoader(dataContext)} />
+                <Route path=":Individual">
+                  <Route path=":Evaluation">
+                    <Route path="view" element={<ResultsViewerPage />} loader={resultsViewerLoader(dataContext)} />
+                    <Route path="history">
+                      <Route index element={<DashboardHistoryPage />} loader={sessionHistoryLoader(dataContext)} />
+                      <Route path=":Index" element={<SessionViewerPage />} loader={sessionViewerLoader(dataContext)} />
+                    </Route>
+                    <Route
+                      path="proportion"
+                      element={<ResultsProportionVisualsPage />}
+                      loader={resultsViewerProportion(dataContext)}
+                    />
+                    <Route path="rate" element={<ResultsRateVisualsPage />} loader={resultsViewerRate(dataContext)} />
+                    <Route path="reli" element={<ReliabilityViewerPage />} loader={reliViewerLoader(dataContext)} />
+                  </Route>
+                </Route>
+              </Route>
+            </Route>
+            <Route path="/settings">
+              <Route index element={<SettingsPage />} />
+            </Route>
           </Route>
         )
       ),
