@@ -36,9 +36,8 @@ export const sessionHistoryLoader = (ctx: FolderHandleContextType) => {
     const { Group, Individual, Evaluation } = params;
 
     if (!Group || !Individual || !Evaluation || !handle) {
-      redirect(createHref({ type: 'Dashboard' }));
-
-      return null;
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
     }
 
     const { results } = await GetResultsFromEvaluationFolder(handle, Group, Individual, Evaluation);

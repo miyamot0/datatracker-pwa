@@ -11,10 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { SavedSessionResult } from '@/lib/dtos';
 import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import { GenerateSavedFileName } from '@/lib/writer';
-import { useContext } from 'react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import SessionFigure from './views/session-figure';
-import { ExpandedKeySetInstance } from '../viewer-visuals/figures/rate-figure';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -27,20 +25,161 @@ import { Button } from '@/components/ui/button';
 import { KeyboardIcon } from 'lucide-react';
 import { KeyManageType } from '../session-recorder/types/session-recorder-types';
 import SessionKeyList from './views/session-key-list';
-import { FolderHandleContext } from '@/context/folder-context';
-import { useNavigate, useParams } from 'react-router-dom';
+import { FolderHandleContextType } from '@/context/folder-context';
+import { redirect, useLoaderData } from 'react-router-dom';
 import createHref from '@/lib/links';
-import LoadingDisplay from '@/components/ui/loading-display';
 import { CleanUpString } from '@/lib/strings';
 import { getLocalCachedPrefs, setLocalCachedPrefs } from '@/lib/local_storage';
 import BackButton from '@/components/ui/back-button';
 
-type Props = {
-  Handle: FileSystemDirectoryHandle;
+type LoaderResult = {
   Group: string;
   Individual: string;
   Evaluation: string;
-  FileString: string;
+  Handle: FileSystemHandle;
+  PlotObject: any[];
+  ExpandedSession: ExpandedSavedSessionResult;
+  ShowKeys: {
+    KeyDescription: string;
+    Visible: boolean;
+  }[];
+};
+
+export const sessionViewerLoader = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
+
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const { Group, Individual, Evaluation, Index } = params;
+
+    if (!Group || !Individual || !Evaluation || !Index || !handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
+
+    const FileString = CleanUpString(Index);
+
+    const { results } = await GetResultsFromEvaluationFolder(handle, Group, Individual, Evaluation);
+
+    if (!results) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
+
+    const modified_session = results.map((session) => {
+      return {
+        ...session,
+        Filename: GenerateSavedFileName(session.SessionSettings),
+      };
+    });
+
+    const relevant_session = modified_session.find((s) => s.Filename.includes(FileString));
+
+    if (relevant_session) {
+      const plot_object: any[] = [];
+
+      const keys = relevant_session.Keyset.FrequencyKeys.map((k) => k.KeyDescription);
+
+      let start_object: any = {
+        second: 0,
+      };
+
+      // Start point
+      keys.forEach((k) => {
+        start_object[k] = 0;
+      });
+      plot_object.push(start_object);
+
+      // For holding the reference object
+      let reference_object = { ...start_object };
+
+      relevant_session.FrequencyKeyPresses.forEach((k) => {
+        let prev: any = {
+          second: Math.floor(k.TimeIntoSession),
+        };
+        prev[k.KeyDescription] = reference_object[k.KeyDescription];
+
+        plot_object.push(prev);
+
+        reference_object[k.KeyDescription] = reference_object[k.KeyDescription] + 1;
+
+        let curr: any = {
+          second: Math.floor(k.TimeIntoSession),
+        };
+        curr[k.KeyDescription] = reference_object[k.KeyDescription];
+
+        plot_object.push(curr);
+      });
+
+      let final_object = {
+        ...reference_object,
+        second: Math.floor(relevant_session.TimerMain),
+      };
+
+      plot_object.push(final_object);
+
+      let max_ys = [] as number[];
+
+      plot_object.forEach((point) => {
+        const keys = Object.keys(point).filter((k) => k !== 'second');
+
+        keys.forEach((key) => {
+          max_ys.push(point[key]);
+        });
+      });
+
+      const max_y = Math.max(...max_ys);
+
+      const y_ticks = Array(max_y + 1)
+        .fill(0)
+        .map((_, index) => index);
+
+      const saved_keys = [
+        ...relevant_session.FrequencyKeyPresses,
+        ...relevant_session.DurationKeyPresses,
+        ...relevant_session.SystemKeyPresses,
+      ].sort((a, b) => a.TimeIntoSession - b.TimeIntoSession);
+
+      const expandedSessionData = {
+        ...relevant_session,
+        Filename: GenerateSavedFileName(relevant_session.SessionSettings),
+        MaxY: max_y + 1,
+        YTicks: y_ticks,
+        PlottedKeys: saved_keys,
+      };
+
+      const stored_prefs = getLocalCachedPrefs(Group, Individual, Evaluation, `${Group} ${Individual} ${Evaluation}`);
+
+      let show_keys_base = relevant_session.Keyset.FrequencyKeys.map((key) => {
+        const should_disable = stored_prefs.KeyDescription.includes(key.KeyDescription);
+
+        if (should_disable) {
+          return {
+            KeyDescription: key.KeyDescription,
+            Visible: false,
+          };
+        }
+
+        return {
+          KeyDescription: key.KeyDescription,
+          Visible: true,
+        };
+      });
+
+      return {
+        Group: CleanUpString(Group),
+        Individual: CleanUpString(Individual),
+        Evaluation: CleanUpString(Evaluation),
+        Handle: handle,
+        PlotObject: plot_object,
+        ExpandedSession: expandedSessionData,
+        ShowKeys: show_keys_base,
+      } satisfies LoaderResult;
+    }
+
+    const response = redirect(createHref({ type: 'Dashboard' }));
+    throw response;
+  };
 };
 
 export type ExpandedSavedSessionResult = SavedSessionResult & {
@@ -50,164 +189,10 @@ export type ExpandedSavedSessionResult = SavedSessionResult & {
   PlottedKeys: KeyManageType[];
 };
 
-export function SessionViewerPageShim() {
-  const { handle } = useContext(FolderHandleContext);
-  const navigate = useNavigate();
-
-  const { Group, Individual, Evaluation, Index } = useParams();
-
-  useEffect(() => {
-    if (!handle) {
-      navigate(createHref({ type: 'Dashboard' }), {
-        unstable_viewTransition: true,
-      });
-      return;
-    }
-  }, [handle, navigate]);
-
-  if (!handle) return <LoadingDisplay />;
-
-  if (!Group || !Individual || !Evaluation || !Index) {
-    navigate(createHref({ type: 'Dashboard' }), {
-      unstable_viewTransition: true,
-    });
-    return;
-  }
-
-  return (
-    <SessionViewerPage
-      Handle={handle}
-      Group={CleanUpString(Group)}
-      Individual={CleanUpString(Individual)}
-      Evaluation={CleanUpString(Evaluation)}
-      FileString={CleanUpString(Index)}
-    />
-  );
-}
-
-function SessionViewerPage({ Handle, Group, Individual, Evaluation, FileString }: Props) {
-  const [session, setSessionData] = useState<ExpandedSavedSessionResult | undefined>(undefined);
-  const [plot_object, setPlotObject] = useState<any[] | undefined>(undefined);
-  const [filteredKeys, setFilteredKeys] = useState([] as ExpandedKeySetInstance[]);
-
-  useEffect(() => {
-    if (!Handle) return;
-
-    const file_puller = async () => {
-      const { results } = await GetResultsFromEvaluationFolder(Handle, Group, Individual, Evaluation);
-
-      if (!results) return;
-
-      const modified_session = results.map((session) => {
-        return {
-          ...session,
-          Filename: GenerateSavedFileName(session.SessionSettings),
-        };
-      });
-
-      const relevant_session = modified_session.find((s) => s.Filename.includes(FileString));
-
-      if (relevant_session) {
-        const plot_object: any[] = [];
-
-        const keys = relevant_session.Keyset.FrequencyKeys.map((k) => k.KeyDescription);
-
-        let start_object: any = {
-          second: 0,
-        };
-
-        // Start point
-        keys.forEach((k) => {
-          start_object[k] = 0;
-        });
-        plot_object.push(start_object);
-
-        // For holding the reference object
-        let reference_object = { ...start_object };
-
-        relevant_session.FrequencyKeyPresses.forEach((k) => {
-          let prev: any = {
-            second: Math.floor(k.TimeIntoSession),
-          };
-          prev[k.KeyDescription] = reference_object[k.KeyDescription];
-
-          plot_object.push(prev);
-
-          reference_object[k.KeyDescription] = reference_object[k.KeyDescription] + 1;
-
-          let curr: any = {
-            second: Math.floor(k.TimeIntoSession),
-          };
-          curr[k.KeyDescription] = reference_object[k.KeyDescription];
-
-          plot_object.push(curr);
-        });
-
-        let final_object = {
-          ...reference_object,
-          second: Math.floor(relevant_session.TimerMain),
-        };
-
-        plot_object.push(final_object);
-
-        setPlotObject(plot_object);
-
-        let max_ys = [] as number[];
-
-        plot_object.forEach((point) => {
-          const keys = Object.keys(point).filter((k) => k !== 'second');
-
-          keys.forEach((key) => {
-            max_ys.push(point[key]);
-          });
-        });
-
-        const max_y = Math.max(...max_ys);
-
-        const y_ticks = Array(max_y + 1)
-          .fill(0)
-          .map((_, index) => index);
-
-        const saved_keys = [
-          ...relevant_session.FrequencyKeyPresses,
-          ...relevant_session.DurationKeyPresses,
-          ...relevant_session.SystemKeyPresses,
-        ].sort((a, b) => a.TimeIntoSession - b.TimeIntoSession);
-
-        setSessionData({
-          ...relevant_session,
-          PlottedKeys: saved_keys,
-          MaxY: max_y + 1,
-          YTicks: y_ticks,
-        });
-
-        const stored_prefs = getLocalCachedPrefs(Group, Individual, Evaluation, `${Group} ${Individual} ${Evaluation}`);
-
-        let show_keys_base = relevant_session.Keyset.FrequencyKeys.map((key) => {
-          const should_disable = stored_prefs.KeyDescription.includes(key.KeyDescription);
-
-          if (should_disable) {
-            return {
-              KeyDescription: key.KeyDescription,
-              Visible: false,
-            };
-          }
-
-          return {
-            KeyDescription: key.KeyDescription,
-            Visible: true,
-          };
-        });
-
-        setFilteredKeys(show_keys_base);
-      }
-    };
-
-    file_puller();
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    () => {};
-  }, [Handle, Group, Individual, Evaluation, FileString]);
+export default function SessionViewerPage() {
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Group, Individual, Evaluation, ExpandedSession, PlotObject, ShowKeys } = loaderResult;
+  const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
 
   return (
     <PageWrapper
@@ -290,69 +275,71 @@ function SessionViewerPage({ Handle, Group, Individual, Evaluation, FileString }
             in terms of onset-offset visuals.
           </p>
 
-          <SessionFigure Session={session} PlotData={plot_object} KeysHidden={filteredKeys} />
+          <SessionFigure Session={ExpandedSession} PlotData={PlotObject} KeysHidden={filteredKeys} />
 
-          {session && (
+          {ExpandedSession && (
             <div className="grid grid-cols-2 my-6 gap-2">
               <div>
-                <span className="font-bold">Session #: </span> {session.SessionSettings.Session}
+                <span className="font-bold">Session #: </span> {ExpandedSession.SessionSettings.Session}
               </div>
 
               <div>
-                <span className="font-bold">Session Date: </span> {new Date(session.SessionStart).toLocaleDateString()}
+                <span className="font-bold">Session Date: </span>{' '}
+                {new Date(ExpandedSession.SessionStart).toLocaleDateString()}
               </div>
 
               <div>
-                <span className="font-bold">Session Condition: </span> {session.SessionSettings.Condition}
+                <span className="font-bold">Session Condition: </span> {ExpandedSession.SessionSettings.Condition}
               </div>
 
               <div>
-                <span className="font-bold">Session Ended Early?: </span> {session.EndedEarly === true ? 'Yes' : 'No'}
+                <span className="font-bold">Session Ended Early?: </span>{' '}
+                {ExpandedSession.EndedEarly === true ? 'Yes' : 'No'}
               </div>
 
               <div>
-                <span className="font-bold">Data Collector: </span> {session.SessionSettings.Initials}
+                <span className="font-bold">Data Collector: </span> {ExpandedSession.SessionSettings.Initials}
               </div>
 
               <div>
-                <span className="font-bold">Data Rollector Role: </span> {session.SessionSettings.Role}
+                <span className="font-bold">Data Rollector Role: </span> {ExpandedSession.SessionSettings.Role}
               </div>
 
               <div>
-                <span className="font-bold">Therapist: </span> {session.SessionSettings.Therapist}
+                <span className="font-bold">Therapist: </span> {ExpandedSession.SessionSettings.Therapist}
               </div>
 
               <div>
-                <span className="font-bold">Keyset: </span> {session.SessionSettings.KeySet}
+                <span className="font-bold">Keyset: </span> {ExpandedSession.SessionSettings.KeySet}
               </div>
 
               <div>
-                <span className="font-bold">Session Duration: </span> {session.SessionSettings.DurationS}
+                <span className="font-bold">Session Duration: </span> {ExpandedSession.SessionSettings.DurationS}
               </div>
 
               <div>
-                <span className="font-bold">Termination Rules: </span> {session.SessionSettings.TimerOption}
+                <span className="font-bold">Termination Rules: </span> {ExpandedSession.SessionSettings.TimerOption}
               </div>
 
               <div>
-                <span className="font-bold">Timer Duration (Main): </span> {session.TimerMain.toFixed(2)}
+                <span className="font-bold">Timer Duration (Main): </span> {ExpandedSession.TimerMain.toFixed(2)}
               </div>
 
               <div>
-                <span className="font-bold">Timer Duration (#1): </span> {session.TimerOne.toFixed(2)}
+                <span className="font-bold">Timer Duration (#1): </span> {ExpandedSession.TimerOne.toFixed(2)}
               </div>
 
               <div>
-                <span className="font-bold">Timer Duration (#2): </span> {session.TimerTwo.toFixed(2)}
+                <span className="font-bold">Timer Duration (#2): </span> {ExpandedSession.TimerTwo.toFixed(2)}
               </div>
 
               <div>
-                <span className="font-bold">Timer Duration (#3): </span> {session.TimerThree.toFixed(2)}
+                <span className="font-bold">Timer Duration (#3): </span> {ExpandedSession.TimerThree.toFixed(2)}
               </div>
             </div>
           )}
 
-          <SessionKeyList Session={session} />
+          <SessionKeyList Session={ExpandedSession} />
         </CardContent>
       </Card>
     </PageWrapper>
