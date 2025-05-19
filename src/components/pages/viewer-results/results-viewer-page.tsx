@@ -10,74 +10,61 @@ import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import { CleanUpString } from '@/lib/strings';
 import { KeySet } from '@/types/keyset';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectItem } from '@/components/ui/select';
-import { useContext, useEffect, useState } from 'react';
+import { useState } from 'react';
 import ViewFrequencyResults from './views/view-frequency-results';
 import ViewDurationResults from './views/view-duration-results';
-import { FolderHandleContext } from '@/context/folder-context';
-import { useNavigate, useParams } from 'react-router-dom';
+import { FolderHandleContextType } from '@/context/folder-context';
+import { redirect, useLoaderData } from 'react-router-dom';
 import createHref from '@/lib/links';
-import LoadingDisplay from '@/components/ui/loading-display';
 
-export function ResultsViewerPageShim() {
-  const { handle } = useContext(FolderHandleContext);
-  const navigate = useNavigate();
-
-  const { Group, Individual, Evaluation } = useParams();
-
-  useEffect(() => {
-    if (!handle) {
-      navigate(createHref({ type: 'Dashboard' }), {
-        unstable_viewTransition: true,
-      });
-      return;
-    }
-  }, [handle, navigate]);
-
-  if (!handle) return <LoadingDisplay />;
-
-  if (!Group || !Individual || !Evaluation) {
-    navigate(createHref({ type: 'Dashboard' }), {
-      unstable_viewTransition: true,
-    });
-    return;
-  }
-
-  return (
-    <ResultsViewerPage
-      Handle={handle}
-      Group={CleanUpString(Group)}
-      Individual={CleanUpString(Individual)}
-      Evaluation={CleanUpString(Evaluation)}
-    />
-  );
-}
-
-type Props = {
-  Handle: FileSystemDirectoryHandle;
+type LoaderResult = {
   Group: string;
   Individual: string;
   Evaluation: string;
+  Handle: FileSystemHandle;
+  Keyset: KeySet;
+  Results: SavedSessionResult[];
 };
 
-function ResultsViewerPage({ Handle, Group, Individual, Evaluation }: Props) {
-  const [results, setResults] = useState<SavedSessionResult[]>([]);
-  const [keySet, setKeySet] = useState<KeySet>();
+export const resultsViewerLoader = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
+
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const { Group, Individual, Evaluation } = params;
+
+    if (!Group || !Individual || !Evaluation || !handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
+
+    const { keyset, results } = await GetResultsFromEvaluationFolder(handle, Group, Individual, Evaluation);
+
+    if (!keyset) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
+
+    return {
+      Group: CleanUpString(Group),
+      Individual: CleanUpString(Individual),
+      Evaluation: CleanUpString(Evaluation),
+      Handle: handle,
+      Keyset: keyset,
+      Results: results,
+    } satisfies LoaderResult;
+  };
+};
+
+export default function ResultsViewerPage() {
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Group, Individual, Evaluation, Results, Keyset } = loaderResult;
+
   const [role, setRole] = useState<DataCollectorRolesType>('Primary');
 
-  useEffect(() => {
-    const load_data = async () => {
-      const { keyset, results } = await GetResultsFromEvaluationFolder(Handle, Group, Individual, Evaluation);
-
-      setKeySet(keyset);
-      setResults(results);
-    };
-
-    load_data();
-  }, [Handle, Group, Individual, Evaluation]);
-
-  const results_filtered = results
-    .sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session)
-    .filter((result) => result.SessionSettings.Role === role);
+  const results_filtered = Results.sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session).filter(
+    (result) => result.SessionSettings.Role === role
+  );
 
   return (
     <PageWrapper
@@ -112,11 +99,11 @@ function ResultsViewerPage({ Handle, Group, Individual, Evaluation }: Props) {
           </div>
         </div>
 
-        {keySet && keySet.FrequencyKeys.length > 0 && (
-          <ViewFrequencyResults Keyset={keySet} Results={results_filtered} />
+        {Keyset && Keyset.FrequencyKeys.length > 0 && (
+          <ViewFrequencyResults Keyset={Keyset} Results={results_filtered} />
         )}
 
-        {keySet && keySet.DurationKeys.length > 0 && <ViewDurationResults Keyset={keySet} Results={results_filtered} />}
+        {Keyset && Keyset.DurationKeys.length > 0 && <ViewDurationResults Keyset={Keyset} Results={results_filtered} />}
       </div>
     </PageWrapper>
   );

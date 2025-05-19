@@ -11,7 +11,7 @@ import EvaluationsPage from './components/pages/dashboard-evaluations/evaluation
 import KeySetsPage from './components/pages/dashboard-keysets/keysets-page';
 import KeySetEditor from './components/pages/editor-keysets/keyset-editor';
 import { SessionDesignerShim } from './components/pages/editor-session/session-designer';
-import { ResultsViewerPageShim } from './components/pages/viewer-results/results-viewer-page';
+import ResultsViewerPage, { resultsViewerLoader } from './components/pages/viewer-results/results-viewer-page';
 import ResultsRateVisualsPage, { resultsViewerRate } from './components/pages/viewer-visuals/results-rate-visuals-page';
 import { ReliabilityViewerPageShim } from './components/pages/viewer-agreement/reli-viewer-page';
 import { SessionRecorderPageShim } from './components/pages/session-recorder/session-recorder-page';
@@ -53,12 +53,16 @@ const AppRoot = () => {
 
             <Route path="/session/:Group/:Individual/:Evaluation/reli" element={<ReliabilityViewerPageShim />} />
             <Route path="/session/:Group/:Individual/:Evaluation/run" element={<SessionRecorderPageShim />} />
-            <Route path="/session/:Group/:Individual/:Evaluation/view" element={<ResultsViewerPageShim />} />
 
             <Route path="/settings" element={<SettingsPage />} />
 
             {/* These updated w/ loaders */}
 
+            <Route
+              path="/session/:Group/:Individual/:Evaluation/view"
+              element={<ResultsViewerPage />}
+              loader={resultsViewerLoader(dataContext)}
+            />
             <Route
               path="/session/:Group/:Individual/:Evaluation/history"
               element={<DashboardHistoryPage />}
