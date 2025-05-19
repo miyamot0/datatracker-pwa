@@ -11,7 +11,6 @@ import EvaluationsPage from './components/pages/dashboard-evaluations/evaluation
 import KeySetsPage from './components/pages/dashboard-keysets/keysets-page';
 import KeySetEditor from './components/pages/editor-keysets/keyset-editor';
 import { SessionDesignerShim } from './components/pages/editor-session/session-designer';
-import { DashboardHistoryPageShim } from './components/pages/dashboard-history/dashboard-history-page';
 import { SessionViewerPageShim } from './components/pages/viewer-session/session-viewer-page';
 import { ResultsViewerPageShim } from './components/pages/viewer-results/results-viewer-page';
 import { ResultsRateVisualsPageShim } from './components/pages/viewer-visuals/results-rate-visuals-page';
@@ -22,6 +21,9 @@ import ViewerKeysetPage from './components/pages/viewer-keysets/viewer-keysets-p
 import ViewerEvaluationsPage from './components/pages/viewer-evaluations/viewer-evaluations-page';
 import ViewSyncPage from './components/pages/viewer-sync-queue/view-sync-page';
 import { useContext, useMemo } from 'react';
+import DashboardHistoryPage, {
+  sessionHistoryLoader,
+} from './components/pages/dashboard-history/dashboard-history-page';
 
 const AppRoot = () => {
   const dataContext = useContext(FolderHandleContext) as unknown as FolderHandleContextType;
@@ -45,7 +47,11 @@ const AppRoot = () => {
             <Route path="/session/:Group/:Individual/keysets/:KeySet" element={<KeySetEditor />} />
             <Route path="/session/:Group/:Individual/import" element={<ViewerEvaluationsPage />} />
             <Route path="/session/:Group/:Individual/:Evaluation" element={<SessionDesignerShim />} />
-            <Route path="/session/:Group/:Individual/:Evaluation/history" element={<DashboardHistoryPageShim />} />
+            <Route
+              path="/session/:Group/:Individual/:Evaluation/history"
+              element={<DashboardHistoryPage />}
+              loader={sessionHistoryLoader(dataContext)}
+            />
             <Route path="/session/:Group/:Individual/:Evaluation/history/:Index" element={<SessionViewerPageShim />} />
             <Route
               path="/session/:Group/:Individual/:Evaluation/proportion"

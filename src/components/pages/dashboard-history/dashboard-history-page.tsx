@@ -11,11 +11,8 @@ import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import createHref from '@/lib/links';
 import { cn } from '@/lib/utils';
 import { ChevronRight, SearchIcon } from 'lucide-react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useContext } from 'react';
-import { useEffect, useState } from 'react';
-import { FolderHandleContext } from '@/context/folder-context';
-import LoadingDisplay from '@/components/ui/loading-display';
+import { Link, redirect, useLoaderData } from 'react-router-dom';
+import { FolderHandleContextType } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
 import { GenerateSavedFileName } from '@/lib/writer';
 import BackButton from '@/components/ui/back-button';
@@ -23,68 +20,46 @@ import { ColumnDef } from '@tanstack/react-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
 
-export function DashboardHistoryPageShim() {
-  const { handle } = useContext(FolderHandleContext);
-  const navigate = useNavigate();
-
-  const { Group, Individual, Evaluation } = useParams();
-
-  useEffect(() => {
-    if (!handle) {
-      navigate(createHref({ type: 'Dashboard' }), {
-        unstable_viewTransition: true,
-      });
-      return;
-    }
-  }, [handle, navigate]);
-
-  if (!handle) return <LoadingDisplay />;
-
-  if (!Group || !Individual || !Evaluation) {
-    navigate(createHref({ type: 'Dashboard' }), {
-      unstable_viewTransition: true,
-    });
-    return;
-  }
-
-  return (
-    <DashboardHistoryPage
-      Handle={handle}
-      Group={CleanUpString(Group)}
-      Individual={CleanUpString(Individual)}
-      Evaluation={CleanUpString(Evaluation)}
-    />
-  );
-}
-
-type Props = {
-  Handle: FileSystemDirectoryHandle;
+type LoaderResult = {
   Group: string;
   Individual: string;
   Evaluation: string;
+  Handle: FileSystemHandle;
+  Results: SavedSessionResult[];
 };
 
-function DashboardHistoryPage({ Handle, Group, Individual, Evaluation }: Props) {
-  const [sessions, setSessionsData] = useState<SavedSessionResult[]>([]);
+export const sessionHistoryLoader = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
 
-  useEffect(() => {
-    if (!Handle) return;
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const { Group, Individual, Evaluation } = params;
 
-    const file_puller = async () => {
-      const { results } = await GetResultsFromEvaluationFolder(Handle, Group, Individual, Evaluation);
+    if (!Group || !Individual || !Evaluation || !handle) {
+      redirect(createHref({ type: 'Dashboard' }));
 
-      setSessionsData(
-        results.sort(
-          (a, b) => new Date(a.SessionSettings.Session).valueOf() - new Date(b.SessionSettings.Session).valueOf()
-        )
-      );
-    };
+      return null;
+    }
 
-    file_puller();
+    const { results } = await GetResultsFromEvaluationFolder(handle, Group, Individual, Evaluation);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    () => {};
-  }, [Handle, Group, Individual, Evaluation]);
+    const clean_results = results.sort(
+      (a, b) => new Date(b.SessionSettings.Session).valueOf() - new Date(a.SessionSettings.Session).valueOf()
+    );
+
+    return {
+      Group: CleanUpString(Group),
+      Individual: CleanUpString(Individual),
+      Evaluation: CleanUpString(Evaluation),
+      Handle: handle,
+      Results: clean_results,
+    } satisfies LoaderResult;
+  };
+};
+
+export default function DashboardHistoryPage() {
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Group, Individual, Evaluation, Results } = loaderResult;
 
   const columns: ColumnDef<SavedSessionResult>[] = [
     {
@@ -193,7 +168,7 @@ function DashboardHistoryPage({ Handle, Group, Individual, Evaluation }: Props) 
             from each session in greater detail by using the 'Inspect Session' button.
           </p>
 
-          <DataTable columns={columns} data={sessions} />
+          <DataTable columns={columns} data={Results} />
         </CardContent>
       </Card>
     </PageWrapper>
