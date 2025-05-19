@@ -12,8 +12,7 @@ import KeySetsPage from './components/pages/dashboard-keysets/keysets-page';
 import KeySetEditor from './components/pages/editor-keysets/keyset-editor';
 import { SessionDesignerShim } from './components/pages/editor-session/session-designer';
 import { ResultsViewerPageShim } from './components/pages/viewer-results/results-viewer-page';
-import { ResultsRateVisualsPageShim } from './components/pages/viewer-visuals/results-rate-visuals-page';
-import { ResultsProportionVisualsPageShim } from './components/pages/viewer-visuals/results-proportion-visuals-page';
+import ResultsRateVisualsPage, { resultsViewerRate } from './components/pages/viewer-visuals/results-rate-visuals-page';
 import { ReliabilityViewerPageShim } from './components/pages/viewer-agreement/reli-viewer-page';
 import { SessionRecorderPageShim } from './components/pages/session-recorder/session-recorder-page';
 import ViewerKeysetPage from './components/pages/viewer-keysets/viewer-keysets-page';
@@ -24,6 +23,9 @@ import DashboardHistoryPage, {
   sessionHistoryLoader,
 } from './components/pages/dashboard-history/dashboard-history-page';
 import SessionViewerPage, { sessionViewerLoader } from './components/pages/viewer-session/session-viewer-page';
+import ResultsProportionVisualsPage, {
+  resultsViewerProportion,
+} from './components/pages/viewer-visuals/results-proportion-visuals-page';
 
 const AppRoot = () => {
   const dataContext = useContext(FolderHandleContext) as unknown as FolderHandleContextType;
@@ -46,7 +48,17 @@ const AppRoot = () => {
             <Route path="/session/:Group/:Individual/keysets/import" element={<ViewerKeysetPage />} />
             <Route path="/session/:Group/:Individual/keysets/:KeySet" element={<KeySetEditor />} />
             <Route path="/session/:Group/:Individual/import" element={<ViewerEvaluationsPage />} />
+
             <Route path="/session/:Group/:Individual/:Evaluation" element={<SessionDesignerShim />} />
+
+            <Route path="/session/:Group/:Individual/:Evaluation/reli" element={<ReliabilityViewerPageShim />} />
+            <Route path="/session/:Group/:Individual/:Evaluation/run" element={<SessionRecorderPageShim />} />
+            <Route path="/session/:Group/:Individual/:Evaluation/view" element={<ResultsViewerPageShim />} />
+
+            <Route path="/settings" element={<SettingsPage />} />
+
+            {/* These updated w/ loaders */}
+
             <Route
               path="/session/:Group/:Individual/:Evaluation/history"
               element={<DashboardHistoryPage />}
@@ -59,14 +71,14 @@ const AppRoot = () => {
             />
             <Route
               path="/session/:Group/:Individual/:Evaluation/proportion"
-              element={<ResultsProportionVisualsPageShim />}
+              element={<ResultsProportionVisualsPage />}
+              loader={resultsViewerProportion(dataContext)}
             />
-            <Route path="/session/:Group/:Individual/:Evaluation/rate" element={<ResultsRateVisualsPageShim />} />
-            <Route path="/session/:Group/:Individual/:Evaluation/reli" element={<ReliabilityViewerPageShim />} />
-            <Route path="/session/:Group/:Individual/:Evaluation/run" element={<SessionRecorderPageShim />} />
-            <Route path="/session/:Group/:Individual/:Evaluation/view" element={<ResultsViewerPageShim />} />
-
-            <Route path="/settings" element={<SettingsPage />} />
+            <Route
+              path="/session/:Group/:Individual/:Evaluation/rate"
+              element={<ResultsRateVisualsPage />}
+              loader={resultsViewerRate(dataContext)}
+            />
           </Route>
         )
       ),

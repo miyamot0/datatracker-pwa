@@ -33,8 +33,10 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
     temp_obj.Condition = data.Condition;
     temp_obj.SessionTime = data.SessionTime;
 
+    const min_in_session = data.SessionTime / 60;
+
     data.Scores.map((key) => {
-      const rate_calc = key.Value / (data.SessionTime / 60);
+      const rate_calc = key.Value / min_in_session;
 
       temp_obj[`${key.KeyDescription}`] = rate_calc;
 
@@ -51,7 +53,7 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
       })
       .reduce((a, b) => a + b, 0);
 
-    temp_obj.CTB = ctb_calc;
+    temp_obj.CTB = ctb_calc / min_in_session;
 
     return temp_obj;
   });
@@ -65,6 +67,8 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
 
   const x_span = MaxX - MinX;
   const x_ticks = generateTicks(x_span, MinX);
+
+  //console.log(data_set_parsed_by_condition);
 
   const CustomTooltip = ({ active, payload }: { active: boolean; payload: any[] }) => {
     if (active && payload && payload.length) {

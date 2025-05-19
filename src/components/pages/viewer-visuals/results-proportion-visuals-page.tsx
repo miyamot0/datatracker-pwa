@@ -4,13 +4,12 @@ import {
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import LoadingDisplay from '@/components/ui/loading-display';
 import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-schema';
 import { SavedSessionResult } from '@/lib/dtos';
 import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import { CleanUpString } from '@/lib/strings';
 import { KeySet, KeySetInstance } from '@/types/keyset';
-import { useContext, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { FilterByPrimaryRole } from './helpers/filtering';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,126 +21,112 @@ import {
   DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
 import { Edit3Icon } from 'lucide-react';
-import { ExpandedKeySetInstance } from './figures/rate-figure';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getLocalCachedPrefs, setLocalCachedPrefs } from '@/lib/local_storage';
-import { FolderHandleContext } from '@/context/folder-context';
-import { useNavigate, useParams } from 'react-router-dom';
+import { FolderHandleContextType } from '@/context/folder-context';
+import { redirect, useLoaderData } from 'react-router-dom';
 import createHref from '@/lib/links';
 import ProportionFigureVisualization from './figures/proportion-figure';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
 
-export function ResultsProportionVisualsPageShim() {
-  const { handle } = useContext(FolderHandleContext);
-  const navigate = useNavigate();
-
-  const { Group, Individual, Evaluation } = useParams();
-
-  useEffect(() => {
-    if (!handle) {
-      navigate(createHref({ type: 'Dashboard' }), {
-        unstable_viewTransition: true,
-      });
-      return;
-    }
-  }, [handle, navigate]);
-
-  if (!handle) return <LoadingDisplay />;
-
-  if (!Group || !Individual || !Evaluation) {
-    navigate(createHref({ type: 'Dashboard' }), {
-      unstable_viewTransition: true,
-    });
-    return;
-  }
-
-  return (
-    <ResultsProportionVisualsPage
-      Handle={handle}
-      Group={CleanUpString(Group)}
-      Individual={CleanUpString(Individual)}
-      Evaluation={CleanUpString(Evaluation)}
-    />
-  );
-}
-
-type Props = {
-  Handle: FileSystemDirectoryHandle;
+type LoaderResult = {
   Group: string;
   Individual: string;
   Evaluation: string;
+  Handle: FileSystemHandle;
+  Results: SavedSessionResult[];
+  DynamicKeySet: KeySet;
+  Schedule: SessionTerminationOptionsType;
+  ShowKeys: {
+    KeyDescription: string;
+    Visible: boolean;
+  }[];
 };
 
-function ResultsProportionVisualsPage({ Handle, Group, Individual, Evaluation }: Props) {
-  const [results, setResults] = useState<SavedSessionResult[]>([]);
-  const [keySet, setKeySet] = useState<KeySet>();
+export const resultsViewerProportion = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
 
-  const [filteredKeys, setFilteredKeys] = useState([] as ExpandedKeySetInstance[]);
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const { Group, Individual, Evaluation } = params;
 
-  const [schedule, setSchedule] = useState<SessionTerminationOptionsType>('End on Timer #1');
+    if (!Group || !Individual || !Evaluation || !handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
 
-  useEffect(() => {
-    const load_data = async () => {
-      const { keyset, results } = await GetResultsFromEvaluationFolder(Handle, Group, Individual, Evaluation);
+    const { keyset, results } = await GetResultsFromEvaluationFolder(handle, Group, Individual, Evaluation);
 
-      const all_keysets = results.map((result) => result.Keyset);
-      const all_fkeys = all_keysets.map((keyset) => keyset.FrequencyKeys).flat();
-      const all_dkeys = all_keysets.map((keyset) => keyset.DurationKeys).flat();
+    if (!keyset) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
 
-      const targeted_fkeys: KeySetInstance[] = [];
-      all_fkeys.forEach((key) => {
-        if (!targeted_fkeys.some((k) => k.KeyCode === key.KeyCode)) {
-          targeted_fkeys.push(key);
-        }
-      });
+    const all_keysets = results.map((result) => result.Keyset);
+    const all_fkeys = all_keysets.map((keyset) => keyset.FrequencyKeys).flat();
+    const all_dkeys = all_keysets.map((keyset) => keyset.DurationKeys).flat();
 
-      const targeted_dkeys: KeySetInstance[] = [];
-      all_dkeys.forEach((key) => {
-        if (!targeted_dkeys.some((k) => k.KeyCode === key.KeyCode)) {
-          targeted_dkeys.push(key);
-        }
-      });
-
-      const dynamic_keyset = {
-        ...keyset,
-        FrequencyKeys: targeted_fkeys,
-        DurationKeys: targeted_dkeys,
-      } as unknown as KeySet;
-
-      setKeySet(dynamic_keyset);
-      setResults(results);
-
-      if (dynamic_keyset) {
-        const keys = dynamic_keyset.DurationKeys.map((key) => ({
-          KeyDescription: key.KeyDescription,
-          Visible: true,
-        }));
-
-        const stored_prefs = getLocalCachedPrefs(Group, Individual, Evaluation, 'Duration');
-
-        const show_keys_base = keys.map((key) => {
-          const should_disable = stored_prefs.KeyDescription.includes(key.KeyDescription);
-
-          if (should_disable) {
-            return {
-              ...key,
-              Visible: false,
-            };
-          }
-
-          return key;
-        });
-
-        setFilteredKeys(show_keys_base);
-        setSchedule(stored_prefs.Schedule ?? 'End on Timer #1');
+    const targeted_fkeys: KeySetInstance[] = [];
+    all_fkeys.forEach((key) => {
+      if (!targeted_fkeys.some((k) => k.KeyCode === key.KeyCode)) {
+        targeted_fkeys.push(key);
       }
-    };
+    });
 
-    load_data();
-  }, [Handle, Group, Individual, Evaluation]);
+    const targeted_dkeys: KeySetInstance[] = [];
+    all_dkeys.forEach((key) => {
+      if (!targeted_dkeys.some((k) => k.KeyCode === key.KeyCode)) {
+        targeted_dkeys.push(key);
+      }
+    });
 
-  const results_filtered = FilterByPrimaryRole(results);
+    const dynamic_keyset = {
+      ...keyset,
+      FrequencyKeys: targeted_fkeys,
+      DurationKeys: targeted_dkeys,
+    } as unknown as KeySet;
+
+    const keys = dynamic_keyset.DurationKeys.map((key) => ({
+      KeyDescription: key.KeyDescription,
+      Visible: true,
+    }));
+
+    const stored_prefs = getLocalCachedPrefs(Group, Individual, Evaluation, 'Duration');
+
+    const show_keys_base = keys.map((key) => {
+      const should_disable = stored_prefs.KeyDescription.includes(key.KeyDescription);
+
+      if (should_disable) {
+        return {
+          ...key,
+          Visible: false,
+        };
+      }
+
+      return key;
+    });
+
+    return {
+      Group: CleanUpString(Group),
+      Individual: CleanUpString(Individual),
+      Evaluation: CleanUpString(Evaluation),
+      Handle: handle,
+      Results: results,
+      DynamicKeySet: dynamic_keyset,
+      ShowKeys: show_keys_base,
+      Schedule: stored_prefs.Schedule ?? 'End on Timer #1',
+    } satisfies LoaderResult;
+  };
+};
+
+export default function ResultsProportionVisualsPage() {
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Group, Individual, Evaluation, ShowKeys, DynamicKeySet, Results, Schedule } = loaderResult;
+  const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
+  const [schedule, setSchedule] = useState<SessionTerminationOptionsType>(Schedule);
+
+  const results_filtered = FilterByPrimaryRole(Results);
 
   return (
     <PageWrapper
@@ -252,7 +237,7 @@ function ResultsProportionVisualsPage({ Handle, Group, Individual, Evaluation }:
             visits.
           </p>
 
-          {keySet && (
+          {DynamicKeySet && (
             <ProportionFigureVisualization
               FilteredSessions={results_filtered}
               ScheduleOption={schedule}

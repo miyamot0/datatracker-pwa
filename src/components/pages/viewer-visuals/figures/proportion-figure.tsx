@@ -36,9 +36,7 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
     temp_obj.SessionTime = data.SessionTime;
 
     data.Scores.map((key) => {
-      const rate_calc = key.Value;
-
-      temp_obj[`${key.KeyDescription}`] = rate_calc;
+      temp_obj[`${key.KeyDescription}`] = (key.Value / data.SessionTime) * 100;
     });
 
     return temp_obj;
@@ -94,10 +92,9 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
                 <div key={index} className="flex flex-row justify-between text-sm">
                   <span className="font-semibold mr-2">{cleaned_up_tag}</span>
                   <p key={`item-${index}`} className="text-sm">
-                    {`${entry.value.toFixed(2)} of ${main_payload.SessionTime.toFixed(2)} seconds (${(
-                      (entry.value / main_payload.SessionTime) *
-                      100
-                    ).toFixed(2)}%)`}
+                    {`${((entry.value / 100) * main_payload.SessionTime).toFixed(
+                      2
+                    )} of ${main_payload.SessionTime.toFixed(2)} seconds (${entry.value.toFixed(2)}%)`}
                   </p>
                 </div>
               );
