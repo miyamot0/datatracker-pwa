@@ -14,7 +14,9 @@ import { sessionDesignerPageLoader, SessionDesignerPage } from './components/pag
 import ResultsViewerPage, { resultsViewerLoader } from './components/pages/viewer-results/results-viewer-page';
 import ResultsRateVisualsPage, { resultsViewerRate } from './components/pages/viewer-visuals/results-rate-visuals-page';
 import ReliabilityViewerPage, { reliViewerLoader } from './components/pages/viewer-agreement/reli-viewer-page';
-import { SessionRecorderPageShim } from './components/pages/session-recorder/session-recorder-page';
+import SessionRecorderPage, {
+  sessionRecorderPageLoader,
+} from './components/pages/session-recorder/session-recorder-page';
 import ViewerKeysetPage from './components/pages/viewer-keysets/viewer-keysets-page';
 import ViewerEvaluationsPage, {
   evaluationImportPageLoader,
@@ -38,8 +40,6 @@ const AppRoot = () => {
         createRoutesFromElements(
           <Route path="/">
             <Route index element={<HomePage />} />
-
-            <Route path="/session/:Group/:Individual/:Evaluation/run" element={<SessionRecorderPageShim />} />
 
             {/* These updated w/ loaders */}
             <Route path="/dashboard">
@@ -67,6 +67,11 @@ const AppRoot = () => {
                   </Route>
                   <Route path=":Evaluation">
                     <Route index element={<SessionDesignerPage />} loader={sessionDesignerPageLoader(dataContext)} />
+                    <Route
+                      path="run"
+                      element={<SessionRecorderPage />}
+                      loader={sessionRecorderPageLoader(dataContext)}
+                    />
                     <Route path="view" element={<ResultsViewerPage />} loader={resultsViewerLoader(dataContext)} />
                     <Route path="history">
                       <Route index element={<DashboardHistoryPage />} loader={sessionHistoryLoader(dataContext)} />
