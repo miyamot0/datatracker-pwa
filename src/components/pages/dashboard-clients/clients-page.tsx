@@ -16,19 +16,18 @@ import {
 import LoadingDisplay from '@/components/ui/loading-display';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContextType } from '@/context/folder-context';
-import useQueryClients from '@/hooks/clients/useQueryClients';
+import { useQueryClientsFixed } from '@/hooks/clients/useQueryClients';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { cn } from '@/lib/utils';
-import { ApplicationSettingsTypes } from '@/types/settings';
 import { ColumnDef } from '@tanstack/react-table';
 import { ChevronDown, FolderInput, FolderPlus, FolderX } from 'lucide-react';
-import { Link, redirect, useLoaderData, useNavigate } from 'react-router-dom';
+import { Link, redirect, useLoaderData } from 'react-router-dom';
 
 type LoaderResult = {
   Group: string;
   Handle: FileSystemHandle;
-  Settings: ApplicationSettingsTypes;
+  Context: FolderHandleContextType;
 };
 
 export const clientsPageLoader = (ctx: FolderHandleContextType) => {
@@ -46,7 +45,7 @@ export const clientsPageLoader = (ctx: FolderHandleContextType) => {
     return {
       Group: CleanUpString(Group!),
       Handle: handle,
-      Settings: ctx.settings,
+      Context: ctx,
     } satisfies LoaderResult;
   };
 };
@@ -57,21 +56,10 @@ type ClientTableRow = {
 
 export default function ClientsPage() {
   const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Settings } = loaderResult;
+  const { Group, Context } = loaderResult;
+  const { settings } = Context;
 
-  const navigate = useNavigate();
-
-  // TODO: Hooks are nice, but might just be cleaner with loaders
-
-  const { data, status, error, handle, addClient, removeClient } = useQueryClients(Group);
-
-  if (!handle) {
-    navigate(createHref({ type: 'Dashboard' }), {
-      unstable_viewTransition: true,
-    });
-
-    return <></>;
-  }
+  const { data, status, error, addClient, removeClient } = useQueryClientsFixed(Group, Context);
 
   if (status === 'loading') {
     return <LoadingDisplay />;
@@ -116,11 +104,11 @@ export default function ClientsPage() {
                   className={cn(
                     'bg-red-500 text-white hover:bg-red-400 focus:bg-red-400 focus:text-white rounded cursor-pointer',
                     {
-                      disabled: Settings.EnableFileDeletion === false,
-                      'pointer-events-none': Settings.EnableFileDeletion === false,
+                      disabled: settings.EnableFileDeletion === false,
+                      'pointer-events-none': settings.EnableFileDeletion === false,
                     }
                   )}
-                  disabled={Settings.EnableFileDeletion === false}
+                  disabled={settings.EnableFileDeletion === false}
                   onClick={async () => {
                     await removeClient(row.original.Individual);
                   }}

@@ -44,7 +44,6 @@ const AppRoot = () => {
         createRoutesFromElements(
           <Route path="/">
             <Route index element={<HomePage />} />
-
             <Route path="/dashboard">
               <Route index element={<DashboardPage />} loader={groupsPageLoader(dataContext)} />
               <Route path="sync" element={<ViewSyncPage />} loader={syncPageLoader(dataContext)} />
@@ -63,7 +62,6 @@ const AppRoot = () => {
             </Route>
             <Route path="/session">
               <Route path=":Group">
-                {/* Clean up loaders below */}
                 <Route index element={<ClientsPage />} loader={clientsPageLoader(dataContext)} />
                 <Route path=":Individual">
                   <Route index element={<EvaluationsPage />} loader={evaluationsPageLoader(dataContext)} />
