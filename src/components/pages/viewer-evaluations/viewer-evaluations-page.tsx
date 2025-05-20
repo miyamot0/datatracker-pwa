@@ -10,27 +10,48 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
 import LoadingDisplay from '@/components/ui/loading-display';
+import { FolderHandleContextType } from '@/context/folder-context';
 import { EvaluationRecord } from '@/hooks/evaluations/types/query-response-type-evaluations';
-import useQueryEvaluationsMeta from '@/hooks/evaluations/useQueryEvaluationsMeta';
+import { useQueryEvaluationsMetaFixed } from '@/hooks/evaluations/useQueryEvaluationsMeta';
 import createHref from '@/lib/links';
+import { CleanUpString } from '@/lib/strings';
 import { ColumnDef } from '@tanstack/react-table';
 import { ImportIcon } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { redirect, useLoaderData } from 'react-router-dom';
+
+type LoaderResult = {
+  Group: string;
+  Individual: string;
+  Handle: FileSystemHandle;
+  Context: FolderHandleContextType;
+};
+
+export const evaluationImportPageLoader = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
+
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const { Group, Individual } = params;
+
+    if (!Group || !Individual || !handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
+
+    return {
+      Group: CleanUpString(Group),
+      Individual: CleanUpString(Individual),
+      Handle: handle,
+      Context: ctx,
+    } satisfies LoaderResult;
+  };
+};
 
 export default function ViewerEvaluationsPage() {
-  const { Group, Individual } = useParams();
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Group, Individual, Context } = loaderResult;
 
-  const { data, status, error, handle, addEvaluationFolder } = useQueryEvaluationsMeta(Group, Individual);
-
-  const navigate = useNavigate();
-
-  if (!handle || !Group || !Individual) {
-    navigate(createHref({ type: 'Dashboard' }), {
-      unstable_viewTransition: true,
-    });
-
-    return <></>;
-  }
+  const { data, status, error, addEvaluationFolder } = useQueryEvaluationsMetaFixed(Group, Individual, Context);
 
   if (status === 'loading') {
     return <LoadingDisplay />;

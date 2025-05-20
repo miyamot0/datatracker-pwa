@@ -16,7 +16,9 @@ import ResultsRateVisualsPage, { resultsViewerRate } from './components/pages/vi
 import ReliabilityViewerPage, { reliViewerLoader } from './components/pages/viewer-agreement/reli-viewer-page';
 import { SessionRecorderPageShim } from './components/pages/session-recorder/session-recorder-page';
 import ViewerKeysetPage from './components/pages/viewer-keysets/viewer-keysets-page';
-import ViewerEvaluationsPage from './components/pages/viewer-evaluations/viewer-evaluations-page';
+import ViewerEvaluationsPage, {
+  evaluationImportPageLoader,
+} from './components/pages/viewer-evaluations/viewer-evaluations-page';
 import ViewSyncPage from './components/pages/viewer-sync-queue/view-sync-page';
 import { useContext, useMemo } from 'react';
 import DashboardHistoryPage, {
@@ -39,7 +41,6 @@ const AppRoot = () => {
 
             {/* These can be ported */}
 
-            <Route path="/session/:Group/:Individual/import" element={<ViewerEvaluationsPage />} />
             <Route path="/session/:Group/:Individual/:Evaluation" element={<SessionDesignerShim />} />
             <Route path="/session/:Group/:Individual/:Evaluation/run" element={<SessionRecorderPageShim />} />
 
@@ -57,6 +58,11 @@ const AppRoot = () => {
                 <Route index element={<ClientsPage />} loader={clientsPageLoader(dataContext)} />
                 <Route path=":Individual">
                   <Route index element={<EvaluationsPage />} loader={evaluationsPageLoader(dataContext)} />
+                  <Route
+                    path="import"
+                    element={<ViewerEvaluationsPage />}
+                    loader={evaluationImportPageLoader(dataContext)}
+                  />
                   <Route path="keysets">
                     <Route index element={<KeySetsPage />} loader={keysetsPageLoader(dataContext)} />
                     <Route path="import" element={<ViewerKeysetPage />} loader={keysetsPageLoader(dataContext)} />
