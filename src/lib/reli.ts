@@ -110,9 +110,11 @@ export function generateOIABinMatch(Primary: BinValueType[], Reliability: BinVal
     if (primary_count > 0 || reli_count > 0) {
       observed_non_empty_intervals++;
 
-      if (primary_count === 0 && reli_count === 0) {
-        observed_matches++;
-      } else if (primary_count > 0 && reli_count > 0) {
+      // Note: Isn't this impossible?
+      //if (primary_count === 0 && reli_count === 0) {
+      //  observed_matches++;
+      //} else
+      if (primary_count > 0 && reli_count > 0) {
         observed_matches++;
       }
     }
