@@ -3,8 +3,12 @@ import HomePage from './components/pages/home/home-page';
 import { FolderContextProvider, FolderHandleContext, FolderHandleContextType } from './context/folder-context';
 import { ThemeProvider } from './components/ui/theme-provider';
 import SettingsPage from './components/pages/editor-settings/settings-page';
-import DocumentationListingPage from './components/pages/viewer-documentation-list/documentation-listing-page';
-import DocumentationEntryPage from './components/pages/viewer-documentation-entry/documentation-entry-page';
+import DocumentationListingPage, {
+  documentationListingPageLoader,
+} from './components/pages/viewer-documentation-list/documentation-listing-page';
+import DocumentationEntryPage, {
+  documentationEntryPageLoader,
+} from './components/pages/viewer-documentation-entry/documentation-entry-page';
 import DashboardPage, { groupsPageLoader } from './components/pages/dashboard-group/dashboard-page';
 import ClientsPage, { clientsPageLoader } from './components/pages/dashboard-clients/clients-page';
 import EvaluationsPage, { evaluationsPageLoader } from './components/pages/dashboard-evaluations/evaluations-page';
@@ -45,13 +49,21 @@ const AppRoot = () => {
               <Route index element={<DashboardPage />} loader={groupsPageLoader(dataContext)} />
               <Route path="sync" element={<ViewSyncPage />} loader={syncPageLoader(dataContext)} />
             </Route>
-            {/* Clean up loaders below */}
             <Route path="/documentation">
-              <Route index element={<DocumentationListingPage />} />
-              <Route path=":slug" element={<DocumentationEntryPage />} />
+              <Route
+                index
+                element={<DocumentationListingPage />}
+                loader={documentationListingPageLoader(dataContext)}
+              />
+              <Route
+                path=":slug"
+                element={<DocumentationEntryPage />}
+                loader={documentationEntryPageLoader(dataContext)}
+              />
             </Route>
             <Route path="/session">
               <Route path=":Group">
+                {/* Clean up loaders below */}
                 <Route index element={<ClientsPage />} loader={clientsPageLoader(dataContext)} />
                 <Route path=":Individual">
                   <Route index element={<EvaluationsPage />} loader={evaluationsPageLoader(dataContext)} />

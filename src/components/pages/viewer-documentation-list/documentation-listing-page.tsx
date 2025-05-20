@@ -7,17 +7,38 @@ import { FrontMatterUniversalType } from '@/types/mdx';
 import { cn } from '@/lib/utils';
 import { KeywordColors } from '@/types/colors';
 import { BookIcon, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLoaderData } from 'react-router-dom';
 import { DocumentationObjects } from '@/lib/docs';
 import BackButton from '@/components/ui/back-button';
 import createHref from '@/lib/links';
+import { FolderHandleContextType } from '@/context/folder-context';
+
+type LoaderResult = {
+  FrontMatter: FrontMatterUniversalType[];
+  KeywordArray: KeywordColors[];
+  Context: FolderHandleContextType;
+};
+
+export const documentationListingPageLoader = (ctx: FolderHandleContextType) => {
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const FrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(
+      (entry) => entry.matter as FrontMatterUniversalType
+    );
+
+    const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
+
+    return {
+      FrontMatter,
+      KeywordArray,
+      Context: ctx,
+    } satisfies LoaderResult;
+  };
+};
 
 export default function DocumentationListingPage() {
-  const FrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(
-    (entry) => entry.matter as FrontMatterUniversalType
-  );
-
-  const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { FrontMatter, KeywordArray } = loaderResult;
 
   return (
     <PageWrapper label={'Documentation'} className="select-none">
