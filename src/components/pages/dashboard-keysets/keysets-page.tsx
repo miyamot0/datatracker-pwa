@@ -7,9 +7,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Copy, Edit2, ImportIcon, Plus } from 'lucide-react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, redirect, useLoaderData } from 'react-router-dom';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import useQueryKeyboards from '@/hooks/keyboards/useQueryKeyboards';
+import { useQueryKeyboardsFixed } from '@/hooks/keyboards/useQueryKeyboards';
 import createHref from '@/lib/links';
 import LoadingDisplay from '@/components/ui/loading-display';
 import BackButton from '@/components/ui/back-button';
@@ -17,20 +17,42 @@ import { ColumnDef } from '@tanstack/react-table';
 import { KeySet } from '@/types/keyset';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
+import { FolderHandleContextType } from '@/context/folder-context';
+import { CleanUpString } from '@/lib/strings';
+
+type LoaderResult = {
+  Group: string;
+  Individual: string;
+  Handle: FileSystemHandle;
+  Context: FolderHandleContextType;
+};
+
+export const keysetsPageLoader = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
+
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const { Group, Individual } = params;
+
+    if (!Group || !Individual || !handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
+
+    return {
+      Group: CleanUpString(Group),
+      Individual: CleanUpString(Individual),
+      Handle: handle,
+      Context: ctx,
+    } satisfies LoaderResult;
+  };
+};
 
 export default function KeySetsPage() {
-  const { Group, Individual } = useParams();
-  const { data, status, error, handle, addKeyboard, duplicateKeyboard } = useQueryKeyboards(Group, Individual);
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Group, Individual, Context } = loaderResult;
 
-  const navigate = useNavigate();
-
-  if (!handle || !Group || !Individual) {
-    navigate(createHref({ type: 'Dashboard' }), {
-      unstable_viewTransition: true,
-    });
-
-    return <></>;
-  }
+  const { data, status, error, addKeyboard, duplicateKeyboard } = useQueryKeyboardsFixed(Group, Individual, Context);
 
   if (status === 'loading') {
     return <LoadingDisplay />;
