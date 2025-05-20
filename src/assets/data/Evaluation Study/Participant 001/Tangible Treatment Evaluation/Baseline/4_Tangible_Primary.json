@@ -1,0 +1,190 @@
+{
+  "SessionSettings": {
+    "Therapist": "Therapist1",
+    "Initials": "DC01",
+    "Role": "Primary",
+    "DurationS": 300,
+    "TimerOption": "End on Timer #1",
+    "Session": 4,
+    "KeySet": "Functional Analysis",
+    "Condition": "Tangible"
+  },
+  "FrequencyKeyPresses": [
+    {
+      "KeyName": "2",
+      "KeyCode": 50,
+      "KeyDescription": "DIS",
+      "TimePressed": "2025-05-11T22:16:27.547Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Frequency",
+      "TimeIntoSession": 24.500000000000213
+    },
+    {
+      "KeyName": "3",
+      "KeyCode": 51,
+      "KeyDescription": "AGG",
+      "TimePressed": "2025-05-11T22:17:37.664Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Frequency",
+      "TimeIntoSession": 94.59999999999677
+    },
+    {
+      "KeyName": "2",
+      "KeyCode": 50,
+      "KeyDescription": "DIS",
+      "TimePressed": "2025-05-11T22:18:36.887Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Frequency",
+      "TimeIntoSession": 153.85000000000073
+    },
+    {
+      "KeyName": "2",
+      "KeyCode": 50,
+      "KeyDescription": "DIS",
+      "TimePressed": "2025-05-11T22:19:52.864Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Frequency",
+      "TimeIntoSession": 229.800000000018
+    }
+  ],
+  "DurationKeyPresses": [
+    {
+      "KeyName": "r",
+      "KeyCode": 82,
+      "KeyDescription": "SR",
+      "TimePressed": "2025-05-11T22:16:27.816Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Duration",
+      "TimeIntoSession": 24.750000000000217
+    },
+    {
+      "KeyName": "r",
+      "KeyCode": 82,
+      "KeyDescription": "SR",
+      "TimePressed": "2025-05-11T22:16:58.207Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Duration",
+      "TimeIntoSession": 55.149999999999004
+    },
+    {
+      "KeyName": "r",
+      "KeyCode": 82,
+      "KeyDescription": "SR",
+      "TimePressed": "2025-05-11T22:17:38.456Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Duration",
+      "TimeIntoSession": 95.39999999999672
+    },
+    {
+      "KeyName": "r",
+      "KeyCode": 82,
+      "KeyDescription": "SR",
+      "TimePressed": "2025-05-11T22:18:09.249Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Duration",
+      "TimeIntoSession": 126.19999999999497
+    },
+    {
+      "KeyName": "r",
+      "KeyCode": 82,
+      "KeyDescription": "SR",
+      "TimePressed": "2025-05-11T22:18:36.996Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Duration",
+      "TimeIntoSession": 153.95000000000076
+    },
+    {
+      "KeyName": "r",
+      "KeyCode": 82,
+      "KeyDescription": "SR",
+      "TimePressed": "2025-05-11T22:19:09.472Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Duration",
+      "TimeIntoSession": 186.40000000000813
+    },
+    {
+      "KeyName": "r",
+      "KeyCode": 82,
+      "KeyDescription": "SR",
+      "TimePressed": "2025-05-11T22:19:53.179Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Duration",
+      "TimeIntoSession": 230.15000000001808
+    },
+    {
+      "KeyName": "r",
+      "KeyCode": 82,
+      "KeyDescription": "SR",
+      "TimePressed": "2025-05-11T22:20:23.472Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Duration",
+      "TimeIntoSession": 260.40000000002493
+    }
+  ],
+  "SystemKeyPresses": [
+    {
+      "KeyName": "Enter",
+      "KeyCode": 13,
+      "KeyDescription": "Start of Session",
+      "TimePressed": "2025-05-11T22:16:03.024Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "System",
+      "TimeIntoSession": 0,
+      "ScheduleIndicator": "Start"
+    },
+    {
+      "KeyName": "Primary",
+      "KeyCode": 0,
+      "KeyDescription": "Start of Primary",
+      "TimePressed": "2025-05-11T22:16:03.025Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "System",
+      "TimeIntoSession": 0,
+      "ScheduleIndicator": "Start"
+    },
+    {
+      "KeyName": "Primary",
+      "KeyCode": 0,
+      "KeyDescription": "End of Primary",
+      "TimePressed": "2025-05-11T22:21:03.030Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "System",
+      "TimeIntoSession": 299.9500000000339,
+      "ScheduleIndicator": "End"
+    },
+    {
+      "KeyName": "Escape",
+      "KeyCode": 0,
+      "KeyDescription": "End of Session",
+      "TimePressed": "2025-05-11T22:21:03.030Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "System",
+      "TimeIntoSession": 299.9500000000339,
+      "ScheduleIndicator": "End"
+    }
+  ],
+  "SessionStart": "2025-05-11T22:16:03.024Z",
+  "Keyset": {
+    "id": "d52a243f-931e-4205-aa29-ffc3f2940387",
+    "Name": "Functional Analysis",
+    "FrequencyKeys": [
+      { "KeyName": "1", "KeyDescription": "SIB", "KeyCode": 49 },
+      { "KeyName": "2", "KeyDescription": "DIS", "KeyCode": 50 },
+      { "KeyName": "3", "KeyDescription": "AGG", "KeyCode": 51 },
+      { "KeyName": "8", "KeyDescription": "Prompt", "KeyCode": 56 },
+      { "KeyName": "9", "KeyDescription": "Compliance", "KeyCode": 57 }
+    ],
+    "DurationKeys": [
+      { "KeyName": "r", "KeyDescription": "SR", "KeyCode": 82 },
+      { "KeyName": "e", "KeyDescription": "Tantrum", "KeyCode": 69 }
+    ],
+    "createdAt": "2025-05-11T21:53:58.363Z",
+    "lastModified": "2025-05-11T21:53:58.363Z"
+  },
+  "SessionEnd": "2025-05-11T22:21:03.035Z",
+  "EndedEarly": false,
+  "TimerMain": 300,
+  "TimerOne": 300,
+  "TimerTwo": 0,
+  "TimerThree": 0
+}

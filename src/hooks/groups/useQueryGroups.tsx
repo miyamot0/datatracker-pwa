@@ -4,6 +4,9 @@ import { displayConditionalNotification } from '@/lib/notifications';
 import { QueryResponseGroupsExpanded } from './types/query-response-type-groups';
 import { pullGroupFolders } from './helpers/pull-group-folders';
 import { removeGroupFolder } from './helpers/remove-group-folder';
+import { DataExampleFiles } from '@/lib/data';
+
+const DemoDataFolderName = 'Example DataTracker Group';
 
 export function useQueryGroupsFixed(Context: FolderHandleContextType) {
   const { handle, settings } = Context;
@@ -16,6 +19,42 @@ export function useQueryGroupsFixed(Context: FolderHandleContextType) {
   });
 
   const incrementVersion = () => setVersion((prev) => prev + 1);
+
+  const duplicateGroup = async () => {
+    const input = window.confirm(`This will create an ${DemoDataFolderName} folder for you. Do you wish to proceed?`);
+
+    if (!input) {
+      throw new Error('Error: User cancelled action');
+    }
+
+    if (data.data.includes(DemoDataFolderName)) {
+      alert(`The ${DemoDataFolderName} folder already exists. Delete it if you\'d like to re-load example data.`);
+
+      throw new Error(`${DemoDataFolderName} already exists`);
+    }
+
+    const folder = await handle!.getDirectoryHandle(DemoDataFolderName, { create: true });
+
+    for (const file of DataExampleFiles) {
+      const participantId = file.path[0];
+      const participantFolder = await folder.getDirectoryHandle(participantId, { create: true });
+
+      let subfolderHandle = participantFolder;
+
+      // Note: Tunnel down to final subfolder
+      for (let i = 1; i <= file.path.length - 1; i++) {
+        const subfolder = file.path[i];
+        subfolderHandle = await subfolderHandle.getDirectoryHandle(subfolder, { create: true });
+      }
+
+      const fileHandle = await subfolderHandle.getFileHandle(file.filename!, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(file.text);
+      await writable.close();
+    }
+
+    incrementVersion();
+  };
 
   const addGroup = async () => {
     const input = window.prompt('Enter a name for the new group.');
@@ -78,6 +117,7 @@ export function useQueryGroupsFixed(Context: FolderHandleContextType) {
       refresh: incrementVersion,
       addGroup,
       removeGroup,
+      duplicateGroup,
     };
   }
 
@@ -88,5 +128,6 @@ export function useQueryGroupsFixed(Context: FolderHandleContextType) {
     refresh: incrementVersion,
     addGroup,
     removeGroup,
+    duplicateGroup,
   };
 }

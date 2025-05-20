@@ -2,7 +2,7 @@ import BackButton from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import createHref from '@/lib/links';
-import { ChevronDown, FolderInput, FolderPlus, FolderX } from 'lucide-react';
+import { ChevronDown, DatabaseIcon, FolderInput, FolderPlus, FolderX } from 'lucide-react';
 import { DataTable } from '../../../ui/data-table-common';
 import {
   DropdownMenu,
@@ -18,18 +18,20 @@ import { ColumnDef } from '@tanstack/react-table';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useContext } from 'react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 type Props = {
   Groups: string[];
   AddGroup: () => void;
   RemoveGroup: (group: string) => void;
+  AddExamples: () => void;
 };
 
 type GroupTableRow = {
   Group: string;
 };
 
-export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup }: Props) {
+export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup, AddExamples }: Props) {
   const { settings } = useContext(FolderHandleContext);
 
   const columns: ColumnDef<GroupTableRow>[] = [
@@ -110,17 +112,39 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup }: Pro
           })}
           filterCol="Group"
           optionalButtons={
-            <Button
-              variant={'outline'}
-              size={'sm'}
-              className="shadow"
-              onClick={async () => {
-                await AddGroup();
-              }}
-            >
-              <FolderPlus className="mr-2 h-4 w-4" />
-              Create
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant={'outline'}
+                size={'sm'}
+                className="shadow"
+                onClick={async () => {
+                  toast.promise(async () => await AddExamples(), {
+                    loading: 'Writing example data to disk...',
+                    success: () => {
+                      return 'Example data has been added!';
+                    },
+                    error: () => {
+                      return 'Files were not written to disk.';
+                    },
+                  });
+                }}
+              >
+                <DatabaseIcon className="mr-2 h-4 w-4" />
+                See Example Group
+              </Button>
+
+              <Button
+                variant={'outline'}
+                size={'sm'}
+                className="shadow"
+                onClick={async () => {
+                  await AddGroup();
+                }}
+              >
+                <FolderPlus className="mr-2 h-4 w-4" />
+                Create
+              </Button>
+            </div>
           }
         />
       </CardContent>
