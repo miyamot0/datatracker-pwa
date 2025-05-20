@@ -21,7 +21,7 @@ import ViewerKeysetPage from './components/pages/viewer-keysets/viewer-keysets-p
 import ViewerEvaluationsPage, {
   evaluationImportPageLoader,
 } from './components/pages/viewer-evaluations/viewer-evaluations-page';
-import ViewSyncPage from './components/pages/viewer-sync-queue/view-sync-page';
+import ViewSyncPage, { syncPageLoader } from './components/pages/viewer-sync-queue/view-sync-page';
 import { useContext, useMemo } from 'react';
 import DashboardHistoryPage, {
   sessionHistoryLoader,
@@ -41,11 +41,11 @@ const AppRoot = () => {
           <Route path="/">
             <Route index element={<HomePage />} />
 
-            {/* These updated w/ loaders */}
             <Route path="/dashboard">
               <Route index element={<DashboardPage />} loader={groupsPageLoader(dataContext)} />
-              <Route path="sync" element={<ViewSyncPage />} />
+              <Route path="sync" element={<ViewSyncPage />} loader={syncPageLoader(dataContext)} />
             </Route>
+            {/* Clean up loaders below */}
             <Route path="/documentation">
               <Route index element={<DocumentationListingPage />} />
               <Route path=":slug" element={<DocumentationEntryPage />} />
