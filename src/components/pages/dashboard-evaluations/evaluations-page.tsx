@@ -15,8 +15,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import LoadingDisplay from '@/components/ui/loading-display';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import { FolderHandleContext } from '@/context/folder-context';
-import useQueryEvaluations from '@/hooks/evaluations/useQueryEvaluations';
+import { FolderHandleContextType } from '@/context/folder-context';
+import { useQueryEvaluationsFixed } from '@/hooks/evaluations/useQueryEvaluations';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { cn } from '@/lib/utils';
@@ -33,27 +33,45 @@ import {
   SearchIcon,
   Table2Icon,
 } from 'lucide-react';
-import { useContext } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, redirect, useLoaderData } from 'react-router-dom';
+
+type LoaderResult = {
+  Group: string;
+  Individual: string;
+  Handle: FileSystemHandle;
+  Context: FolderHandleContextType;
+};
+
+export const evaluationsPageLoader = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
+
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const { Group, Individual } = params;
+
+    if (!Group || !Individual || !handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
+
+    return {
+      Group: CleanUpString(Group),
+      Individual: CleanUpString(Individual),
+      Handle: handle,
+      Context: ctx,
+    } satisfies LoaderResult;
+  };
+};
 
 type EvaluationTableRow = {
   Evaluation: string;
 };
 
 export default function EvaluationsPage() {
-  const { Group, Individual } = useParams();
-  const { settings } = useContext(FolderHandleContext);
-  const { data, status, error, handle, addEvaluation, removeEvaluation } = useQueryEvaluations(Group, Individual);
-
-  const navigate = useNavigate();
-
-  if (!handle || !Group || !Individual) {
-    navigate(createHref({ type: 'Dashboard' }), {
-      unstable_viewTransition: true,
-    });
-
-    return <></>;
-  }
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Group, Individual, Context } = loaderResult;
+  const { settings } = Context;
+  const { data, status, error, addEvaluation, removeEvaluation } = useQueryEvaluationsFixed(Group, Individual, Context);
 
   if (status === 'loading') {
     return <LoadingDisplay />;

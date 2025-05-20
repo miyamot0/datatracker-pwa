@@ -7,7 +7,7 @@ import DocumentationListingPage from './components/pages/viewer-documentation-li
 import DocumentationEntryPage from './components/pages/viewer-documentation-entry/documentation-entry-page';
 import DashboardPage from './components/pages/dashboard-group/dashboard-page';
 import ClientsPage, { clientsPageLoader } from './components/pages/dashboard-clients/clients-page';
-import EvaluationsPage from './components/pages/dashboard-evaluations/evaluations-page';
+import EvaluationsPage, { evaluationsPageLoader } from './components/pages/dashboard-evaluations/evaluations-page';
 import KeySetsPage, { keysetsPageLoader } from './components/pages/dashboard-keysets/keysets-page';
 import KeySetEditor, { keysetEditorPageLoader } from './components/pages/editor-keysets/keyset-editor';
 import { SessionDesignerShim } from './components/pages/editor-session/session-designer';
@@ -39,8 +39,6 @@ const AppRoot = () => {
 
             {/* These can be ported */}
 
-            <Route path="/session/:Group/:Individual" element={<EvaluationsPage />} />
-
             <Route path="/session/:Group/:Individual/import" element={<ViewerEvaluationsPage />} />
             <Route path="/session/:Group/:Individual/:Evaluation" element={<SessionDesignerShim />} />
             <Route path="/session/:Group/:Individual/:Evaluation/run" element={<SessionRecorderPageShim />} />
@@ -58,6 +56,7 @@ const AppRoot = () => {
               <Route path=":Group">
                 <Route index element={<ClientsPage />} loader={clientsPageLoader(dataContext)} />
                 <Route path=":Individual">
+                  <Route index element={<EvaluationsPage />} loader={evaluationsPageLoader(dataContext)} />
                   <Route path="keysets">
                     <Route index element={<KeySetsPage />} loader={keysetsPageLoader(dataContext)} />
                     <Route path="import" element={<ViewerKeysetPage />} loader={keysetsPageLoader(dataContext)} />
