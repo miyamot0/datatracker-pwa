@@ -10,7 +10,7 @@ import ClientsPage, { clientsPageLoader } from './components/pages/dashboard-cli
 import EvaluationsPage, { evaluationsPageLoader } from './components/pages/dashboard-evaluations/evaluations-page';
 import KeySetsPage, { keysetsPageLoader } from './components/pages/dashboard-keysets/keysets-page';
 import KeySetEditor, { keysetEditorPageLoader } from './components/pages/editor-keysets/keyset-editor';
-import { sessionDesignerPageLoader, SessionDesignerShim } from './components/pages/editor-session/session-designer';
+import { sessionDesignerPageLoader, SessionDesignerPage } from './components/pages/editor-session/session-designer';
 import ResultsViewerPage, { resultsViewerLoader } from './components/pages/viewer-results/results-viewer-page';
 import ResultsRateVisualsPage, { resultsViewerRate } from './components/pages/viewer-visuals/results-rate-visuals-page';
 import ReliabilityViewerPage, { reliViewerLoader } from './components/pages/viewer-agreement/reli-viewer-page';
@@ -39,13 +39,6 @@ const AppRoot = () => {
           <Route path="/">
             <Route index element={<HomePage />} />
 
-            {/* These can be ported */}
-
-            <Route
-              path="/session/:Group/:Individual/:Evaluation"
-              element={<SessionDesignerShim />}
-              loader={sessionDesignerPageLoader(dataContext)}
-            />
             <Route path="/session/:Group/:Individual/:Evaluation/run" element={<SessionRecorderPageShim />} />
 
             {/* These updated w/ loaders */}
@@ -73,6 +66,7 @@ const AppRoot = () => {
                     <Route path=":KeySet" element={<KeySetEditor />} loader={keysetEditorPageLoader(dataContext)} />
                   </Route>
                   <Route path=":Evaluation">
+                    <Route index element={<SessionDesignerPage />} loader={sessionDesignerPageLoader(dataContext)} />
                     <Route path="view" element={<ResultsViewerPage />} loader={resultsViewerLoader(dataContext)} />
                     <Route path="history">
                       <Route index element={<DashboardHistoryPage />} loader={sessionHistoryLoader(dataContext)} />
