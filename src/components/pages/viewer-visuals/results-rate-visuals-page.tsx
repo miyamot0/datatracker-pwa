@@ -21,11 +21,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { KeyboardIcon, PointerIcon } from 'lucide-react';
+import { KeyboardIcon, PointerIcon, ScatterChartIcon } from 'lucide-react';
 import RateFigureVisualization from './figures/rate-figure';
 import { getLocalCachedPrefs, setLocalCachedPrefs } from '@/lib/local_storage';
 import createHref from '@/lib/links';
-import { redirect, useLoaderData } from 'react-router-dom';
+import { Link, redirect, useLoaderData } from 'react-router-dom';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
@@ -169,10 +169,26 @@ export default function ResultsRateVisualsPage() {
             <CardTitle>Visualization of Behavioral Rates</CardTitle>
             <CardDescription>Options for Visualizing Data Provided Below</CardDescription>
           </div>
-          <BackButton
-            Label="Back to Evaluations"
-            Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
-          />
+          <div className="flex gap-2">
+            <Link
+              unstable_viewTransition
+              to={createHref({
+                type: 'Evaluation Visualizer-Proportion',
+                group: Group,
+                individual: Individual,
+                evaluation: Evaluation,
+              })}
+            >
+              <Button variant={'outline'} className="shadow" size={'sm'}>
+                <ScatterChartIcon className="mr-2 h-4 w-4" />
+                See Proportion
+              </Button>
+            </Link>
+            <BackButton
+              Label="Back to Evaluations"
+              Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
+            />
+          </div>
         </CardHeader>
 
         <CardContent className="flex flex-col gap-2">

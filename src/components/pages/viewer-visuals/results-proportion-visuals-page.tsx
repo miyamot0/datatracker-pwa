@@ -20,11 +20,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
-import { Edit3Icon } from 'lucide-react';
+import { Edit3Icon, ScatterChartIcon } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getLocalCachedPrefs, setLocalCachedPrefs } from '@/lib/local_storage';
 import { FolderHandleContextType } from '@/context/folder-context';
-import { redirect, useLoaderData } from 'react-router-dom';
+import { Link, redirect, useLoaderData } from 'react-router-dom';
 import createHref from '@/lib/links';
 import ProportionFigureVisualization from './figures/proportion-figure';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -144,10 +144,26 @@ export default function ResultsProportionVisualsPage() {
             <CardTitle>Visualization of Behavioral Rates</CardTitle>
             <CardDescription>Options for Visualizing Data Provided Below</CardDescription>
           </div>
-          <BackButton
-            Label="Back to Evaluations"
-            Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
-          />
+          <div className="flex gap-2">
+            <Link
+              unstable_viewTransition
+              to={createHref({
+                type: 'Evaluation Visualizer-Rate',
+                group: Group,
+                individual: Individual,
+                evaluation: Evaluation,
+              })}
+            >
+              <Button variant={'outline'} className="shadow" size={'sm'}>
+                <ScatterChartIcon className="mr-2 h-4 w-4" />
+                See Rate
+              </Button>
+            </Link>
+            <BackButton
+              Label="Back to Evaluations"
+              Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
+            />
+          </div>
         </CardHeader>
 
         <CardContent className="flex flex-col gap-2">
