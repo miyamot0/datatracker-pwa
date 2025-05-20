@@ -9,7 +9,7 @@ import DashboardPage from './components/pages/dashboard-group/dashboard-page';
 import ClientsPage, { clientsPageLoader } from './components/pages/dashboard-clients/clients-page';
 import EvaluationsPage from './components/pages/dashboard-evaluations/evaluations-page';
 import KeySetsPage, { keysetsPageLoader } from './components/pages/dashboard-keysets/keysets-page';
-import KeySetEditor from './components/pages/editor-keysets/keyset-editor';
+import KeySetEditor, { keysetEditorPageLoader } from './components/pages/editor-keysets/keyset-editor';
 import { SessionDesignerShim } from './components/pages/editor-session/session-designer';
 import ResultsViewerPage, { resultsViewerLoader } from './components/pages/viewer-results/results-viewer-page';
 import ResultsRateVisualsPage, { resultsViewerRate } from './components/pages/viewer-visuals/results-rate-visuals-page';
@@ -42,7 +42,7 @@ const AppRoot = () => {
             <Route path="/session/:Group/:Individual" element={<EvaluationsPage />} />
 
             <Route path="/session/:Group/:Individual/keysets/import" element={<ViewerKeysetPage />} />
-            <Route path="/session/:Group/:Individual/keysets/:KeySet" element={<KeySetEditor />} />
+
             <Route path="/session/:Group/:Individual/import" element={<ViewerEvaluationsPage />} />
             <Route path="/session/:Group/:Individual/:Evaluation" element={<SessionDesignerShim />} />
             <Route path="/session/:Group/:Individual/:Evaluation/run" element={<SessionRecorderPageShim />} />
@@ -62,6 +62,7 @@ const AppRoot = () => {
                 <Route path=":Individual">
                   <Route path="keysets">
                     <Route index element={<KeySetsPage />} loader={keysetsPageLoader(dataContext)} />
+                    <Route path=":KeySet" element={<KeySetEditor />} loader={keysetEditorPageLoader(dataContext)} />
                   </Route>
                   <Route path=":Evaluation">
                     <Route path="view" element={<ResultsViewerPage />} loader={resultsViewerLoader(dataContext)} />

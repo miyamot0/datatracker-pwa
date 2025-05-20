@@ -11,30 +11,54 @@ import {
   BuildIndividualsBreadcrumb,
   BuildKeysetBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { useNavigate, useParams } from 'react-router-dom';
+import { redirect, useLoaderData } from 'react-router-dom';
 import { CleanUpString } from '@/lib/strings';
-import useQuerySingleKeyboard from '@/hooks/keyboards/useQuerySingleKeyboard';
+import { useQuerySingleKeyboardFixed } from '@/hooks/keyboards/useQuerySingleKeyboard';
 import LoadingDisplay from '@/components/ui/loading-display';
 import createHref from '@/lib/links';
 import BackButton from '@/components/ui/back-button';
+import { FolderHandleContextType } from '@/context/folder-context';
+
+type LoaderResult = {
+  Group: string;
+  Individual: string;
+  KeySet: string;
+  Handle: FileSystemHandle;
+  Context: FolderHandleContextType;
+};
+
+export const keysetEditorPageLoader = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
+
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const { Group, Individual, KeySet } = params;
+
+    if (!Group || !Individual || !KeySet || !handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
+
+    return {
+      Group: CleanUpString(Group),
+      Individual: CleanUpString(Individual),
+      KeySet: CleanUpString(KeySet),
+      Handle: handle,
+      Context: ctx,
+    } satisfies LoaderResult;
+  };
+};
 
 export default function KeySetEditor() {
-  const { Group, Individual, KeySet } = useParams();
-  const navigate = useNavigate();
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Group, Individual, KeySet, Context } = loaderResult;
 
-  const { data, error, status, handle, mutateKeySet, addKeyCallback } = useQuerySingleKeyboard(
+  const { data, error, status, handle, mutateKeySet, addKeyCallback } = useQuerySingleKeyboardFixed(
     Group,
     Individual,
-    KeySet
+    KeySet,
+    Context
   );
-
-  if (!handle || !Group || !Individual || !KeySet) {
-    navigate(createHref({ type: 'Dashboard' }), {
-      unstable_viewTransition: true,
-    });
-
-    return <></>;
-  }
 
   if (status === 'loading') {
     return <LoadingDisplay />;
