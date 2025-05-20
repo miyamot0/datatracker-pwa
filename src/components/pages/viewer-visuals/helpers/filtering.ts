@@ -1,53 +1,47 @@
-import { SessionTerminationOptionsType } from "@/forms/schema/session-designer-schema";
-import { SavedSessionResult } from "@/lib/dtos";
-import {
-  walkSessionDurationKey,
-  walkSessionFrequencyKey,
-} from "../../viewer-results/helpers/schedule_parser";
+import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-schema';
+import { SavedSessionResult } from '@/lib/dtos';
+import { walkSessionDurationKey, walkSessionFrequencyKey } from '../../viewer-results/helpers/schedule_parser';
 
 export function FilterByPrimaryRole(results: SavedSessionResult[]) {
-  return results.filter((result) => result.SessionSettings.Role === "Primary");
+  return results
+    .filter((result) => result.SessionSettings.Role === 'Primary')
+    .sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session);
 }
 
 export function GetUniqueConditions(results: SavedSessionResult[]) {
-  return Array.from(
-    new Set(results.map((result) => result.SessionSettings.Condition))
-  );
+  return Array.from(new Set(results.map((result) => result.SessionSettings.Condition)));
 }
 
 function convertScheduleSetting(schedule: SessionTerminationOptionsType) {
   switch (schedule) {
-    case "End on Timer #1":
-      return "Primary";
-    case "End on Timer #2":
-      return "Secondary";
-    case "End on Timer #3":
-      return "Tertiary";
+    case 'End on Timer #1':
+      return 'Primary';
+    case 'End on Timer #2':
+      return 'Secondary';
+    case 'End on Timer #3':
+      return 'Tertiary';
     default:
-      throw Error("Invalid Schedule Option");
+      throw Error('Invalid Schedule Option');
   }
 }
 
-function pullSessionTime(
-  session: SavedSessionResult,
-  schedule: SessionTerminationOptionsType
-) {
+function pullSessionTime(session: SavedSessionResult, schedule: SessionTerminationOptionsType) {
   switch (schedule) {
-    case "End on Timer #1":
+    case 'End on Timer #1':
       return session.TimerOne;
-    case "End on Timer #2":
+    case 'End on Timer #2':
       return session.TimerTwo;
-    case "End on Timer #3":
+    case 'End on Timer #3':
       return session.TimerThree;
     default:
-      throw Error("Invalid Schedule Option");
+      throw Error('Invalid Schedule Option');
   }
 }
 
 export function generateChartPreparation(
   FilteredSessions: SavedSessionResult[],
   ScheduleOption: SessionTerminationOptionsType,
-  Perspective: "Frequency" | "Duration"
+  Perspective: 'Frequency' | 'Duration'
 ) {
   let minX = 1;
   let maxX = 0;
@@ -62,20 +56,12 @@ export function generateChartPreparation(
     }
 
     const scores =
-      Perspective === "Frequency"
+      Perspective === 'Frequency'
         ? result.Keyset.FrequencyKeys.map((key) => {
-            return walkSessionFrequencyKey(
-              result,
-              convertScheduleSetting(ScheduleOption),
-              key
-            );
+            return walkSessionFrequencyKey(result, convertScheduleSetting(ScheduleOption), key);
           })
         : result.Keyset.DurationKeys.map((key) => {
-            return walkSessionDurationKey(
-              result,
-              convertScheduleSetting(ScheduleOption),
-              key
-            );
+            return walkSessionDurationKey(result, convertScheduleSetting(ScheduleOption), key);
           });
 
     return {
