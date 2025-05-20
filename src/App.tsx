@@ -41,8 +41,6 @@ const AppRoot = () => {
 
             <Route path="/session/:Group/:Individual" element={<EvaluationsPage />} />
 
-            <Route path="/session/:Group/:Individual/keysets/import" element={<ViewerKeysetPage />} />
-
             <Route path="/session/:Group/:Individual/import" element={<ViewerEvaluationsPage />} />
             <Route path="/session/:Group/:Individual/:Evaluation" element={<SessionDesignerShim />} />
             <Route path="/session/:Group/:Individual/:Evaluation/run" element={<SessionRecorderPageShim />} />
@@ -62,6 +60,7 @@ const AppRoot = () => {
                 <Route path=":Individual">
                   <Route path="keysets">
                     <Route index element={<KeySetsPage />} loader={keysetsPageLoader(dataContext)} />
+                    <Route path="import" element={<ViewerKeysetPage />} loader={keysetsPageLoader(dataContext)} />
                     <Route path=":KeySet" element={<KeySetEditor />} loader={keysetEditorPageLoader(dataContext)} />
                   </Route>
                   <Route path=":Evaluation">
