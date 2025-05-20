@@ -5,7 +5,7 @@ import { ThemeProvider } from './components/ui/theme-provider';
 import SettingsPage from './components/pages/editor-settings/settings-page';
 import DocumentationListingPage from './components/pages/viewer-documentation-list/documentation-listing-page';
 import DocumentationEntryPage from './components/pages/viewer-documentation-entry/documentation-entry-page';
-import DashboardPage from './components/pages/dashboard-group/dashboard-page';
+import DashboardPage, { groupsPageLoader } from './components/pages/dashboard-group/dashboard-page';
 import ClientsPage, { clientsPageLoader } from './components/pages/dashboard-clients/clients-page';
 import EvaluationsPage, { evaluationsPageLoader } from './components/pages/dashboard-evaluations/evaluations-page';
 import KeySetsPage, { keysetsPageLoader } from './components/pages/dashboard-keysets/keysets-page';
@@ -43,7 +43,7 @@ const AppRoot = () => {
 
             {/* These updated w/ loaders */}
             <Route path="/dashboard">
-              <Route index element={<DashboardPage />} />
+              <Route index element={<DashboardPage />} loader={groupsPageLoader(dataContext)} />
               <Route path="sync" element={<ViewSyncPage />} />
             </Route>
             <Route path="/documentation">
