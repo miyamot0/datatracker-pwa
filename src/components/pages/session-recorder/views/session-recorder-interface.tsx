@@ -269,13 +269,16 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
         setRunningState('Completed');
 
         return;
-      } else if (
+      }
+      /*
+       else if (
         Settings.TimerOption === 'End on Timer #1 and #2 Total' &&
         secondsElapsedFirst.current + secondsElapsedSecond.current + INCREMENT > Settings.DurationS
       ) {
         clearInterval(totalTimerRef.current);
         setRunningState('Completed');
       }
+      */
 
       secondsElapsedTotal.current += INCREMENT;
 
@@ -462,7 +465,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
                   'bg-green-400 text-white': Settings.TimerOption === 'End on Timer #1',
                   'bg-orange-400 text-white': Settings.TimerOption === 'End on Timer #2',
                   'bg-red-400 text-white': Settings.TimerOption === 'End on Timer #3',
-                  'bg-blue-400 text-white': Settings.TimerOption === 'End on Timer #1 and #2 Total',
+                  //'bg-blue-400 text-white': Settings.TimerOption === 'End on Timer #1 and #2 Total',
                 }
               )}
             >
