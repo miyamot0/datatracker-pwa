@@ -5,7 +5,7 @@ import { pullAllEvaluationFolders } from './helpers/pull-all-evaluation-folders'
 import { toast } from 'sonner';
 
 /**
- * Deprecated. Use `useQueryEvaluationsMetaFixed` instead.
+ * @deprecated. Use `useQueryEvaluationsMetaFixed` instead.
  *
  * @param Group
  * @param Client

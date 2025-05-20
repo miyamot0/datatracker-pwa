@@ -8,7 +8,7 @@ import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
 import { toast } from 'sonner';
 
 /**
- * Deprecated: Use useQueryKeyboardsMetaFixed instead.
+ * @deprecated: Use useQueryKeyboardsMetaFixed instead.
  *
  * @param Group
  * @param Client

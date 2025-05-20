@@ -9,7 +9,7 @@ import { KeySet } from '@/types/keyset';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Deprecated: Use useQueryKeyboardsFixed instead.
+ * @deprecated: Use useQueryKeyboardsFixed instead.
  */
 export default function useQueryKeyboards(Group?: string, Client?: string) {
   const { handle, settings } = useContext(FolderHandleContext);

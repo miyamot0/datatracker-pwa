@@ -1,7 +1,7 @@
 import PageWrapper from '@/components/layout/page-wrapper';
 import UnauthorizedDisplay from './displays/unauthorized-display';
 import AuthorizedDisplay from './displays/authorized-display';
-import useQueryGroups, { useQueryGroupsFixed } from '@/hooks/groups/useQueryGroups';
+import { useQueryGroupsFixed } from '@/hooks/groups/useQueryGroups';
 import { ApplicationSettingsTypes } from '@/types/settings';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { useLoaderData } from 'react-router-dom';

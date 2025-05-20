@@ -8,7 +8,7 @@ import { KeySet, KeySetInstance } from '@/types/keyset';
 import { FolderHandleContext, FolderHandleContextType } from '@/context/folder-context';
 
 /**
- * Deprecated: Use useQuerySingleKeyboardFixed instead.
+ * @deprecated: Use useQuerySingleKeyboardFixed instead.
  *
  * @param Group
  * @param Client
