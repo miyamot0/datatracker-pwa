@@ -23,11 +23,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { GetSettingsFileFromEvaluationFolder, pullSessionDesignerParameters } from '@/lib/files';
-import { toSavedSettings } from '@/lib/dtos';
+import { GetSettingsFileFromEvaluationFolder, pullSessionDesignerParametersFixed } from '@/lib/files';
+import { SavedSettings, toSavedSettings } from '@/lib/dtos';
 import { KeySet } from '@/types/keyset';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FolderHandleContext } from '@/context/folder-context';
+import { FolderHandleContext, FolderHandleContextType } from '@/context/folder-context';
 import {
   BuildEvaluationsBreadcrumb,
   BuildGroupBreadcrumb,
@@ -36,46 +36,92 @@ import {
 import { displayConditionalNotification } from '@/lib/notifications';
 import { FolderPlus } from 'lucide-react';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import { useNavigate, useParams } from 'react-router-dom';
+import { redirect, useLoaderData, useNavigate } from 'react-router-dom';
 import LoadingDisplay from '@/components/ui/loading-display';
 import createHref from '@/lib/links';
 import { GetHandleEvaluationFolder } from '@/lib/files';
 import BackButton from '@/components/ui/back-button';
 
-export function SessionDesignerShim() {
-  const { handle } = useContext(FolderHandleContext);
-  const navigate = useNavigate();
-  const [keysetsFilenames, setKeysetFilenames] = useState<string[]>([]);
-  const [keysets, setKeysets] = useState<KeySet[]>([]);
-  const [conditions, setConditions] = useState<string[]>([]);
+type LoaderResult = {
+  Group: string;
+  Individual: string;
+  Evaluation: string;
+  Handle: FileSystemDirectoryHandle;
+  Context: FolderHandleContextType;
+  Keysets: KeySet[];
+  KeysetFilenames: string[];
+  Conditions: string[];
+  SessionSettings: SavedSettings;
+};
 
-  const { Group, Individual, Evaluation } = useParams();
+export const sessionDesignerPageLoader = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
 
-  useEffect(() => {
-    if (!handle || !Group || !Individual || !Evaluation) {
-      navigate(createHref({ type: 'Dashboard' }), {
-        unstable_viewTransition: true,
-      });
-      return;
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const { Group, Individual, Evaluation } = params;
+
+    if (!Group || !Individual || !Evaluation || !handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
     }
 
-    pullSessionDesignerParameters(handle, Group, Individual, Evaluation, setKeysets, setKeysetFilenames, setConditions);
+    const { Keysets, KeysetFilenames, Conditions } = await pullSessionDesignerParametersFixed(
+      handle,
+      Group,
+      Individual,
+      Evaluation
+    );
 
-    return () => {};
-  }, [Evaluation, Group, handle, Individual, navigate]);
+    const files = await GetHandleEvaluationFolder(
+      handle,
+      CleanUpString(Group),
+      CleanUpString(Individual),
+      CleanUpString(Evaluation)
+    );
 
-  if (!handle || !Group || !Individual || !Evaluation) return <LoadingDisplay />;
+    if (!files) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
+
+    const sessionSettings = await GetSettingsFileFromEvaluationFolder(files);
+
+    return {
+      Group: CleanUpString(Group),
+      Individual: CleanUpString(Individual),
+      Evaluation: CleanUpString(Evaluation),
+      Keysets,
+      KeysetFilenames,
+      Conditions,
+      Handle: handle,
+      Context: ctx,
+      SessionSettings: sessionSettings,
+    } satisfies LoaderResult;
+  };
+};
+
+export function SessionDesignerShim() {
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Group, Individual, Evaluation, Keysets, KeysetFilenames, Conditions, Context, Handle, SessionSettings } =
+    loaderResult;
+
+  const [conditions, setConditions] = useState<string[]>(Conditions);
+
+  if (!Handle || !Group || !Individual || !Evaluation) return <LoadingDisplay />;
 
   return (
     <SessionDesigner
-      Handle={handle}
+      Handle={Handle}
       Group={Group}
       Individual={CleanUpString(Individual)}
       Evaluation={CleanUpString(Evaluation)}
       Conditions={conditions}
-      Keysets={keysets}
-      KeysetFilenames={keysetsFilenames.map((keyset) => keyset.replace('.json', ''))}
+      Keysets={Keysets}
+      KeysetFilenames={KeysetFilenames.map((keyset) => keyset.replace('.json', ''))}
       SetConditions={setConditions}
+      Context={Context}
+      SessionSettings={SessionSettings}
     />
   );
 }
@@ -89,6 +135,8 @@ type Props = {
   Keysets: KeySet[];
   KeysetFilenames: string[];
   SetConditions: Dispatch<SetStateAction<string[]>>;
+  Context: FolderHandleContextType;
+  SessionSettings: SavedSettings;
 };
 
 function SessionDesigner({
@@ -100,6 +148,7 @@ function SessionDesigner({
   Keysets,
   KeysetFilenames,
   SetConditions,
+  SessionSettings,
 }: Props) {
   const { handle, settings } = useContext(FolderHandleContext);
   const navigate = useNavigate();
@@ -120,55 +169,30 @@ function SessionDesigner({
   const [keySet, setKeySet] = useState<KeySet | undefined>(undefined);
 
   useEffect(() => {
-    const read_files = async () => {
-      const files = await GetHandleEvaluationFolder(
-        Handle,
-        CleanUpString(Group),
-        CleanUpString(Individual),
-        CleanUpString(Evaluation)
-      );
+    form.setValue('SessionKeySet', SessionSettings.KeySet);
+    form.setValue('DataCollectorID', SessionSettings.Initials);
+    form.trigger('DataCollectorID');
 
-      if (!files) {
-        displayConditionalNotification(
-          settings,
-          'Error: No evaluation folder found',
-          'The folder requested does not exist',
-          3000,
-          true
-        );
+    form.setValue('SessionTherapistID', SessionSettings.Therapist);
+    form.trigger('SessionTherapistID');
 
-        throw new Error('No files found for this evaluation');
-      }
+    form.setValue('SessionDurationS', SessionSettings.DurationS);
+    form.setValue('SessionTerminationOption', SessionSettings.TimerOption);
+    form.setValue('SessionNumber', SessionSettings.Session);
 
-      const sessionSettings = await GetSettingsFileFromEvaluationFolder(files);
+    form.setValue('SessionCondition', SessionSettings.Condition);
+    form.trigger('SessionCondition');
 
-      form.setValue('SessionKeySet', sessionSettings.KeySet);
-      form.setValue('DataCollectorID', sessionSettings.Initials);
-      form.trigger('DataCollectorID');
+    form.setValue('DataCollectorRole', SessionSettings.Role);
+    form.trigger('DataCollectorRole');
 
-      form.setValue('SessionTherapistID', sessionSettings.Therapist);
-      form.trigger('SessionTherapistID');
+    if (SessionSettings.KeySet.trim().length > 0) {
+      const keyset_default = Keysets.find((keyset) => keyset.Name === SessionSettings.KeySet);
 
-      form.setValue('SessionDurationS', sessionSettings.DurationS);
-      form.setValue('SessionTerminationOption', sessionSettings.TimerOption);
-      form.setValue('SessionNumber', sessionSettings.Session);
+      if (keyset_default) setKeySet(keyset_default);
+    }
 
-      form.setValue('SessionCondition', sessionSettings.Condition);
-      form.trigger('SessionCondition');
-
-      form.setValue('DataCollectorRole', sessionSettings.Role);
-      form.trigger('DataCollectorRole');
-
-      if (sessionSettings.KeySet.trim().length > 0) {
-        const keyset_default = Keysets.find((keyset) => keyset.Name === sessionSettings.KeySet);
-
-        if (keyset_default) setKeySet(keyset_default);
-      }
-
-      form.trigger('SessionKeySet');
-    };
-
-    read_files();
+    form.trigger('SessionKeySet');
 
     return () => {};
   }, [Evaluation, Group, Handle, Individual, form, Keysets, settings]);

@@ -108,6 +108,8 @@ export const GetResultsFromEvaluationFolder = async (
 // --- File Management ---
 
 /**
+ * @deprecated
+ *
  * Pull files for the session designer
  *
  * @param Handle The handle to the file system
@@ -173,6 +175,62 @@ export async function pullSessionDesignerParameters(
   }
 
   SetConditions(conditions);
+}
+
+// TODO:
+export async function pullSessionDesignerParametersFixed(
+  Handle: FileSystemDirectoryHandle,
+  Group: string,
+  Individual: string,
+  Evaluation: string
+) {
+  const perms = await Handle.requestPermission({ mode: 'readwrite' });
+
+  if (perms === 'denied') {
+    toast.error('Permission denied to remove group folder.');
+
+    throw new Error('Permission denied to work with data.');
+  }
+
+  const keyboard_folder = await GetHandleKeyboardsFolder(Handle, Group, Individual);
+
+  const keyset_time_filenames: string[] = [];
+  const keyset_time_files: KeySet[] = [];
+
+  for await (const entry of keyboard_folder.values()) {
+    if (entry.name === '.DS_Store') continue;
+
+    if (entry.kind === 'file' && entry.name.endsWith('.json')) {
+      const keyset = await entry.getFile();
+      const keyset_text = await keyset.text();
+
+      if (keyset_text.length === 0) continue;
+
+      const keyset_json = deserializeKeySet(keyset_text);
+
+      if (keyset_json) {
+        keyset_time_filenames.push(entry.name);
+        keyset_time_files.push(keyset_json);
+      }
+    }
+  }
+
+  const evaluations_folder = await GetHandleEvaluationFolder(Handle, Group, Individual, Evaluation);
+
+  const conditions: string[] = [];
+
+  const entries2 = await evaluations_folder.values();
+  for await (const entry of entries2) {
+    if (entry.kind === 'directory') {
+      conditions.push(entry.name);
+    }
+  }
+
+  return {
+    Keysets: keyset_time_files,
+    KeysetFilenames: keyset_time_filenames,
+    Conditions: conditions,
+  };
 }
 
 /**
