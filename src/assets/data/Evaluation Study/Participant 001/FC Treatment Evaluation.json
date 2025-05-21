@@ -1,1 +1,18 @@
-{"id":"2ac4bcf4-8901-46ee-8213-0cfb3d0ebebf","Name":"FC Treatment Evaluation","FrequencyKeys":[{"KeyName":"1","KeyDescription":"SIB","KeyCode":49},{"KeyName":"2","KeyDescription":"DIS","KeyCode":50},{"KeyName":"3","KeyDescription":"AGG","KeyCode":51},{"KeyName":"8","KeyDescription":"Prompt","KeyCode":56},{"KeyName":"9","KeyDescription":"Compliance","KeyCode":57},{"KeyName":"4","KeyDescription":"FCR","KeyCode":52}],"DurationKeys":[{"KeyName":"r","KeyDescription":"SR","KeyCode":82},{"KeyName":"e","KeyDescription":"Tantrum","KeyCode":69}],"createdAt":"2025-05-11T23:28:12.502Z","lastModified":"2025-05-11T23:29:08.350Z"}
+{
+  "id": "2ac4bcf4-8901-46ee-8213-0cfb3d0ebebf",
+  "Name": "FC Treatment Evaluation",
+  "FrequencyKeys": [
+    { "KeyName": "1", "KeyDescription": "SIB", "KeyCode": 49 },
+    { "KeyName": "2", "KeyDescription": "DIS", "KeyCode": 50 },
+    { "KeyName": "3", "KeyDescription": "AGG", "KeyCode": 51 },
+    { "KeyName": "8", "KeyDescription": "Prompt", "KeyCode": 56 },
+    { "KeyName": "9", "KeyDescription": "Compliance", "KeyCode": 57 },
+    { "KeyName": "4", "KeyDescription": "FCR", "KeyCode": 52 }
+  ],
+  "DurationKeys": [
+    { "KeyName": "r", "KeyDescription": "SR", "KeyCode": 82 },
+    { "KeyName": "e", "KeyDescription": "Tantrum", "KeyCode": 69 }
+  ],
+  "createdAt": "2025-05-11T23:28:12.502Z",
+  "lastModified": "2025-05-11T23:29:08.350Z"
+}
