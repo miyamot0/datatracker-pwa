@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { AuthStatus, Context } = loaderResult;
 
-  const { data, status, error, addGroup, duplicateGroup, removeGroup } = useQueryGroupsFixed(Context);
+  const { data, status, error, addGroup, copyDemoData, removeGroup } = useQueryGroupsFixed(Context);
 
   if (AuthStatus === 'Unauthorized') {
     return (
@@ -55,7 +55,7 @@ export default function DashboardPage() {
         Groups={data}
         AddGroup={async () => await addGroup()}
         RemoveGroup={(group: string) => removeGroup(group)}
-        AddExamples={async () => await duplicateGroup()}
+        AddExamples={async () => await copyDemoData()}
       />
     </PageWrapper>
   );

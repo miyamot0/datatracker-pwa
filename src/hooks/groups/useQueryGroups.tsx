@@ -20,7 +20,7 @@ export function useQueryGroupsFixed(Context: FolderHandleContextType) {
 
   const incrementVersion = () => setVersion((prev) => prev + 1);
 
-  const duplicateGroup = async () => {
+  const copyDemoData = async () => {
     const input = window.confirm(`This will create an ${DemoDataFolderName} folder for you. Do you wish to proceed?`);
 
     if (!input) {
@@ -117,7 +117,7 @@ export function useQueryGroupsFixed(Context: FolderHandleContextType) {
       refresh: incrementVersion,
       addGroup,
       removeGroup,
-      duplicateGroup,
+      copyDemoData,
     };
   }
 
@@ -128,6 +128,6 @@ export function useQueryGroupsFixed(Context: FolderHandleContextType) {
     refresh: incrementVersion,
     addGroup,
     removeGroup,
-    duplicateGroup,
+    copyDemoData,
   };
 }

@@ -121,7 +121,7 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup, AddEx
                   toast.promise(async () => await AddExamples(), {
                     loading: 'Writing example data to disk...',
                     success: () => {
-                      return 'Example data has been added!';
+                      return 'Example data has been added! Create a separate "DataTracker" folder elsewhere on your disk to explore "Sync" functionality';
                     },
                     error: () => {
                       return 'Files were not written to disk.';
@@ -130,7 +130,7 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup, AddEx
                 }}
               >
                 <DatabaseIcon className="mr-2 h-4 w-4" />
-                See Example Group
+                Extract Example Folders
               </Button>
 
               <Button
