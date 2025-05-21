@@ -282,7 +282,7 @@ export default function SessionDesigner({
                           </SelectGroup>
                         </SelectContent>
                       </Select>
-                      <FormDescription>Select WHICH timer should be used to terminate the session</FormDescription>
+                      <FormDescription>Select the specific KeySet to load for this session</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
