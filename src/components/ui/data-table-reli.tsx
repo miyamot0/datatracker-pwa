@@ -100,10 +100,16 @@ export function ReliabilityDataTable<TData, TValue>({
       <Table>
         <TableHeader className="w-full">
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="w-full">
-              {headerGroup.headers.map((header) => {
+            <TableRow key={headerGroup.id} className="">
+              {headerGroup.headers.map((header, index) => {
                 return (
-                  <TableHead key={header.id} style={{ width: `${header.getSize()}px` }} className="w-full">
+                  <TableHead
+                    key={header.id}
+                    className={cn('', {
+                      'w-full': index > 0,
+                      'max-w-10': index === 0,
+                    })}
+                  >
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 );
@@ -116,7 +122,9 @@ export function ReliabilityDataTable<TData, TValue>({
             table.getRowModel().rows.map((row) => (
               <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'} className="hover:bg-muted/50">
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                  <TableCell className="" key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
                 ))}
               </TableRow>
             ))

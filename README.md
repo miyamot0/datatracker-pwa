@@ -70,6 +70,8 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
  
 @next/third-parties (14.2.13). Copyright n/a -- MIT Licensed: [Repo](https://github.com/vercel/next.js.git) 
  
+@radix-ui/react-checkbox (1.3.2). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
+ 
 @radix-ui/react-dialog (1.1.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
 @radix-ui/react-dropdown-menu (2.1.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 

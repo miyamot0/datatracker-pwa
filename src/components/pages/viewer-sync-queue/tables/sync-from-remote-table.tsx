@@ -82,8 +82,6 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
         }
       }
 
-      setLocalFileList(path_array);
-
       const groups2 = await RemoteHandle.values();
       const path_array2: string[] = [];
 
@@ -93,6 +91,7 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
         }
       }
 
+      setLocalFileList(path_array);
       setRemoteFileList(path_array2);
     };
 
@@ -128,9 +127,9 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
           aria-label="Select row"
         />
       ),
+
       enableSorting: false,
       enableHiding: false,
-      size: 100,
     },
     {
       accessorKey: 'file',
