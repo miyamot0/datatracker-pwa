@@ -143,6 +143,7 @@ export default function ViewSyncPage() {
             from. Once a secondary 'Remote' directory is selected, files can be synced either *to the remote directory*
             (e.g., Reliability data) or *from the remote directory* (e.g., keyboards).
           </p>
+
           {handle && remote_handle && directionalSync === 'to_remote' && (
             <SyncToRemoteTable Handle={handle} RemoteHandle={remote_handle} />
           )}
