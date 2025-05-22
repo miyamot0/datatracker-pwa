@@ -130,7 +130,7 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup, AddEx
                 }}
               >
                 <DatabaseIcon className="mr-2 h-4 w-4" />
-                Extract Example Folders
+                Extract Example Folder
               </Button>
 
               <Button
