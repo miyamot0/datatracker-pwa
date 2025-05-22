@@ -1,4 +1,4 @@
-import { formatTimeSeconds, formatTimeOfDay } from '../time';
+import { formatTimeSeconds, formatTimeOfDay, formatTimeSecondsMin } from '../time';
 
 describe('formatTimeSeconds', () => {
   it('should format 0 seconds as 00:00:00.00', () => {
@@ -34,6 +34,28 @@ describe('formatTimeSeconds', () => {
   it('should handle large numbers of seconds', () => {
     const output = formatTimeSeconds(86400); // 24 hours
     expect(output).toBe('24:00:00.00');
+  });
+});
+
+describe('formatTimeSecondsMin', () => {
+  it('should format 0 seconds as 00:00', () => {
+    const output = formatTimeSecondsMin(0);
+    expect(output).toBe('00:00');
+  });
+
+  it('should format seconds less than 1 minute correctly', () => {
+    const output = formatTimeSecondsMin(45.123);
+    expect(output).toBe('00:45');
+  });
+
+  it('should format seconds equal to 1 minute correctly', () => {
+    const output = formatTimeSecondsMin(60);
+    expect(output).toBe('01:00');
+  });
+
+  it('should format seconds equal to 1 hour correctly', () => {
+    const output = formatTimeSecondsMin(3000);
+    expect(output).toBe('50:00');
   });
 });
 

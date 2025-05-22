@@ -9,6 +9,7 @@ type Props = {
   SecondsElapsedFirst: number;
   SecondsElapsedSecond: number;
   SecondsElapsedThird: number;
+  SecondsElapsedDelta: number;
   ActiveTimer: TimerSetting;
   Running: boolean;
 };
@@ -19,6 +20,7 @@ export default function KeyHistoryListing({
   SecondsElapsedFirst,
   SecondsElapsedSecond,
   SecondsElapsedThird,
+  SecondsElapsedDelta,
   ActiveTimer,
   Running,
 }: Props) {
@@ -32,6 +34,7 @@ export default function KeyHistoryListing({
         AssignedTimer={undefined}
         ActiveTimer={ActiveTimer}
         SecondsElapsed={SecondsElapsed}
+        SecondsDelta={SecondsElapsedDelta}
         Running={Running}
       />
 
@@ -39,6 +42,7 @@ export default function KeyHistoryListing({
         AssignedTimer="Primary"
         ActiveTimer={ActiveTimer}
         SecondsElapsed={SecondsElapsedFirst}
+        SecondsDelta={SecondsElapsedDelta}
         Running={Running}
       />
 
@@ -46,6 +50,7 @@ export default function KeyHistoryListing({
         AssignedTimer="Secondary"
         ActiveTimer={ActiveTimer}
         SecondsElapsed={SecondsElapsedSecond}
+        SecondsDelta={SecondsElapsedDelta}
         Running={Running}
       />
 
@@ -53,6 +58,7 @@ export default function KeyHistoryListing({
         AssignedTimer="Tertiary"
         ActiveTimer={ActiveTimer}
         SecondsElapsed={SecondsElapsedThird}
+        SecondsDelta={SecondsElapsedDelta}
         Running={Running}
       />
 

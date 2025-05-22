@@ -53,6 +53,8 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
   const secondsElapsedSecond = useRef<number>(0);
   const secondsElapsedThird = useRef<number>(0);
 
+  const secondsElapsedActive = useRef<number>(0);
+
   const wakelockRef = useRef<WakeLockSentinel>();
 
   const [runningState, setRunningState] = useState<'Not Started' | 'Started' | 'Completed' | 'Cancelled'>(
@@ -270,17 +272,9 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
 
         return;
       }
-      /*
-       else if (
-        Settings.TimerOption === 'End on Timer #1 and #2 Total' &&
-        secondsElapsedFirst.current + secondsElapsedSecond.current + INCREMENT > Settings.DurationS
-      ) {
-        clearInterval(totalTimerRef.current);
-        setRunningState('Completed');
-      }
-      */
 
       secondsElapsedTotal.current += INCREMENT;
+      secondsElapsedActive.current += INCREMENT;
 
       switch (activeTimerRef.current) {
         case 'Primary':
@@ -364,16 +358,19 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
     }
 
     if (ev.key === 'z' && activeTimerRef.current !== 'Primary') {
+      secondsElapsedActive.current = 0;
       registerListener('Primary');
       return;
     }
 
     if (ev.key === 'x' && activeTimerRef.current !== 'Secondary') {
+      secondsElapsedActive.current = 0;
       registerListener('Secondary');
       return;
     }
 
     if (ev.key === 'c' && activeTimerRef.current !== 'Tertiary') {
+      secondsElapsedActive.current = 0;
       registerListener('Tertiary');
       return;
     }
@@ -498,6 +495,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
             SecondsElapsedFirst={secondsElapsedFirst.current}
             SecondsElapsedSecond={secondsElapsedSecond.current}
             SecondsElapsedThird={secondsElapsedThird.current}
+            SecondsElapsedDelta={secondsElapsedActive.current}
             ActiveTimer={activeTimerRef.current}
             Running={!!totalTimerRef.current}
           />
