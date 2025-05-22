@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ColumnDef } from '@tanstack/react-table';
 import { getFileHandle } from '../helpers/get-file-handle-async';
 import { readFileAsync } from '../helpers/read-file-async';
+import { toast } from 'sonner';
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
@@ -149,7 +150,15 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
         } satisfies SyncEntryTableRow;
       })}
       callback={(rows) => {
-        syncAllFiles(rows, Handle, RemoteHandle, setLocalFileList);
+        toast.promise(async () => await syncAllFiles(rows, Handle, RemoteHandle, setLocalFileList), {
+          loading: 'Syncing all files...',
+          success: () => {
+            return 'Files successfully synced!';
+          },
+          error: () => {
+            return 'Files were not written to disk.';
+          },
+        });
       }}
       optionalButtons={<div className="flex gap-2"></div>}
     />

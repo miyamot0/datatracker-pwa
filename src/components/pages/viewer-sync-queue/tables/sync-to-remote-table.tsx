@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { SyncEntryTableRow } from '../types/sync-entry-table-row';
 import { readFileAsync } from '../helpers/read-file-async';
 import { getFileHandle } from '../helpers/get-file-handle-async';
+import { toast } from 'sonner';
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
@@ -126,7 +127,6 @@ export default function SyncToRemoteTable({ Handle, RemoteHandle }: Props) {
       ),
       enableSorting: false,
       enableHiding: false,
-      size: 100,
     },
     {
       accessorKey: 'file',
@@ -146,7 +146,15 @@ export default function SyncToRemoteTable({ Handle, RemoteHandle }: Props) {
         } satisfies SyncEntryTableRow;
       })}
       callback={(rows) => {
-        syncAllFiles(rows, Handle, RemoteHandle, setRemoteFileList);
+        toast.promise(async () => await syncAllFiles(rows, Handle, RemoteHandle, setRemoteFileList), {
+          loading: 'Syncing all files...',
+          success: () => {
+            return 'Files successfully synced!';
+          },
+          error: () => {
+            return 'Files were not written to disk.';
+          },
+        });
       }}
       optionalButtons={<div className="flex gap-2"></div>}
     />

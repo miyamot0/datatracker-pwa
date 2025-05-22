@@ -61,7 +61,7 @@ export function ReliabilityDataTable<TData, TValue>({
       rowSelection,
     },
     defaultColumn: {
-      minSize: 100, //enforced during column resizing
+      minSize: 50, //enforced during column resizing
       //maxSize: 500, //enforced during column resizing
     },
   });
@@ -87,6 +87,8 @@ export function ReliabilityDataTable<TData, TValue>({
             onClick={() => {
               //@ts-ignore
               callback(table.getFilteredSelectedRowModel().rows.map((row) => row.original));
+
+              setRowSelection({});
             }}
           >
             <RefreshCcw className="h-4 w-4 mr-2" />
