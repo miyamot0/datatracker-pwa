@@ -1,0 +1,137 @@
+{
+  "SessionSettings": {
+    "Therapist": "Therapist1",
+    "Initials": "DC01",
+    "Role": "Primary",
+    "DurationS": 300,
+    "TimerOption": "End on Timer #1",
+    "Session": 28,
+    "KeySet": "FC Treatment Evaluation",
+    "Condition": "Intervention"
+  },
+  "FrequencyKeyPresses": [
+    {
+      "KeyName": "4",
+      "KeyCode": 52,
+      "KeyDescription": "FCR",
+      "TimePressed": "2025-05-16T23:29:31.669Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Frequency",
+      "TimeIntoSession": 8.199999999999982
+    },
+    {
+      "KeyName": "4",
+      "KeyCode": 52,
+      "KeyDescription": "FCR",
+      "TimePressed": "2025-05-16T23:30:25.806Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Frequency",
+      "TimeIntoSession": 62.349999999998595
+    }
+  ],
+  "DurationKeyPresses": [
+    {
+      "KeyName": "r",
+      "KeyCode": 82,
+      "KeyDescription": "SR",
+      "TimePressed": "2025-05-16T23:29:31.996Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Duration",
+      "TimeIntoSession": 8.549999999999986
+    },
+    {
+      "KeyName": "r",
+      "KeyCode": 82,
+      "KeyDescription": "SR",
+      "TimePressed": "2025-05-16T23:30:02.680Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Duration",
+      "TimeIntoSession": 39.24999999999991
+    },
+    {
+      "KeyName": "r",
+      "KeyCode": 82,
+      "KeyDescription": "SR",
+      "TimePressed": "2025-05-16T23:30:26.079Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Duration",
+      "TimeIntoSession": 62.64999999999858
+    },
+    {
+      "KeyName": "r",
+      "KeyCode": 82,
+      "KeyDescription": "SR",
+      "TimePressed": "2025-05-16T23:30:57.366Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "Duration",
+      "TimeIntoSession": 93.89999999999681
+    }
+  ],
+  "SystemKeyPresses": [
+    {
+      "KeyName": "Enter",
+      "KeyCode": 13,
+      "KeyDescription": "Start of Session",
+      "TimePressed": "2025-05-16T23:29:23.422Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "System",
+      "TimeIntoSession": 0,
+      "ScheduleIndicator": "Start"
+    },
+    {
+      "KeyName": "Primary",
+      "KeyCode": 0,
+      "KeyDescription": "Start of Primary",
+      "TimePressed": "2025-05-16T23:29:23.422Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "System",
+      "TimeIntoSession": 0,
+      "ScheduleIndicator": "Start"
+    },
+    {
+      "KeyName": "Primary",
+      "KeyCode": 0,
+      "KeyDescription": "End of Primary",
+      "TimePressed": "2025-05-16T23:34:23.429Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "System",
+      "TimeIntoSession": 299.9500000000339,
+      "ScheduleIndicator": "End"
+    },
+    {
+      "KeyName": "Escape",
+      "KeyCode": 0,
+      "KeyDescription": "End of Session",
+      "TimePressed": "2025-05-16T23:34:23.429Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "System",
+      "TimeIntoSession": 299.9500000000339,
+      "ScheduleIndicator": "End"
+    }
+  ],
+  "SessionStart": "2025-05-16T23:29:23.422Z",
+  "Keyset": {
+    "id": "2ac4bcf4-8901-46ee-8213-0cfb3d0ebebf",
+    "Name": "FC Treatment Evaluation",
+    "FrequencyKeys": [
+      { "KeyName": "1", "KeyDescription": "SIB", "KeyCode": 49 },
+      { "KeyName": "2", "KeyDescription": "DIS", "KeyCode": 50 },
+      { "KeyName": "3", "KeyDescription": "AGG", "KeyCode": 51 },
+      { "KeyName": "8", "KeyDescription": "Prompt", "KeyCode": 56 },
+      { "KeyName": "9", "KeyDescription": "Compliance", "KeyCode": 57 },
+      { "KeyName": "4", "KeyDescription": "FCR", "KeyCode": 52 }
+    ],
+    "DurationKeys": [
+      { "KeyName": "r", "KeyDescription": "SR", "KeyCode": 82 },
+      { "KeyName": "e", "KeyDescription": "Tantrum", "KeyCode": 69 }
+    ],
+    "createdAt": "2025-05-16T23:28:12.502Z",
+    "lastModified": "2025-05-16T23:29:08.350Z"
+  },
+  "SessionEnd": "2025-05-16T23:34:23.433Z",
+  "EndedEarly": false,
+  "TimerMain": 300,
+  "TimerOne": 300,
+  "TimerTwo": 0,
+  "TimerThree": 0
+}

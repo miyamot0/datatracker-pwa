@@ -1,5 +1,5 @@
-import { FolderHandleContext } from '@/context/folder-context';
-import { useContext, useEffect, useState } from 'react';
+import { FolderHandleContextType } from '@/context/folder-context';
+import { useEffect, useState } from 'react';
 import { QueryResponseKeyboardsMetaExpanded } from './types/query-response-type-keyboards';
 import { GetAllKeyboardsQuery } from './helpers/pull-all-keyboards';
 import { GetHandleKeyboardsFolder } from '@/lib/files';
@@ -7,8 +7,8 @@ import { KeySet } from '@/types/keyset';
 import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
 import { toast } from 'sonner';
 
-export default function useQueryKeyboardsMeta(Group?: string, Client?: string) {
-  const { handle } = useContext(FolderHandleContext);
+export function useQueryKeyboardsMetaFixed(Group: string, Client: string, Context: FolderHandleContextType) {
+  const { handle } = Context;
   const [version, setVersion] = useState(0);
 
   const [data, setData] = useState<QueryResponseKeyboardsMetaExpanded>({
@@ -20,10 +20,7 @@ export default function useQueryKeyboardsMeta(Group?: string, Client?: string) {
   const incrementVersion = () => setVersion((prev) => prev + 1);
 
   const importExistingKeyset = async (keyset_base: KeySet) => {
-    if (!Client || !Group) throw new Error('Params missing.');
-    if (!handle) throw new Error('Handle missing.');
-
-    const keyboards_folder = await GetHandleKeyboardsFolder(handle, Group, Client);
+    const keyboards_folder = await GetHandleKeyboardsFolder(handle!, Group, Client);
 
     let keyboard_exists = false;
 
@@ -63,25 +60,23 @@ export default function useQueryKeyboardsMeta(Group?: string, Client?: string) {
 
   useEffect(() => {
     try {
-      if (handle && Group && Client) {
-        GetAllKeyboardsQuery(handle).then((keyboards) => {
-          // Note: Pull relevant keyboards to compare against
-          try {
-            const client_keyboards = keyboards.filter(
-              (keyboard) => keyboard.Group === Group && keyboard.Individual === Client
-            );
-            const client_keyboards_by_name = client_keyboards.map((keyboard) => keyboard.Name);
+      GetAllKeyboardsQuery(handle!).then((keyboards) => {
+        // Note: Pull relevant keyboards to compare against
+        try {
+          const client_keyboards = keyboards.filter(
+            (keyboard) => keyboard.Group === Group && keyboard.Individual === Client
+          );
+          const client_keyboards_by_name = client_keyboards.map((keyboard) => keyboard.Name);
 
-            // Note: Filter out duplicated names
-            const filteredKeyboards = keyboards.filter(
-              (keyboard) => keyboard.Individual !== Client && !client_keyboards_by_name.includes(keyboard.Name)
-            );
-            setData({ status: 'success', data: filteredKeyboards });
-          } catch (err: unknown) {
-            setData({ status: 'error', data: [], error: (err as Error).message });
-          }
-        });
-      } else setData({ status: 'error', data: [], error: 'No handle found' });
+          // Note: Filter out duplicated names
+          const filteredKeyboards = keyboards.filter(
+            (keyboard) => keyboard.Individual !== Client && !client_keyboards_by_name.includes(keyboard.Name)
+          );
+          setData({ status: 'success', data: filteredKeyboards });
+        } catch (err: unknown) {
+          setData({ status: 'error', data: [], error: (err as Error).message });
+        }
+      });
     } catch (err: unknown) {
       if (err instanceof Error) {
         setData({ status: 'error', data: [], error: err.message });
@@ -96,6 +91,8 @@ export default function useQueryKeyboardsMeta(Group?: string, Client?: string) {
       status: 'error',
       data: [],
       error: 'No handle found',
+      refresh: incrementVersion,
+      importExistingKeyset,
     };
   }
 
@@ -103,7 +100,6 @@ export default function useQueryKeyboardsMeta(Group?: string, Client?: string) {
     status: data.status,
     data: data.data,
     error: data.error,
-    handle,
     refresh: incrementVersion,
     importExistingKeyset,
   };

@@ -44,7 +44,7 @@ const fn_lines = `${coverageSummary.total.functions.pct.toFixed(2)}_Percent`;
 let readme_md = read_md();
 readme_md = readme_md
   //.replace('{{VERSION}}', version_text)
-  .replace('{{VERSION_NUMBER}}', packageJson.version)
+  .replaceAll('{{VERSION_NUMBER}}', packageJson.version)
   .replace('{{LICENSES}}', software_pkg_text)
   .replace('{{STPCT}}', st_lines)
   .replace('{{BRPCT}}', br_lines)

@@ -1,0 +1,80 @@
+{
+  "SessionSettings": {
+    "Therapist": "Therapist1",
+    "Initials": "DC02",
+    "Role": "Reliability",
+    "DurationS": 300,
+    "TimerOption": "End on Timer #1",
+    "Session": 5,
+    "KeySet": "Functional Analysis",
+    "Condition": "Control"
+  },
+  "FrequencyKeyPresses": [],
+  "DurationKeyPresses": [],
+  "SystemKeyPresses": [
+    {
+      "KeyName": "Enter",
+      "KeyCode": 13,
+      "KeyDescription": "Start of Session",
+      "TimePressed": "2025-05-12T21:55:41.146Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "System",
+      "TimeIntoSession": 0,
+      "ScheduleIndicator": "Start"
+    },
+    {
+      "KeyName": "Primary",
+      "KeyCode": 0,
+      "KeyDescription": "Start of Primary",
+      "TimePressed": "2025-05-12T21:55:41.146Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "System",
+      "TimeIntoSession": 0,
+      "ScheduleIndicator": "Start"
+    },
+    {
+      "KeyName": "Primary",
+      "KeyCode": 0,
+      "KeyDescription": "End of Primary",
+      "TimePressed": "2025-05-12T22:00:41.148Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "System",
+      "TimeIntoSession": 299.9500000000339,
+      "ScheduleIndicator": "End"
+    },
+    {
+      "KeyName": "Escape",
+      "KeyCode": 0,
+      "KeyDescription": "End of Session",
+      "TimePressed": "2025-05-12T22:00:41.148Z",
+      "KeyScheduleRecording": "Primary",
+      "KeyType": "System",
+      "TimeIntoSession": 299.9500000000339,
+      "ScheduleIndicator": "End"
+    }
+  ],
+  "SessionStart": "2025-05-12T21:55:41.146Z",
+  "Keyset": {
+    "id": "d52a243f-931e-4205-aa29-ffc3f2940387",
+    "Name": "Functional Analysis",
+    "FrequencyKeys": [
+      { "KeyName": "1", "KeyDescription": "SIB", "KeyCode": 49 },
+      { "KeyName": "2", "KeyDescription": "DIS", "KeyCode": 50 },
+      { "KeyName": "3", "KeyDescription": "AGG", "KeyCode": 51 },
+      { "KeyName": "8", "KeyDescription": "Prompt", "KeyCode": 56 },
+      { "KeyName": "9", "KeyDescription": "Compliance", "KeyCode": 57 }
+    ],
+    "DurationKeys": [
+      { "KeyName": "r", "KeyDescription": "SR", "KeyCode": 82 },
+      { "KeyName": "e", "KeyDescription": "Tantrum", "KeyCode": 69 }
+    ],
+    "createdAt": "2025-05-12T21:53:58.363Z",
+    "lastModified": "2025-05-12T21:53:58.363Z"
+  },
+  "SessionEnd": "2025-05-12T22:00:41.152Z",
+  "EndedEarly": false,
+  "TimerMain": 300,
+  "TimerOne": 300,
+  "TimerTwo": 0,
+  "TimerThree": 0
+}

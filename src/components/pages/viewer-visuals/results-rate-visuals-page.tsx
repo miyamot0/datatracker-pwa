@@ -4,12 +4,11 @@ import {
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import LoadingDisplay from '@/components/ui/loading-display';
 import { SavedSessionResult } from '@/lib/dtos';
 import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import { CleanUpString } from '@/lib/strings';
 import { KeySet, KeySetInstance } from '@/types/keyset';
-import { useContext, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { FilterByPrimaryRole } from './helpers/filtering';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-schema';
@@ -22,143 +21,137 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { KeyboardIcon, PointerIcon } from 'lucide-react';
-import RateFigureVisualization, { ExpandedKeySetInstance } from './figures/rate-figure';
+import { KeyboardIcon, PointerIcon, ScatterChartIcon } from 'lucide-react';
+import RateFigureVisualization from './figures/rate-figure';
 import { getLocalCachedPrefs, setLocalCachedPrefs } from '@/lib/local_storage';
 import createHref from '@/lib/links';
-import { useNavigate, useParams } from 'react-router-dom';
-import { FolderHandleContext } from '@/context/folder-context';
+import { Link, redirect, useLoaderData } from 'react-router-dom';
+import { FolderHandleContextType } from '@/context/folder-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
 
-export function ResultsRateVisualsPageShim() {
-  const { handle } = useContext(FolderHandleContext);
-  const navigate = useNavigate();
-
-  const { Group, Individual, Evaluation } = useParams();
-
-  useEffect(() => {
-    if (!handle) {
-      navigate(createHref({ type: 'Dashboard' }), {
-        unstable_viewTransition: true,
-      });
-      return;
-    }
-  }, [handle, navigate]);
-
-  if (!handle) return <LoadingDisplay />;
-
-  if (!Group || !Individual || !Evaluation) {
-    navigate(createHref({ type: 'Dashboard' }), {
-      unstable_viewTransition: true,
-    });
-    return;
-  }
-
-  return (
-    <ResultsRateVisualsPage
-      Handle={handle}
-      Group={CleanUpString(Group)}
-      Individual={CleanUpString(Individual)}
-      Evaluation={CleanUpString(Evaluation)}
-    />
-  );
-}
-
-type Props = {
-  Handle: FileSystemDirectoryHandle;
+type LoaderResult = {
   Group: string;
   Individual: string;
   Evaluation: string;
+  Handle: FileSystemHandle;
+  Results: SavedSessionResult[];
+  DynamicKeySet: KeySet;
+  Schedule: SessionTerminationOptionsType;
+  ShowKeys: {
+    KeyDescription: string;
+    Visible: boolean;
+  }[];
+  ExcludeKeysFromCTB: {
+    KeyDescription: string;
+    Visible: boolean;
+  }[];
 };
 
-function ResultsRateVisualsPage({ Handle, Group, Individual, Evaluation }: Props) {
-  const [results, setResults] = useState<SavedSessionResult[]>([]);
-  const [keySet, setKeySet] = useState<KeySet>();
-  const [filteredKeys, setFilteredKeys] = useState([] as ExpandedKeySetInstance[]);
-  const [ctbSumKeys, setCTBSumKeys] = useState([] as ExpandedKeySetInstance[]);
-  const [schedule, setSchedule] = useState<SessionTerminationOptionsType>('End on Timer #1');
+export const resultsViewerRate = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
 
-  useEffect(() => {
-    const load_data = async () => {
-      const { keyset, results } = await GetResultsFromEvaluationFolder(Handle, Group, Individual, Evaluation);
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const { Group, Individual, Evaluation } = params;
 
-      const all_keysets = results.map((result) => result.Keyset);
-      const all_fkeys = all_keysets.map((keyset) => keyset.FrequencyKeys).flat();
-      const all_dkeys = all_keysets.map((keyset) => keyset.DurationKeys).flat();
+    if (!Group || !Individual || !Evaluation || !handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
 
-      const targeted_fkeys: KeySetInstance[] = [];
-      all_fkeys.forEach((key) => {
-        if (!targeted_fkeys.some((k) => k.KeyCode === key.KeyCode)) {
-          targeted_fkeys.push(key);
-        }
-      });
+    const { keyset, results } = await GetResultsFromEvaluationFolder(handle, Group, Individual, Evaluation);
 
-      const targeted_dkeys: KeySetInstance[] = [];
-      all_dkeys.forEach((key) => {
-        if (!targeted_dkeys.some((k) => k.KeyCode === key.KeyCode)) {
-          targeted_dkeys.push(key);
-        }
-      });
+    if (!keyset) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
 
-      const dynamic_keyset = {
-        ...keyset,
-        FrequencyKeys: targeted_fkeys,
-        DurationKeys: targeted_dkeys,
-      } as unknown as KeySet;
+    const all_keysets = results.map((result) => result.Keyset);
+    const all_fkeys = all_keysets.map((keyset) => keyset.FrequencyKeys).flat();
+    const all_dkeys = all_keysets.map((keyset) => keyset.DurationKeys).flat();
 
-      setKeySet(dynamic_keyset);
-      setResults(results);
-
-      if (dynamic_keyset) {
-        const keys = dynamic_keyset.FrequencyKeys.map((key) => ({
-          KeyDescription: key.KeyDescription,
-          Visible: true,
-        }));
-
-        const stored_prefs = getLocalCachedPrefs(Group, Individual, Evaluation, 'Rate');
-
-        const ctb_entry = {
-          KeyDescription: 'CTB',
-          Visible: true,
-        };
-
-        const show_keys_base = [...keys, ctb_entry].map((key) => {
-          const should_disable = stored_prefs.KeyDescription.includes(key.KeyDescription);
-
-          if (should_disable) {
-            return {
-              ...key,
-              Visible: false,
-            };
-          }
-
-          return key;
-        });
-
-        const exclude_from_ctb = keys.map((key) => {
-          const should_disable = stored_prefs.CTBElements.includes(key.KeyDescription);
-
-          if (should_disable) {
-            return {
-              ...key,
-              Visible: false,
-            };
-          }
-
-          return key;
-        });
-
-        setFilteredKeys(show_keys_base);
-        setCTBSumKeys(exclude_from_ctb);
-        setSchedule(stored_prefs.Schedule);
+    const targeted_fkeys: KeySetInstance[] = [];
+    all_fkeys.forEach((key) => {
+      if (!targeted_fkeys.some((k) => k.KeyCode === key.KeyCode)) {
+        targeted_fkeys.push(key);
       }
+    });
+
+    const targeted_dkeys: KeySetInstance[] = [];
+    all_dkeys.forEach((key) => {
+      if (!targeted_dkeys.some((k) => k.KeyCode === key.KeyCode)) {
+        targeted_dkeys.push(key);
+      }
+    });
+
+    const dynamic_keyset = {
+      ...keyset,
+      FrequencyKeys: targeted_fkeys,
+      DurationKeys: targeted_dkeys,
+    } as unknown as KeySet;
+
+    const keys = dynamic_keyset.FrequencyKeys.map((key) => ({
+      KeyDescription: key.KeyDescription,
+      Visible: true,
+    }));
+
+    const stored_prefs = getLocalCachedPrefs(Group, Individual, Evaluation, 'Rate');
+
+    const ctb_entry = {
+      KeyDescription: 'CTB',
+      Visible: true,
     };
 
-    load_data();
-  }, [Handle, Group, Individual, Evaluation]);
+    const show_keys_base = [...keys, ctb_entry].map((key) => {
+      const should_disable = stored_prefs.KeyDescription.includes(key.KeyDescription);
 
-  const results_filtered = FilterByPrimaryRole(results);
+      if (should_disable) {
+        return {
+          ...key,
+          Visible: false,
+        };
+      }
+
+      return key;
+    });
+
+    const exclude_from_ctb = keys.map((key) => {
+      const should_disable = stored_prefs.CTBElements.includes(key.KeyDescription);
+
+      if (should_disable) {
+        return {
+          ...key,
+          Visible: false,
+        };
+      }
+
+      return key;
+    });
+
+    return {
+      Group: CleanUpString(Group),
+      Individual: CleanUpString(Individual),
+      Evaluation: CleanUpString(Evaluation),
+      Handle: handle,
+      Results: results,
+      DynamicKeySet: dynamic_keyset,
+      ShowKeys: show_keys_base,
+      ExcludeKeysFromCTB: exclude_from_ctb,
+      Schedule: stored_prefs.Schedule ?? 'End on Timer #1',
+    } satisfies LoaderResult;
+  };
+};
+
+export default function ResultsRateVisualsPage() {
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Group, Individual, Evaluation, ShowKeys, DynamicKeySet, Results, Schedule, ExcludeKeysFromCTB } =
+    loaderResult;
+  const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
+  const [schedule, setSchedule] = useState<SessionTerminationOptionsType>(Schedule);
+  const [ctbSumKeys, setCTBSumKeys] = useState(ExcludeKeysFromCTB);
+
+  const results_filtered = FilterByPrimaryRole(Results);
 
   return (
     <PageWrapper
@@ -176,10 +169,26 @@ function ResultsRateVisualsPage({ Handle, Group, Individual, Evaluation }: Props
             <CardTitle>Visualization of Behavioral Rates</CardTitle>
             <CardDescription>Options for Visualizing Data Provided Below</CardDescription>
           </div>
-          <BackButton
-            Label="Back to Evaluations"
-            Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
-          />
+          <div className="flex gap-2">
+            <Link
+              unstable_viewTransition
+              to={createHref({
+                type: 'Evaluation Visualizer-Proportion',
+                group: Group,
+                individual: Individual,
+                evaluation: Evaluation,
+              })}
+            >
+              <Button variant={'outline'} className="shadow" size={'sm'}>
+                <ScatterChartIcon className="mr-2 h-4 w-4" />
+                See Proportion
+              </Button>
+            </Link>
+            <BackButton
+              Label="Back to Evaluations"
+              Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
+            />
+          </div>
         </CardHeader>
 
         <CardContent className="flex flex-col gap-2">
@@ -327,7 +336,7 @@ function ResultsRateVisualsPage({ Handle, Group, Individual, Evaluation }: Props
             will persist for future visits.
           </p>
 
-          {keySet && (
+          {DynamicKeySet && (
             <RateFigureVisualization
               FilteredSessions={results_filtered}
               ScheduleOption={schedule}

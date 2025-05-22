@@ -2,11 +2,55 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { SyncFromRemoteOptionIndicator } from './views/sync-from-remote-option-indicator';
 import { ArrowLeft } from 'lucide-react';
+import { SyncEntryTableRow } from '../types/sync-entry-table-row';
+import { ReliabilityDataTable } from '@/components/ui/data-table-reli';
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ColumnDef } from '@tanstack/react-table';
+import { getFileHandle } from '../helpers/get-file-handle-async';
+import { readFileAsync } from '../helpers/read-file-async';
+import { toast } from 'sonner';
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
   RemoteHandle: FileSystemDirectoryHandle;
 };
+
+async function writeOutFileToLocal(
+  remoteDirectory: FileSystemDirectoryHandle,
+  handle: FileSystemDirectoryHandle,
+  value: SyncEntryTableRow
+) {
+  if (!remoteDirectory || !handle) return;
+
+  const path_parts = value.file.split('/').filter((part) => part.trim().length > 0);
+
+  if (path_parts.length === 0) return;
+
+  const file_rem = await getFileHandle(remoteDirectory, value.file);
+  const file_rem_contents = await file_rem?.getFile();
+  const text = await readFileAsync(file_rem_contents!);
+
+  const file_handle_lcl = await getFileHandle(handle, value.file);
+  const writer = await file_handle_lcl?.createWritable();
+  await writer?.write(new Blob([text as string]));
+  await writer?.close();
+}
+
+async function syncAllFiles(
+  rows: SyncEntryTableRow[],
+  Handle: FileSystemDirectoryHandle,
+  RemoteHandle: FileSystemDirectoryHandle,
+  SetLocalCallback: React.Dispatch<React.SetStateAction<string[]>>
+) {
+  const files_added: string[] = [];
+  for (const row of rows) {
+    writeOutFileToLocal(RemoteHandle, Handle, row);
+    files_added.push(row.file);
+  }
+
+  SetLocalCallback((prev) => [...(prev ?? []), ...files_added]);
+}
 
 export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
   const [localFileList, setLocalFileList] = useState<string[]>([]);
@@ -38,8 +82,6 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
         }
       }
 
-      setLocalFileList(path_array);
-
       const groups2 = await RemoteHandle.values();
       const path_array2: string[] = [];
 
@@ -49,6 +91,7 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
         }
       }
 
+      setLocalFileList(path_array);
       setRemoteFileList(path_array2);
     };
 
@@ -66,6 +109,59 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
       })
       .filter((value) => value.status === 'Unsynced');
   }, [localFileList, remoteFileList]);
+
+  const columns: ColumnDef<SyncEntryTableRow>[] = [
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: 'file',
+      header: ({ column }) => <DataTableColumnHeader className="w-full" column={column} title="Unsynced File Path" />,
+    },
+  ];
+
+  return (
+    <ReliabilityDataTable
+      direction="Local"
+      columns={columns}
+      data={sync_status.map((g) => {
+        return {
+          file: g.file,
+          status: g.status,
+          direction: 'Remote --> Local',
+        } satisfies SyncEntryTableRow;
+      })}
+      callback={(rows) => {
+        toast.promise(async () => await syncAllFiles(rows, Handle, RemoteHandle, setLocalFileList), {
+          loading: 'Syncing all files...',
+          success: () => {
+            return 'Files successfully synced!';
+          },
+          error: () => {
+            return 'Files were not written to disk.';
+          },
+        });
+      }}
+      optionalButtons={<div className="flex gap-2"></div>}
+    />
+  );
 
   return (
     <Table>

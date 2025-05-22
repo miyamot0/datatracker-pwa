@@ -1,14 +1,19 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { QueryResponseSingleKeyboard } from './types/query-response-type-keyboards';
 import { deserializeKeySet, serializeKeySet } from '@/lib/keyset';
 import { CleanUpString } from '@/lib/strings';
 import { GetHandleKeyboardsFolder } from '@/lib/files';
 import { displayConditionalNotification } from '@/lib/notifications';
 import { KeySet, KeySetInstance } from '@/types/keyset';
-import { FolderHandleContext } from '@/context/folder-context';
+import { FolderHandleContextType } from '@/context/folder-context';
 
-export default function useQuerySingleKeyboard(Group?: string, Client?: string, Keyset?: string) {
-  const { handle, settings } = useContext(FolderHandleContext);
+export function useQuerySingleKeyboardFixed(
+  Group: string,
+  Client: string,
+  Keyset: string,
+  Context: FolderHandleContextType
+) {
+  const { handle, settings } = Context;
   const [version, setVersion] = useState(0);
 
   const [data, setData] = useState<QueryResponseSingleKeyboard>({
@@ -19,10 +24,8 @@ export default function useQuerySingleKeyboard(Group?: string, Client?: string, 
   const incrementVersion = () => setVersion((prev) => prev + 1);
 
   const mutateKeySet = async (new_keyset: KeySet) => {
-    if (!handle || !Group || !Client || !Keyset) return;
-
     try {
-      const keyboards_folder = await GetHandleKeyboardsFolder(handle, Group, Client);
+      const keyboards_folder = await GetHandleKeyboardsFolder(handle!, Group, Client);
 
       const key_board = await keyboards_folder.getFileHandle(`${CleanUpString(Keyset)}.json`);
 
@@ -47,8 +50,6 @@ export default function useQuerySingleKeyboard(Group?: string, Client?: string, 
   };
 
   const addKeyCallback = async (base_keyset: KeySet, new_key: KeySetInstance, type: 'Duration' | 'Frequency') => {
-    if (!handle || !Group || !Client || !Keyset) return;
-
     let new_state = {
       ...base_keyset,
       lastModified: new Date(),
@@ -70,20 +71,18 @@ export default function useQuerySingleKeyboard(Group?: string, Client?: string, 
   };
 
   useEffect(() => {
-    if (handle && Group && Client && Keyset) {
-      GetHandleKeyboardsFolder(handle, Group, Client).then(async (keyboard_folder) => {
-        const file = await keyboard_folder.getFileHandle(`${CleanUpString(Keyset)}.json`, {
-          create: true,
-        });
-
-        const keyset = await file.getFile();
-        const keyset_text = await keyset.text();
-        const keyset_json = deserializeKeySet(keyset_text);
-
-        if (keyset_json) setData({ status: 'success', data: keyset_json });
-        else setData({ status: 'error', data: undefined, error: 'No handle found' });
+    GetHandleKeyboardsFolder(handle!, Group, Client).then(async (keyboard_folder) => {
+      const file = await keyboard_folder.getFileHandle(`${CleanUpString(Keyset)}.json`, {
+        create: true,
       });
-    } else setData({ status: 'error', data: undefined, error: 'No handle found' });
+
+      const keyset = await file.getFile();
+      const keyset_text = await keyset.text();
+      const keyset_json = deserializeKeySet(keyset_text);
+
+      if (keyset_json) setData({ status: 'success', data: keyset_json });
+      else setData({ status: 'error', data: undefined, error: 'No handle found' });
+    });
 
     return () => {};
   }, [handle, Group, Client, version, Keyset]);

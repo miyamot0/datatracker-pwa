@@ -1,9 +1,9 @@
 import PageWrapper from '@/components/layout/page-wrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FolderHandleContext } from '@/context/folder-context';
+import { FolderHandleContextType } from '@/context/folder-context';
 import createHref from '@/lib/links';
-import { ReactNode, useContext, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { redirect, useLoaderData } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { FileSyncingStatus } from '@/types/sync';
 import SyncToRemoteTable from './tables/sync-to-remote-table';
@@ -11,41 +11,36 @@ import SyncFromRemoteTable from './tables/sync-from-remote-table';
 import { RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { displayConditionalNotification } from '@/lib/notifications';
-import { Badge } from '@/components/ui/badge';
 import BackButton from '@/components/ui/back-button';
+import { WrappedButton } from './views/wrapped-btn';
 
-const WrappedButton = ({ active, children }: { active: boolean; children: ReactNode }) => {
-  return (
-    <div className="flex flex-row items-center gap-2 h-fit">
-      <Badge
-        className={cn('text-nowrap text-white', {
-          'bg-green-500 hover:bg-green-400': active,
-          'bg-red-500 hover:bg-red-400': !active,
-        })}
-      >
-        {active ? 'Remote Access Authorized' : 'No Remote Selected'}
-      </Badge>
-      {children}
-    </div>
-  );
+type LoaderResult = {
+  Context: FolderHandleContextType;
+};
+
+export const syncPageLoader = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
+
+  // @ts-ignore
+  return async ({ params, request }) => {
+    if (!handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
+
+    return {
+      Context: ctx,
+    } satisfies LoaderResult;
+  };
 };
 
 export default function ViewSyncPage() {
-  const { settings, handle } = useContext(FolderHandleContext);
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Context } = loaderResult;
+  const { settings, handle } = Context;
+
   const [remote_handle, setRemoteHandle] = useState<FileSystemDirectoryHandle | undefined>();
-
   const [directionalSync, setDirectionalSync] = useState<FileSyncingStatus>('to_remote');
-
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!handle) {
-      navigate(createHref({ type: 'Dashboard' }), {
-        unstable_viewTransition: true,
-      });
-      return;
-    }
-  }, [handle, navigate, remote_handle]);
 
   const buttonChangeDirection = useMemo(() => {
     return (
@@ -148,6 +143,7 @@ export default function ViewSyncPage() {
             from. Once a secondary 'Remote' directory is selected, files can be synced either *to the remote directory*
             (e.g., Reliability data) or *from the remote directory* (e.g., keyboards).
           </p>
+
           {handle && remote_handle && directionalSync === 'to_remote' && (
             <SyncToRemoteTable Handle={handle} RemoteHandle={remote_handle} />
           )}

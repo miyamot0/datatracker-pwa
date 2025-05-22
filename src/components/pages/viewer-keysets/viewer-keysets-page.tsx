@@ -10,24 +10,45 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import LoadingDisplay from '@/components/ui/loading-display';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import useQueryKeyboardsMeta from '@/hooks/keyboards/useQueryKeyboardsMeta';
+import { FolderHandleContextType } from '@/context/folder-context';
+import { useQueryKeyboardsMetaFixed } from '@/hooks/keyboards/useQueryKeyboardsMeta';
 import createHref from '@/lib/links';
+import { CleanUpString } from '@/lib/strings';
 import { ImportIcon } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { redirect, useLoaderData } from 'react-router-dom';
+
+type LoaderResult = {
+  Group: string;
+  Individual: string;
+  Handle: FileSystemHandle;
+  Context: FolderHandleContextType;
+};
+
+export const keysetsPageLoader = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
+
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const { Group, Individual } = params;
+
+    if (!Group || !Individual || !handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
+
+    return {
+      Group: CleanUpString(Group),
+      Individual: CleanUpString(Individual),
+      Handle: handle,
+      Context: ctx,
+    } satisfies LoaderResult;
+  };
+};
 
 export default function ViewerKeysetPage() {
-  const { Group, Individual } = useParams();
-  const { data, status, error, handle, importExistingKeyset } = useQueryKeyboardsMeta(Group, Individual);
-
-  const navigate = useNavigate();
-
-  if (!handle || !Group || !Individual) {
-    navigate(createHref({ type: 'Dashboard' }), {
-      unstable_viewTransition: true,
-    });
-
-    return <></>;
-  }
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Group, Individual, Context } = loaderResult;
+  const { data, status, error, importExistingKeyset } = useQueryKeyboardsMetaFixed(Group, Individual, Context);
 
   if (status === 'loading') {
     return <LoadingDisplay />;

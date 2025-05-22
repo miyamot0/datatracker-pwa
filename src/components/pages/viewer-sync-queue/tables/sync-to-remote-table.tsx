@@ -1,12 +1,53 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { SyncToRemoteOptionIndicator } from './views/sync-to-remote-option-indicator';
-import { ArrowRight } from 'lucide-react';
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import { ColumnDef } from '@tanstack/react-table';
+import { ReliabilityDataTable } from '@/components/ui/data-table-reli';
+import { Checkbox } from '@/components/ui/checkbox';
+import { SyncEntryTableRow } from '../types/sync-entry-table-row';
+import { readFileAsync } from '../helpers/read-file-async';
+import { getFileHandle } from '../helpers/get-file-handle-async';
+import { toast } from 'sonner';
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
   RemoteHandle: FileSystemDirectoryHandle;
 };
+
+async function writeOutFileToRemote(
+  remoteDirectory: FileSystemDirectoryHandle,
+  handle: FileSystemDirectoryHandle,
+  value: SyncEntryTableRow
+) {
+  if (!remoteDirectory || !handle) return;
+
+  const path_parts = value.file.split('/').filter((part) => part.trim().length > 0);
+
+  if (path_parts.length === 0) return;
+
+  const file_lcl = await getFileHandle(handle, value.file);
+  const file_lcl_contents = await file_lcl?.getFile();
+  const text = await readFileAsync(file_lcl_contents!);
+
+  const file_handle_rem = await getFileHandle(remoteDirectory, value.file);
+  const writer = await file_handle_rem?.createWritable();
+  await writer?.write(new Blob([text as string]));
+  await writer?.close();
+}
+
+async function syncAllFiles(
+  rows: SyncEntryTableRow[],
+  Handle: FileSystemDirectoryHandle,
+  RemoteHandle: FileSystemDirectoryHandle,
+  SetRemoteCallback: React.Dispatch<React.SetStateAction<string[]>>
+) {
+  const files_added: string[] = [];
+  for (const row of rows) {
+    writeOutFileToRemote(RemoteHandle, Handle, row);
+    files_added.push(row.file);
+  }
+
+  SetRemoteCallback((prev) => [...(prev ?? []), ...files_added]);
+}
 
 export default function SyncToRemoteTable({ Handle, RemoteHandle }: Props) {
   const [localFileList, setLocalFileList] = useState<string[]>([]);
@@ -38,8 +79,6 @@ export default function SyncToRemoteTable({ Handle, RemoteHandle }: Props) {
         }
       }
 
-      setLocalFileList(path_array);
-
       const groups2 = await RemoteHandle.values();
       const path_array2: string[] = [];
 
@@ -49,6 +88,7 @@ export default function SyncToRemoteTable({ Handle, RemoteHandle }: Props) {
         }
       }
 
+      setLocalFileList(path_array);
       setRemoteFileList(path_array2);
     };
 
@@ -67,41 +107,55 @@ export default function SyncToRemoteTable({ Handle, RemoteHandle }: Props) {
       .filter((value) => value.status === 'Unsynced');
   }, [localFileList, remoteFileList]);
 
+  const columns: ColumnDef<SyncEntryTableRow>[] = [
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: 'file',
+      header: ({ column }) => <DataTableColumnHeader className="w-full" column={column} title="Unsynced File Path" />,
+    },
+  ];
+
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>File Path</TableHead>
-          <TableHead>Operation</TableHead>
-          <TableHead>Remote</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {sync_status
-          .sort((a, b) => -a.status.localeCompare(b.status))
-          .map((value, index) => {
-            return (
-              <TableRow key={index}>
-                <TableCell>{value.file}</TableCell>
-                <TableCell>
-                  <span className="flex flex-row gap-1 items-center">
-                    Local <ArrowRight className="h-4 w-4" /> Remote
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <SyncToRemoteOptionIndicator
-                    value={value}
-                    remoteDirectory={RemoteHandle}
-                    handle={Handle}
-                    setRemoteFileList={(value: string) => {
-                      setRemoteFileList([...(remoteFileList ?? []), value]);
-                    }}
-                  />
-                </TableCell>
-              </TableRow>
-            );
-          })}
-      </TableBody>
-    </Table>
+    <ReliabilityDataTable
+      direction="Remote"
+      columns={columns}
+      data={sync_status.map((g) => {
+        return {
+          file: g.file,
+          status: g.status,
+          direction: 'Local --> Remote',
+        } satisfies SyncEntryTableRow;
+      })}
+      callback={(rows) => {
+        toast.promise(async () => await syncAllFiles(rows, Handle, RemoteHandle, setRemoteFileList), {
+          loading: 'Syncing all files...',
+          success: () => {
+            return 'Files successfully synced!';
+          },
+          error: () => {
+            return 'Files were not written to disk.';
+          },
+        });
+      }}
+      optionalButtons={<div className="flex gap-2"></div>}
+    />
   );
 }

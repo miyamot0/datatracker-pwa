@@ -1,5 +1,5 @@
-import { FolderHandleContext } from '@/context/folder-context';
-import { useContext, useEffect, useState } from 'react';
+import { FolderHandleContextType } from '@/context/folder-context';
+import { useEffect, useState } from 'react';
 import { QueryResponseKeyboardsExpanded } from './types/query-response-type-keyboards';
 import { pullClientKeyboards } from './helpers/pull-client-keyboards';
 import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
@@ -8,21 +8,18 @@ import { CleanUpString } from '@/lib/strings';
 import { KeySet } from '@/types/keyset';
 import { v4 as uuidv4 } from 'uuid';
 
-export default function useQueryKeyboards(Group?: string, Client?: string) {
-  const { handle, settings } = useContext(FolderHandleContext);
+export function useQueryKeyboardsFixed(Group: string, Client: string, Context: FolderHandleContextType) {
+  const { handle, settings } = Context;
   const [version, setVersion] = useState(0);
 
   const [data, setData] = useState<QueryResponseKeyboardsExpanded>({
     status: 'loading',
     data: [],
-    handle,
   });
 
   const incrementVersion = () => setVersion((prev) => prev + 1);
 
   const addKeyboard = async () => {
-    if (!handle || !Group || !Client) return;
-
     const new_keyset_name = window && window.prompt('Enter the name of the keyset');
 
     if (!new_keyset_name) return;
@@ -32,7 +29,7 @@ export default function useQueryKeyboards(Group?: string, Client?: string) {
       return;
     }
 
-    const individuals_folder = await handle.getDirectoryHandle(CleanUpString(Group), { create: true });
+    const individuals_folder = await handle!.getDirectoryHandle(CleanUpString(Group), { create: true });
     const keyboards_folder = await individuals_folder.getDirectoryHandle(CleanUpString(Client), {
       create: true,
     });
@@ -66,8 +63,6 @@ export default function useQueryKeyboards(Group?: string, Client?: string) {
   };
 
   const duplicateKeyboard = async (keyset: KeySet) => {
-    if (!handle || !Group || !Client) return;
-
     const new_keyset_name = window && window.prompt('Enter the name for the duplicated keyset:');
 
     if (!new_keyset_name) return;
@@ -77,7 +72,7 @@ export default function useQueryKeyboards(Group?: string, Client?: string) {
       return;
     }
 
-    const individuals_folder = await handle.getDirectoryHandle(CleanUpString(Group), { create: true });
+    const individuals_folder = await handle!.getDirectoryHandle(CleanUpString(Group), { create: true });
     const keyboards_folder = await individuals_folder.getDirectoryHandle(CleanUpString(Client), {
       create: true,
     });
@@ -131,6 +126,9 @@ export default function useQueryKeyboards(Group?: string, Client?: string) {
       status: 'error',
       data: [],
       error: 'No handle found',
+      refresh: incrementVersion,
+      addKeyboard,
+      duplicateKeyboard,
     };
   }
 
@@ -138,7 +136,6 @@ export default function useQueryKeyboards(Group?: string, Client?: string) {
     status: data.status,
     data: data.data,
     error: data.error,
-    handle,
     refresh: incrementVersion,
     addKeyboard,
     duplicateKeyboard,

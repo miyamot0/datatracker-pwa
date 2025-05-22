@@ -3,6 +3,15 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { ApplicationSettingsTypes, DEFAULT_APPLICATION_SETTINGS } from '@/types/settings';
 import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react';
 
+export type FolderHandleContextType = {
+  handle: FileSystemDirectoryHandle | undefined;
+  setHandle: Dispatch<SetStateAction<FileSystemDirectoryHandle | undefined>>;
+  settings: ApplicationSettingsTypes;
+  setSettings: Dispatch<SetStateAction<ApplicationSettingsTypes>>;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  saveSettings: (_: ApplicationSettingsTypes) => {};
+};
+
 // Context for folder handle
 export const FolderHandleContext = createContext({
   handle: undefined as FileSystemDirectoryHandle | undefined,

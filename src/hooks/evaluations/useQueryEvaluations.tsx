@@ -1,13 +1,13 @@
-import { FolderHandleContext } from '@/context/folder-context';
-import { useContext, useEffect, useState } from 'react';
+import { FolderHandleContextType } from '@/context/folder-context';
+import { useEffect, useState } from 'react';
 import { pullEvaluationFolders } from './helpers/pull-evaluation-folders';
 import { QueryResponseEvaluationsExpanded } from './types/query-response-type-evaluations';
 import { CleanUpString } from '@/lib/strings';
 import { displayConditionalNotification } from '@/lib/notifications';
 import { removeEvaluationFolder } from './helpers/remove-evaluation-folder';
 
-export default function useQueryEvaluations(Group?: string, Client?: string) {
-  const { handle, settings } = useContext(FolderHandleContext);
+export function useQueryEvaluationsFixed(Group: string, Client: string, Context: FolderHandleContextType) {
+  const { handle, settings } = Context;
   const [version, setVersion] = useState(0);
 
   const [data, setData] = useState<QueryResponseEvaluationsExpanded>({
@@ -19,11 +19,9 @@ export default function useQueryEvaluations(Group?: string, Client?: string) {
   const incrementVersion = () => setVersion((prev) => prev + 1);
 
   const addEvaluation = async () => {
-    if (!handle || !Group || !Client) return;
-
     const input = window.prompt('Enter a name for the new evaluation.');
 
-    if (!input || !handle) return;
+    if (!input) return;
 
     if (data.data.includes(input)) {
       alert('Evaluation already exists.');
@@ -35,7 +33,7 @@ export default function useQueryEvaluations(Group?: string, Client?: string) {
       return;
     }
 
-    const group_dir = await handle.getDirectoryHandle(CleanUpString(Group));
+    const group_dir = await handle!.getDirectoryHandle(CleanUpString(Group));
     const client_dir = await group_dir.getDirectoryHandle(CleanUpString(Client));
     await client_dir.getDirectoryHandle(input, { create: true });
 
@@ -51,9 +49,9 @@ export default function useQueryEvaluations(Group?: string, Client?: string) {
   const removeEvaluation = async (evaluation: string) => {
     const confirm_delete = window.confirm('Are you sure you want to delete this evaluation?. This CANNOT be undone.');
 
-    if (confirm_delete && handle && Group && Client) {
+    if (confirm_delete && Group && Client) {
       try {
-        await removeEvaluationFolder(handle, Group, Client, evaluation);
+        await removeEvaluationFolder(handle!, Group, Client, evaluation);
 
         displayConditionalNotification(
           settings,
@@ -76,11 +74,9 @@ export default function useQueryEvaluations(Group?: string, Client?: string) {
   };
 
   useEffect(() => {
-    if (handle && Group && Client)
-      pullEvaluationFolders(handle, Group, Client).then((response) => {
-        setData(response);
-      });
-    else setData({ status: 'error', data: [], error: 'No handle found' });
+    pullEvaluationFolders(handle!, Group, Client).then((response) => {
+      setData(response);
+    });
 
     return () => {};
   }, [handle, Group, Client, version]);
@@ -90,6 +86,10 @@ export default function useQueryEvaluations(Group?: string, Client?: string) {
       status: 'error',
       data: [],
       error: 'No handle found',
+      handle,
+      refresh: incrementVersion,
+      addEvaluation,
+      removeEvaluation,
     };
   }
 

@@ -1,6 +1,5 @@
 import { CleanUpString } from './strings';
 import { DEFAULT_SESSION_SETTINGS, SavedSessionResult, SavedSettings } from './dtos';
-import { Dispatch, SetStateAction } from 'react';
 import { toast } from 'sonner';
 import { KeySet } from '@/types/keyset';
 import { KeyManageType } from '@/components/pages/session-recorder/types/session-recorder-types';
@@ -108,24 +107,20 @@ export const GetResultsFromEvaluationFolder = async (
 // --- File Management ---
 
 /**
+ *
  * Pull files for the session designer
  *
  * @param Handle The handle to the file system
  * @param Group The group name
  * @param Individual The individual name
  * @param Evaluation The evaluation name
- * @param SetKeysets The state setter for the keysets
- * @param SetKeysetFilenames The state setter for the keyset filenames
- * @param SetConditions The state setter for the conditions
+ *
  */
-export async function pullSessionDesignerParameters(
+export async function pullSessionDesignerParametersFixed(
   Handle: FileSystemDirectoryHandle,
   Group: string,
   Individual: string,
-  Evaluation: string,
-  SetKeysets: Dispatch<SetStateAction<KeySet[]>>,
-  SetKeysetFilenames: Dispatch<SetStateAction<string[]>>,
-  SetConditions: Dispatch<SetStateAction<string[]>>
+  Evaluation: string
 ) {
   const perms = await Handle.requestPermission({ mode: 'readwrite' });
 
@@ -158,9 +153,6 @@ export async function pullSessionDesignerParameters(
     }
   }
 
-  SetKeysets(keyset_time_files);
-  SetKeysetFilenames(keyset_time_filenames);
-
   const evaluations_folder = await GetHandleEvaluationFolder(Handle, Group, Individual, Evaluation);
 
   const conditions: string[] = [];
@@ -172,7 +164,11 @@ export async function pullSessionDesignerParameters(
     }
   }
 
-  SetConditions(conditions);
+  return {
+    Keysets: keyset_time_files,
+    KeysetFilenames: keyset_time_filenames,
+    Conditions: conditions,
+  };
 }
 
 /**

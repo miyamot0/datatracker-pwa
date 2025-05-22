@@ -9,15 +9,23 @@ export function formatTimeSeconds(seconds: number) {
   const minutes = Math.floor((seconds % 3600) / 60);
   const remaining_seconds = seconds % 60;
 
-  const str_hours = hours.toString().padStart(2, "0");
-  const str_minutes = minutes.toString().padStart(2, "0");
+  const str_hours = hours.toString().padStart(2, '0');
+  const str_minutes = minutes.toString().padStart(2, '0');
 
-  const str_seconds =
-    remaining_seconds < 10
-      ? `0${remaining_seconds.toFixed(2)}`
-      : remaining_seconds.toFixed(2);
+  const str_seconds = remaining_seconds < 10 ? `0${remaining_seconds.toFixed(2)}` : remaining_seconds.toFixed(2);
 
   return `${str_hours}:${str_minutes}:${str_seconds}`;
+}
+
+export function formatTimeSecondsMin(seconds: number) {
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remaining_seconds = seconds % 60;
+
+  const str_minutes = minutes.toString().padStart(2, '0');
+
+  const str_seconds = remaining_seconds < 10 ? `0${remaining_seconds.toFixed(0)}` : remaining_seconds.toFixed(0);
+
+  return `${str_minutes}:${str_seconds}`;
 }
 
 /**
@@ -28,8 +36,8 @@ export function formatTimeSeconds(seconds: number) {
  */
 export function formatTimeOfDay(date: Date) {
   return date.toLocaleString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
   });
 }

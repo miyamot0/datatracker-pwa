@@ -1,13 +1,13 @@
-import { FolderHandleContext } from '@/context/folder-context';
-import { useContext, useEffect, useState } from 'react';
+import { FolderHandleContextType } from '@/context/folder-context';
+import { useEffect, useState } from 'react';
 import { CleanUpString } from '@/lib/strings';
 import { displayConditionalNotification } from '@/lib/notifications';
 import { QueryResponseClientsExpanded } from './types/query-response-type-clients';
 import { pullClientFolders } from './helpers/pull-client-folders';
 import { removeClientFolder } from './helpers/remove-client-folder';
 
-export default function useQueryClients(Group?: string) {
-  const { handle, settings } = useContext(FolderHandleContext);
+export function useQueryClientsFixed(Group: string, Context: FolderHandleContextType) {
+  const { handle, settings } = Context;
   const [version, setVersion] = useState(0);
 
   const [data, setData] = useState<QueryResponseClientsExpanded>({
@@ -19,8 +19,6 @@ export default function useQueryClients(Group?: string) {
   const incrementVersion = () => setVersion((prev) => prev + 1);
 
   const addClient = async () => {
-    if (!handle || !Group) return;
-
     const input = window.prompt('Enter a name for the new group.');
 
     if (!input) return;
@@ -35,7 +33,7 @@ export default function useQueryClients(Group?: string) {
       return;
     }
 
-    const group_dir = await handle.getDirectoryHandle(CleanUpString(Group));
+    const group_dir = await handle!.getDirectoryHandle(CleanUpString(Group));
     await group_dir.getDirectoryHandle(input.trim(), { create: true });
 
     displayConditionalNotification(
@@ -71,11 +69,9 @@ export default function useQueryClients(Group?: string) {
   };
 
   useEffect(() => {
-    if (handle && Group)
-      pullClientFolders(handle, Group).then((response) => {
-        setData(response);
-      });
-    else setData({ status: 'error', data: [], error: 'No handle found' });
+    pullClientFolders(handle!, Group).then((response) => {
+      setData(response);
+    });
 
     return () => {};
   }, [handle, Group, version]);
@@ -85,6 +81,9 @@ export default function useQueryClients(Group?: string) {
       status: 'error',
       data: [],
       error: 'No handle found',
+      refresh: incrementVersion,
+      addClient,
+      removeClient,
     };
   }
 

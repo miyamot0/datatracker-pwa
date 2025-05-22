@@ -69,3 +69,7 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
 ## License
 
 Apache 2.0 - Shawn Gilroy, Louisiana State University
+
+## Current Version
+
+{{VERSION_NUMBER}}

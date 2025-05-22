@@ -15,34 +15,51 @@ import {
 } from '@/components/ui/dropdown-menu';
 import LoadingDisplay from '@/components/ui/loading-display';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import { FolderHandleContext } from '@/context/folder-context';
-import useQueryClients from '@/hooks/clients/useQueryClients';
+import { FolderHandleContextType } from '@/context/folder-context';
+import { useQueryClientsFixed } from '@/hooks/clients/useQueryClients';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { cn } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
 import { ChevronDown, FolderInput, FolderPlus, FolderX } from 'lucide-react';
-import { useContext } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, redirect, useLoaderData } from 'react-router-dom';
+
+type LoaderResult = {
+  Group: string;
+  Handle: FileSystemHandle;
+  Context: FolderHandleContextType;
+};
+
+export const clientsPageLoader = (ctx: FolderHandleContextType) => {
+  const { handle } = ctx;
+
+  // @ts-ignore
+  return async ({ params, request }) => {
+    const { Group } = params;
+
+    if (!Group || !handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
+
+    return {
+      Group: CleanUpString(Group!),
+      Handle: handle,
+      Context: ctx,
+    } satisfies LoaderResult;
+  };
+};
 
 type ClientTableRow = {
   Individual: string;
 };
 
 export default function ClientsPage() {
-  const { settings } = useContext(FolderHandleContext);
-  const { Group } = useParams();
-  const navigate = useNavigate();
+  const loaderResult = useLoaderData() as LoaderResult;
+  const { Group, Context } = loaderResult;
+  const { settings } = Context;
 
-  const { data, status, error, handle, addClient, removeClient } = useQueryClients(Group);
-
-  if (!handle || !Group) {
-    navigate(createHref({ type: 'Dashboard' }), {
-      unstable_viewTransition: true,
-    });
-
-    return <></>;
-  }
+  const { data, status, error, addClient, removeClient } = useQueryClientsFixed(Group, Context);
 
   if (status === 'loading') {
     return <LoadingDisplay />;
@@ -144,7 +161,7 @@ export default function ClientsPage() {
                   }}
                 >
                   <FolderPlus className="mr-2 h-4 w-4" />
-                  Create Individual
+                  Create
                 </Button>
               </ToolTipWrapper>
             }
