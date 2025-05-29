@@ -45,11 +45,11 @@ type LoaderResult = {
   }[];
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const sessionViewerLoader = (ctx: FolderHandleContextType) => {
   const { handle } = ctx;
 
-  // @ts-ignore
-  return async ({ params, request }) => {
+  return async ({ params }: any) => {
     const { Group, Individual, Evaluation, Index } = params;
 
     if (!Group || !Individual || !Evaluation || !Index || !handle) {

@@ -8,7 +8,7 @@ export type FolderHandleContextType = {
   setHandle: Dispatch<SetStateAction<FileSystemDirectoryHandle | undefined>>;
   settings: ApplicationSettingsTypes;
   setSettings: Dispatch<SetStateAction<ApplicationSettingsTypes>>;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   saveSettings: (_: ApplicationSettingsTypes) => {};
 };
 

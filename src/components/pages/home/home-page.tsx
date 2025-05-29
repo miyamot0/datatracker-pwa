@@ -49,7 +49,7 @@ export default function HomePage() {
         },
       });
     }
-  }, [settings]);
+  }, [navigate, saveSettings, setSettings, settings]);
 
   return (
     <PageWrapper className="flex flex-col gap-6 select-none">

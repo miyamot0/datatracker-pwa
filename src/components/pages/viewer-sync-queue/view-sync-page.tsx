@@ -18,11 +18,11 @@ type LoaderResult = {
   Context: FolderHandleContextType;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const syncPageLoader = (ctx: FolderHandleContextType) => {
   const { handle } = ctx;
 
-  // @ts-ignore
-  return async ({ params, request }) => {
+  return async () => {
     if (!handle) {
       const response = redirect(createHref({ type: 'Dashboard' }));
       throw response;

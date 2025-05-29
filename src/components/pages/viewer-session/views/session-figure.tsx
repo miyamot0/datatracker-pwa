@@ -18,6 +18,7 @@ import { ExpandedKeySetInstance } from '../../viewer-visuals/figures/rate-figure
 
 type Props = {
   Session?: ExpandedSavedSessionResult;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   PlotData?: any[];
   KeysHidden: ExpandedKeySetInstance[];
 };
@@ -25,6 +26,7 @@ type Props = {
 export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) {
   if (!Session || !PlotData) return <></>;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const CustomTooltip = ({ active, payload }: { active: boolean; payload: any[] }) => {
     if (active && payload && payload.length) {
       const main_payload = payload[0].payload;
@@ -208,7 +210,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
           <Tooltip
             animationDuration={100}
             content={
-              //@ts-ignore
+              // @ts-expect-error will inherit the correct types from recharts
               <CustomTooltip />
             }
           />
