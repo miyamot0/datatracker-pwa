@@ -153,6 +153,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
             case 'AwaitInput':
               toast('Session has been recorded.', {
                 description: 'Click button to queue session.',
+                duration: 60000,
                 action: {
                   label: 'Load Next Session',
                   onClick: () => {
