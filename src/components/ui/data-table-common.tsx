@@ -93,9 +93,9 @@ export function DataTable<TData, TValue>({
       columnVisibility,
     },
     defaultColumn: {
-      size: 10, //starting column size
-      minSize: 50, //enforced during column resizing
-      maxSize: 100, //enforced during column resizing
+      size: 100,
+      minSize: 1000,
+      maxSize: 1000,
     },
   });
 

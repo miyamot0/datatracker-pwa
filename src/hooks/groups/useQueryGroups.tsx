@@ -90,18 +90,12 @@ export function useQueryGroupsFixed(Context: FolderHandleContextType) {
           await removeGroupFolder(handle!, group);
         }
 
-        displayConditionalNotification(settings, 'Group Data Deleted', 'Group data has been successfully deleted.');
-
         incrementVersion();
       } catch {
-        displayConditionalNotification(
-          settings,
-          'Error Deleting Group Data',
-          'An error occurred while trying to delete the group folder.',
-          3000,
-          true
-        );
+        throw new Error('Error: User cancelled action');
       }
+    } else {
+      throw new Error('Error: User cancelled action');
     }
   };
 

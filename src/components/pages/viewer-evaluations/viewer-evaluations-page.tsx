@@ -26,11 +26,12 @@ type LoaderResult = {
   Context: FolderHandleContextType;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const evaluationImportPageLoader = (ctx: FolderHandleContextType) => {
   const { handle } = ctx;
 
-  // @ts-ignore
-  return async ({ params, request }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return async ({ params }: any) => {
     const { Group, Individual } = params;
 
     if (!Group || !Individual || !handle) {
@@ -89,7 +90,6 @@ export default function ViewerEvaluationsPage() {
     },
     {
       accessorKey: 'Actions',
-
       header: () => <div className="text-right">Import Actions</div>,
       cell: ({ row }) => (
         <div className="flex flex-row justify-end">
@@ -135,7 +135,7 @@ export default function ViewerEvaluationsPage() {
             represents an Evaluation folder with various associated conditions.
           </p>
 
-          <DataTable columns={columns} data={filtered_data} filterCol="Evaluation" />
+          <DataTable settings={Context.settings} columns={columns} data={filtered_data} filterCol="Evaluation" />
         </CardContent>
       </Card>
     </PageWrapper>

@@ -109,7 +109,7 @@ export default function KeySetsPage() {
     },
     {
       accessorKey: 'Actions',
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Actions" className="justify-end" />,
+      header: () => <div className="text-right">Actions</div>,
       cell: ({ row }) => {
         return (
           <div className="flex flex-row justify-end gap-2">

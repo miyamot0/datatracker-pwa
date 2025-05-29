@@ -54,7 +54,7 @@ export default function DashboardPage() {
       <AuthorizedDisplay
         Groups={data}
         AddGroup={async () => await addGroup()}
-        RemoveGroups={(groups: string[]) => removeGroups(groups)}
+        RemoveGroups={async (groups: string[]) => removeGroups(groups)}
         AddExamples={async () => await copyDemoData()}
       />
     </PageWrapper>

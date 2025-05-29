@@ -29,9 +29,6 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroups, AddE
     {
       accessorKey: 'Group',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Client Group Folder" />,
-      size: Number.MAX_SAFE_INTEGER,
-      minSize: Number.MAX_SAFE_INTEGER,
-      maxSize: Number.MAX_SAFE_INTEGER,
     },
     {
       accessorKey: 'Actions',
@@ -50,9 +47,6 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroups, AddE
           </Button>
         </div>
       ),
-      size: Number.MAX_SAFE_INTEGER,
-      minSize: Number.MAX_SAFE_INTEGER,
-      maxSize: Number.MAX_SAFE_INTEGER,
     },
   ];
 
