@@ -131,8 +131,8 @@ export default function SessionDesigner({
           unstable_viewTransition: true,
         });
       })
-      .catch((error) => {
-        console.error(error);
+      .catch(() => {
+        //console.error(error);
       });
   }
 

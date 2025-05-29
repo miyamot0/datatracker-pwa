@@ -125,8 +125,9 @@ export function useQueryKeyboardsFixed(Group: string, Client: string, Context: F
         try {
           const fileHandle = await keyboards_folder.getFileHandle(`${keyboard.Name}.json`);
           await keyboards_folder.removeEntry(fileHandle.name);
-        } catch (error) {
-          console.error(`Error removing keyboard ${keyboard.Name}:`, error);
+        } catch {
+          throw new Error(`Failed to remove keyboard: ${keyboard.Name}`);
+          //console.error(`Error removing keyboard ${keyboard.Name}:`, error);
         }
       }
       displayConditionalNotification(settings, 'Keyboards Removed', 'Selected keyboards have been removed.');

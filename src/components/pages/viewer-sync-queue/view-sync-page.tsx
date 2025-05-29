@@ -104,8 +104,8 @@ export default function ViewSyncPage() {
                 'You can you interact with files in the relevant folder.'
               );
             }
-          } catch (error) {
-            console.error(error);
+          } catch {
+            //console.error(error);
           }
         }}
       >
