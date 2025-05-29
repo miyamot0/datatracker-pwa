@@ -111,6 +111,29 @@ export function useQueryKeyboardsFixed(Group: string, Client: string, Context: F
     incrementVersion();
   };
 
+  const removeKeyboards = async (keyboards: KeySet[]) => {
+    const confirm_delete = window.confirm(
+      `Are you sure you want to delete ${keyboards.length} keyboard(s)? This CANNOT be undone.`
+    );
+
+    if (confirm_delete) {
+      const individuals_folder = await handle!.getDirectoryHandle(CleanUpString(Group), { create: true });
+      const keyboards_folder = await individuals_folder.getDirectoryHandle(CleanUpString(Client), {
+        create: true,
+      });
+      for (const keyboard of keyboards) {
+        try {
+          const fileHandle = await keyboards_folder.getFileHandle(`${keyboard.Name}.json`);
+          await keyboards_folder.removeEntry(fileHandle.name);
+        } catch (error) {
+          console.error(`Error removing keyboard ${keyboard.Name}:`, error);
+        }
+      }
+      displayConditionalNotification(settings, 'Keyboards Removed', 'Selected keyboards have been removed.');
+      incrementVersion();
+    }
+  };
+
   useEffect(() => {
     if (handle && Group && Client)
       pullClientKeyboards(handle, Group, Client).then((response) => {
@@ -127,6 +150,7 @@ export function useQueryKeyboardsFixed(Group: string, Client: string, Context: F
       data: [],
       error: 'No handle found',
       refresh: incrementVersion,
+      removeKeyboards,
       addKeyboard,
       duplicateKeyboard,
     };
@@ -137,6 +161,7 @@ export function useQueryKeyboardsFixed(Group: string, Client: string, Context: F
     data: data.data,
     error: data.error,
     refresh: incrementVersion,
+    removeKeyboards,
     addKeyboard,
     duplicateKeyboard,
   };

@@ -12,11 +12,11 @@ type LoaderResult = {
   Context: FolderHandleContextType;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const groupsPageLoader = (ctx: FolderHandleContextType) => {
   const { handle } = ctx;
 
-  // @ts-ignore
-  return async ({ params, request }) => {
+  return async () => {
     if (!handle) {
       return {
         AuthStatus: 'Unauthorized',
@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { AuthStatus, Context } = loaderResult;
 
-  const { data, status, error, addGroup, copyDemoData, removeGroup } = useQueryGroupsFixed(Context);
+  const { data, status, error, addGroup, copyDemoData, removeGroups } = useQueryGroupsFixed(Context);
 
   if (AuthStatus === 'Unauthorized') {
     return (
@@ -54,7 +54,7 @@ export default function DashboardPage() {
       <AuthorizedDisplay
         Groups={data}
         AddGroup={async () => await addGroup()}
-        RemoveGroup={(group: string) => removeGroup(group)}
+        RemoveGroups={(groups: string[]) => removeGroups(groups)}
         AddExamples={async () => await copyDemoData()}
       />
     </PageWrapper>

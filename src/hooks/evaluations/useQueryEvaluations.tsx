@@ -46,26 +46,29 @@ export function useQueryEvaluationsFixed(Group: string, Client: string, Context:
     incrementVersion();
   };
 
-  const removeEvaluation = async (evaluation: string) => {
-    const confirm_delete = window.confirm('Are you sure you want to delete this evaluation?. This CANNOT be undone.');
+  const removeEvaluations = async (evaluations: string[]) => {
+    const confirm_delete = window.confirm(
+      `Are you sure you want to delete ${evaluations.length} evaluations? This CANNOT be undone.`
+    );
 
     if (confirm_delete && Group && Client) {
       try {
-        await removeEvaluationFolder(handle!, Group, Client, evaluation);
+        for (const evaluation of evaluations) {
+          await removeEvaluationFolder(handle!, Group, Client, evaluation);
+        }
 
         displayConditionalNotification(
           settings,
-          'Evaluation Data Deleted',
-          'Evaluation data has been successfully deleted.'
+          'Evaluations Deleted',
+          `${evaluations.length} evaluations have been successfully deleted.`
         );
 
         incrementVersion();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error) {
+      } catch {
         displayConditionalNotification(
           settings,
-          'Evaluation Data Deletion Error',
-          'An error occurred while deleting the evaluation data.',
+          'Evaluations Deletion Error',
+          'An error occurred while deleting the evaluations.',
           3000,
           true
         );
@@ -89,7 +92,7 @@ export function useQueryEvaluationsFixed(Group: string, Client: string, Context:
       handle,
       refresh: incrementVersion,
       addEvaluation,
-      removeEvaluation,
+      removeEvaluations,
     };
   }
 
@@ -100,6 +103,6 @@ export function useQueryEvaluationsFixed(Group: string, Client: string, Context:
     handle,
     refresh: incrementVersion,
     addEvaluation,
-    removeEvaluation,
+    removeEvaluations,
   };
 }

@@ -85,7 +85,7 @@ export function ReliabilityDataTable<TData, TValue>({
             size={'sm'}
             variant={'outline'}
             onClick={() => {
-              //@ts-ignore
+              //@ts-expect-error - rowSelection is not typed correctly
               callback(table.getFilteredSelectedRowModel().rows.map((row) => row.original));
 
               setRowSelection({});

@@ -5,24 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import LoadingDisplay from '@/components/ui/loading-display';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { useQueryClientsFixed } from '@/hooks/clients/useQueryClients';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
-import { cn } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
-import { ChevronDown, FolderInput, FolderPlus, FolderX } from 'lucide-react';
+import { FolderInput, FolderPlus } from 'lucide-react';
 import { Link, redirect, useLoaderData } from 'react-router-dom';
+import { toast } from 'sonner';
 
 type LoaderResult = {
   Group: string;
@@ -30,11 +22,12 @@ type LoaderResult = {
   Context: FolderHandleContextType;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const clientsPageLoader = (ctx: FolderHandleContextType) => {
   const { handle } = ctx;
 
-  // @ts-ignore
-  return async ({ params, request }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return async ({ params }: any) => {
     const { Group } = params;
 
     if (!Group || !handle) {
@@ -59,7 +52,7 @@ export default function ClientsPage() {
   const { Group, Context } = loaderResult;
   const { settings } = Context;
 
-  const { data, status, error, addClient, removeClient } = useQueryClientsFixed(Group, Context);
+  const { data, status, error, addClient, removeClients } = useQueryClientsFixed(Group, Context);
 
   if (status === 'loading') {
     return <LoadingDisplay />;
@@ -93,31 +86,6 @@ export default function ClientsPage() {
               <FolderInput className="mr-2 h-4 w-4" />
               Open Evaluations
             </Link>
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <ChevronDown className="w-fit px-2" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" side="bottom" align="end" sideOffset={12}>
-                <DropdownMenuLabel>Data Management</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className={cn(
-                    'bg-red-500 text-white hover:bg-red-400 focus:bg-red-400 focus:text-white rounded cursor-pointer',
-                    {
-                      disabled: settings.EnableFileDeletion === false,
-                      'pointer-events-none': settings.EnableFileDeletion === false,
-                    }
-                  )}
-                  disabled={settings.EnableFileDeletion === false}
-                  onClick={async () => {
-                    await removeClient(row.original.Individual);
-                  }}
-                >
-                  <FolderX className="mr-2 h-4 w-4" />
-                  Delete ALL Client Data
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </Button>
         </div>
       ),
@@ -145,10 +113,24 @@ export default function ClientsPage() {
           </p>
 
           <DataTable
+            settings={settings}
             columns={columns}
             data={data.map((g) => {
               return { Individual: g };
             })}
+            callback={(rows) => {
+              const individualNames = rows.map((row) => row.Individual);
+
+              toast.promise(async () => await removeClients(individualNames), {
+                loading: 'Deleting client folders...',
+                success: () => {
+                  return 'Client folders have been deleted successfully!';
+                },
+                error: () => {
+                  return 'An error occurred while deleting client folders.';
+                },
+              });
+            }}
             filterCol="Individual"
             optionalButtons={
               <ToolTipWrapper Label="Add a new client to current group">
