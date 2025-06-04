@@ -13,7 +13,7 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table';
-import { useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { Checkbox } from './checkbox';
 import type { Row, Table as TableData } from '@tanstack/react-table';
 import { Button } from './button';
@@ -30,6 +30,8 @@ interface DataTableProps<TData, TValue> {
   rowSelectOptions?: RowSelectOptions;
   optionalButtons?: React.ReactNode;
   settings: ApplicationSettingsTypes;
+  forceShowCheckbox?: boolean;
+  customCheckboxButton?: ReactNode;
   callback?: (rows: TData[]) => void;
 }
 
@@ -38,6 +40,8 @@ export function DataTable<TData, TValue>({
   data,
   filterCol,
   optionalButtons,
+  forceShowCheckbox,
+  customCheckboxButton,
   callback,
   settings,
   rowSelectOptions = 'None',
@@ -47,7 +51,7 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const newColumns =
-    callback && settings.EnableFileDeletion
+    (callback && settings.EnableFileDeletion) || forceShowCheckbox
       ? [
           {
             id: 'select',
@@ -99,6 +103,49 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  function DynamicButton({ callback }: { callback: (rows: TData[]) => void }): ReactNode {
+    if (customCheckboxButton) {
+      return (
+        <Button
+          variant={'outline'}
+          size={'sm'}
+          className={cn('shadow transition-opacity opacity-0 ease-in-out pointer-events-none', {
+            'flex opacity-100 pointer-events-auto': table.getFilteredSelectedRowModel().rows.length > 0,
+          })}
+          onClick={() => {
+            const selectedRows = table.getFilteredSelectedRowModel().rows;
+            if (selectedRows.length > 0) {
+              callback(selectedRows.map((row) => row.original));
+              table.resetRowSelection();
+            }
+          }}
+        >
+          {customCheckboxButton}
+        </Button>
+      );
+    }
+
+    return (
+      <Button
+        variant={'destructive'}
+        size={'sm'}
+        className={cn('shadow transition-opacity opacity-0 ease-in-out pointer-events-none', {
+          'flex opacity-100 pointer-events-auto': table.getFilteredSelectedRowModel().rows.length > 0,
+        })}
+        onClick={() => {
+          const selectedRows = table.getFilteredSelectedRowModel().rows;
+          if (selectedRows.length > 0) {
+            callback(selectedRows.map((row) => row.original));
+            table.resetRowSelection();
+          }
+        }}
+      >
+        <Delete className="mr-2 h-4 w-4" />
+        Delete
+      </Button>
+    );
+  }
+
   return (
     <div className="">
       <div className="flex justify-between items-center py-4">
@@ -114,25 +161,7 @@ export function DataTable<TData, TValue>({
         )}
 
         <div className="flex gap-2">
-          {callback && (
-            <Button
-              variant={'destructive'}
-              size={'sm'}
-              className={cn('shadow transition-opacity opacity-0 ease-in-out pointer-events-none', {
-                'flex opacity-100 pointer-events-auto': table.getFilteredSelectedRowModel().rows.length > 0,
-              })}
-              onClick={() => {
-                const selectedRows = table.getFilteredSelectedRowModel().rows;
-                if (selectedRows.length > 0) {
-                  callback(selectedRows.map((row) => row.original));
-                  table.resetRowSelection();
-                }
-              }}
-            >
-              <Delete className="mr-2 h-4 w-4" />
-              Delete
-            </Button>
-          )}
+          {callback && <DynamicButton callback={callback} />}
 
           {optionalButtons}
         </div>

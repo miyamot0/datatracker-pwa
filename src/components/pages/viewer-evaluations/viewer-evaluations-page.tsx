@@ -5,7 +5,6 @@ import {
   BuildIndividualsBreadcrumb,
   BuildEvaluationsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
@@ -18,6 +17,7 @@ import { CleanUpString } from '@/lib/strings';
 import { ColumnDef } from '@tanstack/react-table';
 import { ImportIcon } from 'lucide-react';
 import { redirect, useLoaderData } from 'react-router-dom';
+import { toast } from 'sonner';
 
 type LoaderResult = {
   Group: string;
@@ -52,7 +52,7 @@ export default function ViewerEvaluationsPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { Group, Individual, Context } = loaderResult;
 
-  const { data, status, error, addEvaluationFolder } = useQueryEvaluationsMetaFixed(Group, Individual, Context);
+  const { data, status, error, addEvaluationFolders } = useQueryEvaluationsMetaFixed(Group, Individual, Context);
 
   if (status === 'loading') {
     return <LoadingDisplay />;
@@ -85,25 +85,8 @@ export default function ViewerEvaluationsPage() {
     },
     {
       accessorKey: 'Conditions',
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Evaluation" />,
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Conditions" />,
       cell: ({ row }) => <div className="flex flex-row gap-1">{row.original.Conditions.join(', ')}</div>,
-    },
-    {
-      accessorKey: 'Actions',
-      header: () => <div className="text-right">Import Actions</div>,
-      cell: ({ row }) => (
-        <div className="flex flex-row justify-end">
-          <Button
-            variant={'outline'}
-            onClick={async () => {
-              await addEvaluationFolder(row.original);
-            }}
-          >
-            <ImportIcon className="h-4 w-4 mr-2" />
-            Import Evaluation
-          </Button>
-        </div>
-      ),
     },
   ];
 
@@ -132,10 +115,35 @@ export default function ViewerEvaluationsPage() {
         <CardContent className="flex flex-col gap-1.5">
           <p>
             This page lists Evaluations that have been created for those <i>other than</i> the current client. Each
-            represents an Evaluation folder with various associated conditions.
+            represents an Evaluation folder with various associated conditions. Note: Importing an Evaluation will pull
+            the relevant folder structure, but not the prior data nor prior KeySet files. Those must be imported (if
+            necessary) separately.
           </p>
 
-          <DataTable settings={Context.settings} columns={columns} data={filtered_data} filterCol="Evaluation" />
+          <DataTable
+            settings={Context.settings}
+            columns={columns}
+            data={filtered_data}
+            forceShowCheckbox
+            filterCol="Evaluation"
+            customCheckboxButton={
+              <>
+                <ImportIcon className="h-4 w-4 mr-2" />
+                Import Evaluation(s)
+              </>
+            }
+            callback={(rows) => {
+              toast.promise(async () => await addEvaluationFolders(rows), {
+                loading: 'Deleting client folders...',
+                success: () => {
+                  return 'Client folders have been deleted successfully!';
+                },
+                error: () => {
+                  return 'An error occurred while deleting client folders.';
+                },
+              });
+            }}
+          />
         </CardContent>
       </Card>
     </PageWrapper>
