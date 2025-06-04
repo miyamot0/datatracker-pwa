@@ -18,7 +18,6 @@ import { toast } from 'sonner';
 
 type LoaderResult = {
   Group: string;
-  Handle: FileSystemHandle;
   Context: FolderHandleContextType;
 };
 
@@ -37,7 +36,6 @@ export const clientsPageLoader = (ctx: FolderHandleContextType) => {
 
     return {
       Group: CleanUpString(Group!),
-      Handle: handle,
       Context: ctx,
     } satisfies LoaderResult;
   };

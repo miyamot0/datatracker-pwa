@@ -18,7 +18,9 @@ The rationale behind using "Condition" folders is to ensure that data collected 
 
 ### Creating and Deleting Condition Folders
 
-To create a new **Condition** folder, you can do so by clicking the "Create Condition" button available within the **Session Designer** page associated with the **Evaluation**. The **Session Designer** page is where you define the structure of the session, including the conditions under which data will be collected. There is an "Add Condition" button that allows you to create a new **Condition** folder. Clicking this button will prompt a dialog box to appear, asking you to enter a name for the new **Condition** folder. Once you have provided the desired name (e.g., "Baseline"), the new **Condition** folder will be added to the program's hierarchy. You can then begin populating the **Condition** folder with data files, notes, and other relevant information from that condition. An illustration of this interface is displayed below:
+To create a new **Condition** folder, you can do so by clicking the "Add Condition" button available within the **Session Designer** page associated with the **Evaluation**. The **Session Designer** page is where you define the structure of the session, including the conditions under which data will be collected. Clicking this button will prompt a dialog box to appear, asking you to enter a name for the new **Condition** folder. Once you have provided the desired name (e.g., "Baseline"), the new **Condition** folder will be added to the program's hierarchy.
+
+Adding a **Condition** to the relevant **Evaluation** will change the options available in the **Session Designer** page. Specifically, there will be a new dropdown option in the association section. An illustration of this interface is displayed below:
 
 <div align="center" width="100%">
     <img src="/docs/session_designer.png" alt="Image of DataTracker session design page"/>

@@ -54,7 +54,7 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroups, AddE
     <Card className="w-full max-w-screen-2xl">
       <CardHeader className="flex flex-col md:flex-row w-full justify-between">
         <div className="flex flex-col gap-1.5">
-          <CardTitle>Directory of Client Groups</CardTitle>
+          <CardTitle>Directory of Groups</CardTitle>
           <CardDescription>Open Group to Load Relevant Client Data</CardDescription>
         </div>
 
