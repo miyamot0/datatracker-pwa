@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 import package_json from './package.json';
-import { analyzer } from 'vite-bundle-analyzer';
+//import { analyzer } from 'vite-bundle-analyzer';
 
 const common_screenshot_params = {
   sizes: '1148x969',
