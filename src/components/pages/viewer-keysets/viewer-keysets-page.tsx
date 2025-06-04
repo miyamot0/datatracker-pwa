@@ -6,16 +6,19 @@ import {
   BuildEvaluationsBreadcrumb,
   BuildKeysetBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
+import { DataTable } from '@/components/ui/data-table-common';
 import LoadingDisplay from '@/components/ui/loading-display';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { useQueryKeyboardsMetaFixed } from '@/hooks/keyboards/useQueryKeyboardsMeta';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
+import { KeySet, KeySetInstance } from '@/types/keyset';
+import { ColumnDef } from '@tanstack/react-table';
 import { ImportIcon } from 'lucide-react';
 import { redirect, useLoaderData } from 'react-router-dom';
+import { toast } from 'sonner';
 
 type LoaderResult = {
   Group: string;
@@ -46,10 +49,27 @@ export const keysetsPageLoader = (ctx: FolderHandleContextType) => {
   };
 };
 
+type KeySetImportDisplayType = {
+  Group: string;
+  Individual: string;
+  Name: string;
+  DurationKeys: string;
+  FrequencyKeys: string;
+  OriginalKeyset: KeySet;
+};
+
+const remapKeysToString = (keys: KeySetInstance[]) => {
+  return keys
+    .map((key) => {
+      return `${key.KeyDescription} (${key.KeyName.toUpperCase()})`;
+    })
+    .join(', ');
+};
+
 export default function ViewerKeysetPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { Group, Individual, Context } = loaderResult;
-  const { data, status, error, importExistingKeyset } = useQueryKeyboardsMetaFixed(Group, Individual, Context);
+  const { data, status, error, importExistingKeysets } = useQueryKeyboardsMetaFixed(Group, Individual, Context);
 
   if (status === 'loading') {
     return <LoadingDisplay />;
@@ -58,6 +78,42 @@ export default function ViewerKeysetPage() {
   if (error) {
     return <div>{error}</div>;
   }
+
+  const dataToDisplay: KeySetImportDisplayType[] = data.map((record) => {
+    return {
+      Group: record.Group,
+      Individual: record.Individual,
+      Name: record.Name,
+      DurationKeys: remapKeysToString(record.DurationKeys),
+      FrequencyKeys: remapKeysToString(record.FrequencyKeys),
+      OriginalKeyset: record,
+    };
+  });
+
+  const columns: ColumnDef<KeySetImportDisplayType>[] = [
+    {
+      accessorKey: 'Group',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Group" />,
+    },
+    {
+      accessorKey: 'Individual',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Individual" />,
+    },
+    {
+      accessorKey: 'Name',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="KeySet Name" />,
+    },
+
+    {
+      accessorKey: 'DurationKeys',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Duration Keys" />,
+    },
+
+    {
+      accessorKey: 'FrequencyKeys',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Frequency Keys" />,
+    },
+  ];
 
   return (
     <PageWrapper
@@ -85,53 +141,32 @@ export default function ViewerKeysetPage() {
             is a collection of keys that specify a key-behavior relationship.
           </p>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Group</TableHead>
-                <TableHead>Individual</TableHead>
-                <TableHead>Keyset Name</TableHead>
-                <TableHead>Duration Keys</TableHead>
-                <TableHead>Frequency Keys</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((keyset) => {
-                const { Group: grp1, Individual: ind1, ...rest } = keyset;
+          <DataTable
+            settings={Context.settings}
+            columns={columns}
+            data={dataToDisplay}
+            forceShowCheckbox
+            filterCol="Name"
+            customCheckboxButton={
+              <>
+                <ImportIcon className="h-4 w-4 mr-2" />
+                Import KeySet(s)
+              </>
+            }
+            callback={(rows) => {
+              const keysetsToImport = rows.map((row) => row.OriginalKeyset);
 
-                const string_duration_keys = keyset.DurationKeys.map((key) => {
-                  return `${key.KeyDescription} (${key.KeyName.toUpperCase()})`;
-                }).join(', ');
-
-                const string_frequency_keys = keyset.FrequencyKeys.map((key) => {
-                  return `${key.KeyDescription} (${key.KeyName.toUpperCase()})`;
-                }).join(', ');
-
-                return (
-                  <TableRow key={keyset.id}>
-                    <TableCell>{grp1}</TableCell>
-                    <TableCell>{ind1}</TableCell>
-                    <TableCell>{keyset.Name}</TableCell>
-                    <TableCell>{string_duration_keys}</TableCell>
-                    <TableCell>{string_frequency_keys}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant={'outline'}
-                        className="w-full"
-                        onClick={async () => {
-                          await importExistingKeyset(rest);
-                        }}
-                      >
-                        <ImportIcon className="h-4 w-4 mr-2" />
-                        Import
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+              toast.promise(async () => await importExistingKeysets(keysetsToImport), {
+                loading: 'Deleting client folders...',
+                success: () => {
+                  return 'Client folders have been deleted successfully!';
+                },
+                error: () => {
+                  return 'An error occurred while deleting client folders.';
+                },
+              });
+            }}
+          />
         </CardContent>
       </Card>
     </PageWrapper>
