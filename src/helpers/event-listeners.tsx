@@ -1,4 +1,4 @@
-import React, { MutableRefObject } from "react";
+import React, { MutableRefObject } from 'react';
 
 /** useEventListener
  *
@@ -13,9 +13,8 @@ export function useEventListener(
   handler: (key: React.KeyboardEvent<HTMLElement>) => void,
   element: Window = window
 ): void {
-  const savedHandler = React.useRef<any>({
-    current: handler,
-  } as MutableRefObject<any>);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const savedHandler = React.useRef<any>({ current: handler } as MutableRefObject<any>);
 
   React.useEffect(() => {
     savedHandler.current = handler;
@@ -26,8 +25,9 @@ export function useEventListener(
       const isSupported = element && element.addEventListener;
       if (!isSupported) return;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const eventListener = (event: any): void => {
-        if (typeof savedHandler.current === "function") {
+        if (typeof savedHandler.current === 'function') {
           savedHandler.current(event);
         }
       };

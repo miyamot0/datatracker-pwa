@@ -111,7 +111,7 @@ export default function SessionDesigner({
     form.trigger('SessionKeySet');
 
     return () => {};
-  }, [Evaluation, Group, Handle, Individual, form, Keysets, settings]);
+  }, [Evaluation, Group, Handle, Individual, form, Keysets, settings, SessionSettings]);
 
   function onSubmit(values: z.infer<typeof SessionDesignerSchema>) {
     const newer_settings = toSavedSettings(values);
@@ -131,8 +131,8 @@ export default function SessionDesigner({
           unstable_viewTransition: true,
         });
       })
-      .catch((error) => {
-        console.error(error);
+      .catch(() => {
+        //console.error(error);
       });
   }
 

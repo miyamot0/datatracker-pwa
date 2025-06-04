@@ -19,9 +19,9 @@ type LoaderResult = {
   Context: FolderHandleContextType;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const documentationListingPageLoader = (ctx: FolderHandleContextType) => {
-  // @ts-ignore
-  return async ({ params, request }) => {
+  return async () => {
     const FrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(
       (entry) => entry.matter as FrontMatterUniversalType
     );

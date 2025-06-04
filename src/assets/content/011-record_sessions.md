@@ -6,9 +6,7 @@ keywords: 'Data Collection, Session Conditions'
 author: 'Shawn Gilroy'
 ---
 
-The **Session Recorder** page is the main interface for actively collecting data while session is underway. This page integrates the parameters set in the **Session Designer**, including the **Keyboard** (i.e., behavior/key mappings). Once the session begins, the data collector uses the pre-defined keys to log behaviors and manage timers in real-time. The interface is designed for efficiency and accuracy, ensuring that all relevant data is captured during the observation period.
-
-An example of a hypothetical session ready to begin is displayed below:
+The **Session Recorder** page is the main interface for actively collecting data in real-time. This page pulls the parameters set in the **Session Designer**, such as the **Keyboard** (i.e., behavior/key mappings) and the duration of total session (i.e., under which conditions sessions are planned to end). Once the session begins, the data collector uses the pre-defined keys defined in the **KeySet** to log behaviors and those outlined in the UI to manage timers in real-time. An example of a hypothetical session ready to begin is displayed below:
 
 <div align="center" width="100%">
     <img src="/docs/session_recorder.png" alt="Image of DataTracker session recorder page"/>
@@ -16,7 +14,9 @@ An example of a hypothetical session ready to begin is displayed below:
 
 ### Beginning and Ending the Session
 
-The session will begin when the data collector presses the 'Enter' key, which activates all the parameters configured in the **Session Designer**. The data collector can then start recording behaviors and managing timers using the designated keys. The session will continue until the user presses the 'Escape' key or until the termination criteria set in the **Session Designer** are met. Pressing 'Escape' will immediately stop all timers and end the session, ensuring that no further data is recorded beyond this point, and query whether the data collector would like to keep the data or not.
+The session will begin when the data collector presses the 'Enter' key, which activates all the parameters configured in the **Session Designer**. That is, pressing 'Enter' will start the session timer and prepare the interface for data collection. The **Session Recorder** page will then display the current session status, including the active timers and any ongoing behaviors being recorded. Once the session has begun, the data collector can start recording behavior. The session will continue until the user presses the 'Escape' key or until the termination criteria set in the **Session Designer** are met (e.g., after 300s of total session time).
+
+The session can be terminated via either some planned criteria (e.g., based on session time) or some other unplanned criteria (e.g., some need to terminate the session earlier than usual). Users can press the 'Escape' key at any time to end the session immediately. This action will stop all timers and prompt the data collector to decide whether to keep or discard the recorded data. If the user chooses to keep the data, it will be saved in the **Evaluation** folder for later analysis; if not, all recorded data will be discarded, and no further data will be collected from that point onward.
 
 ### Recording Behavioral Targets
 

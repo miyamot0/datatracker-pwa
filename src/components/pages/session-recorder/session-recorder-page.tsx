@@ -25,11 +25,12 @@ const PullKeySet = async (Handle: FileSystemDirectoryHandle, Group: string, Indi
   return keyboard_folder.getFileHandle(KeySet, { create: true });
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const sessionRecorderPageLoader = (ctx: FolderHandleContextType) => {
   const { handle } = ctx;
 
-  // @ts-ignore
-  return async ({ params, request }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return async ({ params }: any) => {
     const { Group, Individual, Evaluation } = params;
 
     if (!Group || !Individual || !Evaluation || !handle) {

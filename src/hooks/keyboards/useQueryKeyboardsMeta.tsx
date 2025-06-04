@@ -5,7 +5,6 @@ import { GetAllKeyboardsQuery } from './helpers/pull-all-keyboards';
 import { GetHandleKeyboardsFolder } from '@/lib/files';
 import { KeySet } from '@/types/keyset';
 import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
-import { toast } from 'sonner';
 
 export function useQueryKeyboardsMetaFixed(Group: string, Client: string, Context: FolderHandleContextType) {
   const { handle } = Context;
@@ -52,9 +51,12 @@ export function useQueryKeyboardsMetaFixed(Group: string, Client: string, Contex
     const writer = await key_board.createWritable();
     await writer.write(serializeKeySet(key_set_mapped));
     await writer.close();
+  };
 
-    toast.success('Imported successfully! Navigate to the editor to view the keyset.');
-
+  const importExistingKeysets = async (keysets: KeySet[]) => {
+    for (const keyset of keysets) {
+      await importExistingKeyset(keyset);
+    }
     incrementVersion();
   };
 
@@ -92,7 +94,7 @@ export function useQueryKeyboardsMetaFixed(Group: string, Client: string, Contex
       data: [],
       error: 'No handle found',
       refresh: incrementVersion,
-      importExistingKeyset,
+      importExistingKeysets,
     };
   }
 
@@ -101,6 +103,6 @@ export function useQueryKeyboardsMetaFixed(Group: string, Client: string, Contex
     data: data.data,
     error: data.error,
     refresh: incrementVersion,
-    importExistingKeyset,
+    importExistingKeysets,
   };
 }

@@ -10,7 +10,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import LoadingDisplay from '@/components/ui/loading-display';
@@ -19,14 +18,12 @@ import { FolderHandleContextType } from '@/context/folder-context';
 import { useQueryEvaluationsFixed } from '@/hooks/evaluations/useQueryEvaluations';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
-import { cn } from '@/lib/utils';
 import { ColumnDef } from '@tanstack/react-table';
 import {
   ChartColumnIcon,
   ChevronDown,
   Disc3,
   FilePlus,
-  FolderX,
   ImportIcon,
   KeyboardIcon,
   ScatterChartIcon,
@@ -34,6 +31,7 @@ import {
   Table2Icon,
 } from 'lucide-react';
 import { Link, redirect, useLoaderData } from 'react-router-dom';
+import { toast } from 'sonner';
 
 type LoaderResult = {
   Group: string;
@@ -42,11 +40,12 @@ type LoaderResult = {
   Context: FolderHandleContextType;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const evaluationsPageLoader = (ctx: FolderHandleContextType) => {
   const { handle } = ctx;
 
-  // @ts-ignore
-  return async ({ params, request }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return async ({ params }: any) => {
     const { Group, Individual } = params;
 
     if (!Group || !Individual || !handle) {
@@ -71,7 +70,11 @@ export default function EvaluationsPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { Group, Individual, Context } = loaderResult;
   const { settings } = Context;
-  const { data, status, error, addEvaluation, removeEvaluation } = useQueryEvaluationsFixed(Group, Individual, Context);
+  const { data, status, error, addEvaluation, removeEvaluations } = useQueryEvaluationsFixed(
+    Group,
+    Individual,
+    Context
+  );
 
   if (status === 'loading') {
     return <LoadingDisplay />;
@@ -186,23 +189,6 @@ export default function EvaluationsPage() {
                     Calculate Reliability
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className={cn(
-                    'bg-red-500 text-white hover:bg-red-400 focus:bg-red-400 focus:text-white rounded cursor-pointer',
-                    {
-                      disabled: settings.EnableFileDeletion === false,
-                      'pointer-events-none': settings.EnableFileDeletion === false,
-                    }
-                  )}
-                  disabled={settings.EnableFileDeletion === false}
-                  onClick={async () => {
-                    await removeEvaluation(row.original.Evaluation);
-                  }}
-                >
-                  <FolderX className="mr-2 h-4 w-4" />
-                  Delete ALL Evaluation Data
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </Button>
@@ -237,10 +223,24 @@ export default function EvaluationsPage() {
           </p>
 
           <DataTable
+            settings={settings}
             columns={columns}
             data={data.map((g) => {
               return { Evaluation: g };
             })}
+            callback={(rows) => {
+              const evaluationNames = rows.map((row) => row.Evaluation);
+
+              toast.promise(async () => await removeEvaluations(evaluationNames), {
+                loading: 'Deleting evaluation folders...',
+                success: () => {
+                  return 'Evaluation folders have been deleted successfully!';
+                },
+                error: () => {
+                  return 'An error occurred while deleting evaluation folders.';
+                },
+              });
+            }}
             filterCol="Evaluation"
             optionalButtons={
               <div className="flex flex-row gap-2">

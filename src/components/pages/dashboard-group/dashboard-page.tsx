@@ -2,32 +2,28 @@ import PageWrapper from '@/components/layout/page-wrapper';
 import UnauthorizedDisplay from './displays/unauthorized-display';
 import AuthorizedDisplay from './displays/authorized-display';
 import { useQueryGroupsFixed } from '@/hooks/groups/useQueryGroups';
-import { ApplicationSettingsTypes } from '@/types/settings';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { useLoaderData } from 'react-router-dom';
 
 type LoaderResult = {
-  Settings: ApplicationSettingsTypes;
   AuthStatus: 'Authorized' | 'Unauthorized';
   Context: FolderHandleContextType;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const groupsPageLoader = (ctx: FolderHandleContextType) => {
   const { handle } = ctx;
 
-  // @ts-ignore
-  return async ({ params, request }) => {
+  return async () => {
     if (!handle) {
       return {
         AuthStatus: 'Unauthorized',
-        Settings: ctx.settings,
         Context: ctx,
       } satisfies LoaderResult;
     }
 
     return {
       AuthStatus: 'Authorized',
-      Settings: ctx.settings,
       Context: ctx,
     } satisfies LoaderResult;
   };
@@ -37,7 +33,7 @@ export default function DashboardPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { AuthStatus, Context } = loaderResult;
 
-  const { data, status, error, addGroup, copyDemoData, removeGroup } = useQueryGroupsFixed(Context);
+  const { data, status, error, addGroup, copyDemoData, removeGroups } = useQueryGroupsFixed(Context);
 
   if (AuthStatus === 'Unauthorized') {
     return (
@@ -54,7 +50,7 @@ export default function DashboardPage() {
       <AuthorizedDisplay
         Groups={data}
         AddGroup={async () => await addGroup()}
-        RemoveGroup={(group: string) => removeGroup(group)}
+        RemoveGroups={async (groups: string[]) => removeGroups(groups)}
         AddExamples={async () => await copyDemoData()}
       />
     </PageWrapper>

@@ -16,6 +16,10 @@ export function useQueryEvaluationsMetaFixed(Group: string, Client: string, Cont
 
   const incrementVersion = () => setVersion((prev) => prev + 1);
 
+  /**
+   * @deprecated This function is deprecated and will be removed in future versions.
+   * @param evaluation The evaluation record to add
+   */
   const addEvaluationFolder = async (evaluation: EvaluationRecord) => {
     const g_folder = await handle!.getDirectoryHandle(Group);
     const i_folder = await g_folder.getDirectoryHandle(Client);
@@ -26,6 +30,14 @@ export function useQueryEvaluationsMetaFixed(Group: string, Client: string, Cont
     }
 
     toast.success('Evaluation successfully imported.');
+
+    incrementVersion();
+  };
+
+  const addEvaluationFolders = async (evaluations: EvaluationRecord[]) => {
+    for (const evaluation of evaluations) {
+      await addEvaluationFolder(evaluation);
+    }
 
     incrementVersion();
   };
@@ -46,6 +58,7 @@ export function useQueryEvaluationsMetaFixed(Group: string, Client: string, Cont
       handle,
       refresh: incrementVersion,
       addEvaluationFolder,
+      addEvaluationFolders,
     };
   }
 
@@ -56,5 +69,6 @@ export function useQueryEvaluationsMetaFixed(Group: string, Client: string, Cont
     handle,
     refresh: incrementVersion,
     addEvaluationFolder,
+    addEvaluationFolders,
   };
 }

@@ -12,7 +12,9 @@ The DataTracker program is designed to be flexible and adaptable to different da
 
 ### Option 1: Assisted Migration and Syncing (Recommended)
 
-The first option for syncing data to shared locations is to use the **Assisted Migration and Syncing** feature. This feature is designed to help users move data from one location to another and keep it in sync across multiple devices. In execution, this means that the user will **select another folder location** (e.g., a shared network drive, cloud storage, etc.) and the program will assist the user in moving the necessary data to that location. This can be done on a regular basis to ensure that all users have access to the most up-to-date information.
+The first option for syncing data to shared locations is to use the **Assisted Migration and Syncing** feature. This feature is designed to help users move data from one location to another and keep it in sync across multiple devices. In execution, this means that the user will **select another folder location** (e.g., a shared network drive, cloud storage, etc.) and the program will assist the user in moving the necessary data to that location.
+
+This can be done on a fairly regular basis to ensure that all users have access to the most up-to-date information. As a general guideline, it is probably useful to pull remote data to the local machine at the start of the day to ensure that all data collectors are working with the most recent data (e.g., new **Conditions** or **KeySets** created). Similarly, it is useful to push data to the remote location at the end of the day to ensure that all data is backed up and available for future use.
 
 #### Accessing Sync Functionality
 
@@ -28,30 +30,36 @@ The option to sync files will be available once the user has provided access to 
     <img src="/docs/sync_authorized.png" alt="Visual of authorized sync option"/>
 </div>
 
+Once clicked, the "Sync" button will direct the user to the File Sync Interface that supports the migration and syncing of files to a secondary location.
+
 #### Navigating the File Sync Interface
 
-The screen for syncing files provides a button for authorizing the Remote Backup location. Like the core DataTracker folder, this involves selecting and authorizing a location that the program can access. Once authorized, the program compare files across _both_ locations and provide a list of files that can copied to the selected location. A visual of this interface is provided below.
+The File Sync Interface provides a method for selecting a Remote Backup location and maintaining parity with that location (i.e., presence of similarly-named files). Like methods for authorizing core DataTracker folder (Local), this involves selecting and authorizing a separate location that the program can also access (Remote). Once each are authorized, the program compares files across _both_ locations and provides a list of files that can copied to the selected location. A visual of this interface, prior to authorizing the Remote location, is provided below.
 
 <div align="center" width="100%">
     <img src="/docs/sync_screen_folder_auth.png" alt="Visual of sync screen with button auth"/>
 </div>
 
-Upon providing access to the Remote Backup location, the program will provide a list of files that can be moved to the selected location. The user can then indicate which files should be moved and which should be left in place. As a general default, files copied to the Remote Backup location are removed from the current page but are not deleted from the main DataTracker folder. An illustration of the interface for moving data FROM the main (i.e., 'Local') location to the secondary (i.e., 'Remote') location is provided below.
+##### Moving File to the Remote Backup Location
+
+Upon providing access to the Remote Backup location, the program will provide a list of files that can be moved from the Local to the Remote location. Users can indicate which files should be moved and which should be left in place. As a general default, files copied to the Remote location are removed from the current page but are not deleted from the main DataTracker folder. An illustration of the interface for moving data _from_ the main location (Local) to the secondary (Remote) location is provided below.
 
 <div align="center" width="100%">
     <img src="/docs/sync_screen_folders_list.png" alt="Visual of sync screen TO remote"/>
 </div>
 
-Alternatively, the user can move files from the Remote Backup location to the main DataTracker folder. This is done by selecting the files to be moved and clicking the 'Move to Local' button. This is often useful when preparing a machine for a Reliability data collector (e.g., pulling KeySets to a new machine). An illustration of this interface is provided below.
+Individual files can be selected for sync via the checkboxes provided and then synced by using the respective button for beginning the sync process.
+
+##### Moving File from the Remote Backup Location
+
+Alternatively, users can move files from the Remote location to the main DataTracker folder (Local). This is not the initial state for the File Sync Interface, but can be accessed by clicking the "FROM Remote" button at the top of the interface. This will change the interface to show files that are available in the Remote location and can be moved to the Local location. An illustration of this interface is provided below.
 
 <div align="center" width="100%">
     <img src="/docs/sync_screen_folders_list_from.png" alt="Visual of sync screen FROM remote"/>
 </div>
 
-This is the recommended approach for syncing data to shared locations, as it provides a straightforward and user-friendly way to keep data in sync across multiple devices.
-
 ### Option 2: Manual Copying of Folders/Files (Advanced)
 
-The second option for syncing data to shared locations is to manually copy the necessary folders and files to the desired location. This approach is more advanced in the sense that the user must have a good understanding of the program's file structure and how/where data should be stored.
+Option #1 is the recommended approach for syncing data to shared locations, as it provides a straightforward and user-friendly way to keep data in sync across multiple devices. However, there are instances where a more flexible strategy is required, such as when users need to manage data in a more granular way or when they want to sync data to locations that are not supported by the Assisted Migration and Syncing feature. Option #2 is a manual approach that allows users to copy files and folders directly to a shared location, such as a network drive or cloud storage. This approach is more advanced in the sense that the user must have a good understanding of the program's file structure and how/where data should be stored.
 
-In general, this approach is not recommended for most users, as it can be error-prone and may result in data loss if not done correctly. However, for users who are comfortable managing files and folders, this approach would be the most efficient way to sync and backup data across multiple locations.
+In general, this approach is not recommended for most users, as it can be error-prone and may result in data loss or unexpected program behavior if not done correctly. However, for users who are comfortable managing files and folders, this approach would be the most efficient way to sync and backup data across multiple locations. Generally speaking, this is largely a copy-and-paste operation, where users can copy files from the main DataTracker folder to a shared location (e.g., network drive, cloud storage, etc.) and vice versa.

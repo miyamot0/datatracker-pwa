@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FrontMatterUniversalType } from '@/types/mdx';
 import PageWrapper from '@/components/layout/page-wrapper';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,9 +38,9 @@ type LoaderResult = {
   };
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const documentationEntryPageLoader = (ctx: FolderHandleContextType) => {
-  // @ts-ignore
-  return async ({ params, request }) => {
+  return async ({ params }: any) => {
     const { slug } = params;
 
     const Entry = DocumentationObjects.find((entry) => entry.matter.filename.replaceAll('.md', '') === slug);

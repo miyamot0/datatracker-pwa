@@ -6,7 +6,7 @@ keywords: 'Behavioral Procedures, Data Organization'
 author: 'Shawn Gilroy'
 ---
 
-The **Evaluation** folders, which are found within respective **Individual** folders, are essential for organizing data from specific sessions conducted with a client/participant. These folders capture snapshots of a participant's behavior in a specific context (e.g., assessment vs. treatment) at distinct points in time. Each **Evaluation** folder is typically labeled according to the procedure or method. For example, one evaluation might consist of a "Functional Analysis" while another might consist of a "Treatment Evaluation." This naming convention helps researchers and clinicians quickly identify the purpose of each Evaluation and understand the context from which recorded data had emerged.
+The **Evaluation** folders, found within respective **Individual** folders, are essential for organizing data from specific sessions conducted with a client/participant. These folders capture snapshots of a participant's behavior in a specific context (e.g., assessment vs. treatment) at distinct points in time. Each **Evaluation** folder is typically labeled according to the procedure or method. For example, one evaluation might consist of a "Functional Analysis" while another might consist of a "Treatment Evaluation." This naming convention helps researchers and clinicians quickly identify the purpose of each Evaluation and understand the context from which recorded data had emerged. Note: an example of this possible arrangement is provided in the 'mock' data included in the program.
 
 ### Overview of Folder Structure (Nested within Individual Folder)
 
@@ -18,7 +18,7 @@ The rationale behind using **Evaluation** folders in this fashion is to facilita
 
 ### Creating and Deleting Evaluation Folders
 
-To create a new **Evaluation** folder, you can do so by clicking the "Create Evaluation" button available within the **Individual** folder associated with the participant. This will prompt a dialog box to appear, asking you to enter a name for the new **Evaluation** folder. Once you have provided the desired name (e.g., "Functional Analysis"), the new **Evaluation** folder will be added to the program's hierarchy. You can then begin populating the **Evaluation** folder with data files, notes, and other relevant information from that session. A visual of this interface is provided below:
+To create a new **Evaluation** folder, you can do so by clicking the "Create" button available within the **Individual** folder associated with the participant. This will prompt a dialog box to appear, asking you to enter a name for the new **Evaluation** folder. Once you have provided the desired name (e.g., "Functional Analysis"), the new **Evaluation** folder will be added to the program's hierarchy. You can then begin populating the **Evaluation** folder with data files, notes, and other relevant information from that session. A visual of this interface is provided below:
 
 <div align="center" width="100%">
     <img src="/docs/folder_preview_evaluations.png" alt="Image Evaluation Dashboard interface"/>

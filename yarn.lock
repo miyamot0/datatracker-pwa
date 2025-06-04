@@ -8451,6 +8451,11 @@ visit-values@^2.0.0:
   resolved "https://registry.npmjs.org/visit-values/-/visit-values-2.0.0.tgz"
   integrity sha512-vLFU70y3D915d611GnHYeHkEmq6ZZETzTH4P1hM6I9E3lBwH2VeBBEESe/bGCY+gAyK0qqLFn5bNFpui/GKmww==
 
+vite-bundle-analyzer@^0.22.0:
+  version "0.22.0"
+  resolved "https://registry.yarnpkg.com/vite-bundle-analyzer/-/vite-bundle-analyzer-0.22.0.tgz#fcb522ffddae8105d50fc96f1375845718850d9e"
+  integrity sha512-SDlQ1pBReXKrDXUisupEibWcYW5qtr/kTCm1iyRkNNEVdEdtWHuWrcpUc5IMymhkR2Kvuutr+zGsGipbWv+8TQ==
+
 vite-node@2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/vite-node/-/vite-node-2.1.1.tgz#7d46f623c04dfed6df34e7127711508a3386fa1c"

@@ -45,22 +45,25 @@ export function useQueryClientsFixed(Group: string, Context: FolderHandleContext
     incrementVersion();
   };
 
-  const removeClient = async (client: string) => {
-    const confirm_delete = window.confirm('Are you sure you want to delete this client? This CANNOT be undone.');
+  const removeClients = async (clients: string[]) => {
+    const confirm_delete = window.confirm(
+      `Are you sure you want to delete ${clients.length} individual(s)? This CANNOT be undone.`
+    );
 
     if (confirm_delete && handle && Group) {
       try {
-        await removeClientFolder(handle, CleanUpString(Group), CleanUpString(client));
+        for (const client of clients) {
+          await removeClientFolder(handle, CleanUpString(Group), CleanUpString(client));
+        }
 
-        displayConditionalNotification(settings, 'Client Data Deleted', 'Client data has been successfully deleted.');
+        displayConditionalNotification(settings, 'Clients Deleted', 'Selected clients have been successfully deleted.');
 
         incrementVersion();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error: unknown) {
+      } catch {
         displayConditionalNotification(
           settings,
-          'Client Data Deletion Error',
-          'An error occurred while deleting the client data.',
+          'Client Deletion Error',
+          'An error occurred while deleting the selected clients.',
           3000,
           true
         );
@@ -83,7 +86,7 @@ export function useQueryClientsFixed(Group: string, Context: FolderHandleContext
       error: 'No handle found',
       refresh: incrementVersion,
       addClient,
-      removeClient,
+      removeClients,
     };
   }
 
@@ -94,6 +97,6 @@ export function useQueryClientsFixed(Group: string, Context: FolderHandleContext
     handle,
     refresh: incrementVersion,
     addClient,
-    removeClient,
+    removeClients,
   };
 }

@@ -18,13 +18,13 @@ The rationale behind this structured approach is to promote a systematic, error-
 
 ### Creating and Deleting Groups
 
-To create a new **Group** folder, you can do so by clicking the "Create Group" button available in the initial dashboard screen. This will make a dialog box will appear, prompting you to enter a name for the new **Group** folder. Once you have entered the desired name, click "Create," and the new **Group** folder will be added to the program's hierarchy. You can then begin populating the **Group** folder with subfolders for individual clients as needed. A visual of this interface is provided below:
+To create a new **Group** folder, you can do so by clicking the "Create" button available in the initial dashboard screen. This will make a dialog box will appear, prompting you to enter a name for the new **Group** folder. Once you have entered the desired name, click to confirm and the new **Group** folder will be added to the program's hierarchy. You can then begin populating the **Group** folder with subfolders for individual clients as needed. A visual of this interface is provided below:
 
 <div align="center" width="100%">
     <img src="/docs/folder_preview_groups.png" alt="Image Group Dashboard interface"/>
 </div>
 
-If you need to delete a **Group** folder, you can do so by selecting the relevant option from the dropdown associated with the group (i.e., the "Delete" option). Pressing this button with cause a confirmation dialog will appear to ensure that you want to delete the **Group** folder and all its contents. Once you confirm the deletion, the **Group** folder and all its subfolders will be permanently removed from the program. Please exercise caution when deleting **Group** folders, as this action cannot be undone, and all data within the folder will be lost.
+If you need to delete a **Group** folder, you can do so by selecting the relevant folder(s) using the checkboxes for respective rows. Note: The checkboxes for deleting **Group** folders are located in the leftmost column of the table and are only available when deletion is enabled in program settings. Whenever a **Group** folder is selected, a "Delete" button will appear at the top of the dashboard, highlighted in red. You can click this button to initiate the deletion process. Pressing this button with cause a confirmation dialog will appear to ensure that you want to delete the **Group** folder and all its contents. Once you confirm the deletion, the **Group** folder and all its subfolders will be permanently removed from the program. Please exercise caution when deleting **Group** folders, as this action cannot be undone, and all data within the folder will be lost.
 
 As a base default, users are not authorized to delete any information. This may be enabled, as necessary, by selecting the relevant option in the _Settings_ page. It is generally recommended to restrict deletion permissions to prevent accidental data loss and maintain data integrity. A relevant visual for this is provided below:
 

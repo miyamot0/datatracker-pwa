@@ -2,28 +2,19 @@ import BackButton from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import createHref from '@/lib/links';
-import { ChevronDown, DatabaseIcon, FolderInput, FolderPlus, FolderX } from 'lucide-react';
+import { DatabaseIcon, FolderInput, FolderPlus } from 'lucide-react';
 import { DataTable } from '../../../ui/data-table-common';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { ColumnDef } from '@tanstack/react-table';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useContext } from 'react';
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 type Props = {
   Groups: string[];
   AddGroup: () => void;
-  RemoveGroup: (group: string) => void;
+  RemoveGroups: (group: string[]) => void;
   AddExamples: () => void;
 };
 
@@ -31,7 +22,7 @@ type GroupTableRow = {
   Group: string;
 };
 
-export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup, AddExamples }: Props) {
+export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroups, AddExamples }: Props) {
   const { settings } = useContext(FolderHandleContext);
 
   const columns: ColumnDef<GroupTableRow>[] = [
@@ -41,8 +32,7 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup, AddEx
     },
     {
       accessorKey: 'Actions',
-
-      header: () => <div className="text-right">Group Folder Actions</div>,
+      header: () => <div className="text-right whitespace-nowrap">Group Folder Actions</div>,
       cell: ({ row }) => (
         <div className="flex flex-row justify-end">
           <Button size={'sm'} variant={'outline'} className="flex flex-row divide-x justify-between mx-0 px-0 shadow">
@@ -54,31 +44,6 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup, AddEx
               <FolderInput className="mr-2 h-4 w-4" />
               Open Group
             </Link>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <ChevronDown className="w-fit px-2" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" side="bottom" align="end" sideOffset={12}>
-                <DropdownMenuLabel>Data Management</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className={cn(
-                    'bg-red-500 text-white hover:bg-red-400 focus:bg-red-400 focus:text-white rounded cursor-pointer',
-                    {
-                      disabled: settings.EnableFileDeletion === false,
-                      'pointer-events-none': settings.EnableFileDeletion === false,
-                    }
-                  )}
-                  disabled={settings.EnableFileDeletion === false}
-                  onClick={async () => {
-                    await RemoveGroup(row.original.Group);
-                  }}
-                >
-                  <FolderX className="mr-2 h-4 w-4" />
-                  Delete Group
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </Button>
         </div>
       ),
@@ -89,7 +54,7 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup, AddEx
     <Card className="w-full max-w-screen-2xl">
       <CardHeader className="flex flex-col md:flex-row w-full justify-between">
         <div className="flex flex-col gap-1.5">
-          <CardTitle>Directory of Client Groups</CardTitle>
+          <CardTitle>Directory of Groups</CardTitle>
           <CardDescription>Open Group to Load Relevant Client Data</CardDescription>
         </div>
 
@@ -106,13 +71,26 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup, AddEx
         </p>
 
         <DataTable
+          settings={settings}
           columns={columns}
           data={Groups.map((g) => {
             return { Group: g };
           })}
+          callback={(rows) => {
+            const groupNames = rows.map((row) => row.Group);
+            toast.promise(async () => await RemoveGroups(groupNames), {
+              loading: 'Deleting group folders...',
+              success: () => {
+                return 'Group folders have been deleted successfully!';
+              },
+              error: () => {
+                return 'An error occurred while deleting group folders.';
+              },
+            });
+          }}
           filterCol="Group"
           optionalButtons={
-            <div className="flex gap-2">
+            <>
               <Button
                 variant={'outline'}
                 size={'sm'}
@@ -144,7 +122,7 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroup, AddEx
                 <FolderPlus className="mr-2 h-4 w-4" />
                 Create
               </Button>
-            </div>
+            </>
           }
         />
       </CardContent>

@@ -6,6 +6,7 @@ import { pullGroupFolders } from './helpers/pull-group-folders';
 import { removeGroupFolder } from './helpers/remove-group-folder';
 import { DataExampleFiles } from '@/lib/data';
 
+// eslint-disable-next-line react-refresh/only-export-components
 const DemoDataFolderName = 'Example DataTracker Group';
 
 export function useQueryGroupsFixed(Context: FolderHandleContextType) {
@@ -28,7 +29,7 @@ export function useQueryGroupsFixed(Context: FolderHandleContextType) {
     }
 
     if (data.data.includes(DemoDataFolderName)) {
-      alert(`The ${DemoDataFolderName} folder already exists. Delete it if you\'d like to re-load example data.`);
+      alert(`The ${DemoDataFolderName} folder already exists. Delete it if you'd like to re-load example data.`);
 
       throw new Error(`${DemoDataFolderName} already exists`);
     }
@@ -78,26 +79,23 @@ export function useQueryGroupsFixed(Context: FolderHandleContextType) {
     incrementVersion();
   };
 
-  const removeGroup = async (Group: string) => {
-    const confirm_delete = window.confirm('Are you sure you want to delete this group?. This CANNOT be undone.');
+  const removeGroups = async (Groups: string[]) => {
+    const confirm_delete = window.confirm(
+      `Are you sure you want to delete ${Groups.length} group(s)? This CANNOT be undone.`
+    );
 
     if (confirm_delete) {
       try {
-        await removeGroupFolder(handle!, Group);
-
-        displayConditionalNotification(settings, 'Group Data Deleted', 'Group data has been successfully deleted.');
+        for (const group of Groups) {
+          await removeGroupFolder(handle!, group);
+        }
 
         incrementVersion();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error: unknown) {
-        displayConditionalNotification(
-          settings,
-          'Error Deleting Group Data',
-          'An error occurred while trying to delete the group folder.',
-          3000,
-          true
-        );
+      } catch {
+        throw new Error('Error: User cancelled action');
       }
+    } else {
+      throw new Error('Error: User cancelled action');
     }
   };
 
@@ -116,7 +114,7 @@ export function useQueryGroupsFixed(Context: FolderHandleContextType) {
       error: 'No handle found',
       refresh: incrementVersion,
       addGroup,
-      removeGroup,
+      removeGroups,
       copyDemoData,
     };
   }
@@ -127,7 +125,7 @@ export function useQueryGroupsFixed(Context: FolderHandleContextType) {
     error: data.error,
     refresh: incrementVersion,
     addGroup,
-    removeGroup,
+    removeGroups,
     copyDemoData,
   };
 }

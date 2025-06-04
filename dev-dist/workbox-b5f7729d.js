@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 define(['exports'], (function (exports) { 'use strict';
 
     // @ts-ignore

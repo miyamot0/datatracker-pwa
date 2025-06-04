@@ -19,6 +19,7 @@ import BackButton from '@/components/ui/back-button';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 type LoaderResult = {
   Group: string;
@@ -26,13 +27,15 @@ type LoaderResult = {
   Evaluation: string;
   Handle: FileSystemHandle;
   Results: SavedSessionResult[];
+  Settings: ApplicationSettingsTypes;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const sessionHistoryLoader = (ctx: FolderHandleContextType) => {
-  const { handle } = ctx;
+  const { handle, settings } = ctx;
 
-  // @ts-ignore
-  return async ({ params, request }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return async ({ params }: any) => {
     const { Group, Individual, Evaluation } = params;
 
     if (!Group || !Individual || !Evaluation || !handle) {
@@ -52,13 +55,14 @@ export const sessionHistoryLoader = (ctx: FolderHandleContextType) => {
       Evaluation: CleanUpString(Evaluation),
       Handle: handle,
       Results: clean_results,
+      Settings: settings,
     } satisfies LoaderResult;
   };
 };
 
 export default function DashboardHistoryPage() {
   const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Evaluation, Results } = loaderResult;
+  const { Group, Individual, Evaluation, Results, Settings } = loaderResult;
 
   const columns: ColumnDef<SavedSessionResult>[] = [
     {
@@ -167,7 +171,7 @@ export default function DashboardHistoryPage() {
             from each session in greater detail by using the 'Inspect Session' button.
           </p>
 
-          <DataTable columns={columns} data={Results} />
+          <DataTable settings={Settings} columns={columns} data={Results} />
         </CardContent>
       </Card>
     </PageWrapper>

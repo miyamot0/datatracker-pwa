@@ -19,6 +19,7 @@ import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { DataTable } from '@/components/ui/data-table-common';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
+import { toast } from 'sonner';
 
 type LoaderResult = {
   Group: string;
@@ -27,11 +28,12 @@ type LoaderResult = {
   Context: FolderHandleContextType;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const keysetsPageLoader = (ctx: FolderHandleContextType) => {
   const { handle } = ctx;
 
-  // @ts-ignore
-  return async ({ params, request }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return async ({ params }: any) => {
     const { Group, Individual } = params;
 
     if (!Group || !Individual || !handle) {
@@ -52,7 +54,11 @@ export default function KeySetsPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { Group, Individual, Context } = loaderResult;
 
-  const { data, status, error, addKeyboard, duplicateKeyboard } = useQueryKeyboardsFixed(Group, Individual, Context);
+  const { data, status, error, addKeyboard, removeKeyboards, duplicateKeyboard } = useQueryKeyboardsFixed(
+    Group,
+    Individual,
+    Context
+  );
 
   if (status === 'loading') {
     return <LoadingDisplay />;
@@ -103,7 +109,7 @@ export default function KeySetsPage() {
     },
     {
       accessorKey: 'Actions',
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Actions" className="justify-end" />,
+      header: () => <div className="text-right">Actions</div>,
       cell: ({ row }) => {
         return (
           <div className="flex flex-row justify-end gap-2">
@@ -161,8 +167,20 @@ export default function KeySetsPage() {
           </p>
 
           <DataTable
+            settings={Context.settings}
             columns={columns}
             data={data}
+            callback={(rows) => {
+              toast.promise(async () => await removeKeyboards(rows), {
+                loading: 'Deleting KeySet files...',
+                success: () => {
+                  return 'KeySet files have been deleted successfully!';
+                },
+                error: () => {
+                  return 'An error occurred while deleting KeySet files.';
+                },
+              });
+            }}
             filterCol="Name"
             optionalButtons={
               <div className="flex flex-row gap-2">
