@@ -147,7 +147,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: ['fast-formula-parser'],
+      //external: ['fast-formula-parser'],
     },
   },
 });
