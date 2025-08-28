@@ -33,7 +33,7 @@ export default function HomePage() {
 
     if (settings && settings.IsReturningUser === false) {
       toast('Welcome! View Program Documentation for information on initial setup and use.', {
-        duration: 10000,
+        duration: 4000,
         action: {
           label: 'Read Docs',
           onClick: () => navigate(createHref({ type: 'Documentation' }), { unstable_viewTransition: true }),

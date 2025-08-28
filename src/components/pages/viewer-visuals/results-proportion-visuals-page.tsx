@@ -29,6 +29,7 @@ import createHref from '@/lib/links';
 import ProportionFigureVisualization from './figures/proportion-figure';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
+import { toast } from 'sonner';
 
 type LoaderResult = {
   Group: string;
@@ -60,7 +61,11 @@ export const resultsViewerProportion = (ctx: FolderHandleContextType) => {
     const { keyset, results } = await GetResultsFromEvaluationFolder(handle, Group, Individual, Evaluation);
 
     if (!keyset) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
+      toast.error('Error: Could not recover KeySet in this folder.', {
+        duration: 4000,
+      });
+
+      const response = redirect(createHref({ type: 'Evaluations', individual: Individual, group: Group }));
       throw response;
     }
 
