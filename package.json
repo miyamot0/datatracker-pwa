@@ -61,7 +61,6 @@
     "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
-    "cookie": "^0.7.0",
     "embla-carousel-react": "^8.2.0",
     "esbuild": "^0.25.0",
     "form-data": "^4.0.4",
@@ -94,7 +93,7 @@
     "@types/wicg-file-system-access": "^2023.10.5",
     "@types/workbox-window": "^5.0.0",
     "@vitejs/plugin-react": "^4.3.1",
-    "@vitest/browser": "^2.1.1",
+    "@vitest/browser": "^2.1.9",
     "@vitest/coverage-v8": "^3.2.4",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.9.0",
@@ -129,5 +128,12 @@
     "exclude": [
       "./src/components/ui/*.{tsx,ts}"
     ]
+  },
+  "resolutions": {
+    "jest-environment-jsdom/form-data": "^4.0.4",
+    "vite-plugin-pwa/rollup": "^2.79.2",
+    "vite-plugin-pwa/@babel/runtime": "^7.26.10",
+    "vite/esbuild": "^0.25.0",
+    "@vitest/browser/cookie": "^0.7.0"
   }
 }
