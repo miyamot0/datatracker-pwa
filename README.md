@@ -98,9 +98,13 @@ class-variance-authority (0.7.0). Copyright Joe Bell (https://joebell.co.uk) -- 
  
 clsx (2.1.1). Copyright Luke Edwards luke.edwards05@gmail.com https://lukeed.com -- MIT Licensed: [Repo](n/a) 
  
+cookie (0.7.2). Copyright Roman Shtylman <shtylman@gmail.com> -- MIT Licensed: [Repo](n/a) 
+ 
 embla-carousel-react (8.2.1). Copyright David Jerleke -- MIT Licensed: [Repo](n/a) 
  
 esbuild (0.25.9). Copyright n/a -- MIT Licensed: [Repo](n/a) 
+ 
+form-data (4.0.4). Copyright Felix Geisendörfer <felix@debuggable.com> (http://debuggable.com/) -- MIT Licensed: [Repo](n/a) 
  
 lucide-react (0.429.0). Copyright Eric Fennis -- ISC Licensed: [Repo](n/a) 
  
