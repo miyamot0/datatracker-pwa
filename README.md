@@ -100,6 +100,8 @@ clsx (2.1.1). Copyright Luke Edwards luke.edwards05@gmail.com https://lukeed.com
  
 embla-carousel-react (8.2.1). Copyright David Jerleke -- MIT Licensed: [Repo](n/a) 
  
+esbuild (0.25.9). Copyright n/a -- MIT Licensed: [Repo](n/a) 
+ 
 lucide-react (0.429.0). Copyright Eric Fennis -- ISC Licensed: [Repo](n/a) 
  
 react (18.3.1). Copyright n/a -- MIT Licensed: [Repo](n/a) 
