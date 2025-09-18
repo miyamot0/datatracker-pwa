@@ -31,7 +31,7 @@ jobs:
 
       - name: Zip files
         run: |
-          cd dist-island && zip -r ../DataTracker Island build v${{ env.VERSION }}.zip .
+          cd dist-island && zip -r "../DataTracker Island build v${{ env.VERSION }}.zip" .
 
       - name: Create Release
         id: create-release
