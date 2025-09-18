@@ -2,7 +2,7 @@ name: Release Builder
 on:
   push:
     branches:
-      - testing
+      - main
 
 jobs:
   build:
@@ -31,7 +31,7 @@ jobs:
 
       - name: Zip files
         run: |
-          cd dist-island && zip -r ../DataTracker-Island-build.zip .
+          cd dist-island && zip -r ../DataTracker Island build (${{ env.VERSION }}).zip .
 
       - name: Create Release
         id: create-release
@@ -39,8 +39,8 @@ jobs:
         with:
           tag: v${{ env.VERSION }}
           allowUpdates: true
-          name: DataTracker Island Build ${{ env.VERSION }}
+          name: DataTracker Island Build v${{ env.VERSION }}
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifacts: DataTracker-Island-build.zip
+          artifacts: DataTracker Island build (${{ env.VERSION }}).zip
