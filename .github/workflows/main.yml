@@ -27,20 +27,17 @@ jobs:
         run: zip -r island-build.zip dist-island
 
       - name: Get Version
-        id: get_version
-        run: |
-          const fs = require('fs');
-          const version = JSON.parse(fs.readFileSync('./package.json')).version;
-          console.log(`::set-output name=VERSION::${version}`);
-        shell: node
+        shell: bash
+        id: get-version
+        run: echo "::set-output name=version::$(node ./.github/workflows/get-version.js)"
 
       - name: Create Release
-        id: create_release
+        id: create-release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: island-build-${{ steps.get_version.outputs.VERSION }}
-          release_name: Island Build ${{ steps.get_version.outputs.VERSION }}
+          tag_name: island-build-${{ steps.get-version.outputs.version }}
+          release_name: Island Build Version ${{ steps.get-version.outputs.version }}
           draft: false
           prerelease: false
