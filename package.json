@@ -35,7 +35,7 @@
     "dev-island": "vite --mode island",
     "dev": "vite",
     "build-island": "tsc -b && vite build --mode island",
-    "build": "tsc -b && vite build && vite build --mode island",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "check-licenses": "npx license-report --only=prod --output=json > ./src/assets/licenses.json",
