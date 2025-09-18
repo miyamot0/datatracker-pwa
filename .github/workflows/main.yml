@@ -31,13 +31,14 @@ jobs:
         id: get-version
         run: echo "::set-output name=version::$(node ./.github/workflows/get-version.js)"
 
-      - name: Create Release
-        id: create-release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release (V2)
+        uses: ncipollo/release-action@v2
         with:
-          tag_name: island-build-${{ steps.get-version.outputs.version }}
-          release_name: Island Build Version ${{ steps.get-version.outputs.version }}
+          allowUpdates: true
+          name: Island Build Version ${{ steps.get-version.outputs.version }}
           draft: false
           prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: island-build.zip
+          tag: island-build-${{ steps.get-version.outputs.version }}
+          files: island-build.zip
