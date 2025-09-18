@@ -36,9 +36,9 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          name: Island Build Version ${{ steps.get-version.outputs.version }}
+          name: DataTracker Island Build Version ${{ steps.get-version.outputs.version }}
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: island-build.zip
-          tag: island-build-${{ steps.get-version.outputs.version }}
+          tag: ${{ steps.get-version.outputs.version }}
