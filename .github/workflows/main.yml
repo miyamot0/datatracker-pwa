@@ -27,7 +27,7 @@ jobs:
       - name: Get Version
         shell: bash
         id: get-version
-        run: echo "version=$(node ./.github/workflows/get-version.js)" >> $env:GITHUB_OUTPUT
+        run: echo "VERSION=$(node ./.github/workflows/get-version.js)" >> GITHUB_ENV
 
       - name: Zip files
         run: |
@@ -37,9 +37,9 @@ jobs:
         id: create-release
         uses: ncipollo/release-action@v1
         with:
-          tag: v${{ steps.get-version.outputs.version }}
+          tag: v${{ env.VERSION }}
           allowUpdates: true
-          name: DataTracker Island Build ${{ steps.get-version.outputs.version }}
+          name: DataTracker Island Build ${{ env.VERSION }}
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
