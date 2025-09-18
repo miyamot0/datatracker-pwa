@@ -7,7 +7,7 @@ const IMAGES_REMOTE = [
   'fct_multiple_schedule.svg',
   'fct_reversal.svg',
   'multiple_baseline.svg',
-].map((img) => `/img/${img}`);
+].map((img) => `img/${img}`);
 
 export default function ImageCarousel() {
   return (

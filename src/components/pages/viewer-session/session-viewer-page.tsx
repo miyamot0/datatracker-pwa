@@ -43,6 +43,7 @@ type LoaderResult = {
     KeyDescription: string;
     Visible: boolean;
   }[];
+  Context: FolderHandleContextType;
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -174,6 +175,7 @@ export const sessionViewerLoader = (ctx: FolderHandleContextType) => {
         PlotObject: plot_object,
         ExpandedSession: expandedSessionData,
         ShowKeys: show_keys_base,
+        Context: ctx,
       } satisfies LoaderResult;
     }
 
@@ -191,7 +193,9 @@ export type ExpandedSavedSessionResult = SavedSessionResult & {
 
 export default function SessionViewerPage() {
   const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Evaluation, ExpandedSession, PlotObject, ShowKeys } = loaderResult;
+  const { Group, Individual, Evaluation, ExpandedSession, PlotObject, ShowKeys, Context } = loaderResult;
+  const { settings } = Context;
+
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
 
   return (
@@ -205,52 +209,6 @@ export default function SessionViewerPage() {
       label={'Session Viewer'}
       className="select-none"
     >
-      <div className="w-full flex flex-row justify-between mb-4">
-        <div className="flex flex-row gap-4">
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-fit">
-                <KeyboardIcon className="mr-2 w-4 h-4" />
-                Edit Keys Displayed
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {filteredKeys.map((key, index) => (
-                <DropdownMenuCheckboxItem
-                  key={`key-${index}`}
-                  checked={key.Visible}
-                  onCheckedChange={(checked) => {
-                    const updatedKeys = filteredKeys.map((k) => {
-                      if (k.KeyDescription === key.KeyDescription) {
-                        return {
-                          ...k,
-                          Visible: checked,
-                        };
-                      }
-
-                      return k;
-                    });
-
-                    setFilteredKeys(updatedKeys);
-
-                    const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
-
-                    setLocalCachedPrefs(Group, Individual, Evaluation, `${Group} ${Individual} ${Evaluation}`, {
-                      KeyDescription: hidden_keys,
-                      CTBElements: [],
-                      Schedule: 'End on Timer #1',
-                    });
-                  }}
-                >
-                  {key.KeyDescription}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
       <Card className="w-full">
         <CardHeader className="flex flex-row justify-between">
           <div className="flex flex-col gap-1.5 grow">
@@ -269,16 +227,8 @@ export default function SessionViewerPage() {
         </CardHeader>
 
         <CardContent className="w-full flex flex-col gap-2">
-          <p>
-            This page provides a visual and summary of the events recorded during the session. Due to differences in how
-            duration and events are recorded, only events recorded reference the Y-axis. Duration keys are illustrated
-            in terms of onset-offset visuals.
-          </p>
-
-          <SessionFigure Session={ExpandedSession} PlotData={PlotObject} KeysHidden={filteredKeys} />
-
           {ExpandedSession && (
-            <div className="grid grid-cols-2 my-6 gap-2">
+            <div className="grid grid-cols-2 mb-6 gap-2">
               <div>
                 <span className="font-bold">Session #: </span> {ExpandedSession.SessionSettings.Session}
               </div>
@@ -339,7 +289,56 @@ export default function SessionViewerPage() {
             </div>
           )}
 
-          <SessionKeyList Session={ExpandedSession} />
+          <div className="w-full flex flex-row justify-end mb-4">
+            <div className="flex flex-row gap-4">
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-fit">
+                    <KeyboardIcon className="mr-2 w-4 h-4" />
+                    Edit Keys Displayed
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {filteredKeys.map((key, index) => (
+                    <DropdownMenuCheckboxItem
+                      key={`key-${index}`}
+                      checked={key.Visible}
+                      onCheckedChange={(checked) => {
+                        const updatedKeys = filteredKeys.map((k) => {
+                          if (k.KeyDescription === key.KeyDescription) {
+                            return {
+                              ...k,
+                              Visible: checked,
+                            };
+                          }
+
+                          return k;
+                        });
+
+                        setFilteredKeys(updatedKeys);
+
+                        const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+
+                        setLocalCachedPrefs(Group, Individual, Evaluation, `${Group} ${Individual} ${Evaluation}`, {
+                          KeyDescription: hidden_keys,
+                          CTBElements: [],
+                          Schedule: 'End on Timer #1',
+                        });
+                      }}
+                    >
+                      {key.KeyDescription}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          <SessionFigure Session={ExpandedSession} PlotData={PlotObject} KeysHidden={filteredKeys} />
+
+          <SessionKeyList Settings={settings} Session={ExpandedSession} />
         </CardContent>
       </Card>
     </PageWrapper>

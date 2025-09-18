@@ -16,6 +16,7 @@ import ViewDurationResults from './views/view-duration-results';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { redirect, useLoaderData } from 'react-router-dom';
 import createHref from '@/lib/links';
+import { toast } from 'sonner';
 
 type LoaderResult = {
   Group: string;
@@ -42,7 +43,11 @@ export const resultsViewerLoader = (ctx: FolderHandleContextType) => {
     const { keyset, results } = await GetResultsFromEvaluationFolder(handle, Group, Individual, Evaluation);
 
     if (!keyset) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
+      toast.error('Error: Could not recover KeySet in this folder.', {
+        duration: 4000,
+      });
+
+      const response = redirect(createHref({ type: 'Evaluations', individual: Individual, group: Group }));
       throw response;
     }
 

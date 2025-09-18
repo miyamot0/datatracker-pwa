@@ -15,7 +15,7 @@ Functionality for loading the 'Example' group data is available on the _Group_ d
 This operation will copy numerous files to this folder and make take a moment to fully copy all the necessary files to this location. Once it is complete, a success message will indicate that the example data have been copied to the current group directory. The example data will be available in the _Group_ directory listing page and can be opened like any other group data (i.e., the "Example DataTracker Group" folder will have a new entry).
 
 <div align="center" width="100%">
-    <img src="/docs/extract_demo_data.png" alt="Image of mock data import functionality"/>
+    <img src="docs/extract_demo_data.png" alt="Image of mock data import functionality"/>
 </div>
 
 ### Exploring Relevant Functionality
@@ -29,7 +29,7 @@ There is one participant included in the example data and these data include a r
 The interface is designed to be flexible and allow analysts to visualize various targets, or if more relevant, visualize a simpler figure that aggregates behavior presumed to be functionally related. Using the included example data from a mock functional analysis, users can visualize the data in a variety of ways. An example of this output is provided below.
 
 <div align="center" width="100%">
-    <img src="/docs/demo_fa_ctb.png" alt="Image of example functional analysis figure"/>
+    <img src="docs/demo_fa_ctb.png" alt="Image of example functional analysis figure"/>
 </div>
 
 #### Rater Agreement Calculations
@@ -39,7 +39,7 @@ The example dataset provided in DataTracker also allows for an inspection of the
 Using the example data, users can evaluate how the program calculates and displays IOA for each target behavior. The IOA calculations are provided in a table format that includes the total count, interval-by-interval, and occurrence/non-occurrence calculations. An example of this output is provided below.
 
 <div align="center" width="100%">
-    <img src="/docs/demo_fa_reli.png" alt="Image of example functional analysis reliability calculations"/>
+    <img src="docs/demo_fa_reli.png" alt="Image of example functional analysis reliability calculations"/>
 </div>
 
 #### Syncing with Other Devices
@@ -49,5 +49,5 @@ The example data provided in DataTracker will also let users explore sync functi
 Once relevant data is available, users can press the "Sync" button and then select the desired "Remote" DataTracker folder (Note: this folder must be authorized and named DataTracker as well, if this setting is not relaxed). From this screen, users can choose which files to _send_ to the remote folder and which files to _receive_ from the remote folder. This approach is suggested because it preserves the original structural pattern of the directory and minimizes the chance of human error confusing the program. A visual of this interface, when attempting to sync mock data to a second location, is provided below.
 
 <div align="center" width="100%">
-    <img src="/docs/demo_sync_data.png" alt="Visual of sync screen with demo data"/>
+    <img src="docs/demo_sync_data.png" alt="Visual of sync screen with demo data"/>
 </div>

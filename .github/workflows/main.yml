@@ -1,0 +1,46 @@
+name: Release Builder
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    permissions: write-all
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Run build
+        run: npm run build-island
+
+      - name: Get Version
+        shell: bash
+        id: get-version
+        run: echo "VERSION=$(node ./.github/workflows/get-version.js)" >> $GITHUB_ENV
+
+      - name: Zip files
+        run: |
+          cd dist-island && zip -r ../DataTracker Island build (${{ env.VERSION }}).zip .
+
+      - name: Create Release
+        id: create-release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ env.VERSION }}
+          allowUpdates: true
+          name: DataTracker Island Build v${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: DataTracker Island build (${{ env.VERSION }}).zip
