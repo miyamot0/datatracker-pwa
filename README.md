@@ -1,12 +1,12 @@
 ![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-100.00_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-98.84_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-100.00_Percent-green>)
 
-![Static Badge Version](https://img.shields.io/badge/Version-0.4.6-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge Version](https://img.shields.io/badge/Version-0.4.7-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 # DataTracker (Installable PWA Build)
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff) ![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=fff) ![Vitest](https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=fff) ![TailwindCSS](https://img.shields.io/badge/Tailwind%20CSS-%2338B2AC.svg?logo=tailwind-css&logoColor=white) ![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-000?logo=shadcnui&logoColor=fff)
 
-DataTracker is a web-based application (installable PWA) designed to assist researchers and clinicians with measuring behavior. This program can be used by multiple observers (e.g., a primary and secondary observer) to record, assess agreement/reliability, and later compare.
+DataTracker is a web-based application (installable PWA) designed to assist researchers and clinicians with measuring behavior. This program can be used by multiple observers (e.g., a primary and secondary observer) to record, assess agreement/reliability, and later compare those records for clinical and research purposes.
 
 ## Purpose and Rationale
 
@@ -29,6 +29,12 @@ Features include the following:
 - [x] Various methods for calculating reliability indices
 - [x] Manual export of data in multiple formats (i.e., JSON, CSV)
 - [x] Quick visualization of behavioral data across sessions/conditions
+
+## Alternative/Islanded Mode for Highly Secure Environments
+
+In addition to the standard PWA build, there is also an 'islanded' mode that allows for use in highly secure environments where internet access is restricted or virtually unavailable (i.e., all non-internal traffic is blocked). This mode is designed to function entirely offline after the initial installation, ensuring that all data remains local to the device.
+
+This is not provided via the hosted site per se, but rather is available for download and installation by users who need this level of security. The islanded version includes all the features of the standard PWA but is optimized for environments with stringent data security requirements. These are compiled as numbered releases available on the [GitHub releases page](https://github.com/miyamot0/datatracker-pwa/releases).
 
 ## Screenshots and Visuals
 
@@ -140,4 +146,4 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Current Version
 
-0.4.6
+0.4.7
