@@ -24,21 +24,23 @@ jobs:
       - name: Run build
         run: npm run build-island
 
-      - name: Zip files
-        run: zip -r island-build.zip dist-island
-
       - name: Get Version
         shell: bash
         id: get-version
-        run: echo "::set-output name=version::$(node ./.github/workflows/get-version.js)"
+        run: echo "version=$(node ./.github/workflows/get-version.js)" >> $GITHUB_OUTPUT
 
-      - name: Create Release (V2)
+      - name: Zip files
+        run: |
+          cd dist-island && zip -r ../DataTracker-Island-build.zip .
+
+      - name: Create Release
+        id: create-release
         uses: ncipollo/release-action@v1
         with:
           tag: v${{ steps.get-version.outputs.version }}
           allowUpdates: true
-          name: DataTracker Island Build Version ${{ steps.get-version.outputs.version }}
+          name: DataTracker Island Build ${{ steps.get-version.outputs.version }}
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifacts: island-build.zip
+          artifacts: DataTracker-Island-build.zip
