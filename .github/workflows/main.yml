@@ -27,7 +27,7 @@ jobs:
       - name: Get Version
         shell: bash
         id: get-version
-        run: echo "version=$(node ./.github/workflows/get-version.js)" >> $GITHUB_OUTPUT
+        run: echo "version=$(node ./.github/workflows/get-version.js)" >> $env:GITHUB_OUTPUT
 
       - name: Zip files
         run: |
