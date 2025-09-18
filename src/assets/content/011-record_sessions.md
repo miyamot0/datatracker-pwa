@@ -9,7 +9,7 @@ author: 'Shawn Gilroy'
 The **Session Recorder** page is the main interface for actively collecting data in real-time. This page pulls the parameters set in the **Session Designer**, such as the **Keyboard** (i.e., behavior/key mappings) and the duration of total session (i.e., under which conditions sessions are planned to end). Once the session begins, the data collector uses the pre-defined keys defined in the **KeySet** to log behaviors and those outlined in the UI to manage timers in real-time. An example of a hypothetical session ready to begin is displayed below:
 
 <div align="center" width="100%">
-    <img src="/docs/session_recorder.png" alt="Image of DataTracker session recorder page"/>
+    <img src="docs/session_recorder.png" alt="Image of DataTracker session recorder page"/>
 </div>
 
 ### Beginning and Ending the Session

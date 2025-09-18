@@ -13,7 +13,7 @@ The DataTracker program allows for the importing of an _existing_ **KeySet** sav
 The first option is to manually create **KeySets** by selecting the desired keys from the keyboard. This is essentially creating a _new_ KeySet from scratch. This is probably the most reasonable way to begin when you are working with targets and procedures that are uncommon or that you have not previously used with DataTracker. Users can begin this process by pressing the "Create" button in the relevant section of the program. A visual of this section is provided below:
 
 <div align="center" width="100%">
-    <img src="/docs/keyboards_ui.png" alt="Image of DataTracker KeySet import options"/>
+    <img src="docs/keyboards_ui.png" alt="Image of DataTracker KeySet import options"/>
 </div>
 
 ### Option B: Importing KeySets
@@ -23,7 +23,7 @@ The second option is to import **KeySets** that have been previously saved in th
 The 'KeySet Import' page provides a list of all available **KeySets** that can be imported. This includes **KeySets** from other individuals, which can be useful for quickly setting up a new individual with similar targets or procedures to an existing one. These can be imported individually or in bulk, depending on needs, by selecting the relevant checkboxes next to each KeySet. Once these are imported, the list will refresh to reflect the newly added **KeySets**. A visual of this section is provided below:
 
 <div align="center" width="100%">
-    <img src="/docs/preview_import_keyset_ui.png" alt="Image of DataTracker KeySet import UI"/>
+    <img src="docs/preview_import_keyset_ui.png" alt="Image of DataTracker KeySet import UI"/>
 </div>
 
 Once imported, the **KeySet** will be in the relevant **Individual** directory and will be available for editing and/or immediate use.

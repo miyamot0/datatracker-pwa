@@ -32,8 +32,10 @@
   "license": "Apache-2.0",
   "version": "0.4.6",
   "scripts": {
+    "dev-island": "vite --mode island",
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build-island": "tsc -b && vite build --mode island",
+    "build": "tsc -b && vite build && vite build --mode island",
     "lint": "eslint .",
     "preview": "vite preview",
     "check-licenses": "npx license-report --only=prod --output=json > ./src/assets/licenses.json",
@@ -81,6 +83,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@dotenv-run/vite": "^1.0.1",
     "@eslint/js": "^9.9.0",
     "@tailwindcss/typography": "^0.5.15",
     "@types/dom-screen-wake-lock": "^1.0.3",
@@ -118,6 +121,7 @@
     "vite": "^5.4.19",
     "vite-bundle-analyzer": "^0.22.0",
     "vite-plugin-pwa": "^1.0.3",
+    "vite-plugin-singlefile": "^2.3.0",
     "vitest": "3.2.4"
   },
   "findUnusedExports": {

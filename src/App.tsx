@@ -1,4 +1,4 @@
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
+import { createHashRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
 import HomePage from './components/pages/home/home-page';
 import { FolderContextProvider, FolderHandleContext, FolderHandleContextType } from './context/folder-context';
 import { ThemeProvider } from './components/ui/theme-provider';
@@ -40,7 +40,7 @@ const AppRoot = () => {
 
   const router = useMemo(
     () =>
-      createBrowserRouter(
+      createHashRouter(
         createRoutesFromElements(
           <Route path="/">
             <Route index element={<HomePage />} />

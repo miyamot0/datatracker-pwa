@@ -12,6 +12,8 @@ type Props = {
 };
 
 export default function PageWrapper({ children, className, breadcrumbs, label }: Props) {
+  const MODALITY = import.meta.env.VITE_MODE;
+
   return (
     <main
       className={cn('flex min-h-screen flex-col items-center w-full py-4 mx-2 max-w-screen-xl self-center', className)}
@@ -39,7 +41,7 @@ export default function PageWrapper({ children, className, breadcrumbs, label }:
           </Link>{' '}
           @ Louisiana State University
         </div>
-        <div className="">{`Build Version ${BUILD_VERSION} (${BUILD_DATE})`}</div>
+        <div className="">{`Build Version ${BUILD_VERSION} (${BUILD_DATE}: ${MODALITY})`}</div>
         <div className="flex flex-row items-center justify-center gap-2">
           <Link aria-label="Link to Twitter/X page" to={'https://x.com/gilroy_shawn'} target="_blank">
             <Button

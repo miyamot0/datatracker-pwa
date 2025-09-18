@@ -17,7 +17,7 @@ The **View Evaluation Data** page provides a table of the data collected during 
 The frequency data table provides a summary of the data collected during the **Evaluation**. The data includes a "Count" for each Session and a _rate_ is calculated for the **Total Session Time**; however, this may or may not be the information most useful for a given **Evaluation**. For example, if the session incorporated **two timers**, you would likely wish to calculate rate based on the minutes recorded in either "Timer #1" or "Timer #2" rather than the "Main Timer". A visual of hypothetical data is provided below:
 
 <div align="center" width="100%">
-    <img src="/docs/evaluation_summary_frequency.png" alt="Image of DataTracker data (Frequency)"/>
+    <img src="docs/evaluation_summary_frequency.png" alt="Image of DataTracker data (Frequency)"/>
 </div>
 
 Within this table, information is summarized with respect to individual timers. For example, rate for Timer #1 would be reflected as the number of occurrences for a target response while that timer was active divided by the total time that Timer #1 was active. This is useful for comparing the rate of behavior across different conditions or timers within the same session.
@@ -27,7 +27,7 @@ Within this table, information is summarized with respect to individual timers. 
 The duration data table provides a summary of the data collected during the **Evaluation**. The data includes a "Seconds" for each Session and a _proportion_ of the **Total Session Time**; however, this may or may not be the information most useful for your **Evaluation**. For example, if the session incorporated **two timers**, you would likely wish to calculate the proportion of session based on the minutes recorded in either "Timer #1" or "Timer #2" rather than the "Main Timer".
 
 <div align="center" width="100%">
-    <img src="/docs/evaluation_summary_duration.png" alt="Image of DataTracker data (Duration)"/>
+    <img src="docs/evaluation_summary_duration.png" alt="Image of DataTracker data (Duration)"/>
 </div>
 
 Within this table, information is summarized with respect to individual timers and timer duration. For example, the proportion of time for Timer #1 would be reflected as the number of seconds for a target response while that timer was active divided by the total time that Timer #1 was active. This is useful for comparing the proportion of time spent engaging in behavior across different conditions or timers within the same session.

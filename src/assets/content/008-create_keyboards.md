@@ -11,7 +11,7 @@ The **KeySet** functionality offered by Data Tracker allows users to efficiently
 An example of multiple "KeySets" featured for a specific client are illustrated below:
 
 <div align="center" width="100%">
-    <img src="/docs/keyboards_ui.png" alt="Visual of available keyboards"/>
+    <img src="docs/keyboards_ui.png" alt="Visual of available keyboards"/>
 </div>
 
 ### Key/Behavior Mappings for Frequency Measurement
@@ -21,7 +21,7 @@ Frequency key/behavior mappings are designed for behaviors that are easily count
 An example illustration of a **KeySet** containing several Frequency event keys is provided below. Note: the "Frequency" keys are on the left side of the keyboard, while the "Duration" keys are on the right side of the keyboard.
 
 <div align="center" width="100%">
-    <img src="/docs/key_set_editor_both.png" alt="Example of Keys in KeySet (frequency)"/>
+    <img src="docs/key_set_editor_both.png" alt="Example of Keys in KeySet (frequency)"/>
 </div>
 
 ### Key/Behavior Mappings for Duration Measurement
@@ -31,7 +31,7 @@ Duration key/behavior mappings, on the other hand, are used for behavior that is
 An example illustration of a **KeySet** containing several "Duration" event keys is provided below. Note: the "Duration" keys are on the left side of the keyboard, while the "Duration" keys are on the right side of the keyboard.
 
 <div align="center" width="100%">
-    <img src="/docs/key_set_editor_both.png" alt="Example of Keys in KeySet (duration)"/>
+    <img src="docs/key_set_editor_both.png" alt="Example of Keys in KeySet (duration)"/>
 </div>
 
 ### Reasoning and Rationale for Key/Behavior Mappings
@@ -41,7 +41,7 @@ The rationale behind these customizable key/behavior mappings is to streamline t
 Any number of keys can be added to a **KeySet**. Individual Frequency or Duration keys can be assigned using the 'Add Key' button in the respective areas. This prompts a dialog that requires a description of the event (e.g., Physical Aggression) and a designated key (e.g., '4'). A visual of the key assignment interface is provided below:
 
 <div align="center" width="100%">
-    <img src="/docs/keys_dialog.png" alt="Example of Keys in KeySet (duration)"/>
+    <img src="docs/keys_dialog.png" alt="Example of Keys in KeySet (duration)"/>
 </div>
 
 Although there is considerable flexibility in how many keys can be added to a **KeySet**, a few guidelines are recommended to ensure usability and efficiency. First, not all keys can be used to track behavior (e.g., some are 'reserved' or special functions, such as Escape for ending a session). Second, all keys must be unique within a **KeySet**. For example, if the "1" key is already assigned to "Physical Aggression," it cannot be reassigned to another behavior like "Verbal Aggression." This uniqueness helps prevent confusion during data collection and ensures that each key corresponds to a specific behavior. Lastly, each **KeySet** is specific to an **Individual** but not to **Evaluation**. For example, there may be a similar **KeySet** for a single individual, such between a "Functional Analysis" or a "Treatment Evaluation." In most cases, when a treatment is ready to be evaluated, it may be useful to duplicate a prior **KeySet** and then modify it to reflect the new behaviors or changes in the treatment plan (e.g., adding a key for an alternative response to problem behavior).

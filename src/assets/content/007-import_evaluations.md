@@ -19,7 +19,7 @@ The first option is to manually create **Evaluations** is by using the associate
 The second option is to import **Evaluations** that have been previously saved in the program. For instance, this may be an evaluation used with _another_ client that is similar to the one you are currently working with. To begin, press the 'Open Evaluations' button for a specific individual to access the relevant **Evaluations**. On this page, there is an option to 'Import' from the various **Evaluations** that currently exist in the DataTracker directory. Specifically, these are **Evaluations** that have been saved in the directories of _other_ individuals. A visual of this section is provided below:
 
 <div align="center" width="100%">
-    <img src="/docs/preview_import_evaluation_ui.png" alt="Image of DataTracker keyset import options"/>
+    <img src="docs/preview_import_evaluation_ui.png" alt="Image of DataTracker keyset import options"/>
 </div>
 
 The 'Prior Import Evaluation' page will provide a review of various **Evaluations** that are available for import. The user can select the desired evaluation and import it into the current individual's evaluation list. This is a quick and efficient way to create **Evaluations** for a new individual that is similar to an existing individual. Pressing the relevant button to import the evaluation will add the evaluation to the **current individual's** directory. The evaluation will then be available for use and editing in the 'Open Evaluation' section. As a reminder, this is independent of the **KeySet** import functionality provided in the program, and the import of any existing **KeySet** is an independent process.
