@@ -6,6 +6,7 @@ on:
 
 jobs:
   build:
+    permissions: write-all
     runs-on: ubuntu-latest
 
     steps:
@@ -41,4 +42,3 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: island-build.zip
           tag: island-build-${{ steps.get-version.outputs.version }}
-          files: island-build.zip
