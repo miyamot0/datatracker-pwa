@@ -18,10 +18,10 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: yarn install --legacy-peer-deps
+        run: npm install --legacy-peer-deps
 
       - name: Run build
-        run: yarn run build --mode island
+        run: npm run build-island
 
       - name: Zip files
         run: zip -r island-build.zip dist-island
