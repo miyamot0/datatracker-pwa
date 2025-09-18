@@ -17,9 +17,10 @@ import React, { ReactNode, useState } from 'react';
 import { Checkbox } from './checkbox';
 import type { Row, Table as TableData } from '@tanstack/react-table';
 import { Button } from './button';
-import { Delete } from 'lucide-react';
+import { ChevronDown, Delete } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ApplicationSettingsTypes } from '@/types/settings';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from './dropdown-menu';
 
 export type RowSelectOptions = 'None';
 
@@ -33,6 +34,8 @@ interface DataTableProps<TData, TValue> {
   forceShowCheckbox?: boolean;
   customCheckboxButton?: ReactNode;
   callback?: (rows: TData[]) => void;
+  hiddenCols?: { [key: string]: boolean };
+  limitCols?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -44,11 +47,13 @@ export function DataTable<TData, TValue>({
   customCheckboxButton,
   callback,
   settings,
+  limitCols,
+  hiddenCols = {},
   rowSelectOptions = 'None',
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(hiddenCols);
 
   const newColumns =
     (callback && settings.EnableFileDeletion) || forceShowCheckbox
@@ -149,7 +154,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="">
       <div className="flex justify-between items-center py-4">
-        {filterCol && (
+        {filterCol ? (
           <Input
             placeholder={`Filter by ${filterCol}`}
             id="filter-input"
@@ -158,12 +163,41 @@ export function DataTable<TData, TValue>({
             onChange={(event) => table.getColumn(filterCol)?.setFilterValue(event.target.value)}
             className="max-w-sm"
           />
+        ) : (
+          <div></div>
         )}
 
         <div className="flex gap-2">
           {callback && <DynamicButton callback={callback} />}
 
           {optionalButtons}
+
+          {limitCols && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="ml-auto">
+                  Edit Columns Displayed <ChevronDown className="ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => {
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                      >
+                        {column.id}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
       <Table>
