@@ -10,7 +10,7 @@ import { SavedSessionResult } from '@/lib/dtos';
 import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import createHref from '@/lib/links';
 import { cn } from '@/lib/utils';
-import { ChevronRight, SearchIcon } from 'lucide-react';
+import { Edit2Icon, SearchIcon } from 'lucide-react';
 import { Link, redirect, useLoaderData } from 'react-router-dom';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
@@ -121,7 +121,7 @@ export default function DashboardHistoryPage() {
       accessorKey: 'Actions',
       header: () => <div className="text-right">Actions</div>,
       cell: ({ row }) => (
-        <div className="flex flex-row justify-end">
+        <div className="flex flex-row justify-end gap-2">
           <Link
             className="flex flex-row items-center"
             to={createHref({
@@ -134,8 +134,22 @@ export default function DashboardHistoryPage() {
           >
             <Button variant={'outline'} className="shadow" size={'sm'}>
               <SearchIcon className="mr-2 h-4 w-4" />
-              Viewer
-              <ChevronRight className="w-4 h-4 ml-2" />
+              View
+            </Button>
+          </Link>
+          <Link
+            className="flex flex-row items-center"
+            to={createHref({
+              type: 'Evaluation Session Manager',
+              group: Group,
+              individual: Individual,
+              evaluation: Evaluation,
+              index: GenerateSavedFileName(row.original.SessionSettings).replaceAll('.json', ''),
+            })}
+          >
+            <Button variant={'outline'} className="shadow" size={'sm'}>
+              <Edit2Icon className="mr-2 h-4 w-4" />
+              Edit
             </Button>
           </Link>
         </div>
