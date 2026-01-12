@@ -335,7 +335,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
           } satisfies KeyManageType,
         ]);
 
-        // Requestion wake-lock
+        // Request wake-lock
         const request_wake_lock = async () => {
           if (navigator && navigator.wakeLock) {
             wakelockRef.current = await navigator.wakeLock.request('screen');

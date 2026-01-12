@@ -41,6 +41,8 @@ export function walkSessionDurationKey(SessionSettings: SavedSessionResult, Sche
 
   const is_even = relevant_schedule_changes.length % 2 === 0;
 
+  const bouts = relevant_schedule_changes.length / 2;
+
   if (!is_even) throw new Error('Schedule changes must be even');
 
   let working_duration = 0;
@@ -88,5 +90,6 @@ export function walkSessionDurationKey(SessionSettings: SavedSessionResult, Sche
     KeyDescription: Key.KeyDescription,
     Schedule: Schedule,
     Value: working_duration,
+    Bouts: bouts,
   };
 }

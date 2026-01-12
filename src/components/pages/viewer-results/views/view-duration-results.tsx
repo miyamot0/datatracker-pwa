@@ -21,23 +21,29 @@ export default function ViewDurationResults({ Keyset, Results }: Props) {
   const { Group, Individual } = useParams();
 
   const hr_results: HumanReadableResults = {
-    type: 'Duration',
     keys: Keyset.DurationKeys.map((key) => ({
-      Key: key.KeyName,
+      Key: key.KeyDescription,
       Value: key.KeyDescription,
     })),
-
+    type: 'Duration',
     results: [],
   };
 
+  // Note: Loop through each session recorded
   Results.map((result) => {
     const system_events = result.SystemKeyPresses.map((press) => new Date(press.TimePressed)).sort(
       (a, b) => a.getTime() - b.getTime()
     );
 
+    // Note: Bail if no system events found
     if (system_events.length === 0) throw new Error('No system events found');
 
     const session_minutes = result.TimerMain / 60;
+
+    //const timer_1_minutes = result.TimerOne / 60;
+    //const timer_2_minutes = result.TimerTwo / 60;
+    //const timer_3_minutes = result.TimerThree / 60;
+
     const temp_array: string[] = [];
 
     const temp_result = {
@@ -53,6 +59,7 @@ export default function ViewDurationResults({ Keyset, Results }: Props) {
       Timer3: result.TimerThree / 60,
     } satisfies HumanReadableResultsRow;
 
+    // Note: Loop through each key in the keyset to enforce common ordering
     Keyset.DurationKeys.map((key) => {
       const key_obj = result.DurationKeyPresses.filter((k) => k.KeyDescription === key.KeyDescription).sort(
         (a, b) => new Date(a.TimePressed).valueOf() - new Date(b.TimePressed).valueOf()
@@ -64,26 +71,106 @@ export default function ViewDurationResults({ Keyset, Results }: Props) {
 
       const score_by_schedule = [primary, secondary, tertiary];
 
+      // Sum up total duration for this key
       const total_duration = score_by_schedule.reduce((partialSum, a) => partialSum + a.Value, 0);
 
+      // Sum up total bouts for this key
+      const bouts_by_schedule = score_by_schedule.reduce((partialSum, a) => partialSum + a.Bouts, 0);
+
+      // Timer #1 Seconds
       temp_result.values.push({
         Key: key.KeyDescription,
         Value: primary.Value.toFixed(2),
       });
 
+      // Timer #1 Percentage
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: ((primary.Value / result.TimerOne) * 100).toFixed(2),
+      });
+
+      // Timer #1 Bouts
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: primary.Bouts.toString(),
+      });
+
+      // Timer #1 Average Bout Length
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: (primary.Value / primary.Bouts).toFixed(2),
+      });
+
+      // Timer #2 Seconds
       temp_result.values.push({
         Key: key.KeyDescription,
         Value: secondary.Value.toFixed(2),
       });
 
+      // Timer #2 Percentage
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: ((secondary.Value / result.TimerTwo) * 100).toFixed(2),
+      });
+
+      // Timer #2 Bouts
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: secondary.Bouts.toString(),
+      });
+
+      // Timer #2 Average Bout Length
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: (secondary.Value / secondary.Bouts).toFixed(2),
+      });
+
+      // Timer #3 Seconds
       temp_result.values.push({
         Key: key.KeyDescription,
         Value: tertiary.Value.toFixed(2),
       });
 
+      // Timer #3 Percentage
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: ((tertiary.Value / result.TimerThree) * 100).toFixed(2),
+      });
+
+      // Timer #3 Bouts
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: tertiary.Bouts.toString(),
+      });
+
+      // Timer #3 Average Bout Length
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: (tertiary.Value / tertiary.Bouts).toFixed(2),
+      });
+
+      // Total Seconds
       temp_result.values.push({
         Key: key.KeyDescription,
         Value: total_duration.toFixed(2),
+      });
+
+      // Percentage of Session
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: ((total_duration / session_minutes) * 100).toFixed(2),
+      });
+
+      // Total Bouts
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: bouts_by_schedule.toString(),
+      });
+
+      // Average Bout Length
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: (total_duration / bouts_by_schedule).toFixed(2),
       });
 
       temp_array.push(key_obj.length.toString());
@@ -97,17 +184,40 @@ export default function ViewDurationResults({ Keyset, Results }: Props) {
 
   const csv_string = exportHumanReadableToCSV(hr_results);
 
-  const columnLabels = ['Session #', 'Date', 'Time', 'Condition', 'Data Collector', 'Therapist'];
+  const columnLabels = [
+    'Session #',
+    'Date',
+    'Time',
+    'Condition',
+    'Data Collector',
+    'Therapist',
+    'Duration Session (min)',
+    'Duration Timer #1 (min)',
+    'Duration Timer #2 (min)',
+    'Duration Timer #3 (min)',
+  ];
+
   hr_results.keys.forEach((entry) => {
-    columnLabels.push(entry.Value + ' (Timer #1 S)');
-    columnLabels.push(entry.Value + ' (Timer #2 S)');
-    columnLabels.push(entry.Value + ' (Timer #3 S)');
-    columnLabels.push(entry.Value + ' (Total S)');
+    columnLabels.push(entry.Value + ' (Timer #1 Seconds)');
+    columnLabels.push(entry.Value + ' (Timer #1 Percentage)');
+    columnLabels.push(entry.Value + ' (Timer #1 Bouts)');
+    columnLabels.push(entry.Value + ' (Timer #1 Average Bout Length)');
+
+    columnLabels.push(entry.Value + ' (Timer #2 Seconds)');
+    columnLabels.push(entry.Value + ' (Timer #2 Percentage)');
+    columnLabels.push(entry.Value + ' (Timer #2 Bouts)');
+    columnLabels.push(entry.Value + ' (Timer #2 Average Bout Length)');
+
+    columnLabels.push(entry.Value + ' (Timer #3 Seconds)');
+    columnLabels.push(entry.Value + ' (Timer #3 Percentage)');
+    columnLabels.push(entry.Value + ' (Timer #3 Bouts)');
+    columnLabels.push(entry.Value + ' (Timer #3 Average Bout Length)');
+
+    columnLabels.push(entry.Value + ' (Total Seconds)');
+    columnLabels.push(entry.Value + ' (Total Percentage)');
+    columnLabels.push(entry.Value + ' (Total Bouts)');
+    columnLabels.push(entry.Value + ' (Total Average Bout Length)');
   });
-  columnLabels.push('Total Session Time (Min)');
-  columnLabels.push('Total Timer #1 Time (Min)');
-  columnLabels.push('Total Timer #2 Time (Min)');
-  columnLabels.push('Total Timer #3 Time (Min)');
 
   const data = hr_results.results.map((datum) => {
     const values = datum.values.map((datum2) => {
@@ -124,11 +234,11 @@ export default function ViewDurationResults({ Keyset, Results }: Props) {
       { value: datum.Condition.toString(), readOnly: true },
       { value: datum.DataCollector.toString(), readOnly: true },
       { value: datum.Therapist.toString(), readOnly: true },
-      ...values,
       { value: datum.duration.toFixed(2), readOnly: true },
       { value: datum.Timer1.toFixed(2), readOnly: true },
       { value: datum.Timer2.toFixed(2), readOnly: true },
       { value: datum.Timer3.toFixed(2), readOnly: true },
+      ...values,
     ];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }) as Matrix<CellBase<any>>;
