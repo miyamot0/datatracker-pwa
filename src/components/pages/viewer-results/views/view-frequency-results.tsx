@@ -59,24 +59,52 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
 
       const total_frequency = score_by_schedule.reduce((partialSum, a) => partialSum + a.Value, 0);
 
+      // Timer #1 Count
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: primary.Value.toString(),
+      });
+
+      // Timer #1 Rate
       temp_result.values.push({
         Key: key.KeyDescription,
         Value: (primary.Value / (result.TimerOne / 60)).toFixed(2),
       });
 
+      // Timer #2 Count
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: secondary.Value.toString(),
+      });
+
+      // Timer #2 Rate
       temp_result.values.push({
         Key: key.KeyDescription,
         Value: (secondary.Value / (result.TimerTwo / 60)).toFixed(2),
       });
 
+      // Timer #3 Count
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: tertiary.Value.toString(),
+      });
+
+      // Timer #3 Rate
       temp_result.values.push({
         Key: key.KeyDescription,
         Value: (tertiary.Value / (result.TimerThree / 60)).toFixed(2),
       });
 
+      // Total Count
       temp_result.values.push({
         Key: key.KeyDescription,
         Value: total_frequency.toString(),
+      });
+
+      // Total Rate
+      temp_result.values.push({
+        Key: key.KeyDescription,
+        Value: (total_frequency / (result.TimerMain / 60)).toFixed(2),
       });
     });
 
@@ -85,17 +113,29 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
 
   const csv_string = exportHumanReadableToCSV(hr_results);
 
-  const columnLabels = ['Session #', 'Date', 'Time', 'Condition', 'Data Collector', 'Therapist'];
+  const columnLabels = [
+    'Session #',
+    'Date',
+    'Time',
+    'Condition',
+    'Data Collector',
+    'Therapist',
+    'Duration Session (min)',
+    'Duration Timer #1 (min)',
+    'Duration Timer #2 (min)',
+    'Duration Timer #3 (min)',
+  ];
+
   hr_results.keys.forEach((entry) => {
-    columnLabels.push(entry.Value + ' (Rate; Timer #1 Basis)');
-    columnLabels.push(entry.Value + ' (Rate; Timer #2 Basis)');
-    columnLabels.push(entry.Value + ' (Rate; Timer #3 Basis)');
-    columnLabels.push(entry.Value + ' (Total Count)');
+    columnLabels.push(entry.Value + ' (Timer #1 Count)');
+    columnLabels.push(entry.Value + ' (Timer #1 Rate)');
+    columnLabels.push(entry.Value + ' (Timer #2 Count)');
+    columnLabels.push(entry.Value + ' (Timer #2 Rate)');
+    columnLabels.push(entry.Value + ' (Timer #3 Count)');
+    columnLabels.push(entry.Value + ' (Timer #3 Rate)');
+    columnLabels.push(entry.Value + ' (Session Count)');
+    columnLabels.push(entry.Value + ' (Session Rate)');
   });
-  columnLabels.push('Main Timer (Min)');
-  columnLabels.push('Timer #1 (Min)');
-  columnLabels.push('Timer #2 (Min)');
-  columnLabels.push('Timer #3 (Min)');
 
   const data = hr_results.results.map((datum) => {
     const values = datum.values.map((datum2) => {
@@ -112,11 +152,11 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
       { value: datum.Condition.toString(), readOnly: true },
       { value: datum.DataCollector.toString(), readOnly: true },
       { value: datum.Therapist.toString(), readOnly: true },
-      ...values,
       { value: datum.duration.toFixed(2), readOnly: true },
       { value: datum.Timer1.toFixed(2), readOnly: true },
       { value: datum.Timer2.toFixed(2), readOnly: true },
       { value: datum.Timer3.toFixed(2), readOnly: true, mode: 'view' },
+      ...values,
     ];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }) as Matrix<CellBase<any>>;

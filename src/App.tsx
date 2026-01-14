@@ -34,6 +34,7 @@ import SessionViewerPage, { sessionViewerLoader } from './components/pages/viewe
 import ResultsProportionVisualsPage, {
   resultsViewerProportion,
 } from './components/pages/viewer-visuals/results-proportion-visuals-page';
+import SessionManagerPage, { sessionManagerLoader } from './components/pages/session-manager/session-manager-page';
 
 const AppRoot = () => {
   const dataContext = useContext(FolderHandleContext) as unknown as FolderHandleContextType;
@@ -86,6 +87,11 @@ const AppRoot = () => {
                     <Route path="history">
                       <Route index element={<DashboardHistoryPage />} loader={sessionHistoryLoader(dataContext)} />
                       <Route path=":Index" element={<SessionViewerPage />} loader={sessionViewerLoader(dataContext)} />
+                      <Route
+                        path="edit/:Index"
+                        element={<SessionManagerPage />}
+                        loader={sessionManagerLoader(dataContext)}
+                      />
                     </Route>
                     <Route
                       path="proportion"

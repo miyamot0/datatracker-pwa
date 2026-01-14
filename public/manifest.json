@@ -1,8 +1,10 @@
 {
     "iarc_rating_id": "6df796d8-b052-434b-a5ea-0d5af2a7335b",
+    "background_color": "#000000",
+    "foreground_color": "#000000",
+    "theme_color": "#000000",
     "related_applications": [],
-    "background_color": "#ffffff",
-    "theme_color": "#317EFB",
+    "shortcuts": [],
     "icons": [
         {
             "src": "/favicon.ico",

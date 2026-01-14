@@ -65,6 +65,13 @@ export type RouteInformationType =
       index: string;
     }
   | {
+      type: 'Evaluation Session Manager';
+      group: string;
+      individual: string;
+      evaluation: string;
+      index: string;
+    }
+  | {
       type: 'Evaluation Visualizer-Rate';
       group: string;
       individual: string;
@@ -120,6 +127,8 @@ export default function createHref(route: RouteInformationType) {
       return `/session/${_(route.group)}/${_(route.individual)}/${_(route.evaluation)}/history`;
     case 'Evaluation Session Analysis':
       return `/session/${_(route.group)}/${_(route.individual)}/${_(route.evaluation)}/history/${route.index}`;
+    case 'Evaluation Session Manager':
+      return `/session/${_(route.group)}/${_(route.individual)}/${_(route.evaluation)}/history/edit/${route.index}`;
     case 'Evaluation Visualizer-Rate':
       return `/session/${_(route.group)}/${_(route.individual)}/${_(route.evaluation)}/rate`;
     case 'Evaluation Visualizer-Proportion':

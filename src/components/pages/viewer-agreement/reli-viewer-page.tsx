@@ -131,41 +131,111 @@ export default function ReliabilityViewerPage() {
 
   f_headings.unshift('Session #');
 
+  const EIA_f_values: number[] = [];
+  const PIA_f_values: number[] = [];
+  const TIA_f_values: number[] = [];
+  const OIA_f_values: number[] = [];
+  const NIA_f_values: number[] = [];
+  const PMA_f_values: number[] = [];
+
   const f_rows = Sessions.map((session) => {
     const temp_array = [{ value: session.toString(), readOnly: true }];
 
     KeySet.FrequencyKeys.forEach((key) => {
       const session_to_show = ScoredFrequency.flat().find((s) => s.Session === session && s.KeyName === key.KeyName);
 
+      if (!session_to_show) {
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        return;
+      }
+
+      const { EIA, PIA, TIA, OIA, NIA, PMA } = session_to_show;
+
+      EIA_f_values.push(EIA);
+      PIA_f_values.push(PIA);
+      TIA_f_values.push(TIA);
+      OIA_f_values.push(OIA);
+      NIA_f_values.push(NIA);
+      PMA_f_values.push(PMA);
+
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       temp_array.push({
-        value: session_to_show?.EIA.toFixed(2) ?? '',
+        value: EIA.toFixed(2) ?? '',
         readOnly: true,
       }),
         temp_array.push({
-          value: session_to_show?.PIA.toFixed(2) ?? '',
+          value: PIA.toFixed(2) ?? '',
           readOnly: true,
         }),
         temp_array.push({
-          value: session_to_show?.TIA.toFixed(2) ?? '',
+          value: TIA.toFixed(2) ?? '',
           readOnly: true,
         }),
         temp_array.push({
-          value: session_to_show?.OIA.toFixed(2) ?? '',
+          value: OIA.toFixed(2) ?? '',
           readOnly: true,
         }),
         temp_array.push({
-          value: session_to_show?.NIA.toFixed(2) ?? '',
+          value: NIA.toFixed(2) ?? '',
           readOnly: true,
         }),
         temp_array.push({
-          value: session_to_show?.PMA.toFixed(2) ?? '',
+          value: PMA.toFixed(2) ?? '',
           readOnly: true,
         });
     });
 
     return temp_array;
   });
+
+  const mean_f_row = [{ value: 'Averaged', readOnly: true }];
+
+  KeySet.FrequencyKeys.forEach(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    mean_f_row.push({
+      value: (EIA_f_values.reduce((a, b) => a + b, 0) / EIA_f_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_f_row.push({
+      value: (PIA_f_values.reduce((a, b) => a + b, 0) / PIA_f_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_f_row.push({
+      value: (TIA_f_values.reduce((a, b) => a + b, 0) / TIA_f_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_f_row.push({
+      value: (OIA_f_values.reduce((a, b) => a + b, 0) / OIA_f_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_f_row.push({
+      value: (NIA_f_values.reduce((a, b) => a + b, 0) / NIA_f_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_f_row.push({
+      value: (PMA_f_values.reduce((a, b) => a + b, 0) / PMA_f_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+  });
+
+  f_rows.push(mean_f_row);
+
+  const EIA_d_values: number[] = [];
+  const PIA_d_values: number[] = [];
+  const TIA_d_values: number[] = [];
+  const OIA_d_values: number[] = [];
+  const NIA_d_values: number[] = [];
+  const PMA_d_values: number[] = [];
 
   const d_headings = KeySet.DurationKeys.flatMap((key) => {
     return [
@@ -186,35 +256,91 @@ export default function ReliabilityViewerPage() {
     KeySet.DurationKeys.forEach((key) => {
       const session_to_show = ScoredDuration.flat().find((s) => s.Session === session && s.KeyName === key.KeyName);
 
+      if (!session_to_show) {
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        return;
+      }
+
+      const { EIA, PIA, TIA, OIA, NIA, PMA } = session_to_show;
+
+      EIA_d_values.push(EIA);
+      PIA_d_values.push(PIA);
+      TIA_d_values.push(TIA);
+      OIA_d_values.push(OIA);
+      NIA_d_values.push(NIA);
+      PMA_d_values.push(PMA);
+
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       temp_array.push({
-        value: session_to_show?.EIA.toFixed(2) ?? '',
+        value: EIA.toFixed(2) ?? '',
         readOnly: true,
       }),
         temp_array.push({
-          value: session_to_show?.PIA.toFixed(2) ?? '',
+          value: PIA.toFixed(2) ?? '',
           readOnly: true,
         }),
         temp_array.push({
-          value: session_to_show?.TIA.toFixed(2) ?? '',
+          value: TIA.toFixed(2) ?? '',
           readOnly: true,
         }),
         temp_array.push({
-          value: session_to_show?.OIA.toFixed(2) ?? '',
+          value: OIA.toFixed(2) ?? '',
           readOnly: true,
         }),
         temp_array.push({
-          value: session_to_show?.NIA.toFixed(2) ?? '',
+          value: NIA.toFixed(2) ?? '',
           readOnly: true,
         }),
         temp_array.push({
-          value: session_to_show?.PMA.toFixed(2) ?? '',
+          value: PMA.toFixed(2) ?? '',
           readOnly: true,
         });
     });
 
     return temp_array;
   });
+
+  const mean_d_row = [{ value: 'Averaged', readOnly: true }];
+
+  KeySet.FrequencyKeys.forEach(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    mean_d_row.push({
+      value: (EIA_d_values.reduce((a, b) => a + b, 0) / EIA_d_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_d_row.push({
+      value: (PIA_d_values.reduce((a, b) => a + b, 0) / PIA_d_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_d_row.push({
+      value: (TIA_d_values.reduce((a, b) => a + b, 0) / TIA_d_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_d_row.push({
+      value: (OIA_d_values.reduce((a, b) => a + b, 0) / OIA_d_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_d_row.push({
+      value: (NIA_d_values.reduce((a, b) => a + b, 0) / NIA_d_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_d_row.push({
+      value: (PMA_d_values.reduce((a, b) => a + b, 0) / PMA_d_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+  });
+
+  d_rows.push(mean_d_row);
 
   return (
     <PageWrapper

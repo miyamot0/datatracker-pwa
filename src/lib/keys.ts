@@ -1,9 +1,9 @@
-import { KeySet } from "@/types/keyset";
+import { KeySet } from '@/types/keyset';
 
 // This is the type definition for the HumanReadableResults type
 export const DEFAULT_ENTRY = {
-  KeyName: "",
-  KeyDescription: "",
+  KeyName: '',
+  KeyDescription: '',
   KeyCode: 0,
 };
 
@@ -16,21 +16,21 @@ export const DEFAULT_ENTRY = {
  */
 export function is_key_already_assigned(KeySet: KeySet, code: number) {
   return (
-    KeySet.FrequencyKeys.find((key) => key.KeyCode === code) ||
-    KeySet.DurationKeys.find((key) => key.KeyCode === code)
+    KeySet.FrequencyKeys.find((key) => key.KeyCode === code) || KeySet.DurationKeys.find((key) => key.KeyCode === code)
   );
 }
 
 // Check if the key is protected
 export const PROTECTED_KEY_ENTRIES = [
-  "Z",
-  "X",
-  "C",
-  "Tab",
-  "Delete",
-  "Shift",
-  "Del",
-  "Backspace",
-  " ",
-  "Space",
+  'Z', // Note: Default Timer #1
+  'X', // Note: Default Timer #2
+  'C', // Note: Default Timer #3
+  'V', // TODO: boot to 'last' different schedule (like a 'toggle')
+  'Tab',
+  'Delete',
+  'Shift',
+  'Del',
+  'Backspace',
+  ' ',
+  'Space',
 ];
