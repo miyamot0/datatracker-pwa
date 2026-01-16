@@ -39,12 +39,17 @@ type LoaderResult = {
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const sessionManagerLoader = (ctx: FolderHandleContextType) => {
-  const { handle } = ctx;
+  const { handle, settings } = ctx;
 
   return async ({ params }: any) => {
     const { Group, Individual, Evaluation, Index } = params;
 
     if (!Group || !Individual || !Evaluation || !Index || !handle) {
+      const response = redirect(createHref({ type: 'Dashboard' }));
+      throw response;
+    }
+
+    if (!settings.EnableFileDeletion) {
       const response = redirect(createHref({ type: 'Dashboard' }));
       throw response;
     }
@@ -162,11 +167,6 @@ export default function SessionManagerPage() {
     const writer = await session_output_file.createWritable();
     await writer.write(JSON.stringify(saved_session_data));
     await writer.close();
-
-    toast('File Written.', {
-      description: 'The current session has been saved.',
-      duration: 3000,
-    });
   }
 
   return (
@@ -183,12 +183,35 @@ export default function SessionManagerPage() {
       <Card className="w-full">
         <CardHeader className="flex flex-row w-full justify-between">
           <div className="flex flex-col gap-1.5">
-            <CardTitle>Session Record Manager</CardTitle>
-            <CardDescription>List of keys in current session file</CardDescription>
+            <CardTitle>Session Record Manager ({Session.Filename})</CardTitle>
+            <CardDescription>Note: Edits to current session file must be manually saved</CardDescription>
           </div>
           <div className="flex flex-row gap-2">
-            <ToolTipWrapper Label="Add a new Condition for this Evaluation">
-              <Button variant={'outline'} className="shadow" size={'sm'} onClick={() => saveUpdatedSession()}>
+            <ToolTipWrapper Label="Do you want to save the current key presses to the session file?">
+              <Button
+                variant={'outline'}
+                className="shadow"
+                size={'sm'}
+                onClick={() => {
+                  const confirm_save = window.confirm(
+                    'Are you sure you want to save the changes made to this session file?'
+                  );
+
+                  if (!confirm_save) {
+                    return;
+                  }
+
+                  toast.promise(async () => await saveUpdatedSession(), {
+                    loading: 'Saving updated session...',
+                    success: () => {
+                      return 'Session file has been updated successfully!';
+                    },
+                    error: () => {
+                      return 'An error occurred while saving the session file.';
+                    },
+                  });
+                }}
+              >
                 <SaveIcon className="mr-2 h-4 w-4" />
                 Update File
               </Button>
@@ -208,10 +231,23 @@ export default function SessionManagerPage() {
         <CardContent>
           <div>
             <p>
-              <span className="font-semibold">Session File:</span> {Session.Filename}
+              <span className="font-semibold">Session #:</span> {Session.SessionSettings.Session}
             </p>
-            <p>{JSON.stringify(Session.SessionSettings)}</p>
-            <p>{JSON.stringify(Index)}</p>
+
+            <p>
+              <span className="font-semibold">Session Date:</span> {new Date(Session.SessionStart).toLocaleDateString()}
+            </p>
+            <p>
+              <span className="font-semibold">Session Time:</span> {new Date(Session.SessionStart).toLocaleTimeString()}
+            </p>
+
+            <p>
+              <span className="font-semibold">Evaluation:</span> {Evaluation}
+            </p>
+
+            <p>
+              <span className="font-semibold">Condition:</span> {Session.SessionSettings.Condition}
+            </p>
           </div>
           <Table>
             <TableHeader>
