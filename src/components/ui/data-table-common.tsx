@@ -33,7 +33,9 @@ interface DataTableProps<TData, TValue> {
   settings: ApplicationSettingsTypes;
   forceShowCheckbox?: boolean;
   customCheckboxButton?: ReactNode;
+  customCheckboxButton2?: ReactNode;
   callback?: (rows: TData[]) => void;
+  callback2?: (rows: TData[]) => void;
   hiddenCols?: { [key: string]: boolean };
   limitCols?: boolean;
 }
@@ -50,13 +52,15 @@ export function DataTable<TData, TValue>({
   limitCols,
   hiddenCols = {},
   rowSelectOptions = 'None',
+  customCheckboxButton2,
+  callback2,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(hiddenCols);
 
-  const newColumns =
-    (callback && settings.EnableFileDeletion) || forceShowCheckbox
+  const pre_columns =
+    (callback && settings.EnableFileDeletion) || callback2 || forceShowCheckbox
       ? [
           {
             id: 'select',
@@ -86,9 +90,11 @@ export function DataTable<TData, TValue>({
         ]
       : columns;
 
+  const final_columns = pre_columns;
+
   const table = useReactTable({
     data,
-    columns: newColumns,
+    columns: final_columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
@@ -151,6 +157,27 @@ export function DataTable<TData, TValue>({
     );
   }
 
+  function AlternativeDynamicButton({ callback }: { callback: (rows: TData[]) => void }): ReactNode {
+    return (
+      <Button
+        variant={'outline'}
+        size={'sm'}
+        className={cn('shadow transition-opacity opacity-0 ease-in-out pointer-events-none', {
+          'flex opacity-100 pointer-events-auto': table.getFilteredSelectedRowModel().rows.length > 0,
+        })}
+        onClick={() => {
+          const selectedRows = table.getFilteredSelectedRowModel().rows;
+          if (selectedRows.length > 0) {
+            callback(selectedRows.map((row) => row.original));
+            table.resetRowSelection();
+          }
+        }}
+      >
+        {customCheckboxButton2}
+      </Button>
+    );
+  }
+
   return (
     <div className="">
       <div className="flex justify-between items-center py-4">
@@ -169,6 +196,8 @@ export function DataTable<TData, TValue>({
 
         <div className="flex gap-2">
           {callback && <DynamicButton callback={callback} />}
+
+          {callback2 && <AlternativeDynamicButton callback={callback2} />}
 
           {optionalButtons}
 
@@ -233,7 +262,7 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={newColumns.length} className="h-24 text-center">
+              <TableCell colSpan={final_columns.length} className="h-24 text-center">
                 No results.
               </TableCell>
             </TableRow>

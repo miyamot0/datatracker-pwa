@@ -193,47 +193,59 @@ export default function EvaluationsPage() {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={async () => {
-                    const new_evaluation_name = window.prompt(
-                      'Enter the name for the duplicated evaluation:',
-                      `${row.original.Evaluation}_Copy`
-                    );
+                    const duplicate_action = async () => {
+                      const new_evaluation_name = window.prompt(
+                        'Enter the name for the duplicated evaluation:',
+                        `${row.original.Evaluation}_Copy`
+                      );
 
-                    if (!new_evaluation_name) return;
+                      if (!new_evaluation_name) return;
 
-                    const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
-                    const client_dir = await group_dir.getDirectoryHandle(CleanUpString(Individual));
-                    const new_eval_dir = await client_dir.getDirectoryHandle(new_evaluation_name, { create: true });
-                    const old_eval_dir = await GetHandleEvaluationFolder(
-                      Handle,
-                      Group,
-                      Individual,
-                      row.original.Evaluation
-                    );
+                      const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
+                      const client_dir = await group_dir.getDirectoryHandle(CleanUpString(Individual));
+                      const new_eval_dir = await client_dir.getDirectoryHandle(new_evaluation_name, { create: true });
+                      const old_eval_dir = await GetHandleEvaluationFolder(
+                        Handle,
+                        Group,
+                        Individual,
+                        row.original.Evaluation
+                      );
 
-                    for await (const entry of old_eval_dir.values()) {
-                      if (entry.kind === 'directory') {
-                        const old_eval_sub_dir = await old_eval_dir.getDirectoryHandle(entry.name, { create: false });
-                        const new_eval_sub_dir = await new_eval_dir.getDirectoryHandle(entry.name, { create: true });
+                      for await (const entry of old_eval_dir.values()) {
+                        if (entry.kind === 'directory') {
+                          const old_eval_sub_dir = await old_eval_dir.getDirectoryHandle(entry.name, { create: false });
+                          const new_eval_sub_dir = await new_eval_dir.getDirectoryHandle(entry.name, { create: true });
 
-                        const child_files = entry.values();
+                          const child_files = entry.values();
 
-                        for await (const child_entry of child_files) {
-                          if (child_entry.kind === 'file') {
-                            const og_file_handle = await old_eval_sub_dir.getFileHandle(child_entry.name);
-                            const og_file_data = await og_file_handle.getFile();
+                          for await (const child_entry of child_files) {
+                            if (child_entry.kind === 'file') {
+                              const og_file_handle = await old_eval_sub_dir.getFileHandle(child_entry.name);
+                              const og_file_data = await og_file_handle.getFile();
 
-                            const new_file_handle = await new_eval_sub_dir.getFileHandle(child_entry.name, {
-                              create: true,
-                            });
-                            const writable = await new_file_handle.createWritable();
-                            await writable.write(og_file_data);
-                            await writable.close();
+                              const new_file_handle = await new_eval_sub_dir.getFileHandle(child_entry.name, {
+                                create: true,
+                              });
+                              const writable = await new_file_handle.createWritable();
+                              await writable.write(og_file_data);
+                              await writable.close();
+                            }
                           }
                         }
                       }
-                    }
 
-                    refresh();
+                      refresh();
+                    };
+
+                    toast.promise(async () => await duplicate_action(), {
+                      loading: 'Duplicating existing evaluation...',
+                      success: () => {
+                        return 'Evaluation folders have been created successfully!';
+                      },
+                      error: () => {
+                        return 'An error occurred while creating evaluation folders.';
+                      },
+                    });
                   }}
                 >
                   <Copy className="mr-2 h-4 w-4" />

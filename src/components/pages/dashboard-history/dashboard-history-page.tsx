@@ -9,9 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { GetHandleEvaluationFolder, GetResultsFromEvaluationFolder } from '@/lib/files';
 import createHref from '@/lib/links';
 import { cn } from '@/lib/utils';
-import { DeleteIcon, Edit2Icon, SearchIcon } from 'lucide-react';
+import { Edit2Icon, SearchIcon } from 'lucide-react';
 import { Link, redirect, useLoaderData } from 'react-router-dom';
-import { FolderHandleContext, FolderHandleContextType } from '@/context/folder-context';
+import { FolderHandleContextType } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
 import { GenerateSavedFileName } from '@/lib/writer';
 import BackButton from '@/components/ui/back-button';
@@ -20,7 +20,7 @@ import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { DataTable } from '@/components/ui/data-table-common';
 import { ApplicationSettingsTypes } from '@/types/settings';
 import { ModifiedSessionResult } from '@/types/storage';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 type LoaderResult = {
@@ -72,7 +72,6 @@ export default function DashboardHistoryPage() {
   const { Group, Individual, Evaluation, Handle, Results, Settings } = loaderResult;
 
   const [results, setResults] = useState(Results);
-  const { settings } = useContext(FolderHandleContext);
 
   const columns: ColumnDef<ModifiedSessionResult>[] = [
     {
@@ -155,48 +154,6 @@ export default function DashboardHistoryPage() {
               Edit
             </Button>
           </Link>
-
-          {settings.EnableFileDeletion && (
-            <Button
-              variant={'destructive'}
-              className="shadow"
-              size={'sm'}
-              onClick={async () => {
-                const confirm_delete = window.confirm(
-                  `Are you sure you want to delete session file: ${row.original.Filename}? This action cannot be undone.`
-                );
-
-                if (!confirm_delete) return;
-
-                const client_evaluations_folder = await GetHandleEvaluationFolder(
-                  Handle,
-                  CleanUpString(Group),
-                  CleanUpString(Individual),
-                  CleanUpString(Evaluation)
-                );
-
-                const relevant_condition_folder = await client_evaluations_folder.getDirectoryHandle(
-                  CleanUpString(row.original.SessionSettings.Condition),
-                  {
-                    create: true,
-                  }
-                );
-
-                relevant_condition_folder.removeEntry(row.original.Filename).then(() => {
-                  const updated_results = results.filter((r) => r.Filename !== row.original.Filename);
-                  setResults(updated_results);
-
-                  toast('File Deleted.', {
-                    description: 'The current session has been deleted.',
-                    duration: 3000,
-                  });
-                });
-              }}
-            >
-              <DeleteIcon className="mr-2 h-4 w-4" />
-              Delete
-            </Button>
-          )}
         </div>
       ),
     },
@@ -215,7 +172,7 @@ export default function DashboardHistoryPage() {
       <Card className="w-full">
         <CardHeader className="flex flex-row justify-between">
           <div className="flex flex-col gap-1.5 grow">
-            <CardTitle>Session History</CardTitle>
+            <CardTitle>Session History ({Evaluation})</CardTitle>
             <CardDescription>Select Individual Sessions to View More</CardDescription>
           </div>
           <BackButton
@@ -230,7 +187,154 @@ export default function DashboardHistoryPage() {
             from each session in greater detail by using the 'Inspect Session' button.
           </p>
 
-          <DataTable settings={Settings} columns={columns} data={results} />
+          <DataTable
+            settings={Settings}
+            columns={columns}
+            data={results}
+            callback={async (rows) => {
+              const fileNames = rows.map((row) => row.Filename);
+
+              const client_evaluations_folder = await GetHandleEvaluationFolder(
+                Handle,
+                CleanUpString(Group),
+                CleanUpString(Individual),
+                CleanUpString(Evaluation)
+              );
+
+              const removeSelectedFiles = async (fileNames: string[]) => {
+                for await (const entry of await client_evaluations_folder.values()) {
+                  if (entry.kind === 'directory') {
+                    const condition_folder = await client_evaluations_folder.getDirectoryHandle(entry.name);
+
+                    for await (const fileName of await condition_folder.values()) {
+                      if (fileNames.includes(fileName.name)) {
+                        await condition_folder.removeEntry(fileName.name);
+                      }
+                    }
+                  }
+                }
+
+                setResults((prev) => prev.filter((r) => !fileNames.includes(r.Filename)));
+              };
+
+              toast.promise(async () => await removeSelectedFiles(fileNames), {
+                loading: 'Deleting specific session files...',
+                success: () => {
+                  return 'Session files have been deleted successfully!';
+                },
+                error: () => {
+                  return 'An error occurred while deleting specific session files.';
+                },
+              });
+            }}
+            customCheckboxButton2={<>Rename Conditions</>}
+            callback2={async (rows) => {
+              const new_condition = prompt('Enter new condition name for selected sessions:');
+              if (!new_condition) {
+                return;
+              }
+
+              const file_names_to_move = rows.map((row) => row.Filename);
+
+              const moveSelectedFiles = async () => {
+                const client_evaluations_folder = await GetHandleEvaluationFolder(
+                  Handle,
+                  CleanUpString(Group),
+                  CleanUpString(Individual),
+                  CleanUpString(Evaluation)
+                );
+
+                const moved_condition_handle = await client_evaluations_folder.getDirectoryHandle(
+                  new_condition.trim(),
+                  {
+                    create: true,
+                  }
+                );
+
+                const new_session_files: ModifiedSessionResult[] = [];
+
+                for await (const filename of await client_evaluations_folder.values()) {
+                  if (filename.kind === 'directory') {
+                    const condition_folder = await client_evaluations_folder.getDirectoryHandle(filename.name);
+                    for await (const sub_dir_file of await condition_folder.values()) {
+                      if (file_names_to_move.includes(sub_dir_file.name)) {
+                        const relevant_result = rows.find((r) => r.Filename === sub_dir_file.name);
+
+                        if (!relevant_result) return;
+
+                        const new_object = { ...relevant_result };
+                        new_object.SessionSettings.Condition = new_condition.trim();
+
+                        const new_file_name = GenerateSavedFileName(new_object.SessionSettings);
+                        const new_file_handle = await moved_condition_handle.getFileHandle(new_file_name, {
+                          create: true,
+                        });
+
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                        const { Filename, ...ModifiedResult } = relevant_result;
+
+                        const writer = await new_file_handle.createWritable();
+                        await writer.write(JSON.stringify(ModifiedResult));
+                        await writer.close();
+
+                        const file_to_add = { ...new_object, Filename: new_file_name };
+                        new_session_files.push(file_to_add);
+
+                        await condition_folder.removeEntry(sub_dir_file.name);
+                      }
+                    }
+                  }
+                }
+
+                const updated_results = results
+                  .filter((r) => !file_names_to_move.includes(r.Filename))
+                  .concat(new_session_files)
+                  .sort(
+                    (a, b) =>
+                      new Date(b.SessionSettings.Session).valueOf() - new Date(a.SessionSettings.Session).valueOf()
+                  );
+
+                setResults(updated_results);
+              };
+
+              toast.promise(async () => await moveSelectedFiles(), {
+                loading: 'Re-conditioning selected sessions...',
+                success: () => {
+                  return 'Session files have been updated successfully!';
+                },
+                error: () => {
+                  return 'An error occurred while updating specific session files.';
+                },
+              });
+
+              // TODO: Clear out blanks
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const clearBlanks = async () => {
+                const client_evaluations_folder = await GetHandleEvaluationFolder(
+                  Handle,
+                  CleanUpString(Group),
+                  CleanUpString(Individual),
+                  CleanUpString(Evaluation)
+                );
+
+                for await (const filename of await client_evaluations_folder.values()) {
+                  if (filename.kind === 'directory') {
+                    const condition_folder = await client_evaluations_folder.getDirectoryHandle(filename.name);
+
+                    let file_count = 0;
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    for await (const _ of await condition_folder.values()) {
+                      file_count = file_count = 1;
+                    }
+
+                    if (file_count < 1 && filename.name.trim() !== new_condition.trim()) {
+                      await client_evaluations_folder.removeEntry(filename.name, { recursive: true });
+                    }
+                  }
+                }
+              };
+            }}
+          />
         </CardContent>
       </Card>
     </PageWrapper>
