@@ -6,7 +6,6 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { SavedSessionResult } from '@/lib/dtos';
 import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import createHref from '@/lib/links';
 import { cn } from '@/lib/utils';
@@ -20,13 +19,14 @@ import { ColumnDef } from '@tanstack/react-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
 import { ApplicationSettingsTypes } from '@/types/settings';
+import { ModifiedSessionResult } from '@/types/storage';
 
 type LoaderResult = {
   Group: string;
   Individual: string;
   Evaluation: string;
   Handle: FileSystemHandle;
-  Results: SavedSessionResult[];
+  Results: ModifiedSessionResult[];
   Settings: ApplicationSettingsTypes;
 };
 
@@ -45,9 +45,14 @@ export const sessionHistoryLoader = (ctx: FolderHandleContextType) => {
 
     const { results } = await GetResultsFromEvaluationFolder(handle, Group, Individual, Evaluation);
 
-    const clean_results = results.sort(
-      (a, b) => new Date(b.SessionSettings.Session).valueOf() - new Date(a.SessionSettings.Session).valueOf()
-    );
+    const clean_results = results
+      .map((r) => {
+        return {
+          ...r,
+          Filename: r.Filename!,
+        };
+      })
+      .sort((a, b) => new Date(b.SessionSettings.Session).valueOf() - new Date(a.SessionSettings.Session).valueOf());
 
     return {
       Group: CleanUpString(Group),
@@ -64,7 +69,7 @@ export default function DashboardHistoryPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { Group, Individual, Evaluation, Results, Settings } = loaderResult;
 
-  const columns: ColumnDef<SavedSessionResult>[] = [
+  const columns: ColumnDef<ModifiedSessionResult>[] = [
     {
       accessorKey: 'SessionSettings.Session',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Session" />,
@@ -144,7 +149,7 @@ export default function DashboardHistoryPage() {
               group: Group,
               individual: Individual,
               evaluation: Evaluation,
-              index: GenerateSavedFileName(row.original.SessionSettings).replaceAll('.json', ''),
+              index: row.original.Filename,
             })}
           >
             <Button variant={'outline'} className="shadow" size={'sm'}>

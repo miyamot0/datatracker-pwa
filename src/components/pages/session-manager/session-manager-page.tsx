@@ -1,4 +1,3 @@
-/* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { redirect, useLoaderData } from 'react-router-dom';
@@ -6,7 +5,6 @@ import { FolderHandleContextType } from '@/context/folder-context';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { GetHandleEvaluationFolder, GetResultsFromEvaluationFolder } from '@/lib/files';
-import { GenerateSavedFileName } from '@/lib/writer';
 import PageWrapper from '@/components/layout/page-wrapper';
 import {
   BuildEvaluationsBreadcrumb,
@@ -24,6 +22,8 @@ import { DeleteIcon, SaveIcon } from 'lucide-react';
 import BackButton from '@/components/ui/back-button';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { SavedSessionResult } from '@/lib/dtos';
+import { toast } from 'sonner';
+import { ModifiedSessionResult } from '@/types/storage';
 
 type LoaderResult = {
   Group: string;
@@ -31,14 +31,9 @@ type LoaderResult = {
   Evaluation: string;
   Condition: string;
   Handle: FileSystemDirectoryHandle;
-  //PlotObject: any[];
-  Session: SavedSessionResult;
+  Session: ModifiedSessionResult;
+  Index: string;
   SavedKeys: KeyManageType[];
-  //ExpandedSession: ExpandedSavedSessionResult;
-  //ShowKeys: {
-  //  KeyDescription: string;
-  //  Visible: boolean;
-  //}[];
   Context: FolderHandleContextType;
 };
 
@@ -63,128 +58,38 @@ export const sessionManagerLoader = (ctx: FolderHandleContextType) => {
       throw response;
     }
 
-    const modified_session = results.map((session) => {
+    const modified_session: ModifiedSessionResult[] = results.map((session) => {
       return {
         ...session,
-        Filename: GenerateSavedFileName(session.SessionSettings),
+        Filename: session.Filename!,
       };
     });
 
     const relevant_session = modified_session.find((s) => s.Filename.includes(FileString));
 
     if (relevant_session) {
-      /*
-      const plot_object: any[] = [];
-
-      const keys = relevant_session.Keyset.FrequencyKeys.map((k) => k.KeyDescription);
-
-      let start_object: any = {
-        second: 0,
-      };
-
-      // Start point
-      keys.forEach((k) => {
-        start_object[k] = 0;
-      });
-      plot_object.push(start_object);
-
-      // For holding the reference object
-      let reference_object = { ...start_object };
-
-      relevant_session.FrequencyKeyPresses.forEach((k) => {
-        let prev: any = {
-          second: Math.floor(k.TimeIntoSession),
-        };
-        prev[k.KeyDescription] = reference_object[k.KeyDescription];
-
-        plot_object.push(prev);
-
-        reference_object[k.KeyDescription] = reference_object[k.KeyDescription] + 1;
-
-        let curr: any = {
-          second: Math.floor(k.TimeIntoSession),
-        };
-        curr[k.KeyDescription] = reference_object[k.KeyDescription];
-
-        plot_object.push(curr);
-      });
-
-      let final_object = {
-        ...reference_object,
-        second: Math.floor(relevant_session.TimerMain),
-      };
-
-      plot_object.push(final_object);
-
-      let max_ys = [] as number[];
-
-      plot_object.forEach((point) => {
-        const keys = Object.keys(point).filter((k) => k !== 'second');
-
-        keys.forEach((key) => {
-          max_ys.push(point[key]);
-        });
-      });
-
-      const max_y = Math.max(...max_ys);
-
-      const y_ticks = Array(max_y + 1)
-        .fill(0)
-        .map((_, index) => index);
-      */
-
       const saved_keys = [
         ...relevant_session.FrequencyKeyPresses,
         ...relevant_session.DurationKeyPresses,
         ...relevant_session.SystemKeyPresses,
       ].sort((a, b) => a.TimeIntoSession - b.TimeIntoSession);
 
-      /*
-      const expandedSessionData = {
-        ...relevant_session,
-        Filename: GenerateSavedFileName(relevant_session.SessionSettings),
-        //MaxY: max_y + 1,
-        //YTicks: y_ticks,
-        PlottedKeys: saved_keys,
-      };
-      */
-
-      //const stored_prefs = getLocalCachedPrefs(Group, Individual, Evaluation, `${Group} ${Individual} ${Evaluation}`);
-
-      /*
-      let show_keys_base = relevant_session.Keyset.FrequencyKeys.map((key) => {
-        const should_disable = stored_prefs.KeyDescription.includes(key.KeyDescription);
-
-        if (should_disable) {
-          return {
-            KeyDescription: key.KeyDescription,
-            Visible: false,
-          };
-        }
-
-        return {
-          KeyDescription: key.KeyDescription,
-          Visible: true,
-        };
-      });
-      */
-
       return {
         Group: CleanUpString(Group),
         Individual: CleanUpString(Individual),
         Evaluation: CleanUpString(Evaluation),
+        // Note: Condition is pulled from FOLDER name
         Condition: CleanUpString(relevant_session.SessionSettings.Condition),
         Handle: handle,
         Session: relevant_session,
         SavedKeys: saved_keys,
-        //PlotObject: plot_object,
-        //ExpandedSession: expandedSessionData,
-        //ShowKeys: show_keys_base,
         Context: ctx,
+        Index: Index,
       } satisfies LoaderResult;
     }
 
     const response = redirect(createHref({ type: 'Dashboard' }));
+
     throw response;
   };
 };
@@ -223,15 +128,13 @@ function ColoredDot({ KeyObject }: { KeyObject: KeyManageType }) {
 
 export default function SessionManagerPage() {
   const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Evaluation, Session, SavedKeys, Handle } = loaderResult;
+  const { Group, Individual, Evaluation, Session, SavedKeys, Handle, Index } = loaderResult;
 
   const [currentKeys, setCurrentKeys] = useState(SavedKeys);
 
   const allKeys = [Session.Keyset.FrequencyKeys, Session.Keyset.DurationKeys].flat();
 
   async function saveUpdatedSession() {
-    //const { Filename, ...SessionParams } = ExpandedSession;
-
     const client_evaluations_folder = await GetHandleEvaluationFolder(
       Handle,
       CleanUpString(Group),
@@ -239,7 +142,7 @@ export default function SessionManagerPage() {
       CleanUpString(Evaluation)
     );
 
-    const relevent_condition_folder = await client_evaluations_folder.getDirectoryHandle(
+    const relevant_condition_folder = await client_evaluations_folder.getDirectoryHandle(
       CleanUpString(Session.SessionSettings.Condition),
       {
         create: true,
@@ -252,17 +155,18 @@ export default function SessionManagerPage() {
       DurationKeyPresses: currentKeys.filter((key) => key.KeyType === 'Duration'),
     } satisfies SavedSessionResult;
 
-    const session_output_file = await relevent_condition_folder.getFileHandle(
-      `${Session.SessionSettings.Session}_${Session.SessionSettings.Condition}_${Session.SessionSettings.Role}.json`,
-      { create: true }
-    );
-
-    //console.log(session_output_file.name);
+    const session_output_file = await relevant_condition_folder.getFileHandle(Index, {
+      create: false,
+    });
 
     const writer = await session_output_file.createWritable();
     await writer.write(JSON.stringify(saved_session_data));
+    await writer.close();
 
-    return await writer.close();
+    toast('File Written.', {
+      description: 'The current session has been saved.',
+      duration: 3000,
+    });
   }
 
   return (
@@ -302,6 +206,13 @@ export default function SessionManagerPage() {
           </div>
         </CardHeader>
         <CardContent>
+          <div>
+            <p>
+              <span className="font-semibold">Session File:</span> {Session.Filename}
+            </p>
+            <p>{JSON.stringify(Session.SessionSettings)}</p>
+            <p>{JSON.stringify(Index)}</p>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -309,7 +220,7 @@ export default function SessionManagerPage() {
                 <TableHead>Time Pressed</TableHead>
                 <TableHead>Time into Session</TableHead>
                 <TableHead>Key Recorded</TableHead>
-                <TableHead>Action</TableHead>
+                <TableHead className="flex flex-row justify-end">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -322,63 +233,65 @@ export default function SessionManagerPage() {
                     <TableCell>{key.KeyName}</TableCell>
                     <TableCell>{new Date(key.TimePressed).toLocaleTimeString()}</TableCell>
                     <TableCell>{key.TimeIntoSession.toFixed(2)} seconds</TableCell>
-                    <TableCell className="flex flex-row gap-1">
-                      <Button
-                        variant={'destructive'}
-                        className="text-primary flex flex-row gap-1 items-center"
-                        disabled={!(key.KeyType === 'Frequency' || key.KeyType === 'Duration')}
-                        onClick={() => {
-                          const confirm_delete = window.confirm(
-                            `Are you sure you want to delete the key press of "${
-                              key.KeyDescription
-                            }" recorded at ${key.TimeIntoSession.toFixed(2)} seconds? This action cannot be undone.`
-                          );
+                    <TableCell className="flex flex-row justify-end">
+                      <div className="flex flex-row gap-1">
+                        <Button
+                          variant={'destructive'}
+                          className="text-primary flex flex-row gap-1 items-center"
+                          disabled={!(key.KeyType === 'Frequency' || key.KeyType === 'Duration')}
+                          onClick={() => {
+                            const confirm_delete = window.confirm(
+                              `Are you sure you want to delete the key press of "${
+                                key.KeyDescription
+                              }" recorded at ${key.TimeIntoSession.toFixed(2)} seconds? This action cannot be undone.`
+                            );
 
-                          if (!confirm_delete) return;
+                            if (!confirm_delete) return;
 
-                          setCurrentKeys((prevKeys) => prevKeys.filter((_, i) => i !== index));
-                        }}
-                      >
-                        <DeleteIcon className="h-4 w-4" />
-                        Delete Key
-                      </Button>
-                      <Button
-                        variant={'outline'}
-                        className="text-primary flex flex-row gap-1 items-center"
-                        disabled={!(key.KeyType === 'Frequency' || key.KeyType === 'Duration')}
-                        onClick={() => {
-                          const allKeysString = allKeys
-                            .filter((k) => k.KeyDescription !== key.KeyDescription)
-                            .map((k) => `${k.KeyName} (${k.KeyDescription})`)
-                            .join(', ');
+                            setCurrentKeys((prevKeys) => prevKeys.filter((_, i) => i !== index));
+                          }}
+                        >
+                          <DeleteIcon className="h-4 w-4" />
+                          Delete Key
+                        </Button>
+                        <Button
+                          variant={'outline'}
+                          className="text-primary flex flex-row gap-1 items-center"
+                          disabled={!(key.KeyType === 'Frequency' || key.KeyType === 'Duration')}
+                          onClick={() => {
+                            const allKeysString = allKeys
+                              .filter((k) => k.KeyDescription !== key.KeyDescription)
+                              .map((k) => `${k.KeyName} (${k.KeyDescription})`)
+                              .join(', ');
 
-                          const prompt_message = `Current Key: "${key.KeyName} (${key.KeyDescription})"\n\nAvailable Keys: ${allKeysString}\n\nPlease enter the Key you want to replace it with:`;
-                          const new_key_name = window.prompt(prompt_message);
-                          const check_if_valid = allKeys.find((k) => k.KeyName === new_key_name);
+                            const prompt_message = `Current Key: "${key.KeyName} (${key.KeyDescription})"\n\nAvailable Keys: ${allKeysString}\n\nPlease enter the Key you want to replace it with:`;
+                            const new_key_name = window.prompt(prompt_message);
+                            const check_if_valid = allKeys.find((k) => k.KeyName === new_key_name);
 
-                          if (!new_key_name || !check_if_valid) {
-                            window.alert('Invalid key name entered. No changes made.');
-                            return;
-                          }
+                            if (!new_key_name || !check_if_valid) {
+                              window.alert('Invalid key name entered. No changes made.');
+                              return;
+                            }
 
-                          setCurrentKeys((prevKeys) =>
-                            prevKeys.map((k, i) => {
-                              if (i === index) {
-                                return {
-                                  ...k,
-                                  KeyName: new_key_name,
-                                  KeyDescription: check_if_valid.KeyDescription,
-                                  KeyCode: check_if_valid.KeyCode,
-                                };
-                              }
-                              return k;
-                            })
-                          );
-                        }}
-                      >
-                        <Pencil1Icon className="h-4 w-4" />
-                        Replace Key
-                      </Button>
+                            setCurrentKeys((prevKeys) =>
+                              prevKeys.map((k, i) => {
+                                if (i === index) {
+                                  return {
+                                    ...k,
+                                    KeyName: new_key_name,
+                                    KeyDescription: check_if_valid.KeyDescription,
+                                    KeyCode: check_if_valid.KeyCode,
+                                  };
+                                }
+                                return k;
+                              })
+                            );
+                          }}
+                        >
+                          <Pencil1Icon className="h-4 w-4" />
+                          Replace Key
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
