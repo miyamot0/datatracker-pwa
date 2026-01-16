@@ -16,12 +16,14 @@ import LoadingDisplay from '@/components/ui/loading-display';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { useQueryEvaluationsFixed } from '@/hooks/evaluations/useQueryEvaluations';
+import { GetHandleEvaluationFolder } from '@/lib/files';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { ColumnDef } from '@tanstack/react-table';
 import {
   ChartColumnIcon,
   ChevronDown,
+  Copy,
   Disc3,
   FilePlus,
   ImportIcon,
@@ -36,7 +38,7 @@ import { toast } from 'sonner';
 type LoaderResult = {
   Group: string;
   Individual: string;
-  Handle: FileSystemHandle;
+  Handle: FileSystemDirectoryHandle;
   Context: FolderHandleContextType;
 };
 
@@ -68,9 +70,9 @@ type EvaluationTableRow = {
 
 export default function EvaluationsPage() {
   const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Context } = loaderResult;
+  const { Group, Individual, Context, Handle } = loaderResult;
   const { settings } = Context;
-  const { data, status, error, addEvaluation, removeEvaluations } = useQueryEvaluationsFixed(
+  const { data, status, error, addEvaluation, removeEvaluations, refresh } = useQueryEvaluationsFixed(
     Group,
     Individual,
     Context
@@ -188,6 +190,54 @@ export default function EvaluationsPage() {
                     <ChartColumnIcon className="mr-2 h-4 w-4" />
                     Calculate Reliability
                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={async () => {
+                    const new_evaluation_name = window.prompt(
+                      'Enter the name for the duplicated evaluation:',
+                      `${row.original.Evaluation}_Copy`
+                    );
+
+                    if (!new_evaluation_name) return;
+
+                    const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
+                    const client_dir = await group_dir.getDirectoryHandle(CleanUpString(Individual));
+                    const new_eval_dir = await client_dir.getDirectoryHandle(new_evaluation_name, { create: true });
+                    const old_eval_dir = await GetHandleEvaluationFolder(
+                      Handle,
+                      Group,
+                      Individual,
+                      row.original.Evaluation
+                    );
+
+                    for await (const entry of old_eval_dir.values()) {
+                      if (entry.kind === 'directory') {
+                        const old_eval_sub_dir = await old_eval_dir.getDirectoryHandle(entry.name, { create: false });
+                        const new_eval_sub_dir = await new_eval_dir.getDirectoryHandle(entry.name, { create: true });
+
+                        const child_files = entry.values();
+
+                        for await (const child_entry of child_files) {
+                          if (child_entry.kind === 'file') {
+                            const og_file_handle = await old_eval_sub_dir.getFileHandle(child_entry.name);
+                            const og_file_data = await og_file_handle.getFile();
+
+                            const new_file_handle = await new_eval_sub_dir.getFileHandle(child_entry.name, {
+                              create: true,
+                            });
+                            const writable = await new_file_handle.createWritable();
+                            await writable.write(og_file_data);
+                            await writable.close();
+                          }
+                        }
+                      }
+                    }
+
+                    refresh();
+                  }}
+                >
+                  <Copy className="mr-2 h-4 w-4" />
+                  Duplicate Evaluation
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
