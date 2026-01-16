@@ -77,7 +77,7 @@ export default function EvaluationsPage() {
   const { data, status, error, addEvaluation, removeEvaluations, mutateEvaluation, refresh } = useQueryEvaluationsFixed(
     Group,
     Individual,
-    Context
+    Context,
   );
 
   if (status === 'loading') {
@@ -194,7 +194,7 @@ export default function EvaluationsPage() {
                     const duplicate_action = async () => {
                       const new_evaluation_name = window.prompt(
                         'Enter the name for the duplicated evaluation:',
-                        `${row.original.Evaluation}_Copy`
+                        `${row.original.Evaluation}_Copy`,
                       );
 
                       if (!new_evaluation_name) return;
@@ -206,7 +206,7 @@ export default function EvaluationsPage() {
                         Handle,
                         Group,
                         Individual,
-                        row.original.Evaluation
+                        row.original.Evaluation,
                       );
 
                       for await (const entry of old_eval_dir.values()) {
@@ -268,7 +268,7 @@ export default function EvaluationsPage() {
     },
     {
       accessorKey: 'Actions',
-      header: () => <div className="text-right">Client Folder Actions</div>,
+      header: () => <div className="text-right">Evaluation Folder Actions</div>,
       cell: ({ row }) => (
         <div className="flex flex-row justify-end">
           <DynamicButtonList row={row} />
