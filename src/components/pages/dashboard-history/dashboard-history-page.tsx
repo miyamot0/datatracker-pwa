@@ -96,7 +96,6 @@ export default function DashboardHistoryPage() {
         );
       },
     },
-
     {
       accessorKey: 'SessionSettings.Initials',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Data Collector" />,
@@ -139,21 +138,23 @@ export default function DashboardHistoryPage() {
               View
             </Button>
           </Link>
-          <Link
-            className="flex flex-row items-center"
-            to={createHref({
-              type: 'Evaluation Session Manager',
-              group: Group,
-              individual: Individual,
-              evaluation: Evaluation,
-              index: row.original.Filename,
-            })}
-          >
-            <Button variant={'outline'} className="shadow" size={'sm'}>
-              <Edit2Icon className="mr-2 h-4 w-4" />
-              Edit
-            </Button>
-          </Link>
+          {Settings.EnableFileDeletion && (
+            <Link
+              className="flex flex-row items-center"
+              to={createHref({
+                type: 'Evaluation Session Manager',
+                group: Group,
+                individual: Individual,
+                evaluation: Evaluation,
+                index: row.original.Filename,
+              })}
+            >
+              <Button variant={'outline'} className="shadow" size={'sm'}>
+                <Edit2Icon className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            </Link>
+          )}
         </div>
       ),
     },

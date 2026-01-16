@@ -60,7 +60,7 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(hiddenCols);
 
   const pre_columns =
-    (callback && settings.EnableFileDeletion) || callback2 || forceShowCheckbox
+    ((callback || callback2) && settings.EnableFileDeletion) || forceShowCheckbox
       ? [
           {
             id: 'select',
