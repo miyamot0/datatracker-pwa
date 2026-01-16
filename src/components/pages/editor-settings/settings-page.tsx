@@ -100,7 +100,7 @@ export default function SettingsPage() {
 
           <SettingsFormItemWrapper
             Label="Provide Elevated Privileges"
-            Description="Override typical behavior and allow the deletion of data (Warning: Risk of permanent data loss)"
+            Description="Override typical behavior and allow the copying/deleting/renaming of data (Warning: Risk of permanent data loss)"
           >
             <Select
               value={settings.EnableFileDeletion ? 'true' : 'false'}

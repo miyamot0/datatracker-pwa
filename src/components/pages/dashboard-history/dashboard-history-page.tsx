@@ -308,7 +308,7 @@ export default function DashboardHistoryPage() {
               });
 
               // TODO: Clear out blanks
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              /*
               const clearBlanks = async () => {
                 const client_evaluations_folder = await GetHandleEvaluationFolder(
                   Handle,
@@ -333,6 +333,7 @@ export default function DashboardHistoryPage() {
                   }
                 }
               };
+              */
             }}
           />
         </CardContent>

@@ -45,8 +45,8 @@ export const ELEVATED_PRIVILEGES_OPTIONS: {
   value: ElevatedPrivilegesType;
   label: string;
 }[] = [
-  { value: 'true', label: 'Allow Deletion' },
-  { value: 'false', label: 'Disable Deletion' },
+  { value: 'true', label: 'Allow' },
+  { value: 'false', label: 'Disable' },
 ];
 
 /**

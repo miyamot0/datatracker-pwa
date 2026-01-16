@@ -20,7 +20,7 @@ import { useQueryEvaluationsFixed } from '@/hooks/evaluations/useQueryEvaluation
 import { GetHandleEvaluationFolder } from '@/lib/files';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, Row } from '@tanstack/react-table';
 import {
   ChartColumnIcon,
   ChevronDown,
@@ -88,112 +88,106 @@ export default function EvaluationsPage() {
     return <div>{error}</div>;
   }
 
-  const columns: ColumnDef<EvaluationTableRow>[] = [
-    {
-      accessorKey: 'Evaluation',
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Evaluation" />,
-    },
-    {
-      accessorKey: 'Actions',
-      header: () => <div className="text-right">Client Folder Actions</div>,
-      cell: ({ row }) => (
-        <div className="flex flex-row justify-end">
-          <Button size={'sm'} variant={'outline'} className="flex flex-row divide-x justify-between mx-0 px-0 shadow">
-            <Link
-              unstable_viewTransition
-              className="px-3 hover:underline flex flex-row items-center"
-              to={createHref({
-                type: 'Session Designer',
-                group: Group,
-                individual: Individual,
-                evaluation: row.original.Evaluation,
-              })}
-            >
-              <Disc3 className="mr-2 h-4 w-4" />
-              Record Sessions
-            </Link>
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <ChevronDown className="w-fit px-2" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64" side="bottom" align="end" sideOffset={12}>
-                <DropdownMenuLabel>Data Management</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Link
-                    unstable_viewTransition
-                    className="flex flex-row items-center"
-                    to={createHref({
-                      type: 'Evaluation Session Viewer',
-                      group: Group,
-                      individual: Individual,
-                      evaluation: row.original.Evaluation,
-                    })}
-                  >
-                    <SearchIcon className="mr-2 h-4 w-4" />
-                    Review Session Data
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link
-                    unstable_viewTransition
-                    className="flex flex-row items-center"
-                    to={createHref({
-                      type: 'Evaluation Viewer',
-                      group: Group,
-                      individual: Individual,
-                      evaluation: row.original.Evaluation,
-                    })}
-                  >
-                    <Table2Icon className="mr-2 h-4 w-4" />
-                    Summarize Session Data
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link
-                    unstable_viewTransition
-                    className="flex flex-row items-center"
-                    to={createHref({
-                      type: 'Evaluation Visualizer-Rate',
-                      group: Group,
-                      individual: Individual,
-                      evaluation: row.original.Evaluation,
-                    })}
-                  >
-                    <ScatterChartIcon className="mr-2 h-4 w-4" />
-                    Analyze Frequency Data
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link
-                    unstable_viewTransition
-                    className="flex flex-row items-center"
-                    to={createHref({
-                      type: 'Evaluation Visualizer-Proportion',
-                      group: Group,
-                      individual: Individual,
-                      evaluation: row.original.Evaluation,
-                    })}
-                  >
-                    <ScatterChartIcon className="mr-2 h-4 w-4" />
-                    Analyze Duration Data
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link
-                    unstable_viewTransition
-                    className="flex flex-row items-center"
-                    to={createHref({
-                      type: 'Reli Viewer',
-                      group: Group,
-                      individual: Individual,
-                      evaluation: row.original.Evaluation,
-                    })}
-                  >
-                    <ChartColumnIcon className="mr-2 h-4 w-4" />
-                    Calculate Reliability
-                  </Link>
-                </DropdownMenuItem>
+  const DynamicButtonList = ({ row }: { row: Row<EvaluationTableRow> }) => {
+    return (
+      <Button size={'sm'} variant={'outline'} className="flex flex-row divide-x justify-between mx-0 px-0 shadow">
+        <Link
+          unstable_viewTransition
+          className="px-3 hover:underline flex flex-row items-center"
+          to={createHref({
+            type: 'Session Designer',
+            group: Group,
+            individual: Individual,
+            evaluation: row.original.Evaluation,
+          })}
+        >
+          <Disc3 className="mr-2 h-4 w-4" />
+          Record Sessions
+        </Link>
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <ChevronDown className="w-fit px-2" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-64" side="bottom" align="end" sideOffset={12}>
+            <DropdownMenuLabel>Data Management</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Link
+                unstable_viewTransition
+                className="flex flex-row items-center"
+                to={createHref({
+                  type: 'Evaluation Session Viewer',
+                  group: Group,
+                  individual: Individual,
+                  evaluation: row.original.Evaluation,
+                })}
+              >
+                <SearchIcon className="mr-2 h-4 w-4" />
+                Review Session Data
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link
+                unstable_viewTransition
+                className="flex flex-row items-center"
+                to={createHref({
+                  type: 'Evaluation Viewer',
+                  group: Group,
+                  individual: Individual,
+                  evaluation: row.original.Evaluation,
+                })}
+              >
+                <Table2Icon className="mr-2 h-4 w-4" />
+                Summarize Session Data
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link
+                unstable_viewTransition
+                className="flex flex-row items-center"
+                to={createHref({
+                  type: 'Evaluation Visualizer-Rate',
+                  group: Group,
+                  individual: Individual,
+                  evaluation: row.original.Evaluation,
+                })}
+              >
+                <ScatterChartIcon className="mr-2 h-4 w-4" />
+                Analyze Frequency Data
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link
+                unstable_viewTransition
+                className="flex flex-row items-center"
+                to={createHref({
+                  type: 'Evaluation Visualizer-Proportion',
+                  group: Group,
+                  individual: Individual,
+                  evaluation: row.original.Evaluation,
+                })}
+              >
+                <ScatterChartIcon className="mr-2 h-4 w-4" />
+                Analyze Duration Data
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Link
+                unstable_viewTransition
+                className="flex flex-row items-center"
+                to={createHref({
+                  type: 'Reli Viewer',
+                  group: Group,
+                  individual: Individual,
+                  evaluation: row.original.Evaluation,
+                })}
+              >
+                <ChartColumnIcon className="mr-2 h-4 w-4" />
+                Calculate Reliability
+              </Link>
+            </DropdownMenuItem>
+            {settings.EnableFileDeletion && (
+              <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={async () => {
@@ -259,9 +253,25 @@ export default function EvaluationsPage() {
                   <Edit2 className="mr-2 h-4 w-4" />
                   Rename Evaluation
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </Button>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Button>
+    );
+  };
+
+  const columns: ColumnDef<EvaluationTableRow>[] = [
+    {
+      accessorKey: 'Evaluation',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Evaluation" />,
+    },
+    {
+      accessorKey: 'Actions',
+      header: () => <div className="text-right">Client Folder Actions</div>,
+      cell: ({ row }) => (
+        <div className="flex flex-row justify-end">
+          <DynamicButtonList row={row} />
         </div>
       ),
     },
