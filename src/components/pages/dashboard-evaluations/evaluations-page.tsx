@@ -10,6 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import LoadingDisplay from '@/components/ui/loading-display';
@@ -25,6 +26,7 @@ import {
   ChevronDown,
   Copy,
   Disc3,
+  Edit2,
   FilePlus,
   ImportIcon,
   KeyboardIcon,
@@ -72,7 +74,7 @@ export default function EvaluationsPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { Group, Individual, Context, Handle } = loaderResult;
   const { settings } = Context;
-  const { data, status, error, addEvaluation, removeEvaluations, refresh } = useQueryEvaluationsFixed(
+  const { data, status, error, addEvaluation, removeEvaluations, mutateEvaluation, refresh } = useQueryEvaluationsFixed(
     Group,
     Individual,
     Context
@@ -116,6 +118,7 @@ export default function EvaluationsPage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-64" side="bottom" align="end" sideOffset={12}>
                 <DropdownMenuLabel>Data Management</DropdownMenuLabel>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <Link
                     unstable_viewTransition
@@ -128,7 +131,7 @@ export default function EvaluationsPage() {
                     })}
                   >
                     <SearchIcon className="mr-2 h-4 w-4" />
-                    Inspect Session Data
+                    Review Session Data
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
@@ -191,6 +194,7 @@ export default function EvaluationsPage() {
                     Calculate Reliability
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={async () => {
                     const duplicate_action = async () => {
@@ -250,6 +254,10 @@ export default function EvaluationsPage() {
                 >
                   <Copy className="mr-2 h-4 w-4" />
                   Duplicate Evaluation
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => mutateEvaluation(row.original.Evaluation)}>
+                  <Edit2 className="mr-2 h-4 w-4" />
+                  Rename Evaluation
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
