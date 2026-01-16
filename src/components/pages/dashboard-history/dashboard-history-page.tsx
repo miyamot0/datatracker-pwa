@@ -6,12 +6,12 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { GetResultsFromEvaluationFolder } from '@/lib/files';
+import { GetHandleEvaluationFolder, GetResultsFromEvaluationFolder } from '@/lib/files';
 import createHref from '@/lib/links';
 import { cn } from '@/lib/utils';
-import { Edit2Icon, SearchIcon } from 'lucide-react';
+import { DeleteIcon, Edit2Icon, SearchIcon } from 'lucide-react';
 import { Link, redirect, useLoaderData } from 'react-router-dom';
-import { FolderHandleContextType } from '@/context/folder-context';
+import { FolderHandleContext, FolderHandleContextType } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
 import { GenerateSavedFileName } from '@/lib/writer';
 import BackButton from '@/components/ui/back-button';
@@ -20,12 +20,14 @@ import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { DataTable } from '@/components/ui/data-table-common';
 import { ApplicationSettingsTypes } from '@/types/settings';
 import { ModifiedSessionResult } from '@/types/storage';
+import { useContext, useState } from 'react';
+import { toast } from 'sonner';
 
 type LoaderResult = {
   Group: string;
   Individual: string;
   Evaluation: string;
-  Handle: FileSystemHandle;
+  Handle: FileSystemDirectoryHandle;
   Results: ModifiedSessionResult[];
   Settings: ApplicationSettingsTypes;
 };
@@ -67,32 +69,35 @@ export const sessionHistoryLoader = (ctx: FolderHandleContextType) => {
 
 export default function DashboardHistoryPage() {
   const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Evaluation, Results, Settings } = loaderResult;
+  const { Group, Individual, Evaluation, Handle, Results, Settings } = loaderResult;
+
+  const [results, setResults] = useState(Results);
+  const { settings } = useContext(FolderHandleContext);
 
   const columns: ColumnDef<ModifiedSessionResult>[] = [
     {
       accessorKey: 'SessionSettings.Session',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Session" />,
-    },
-    {
-      accessorKey: 'SessionSettings.Role',
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Role" />,
       cell: ({ row }) => {
         return (
-          <p
-            className={cn(
-              'transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
-              {
-                'bg-green-600 text-white': row.original.SessionSettings.Role === 'Primary',
-                'bg-purple-400 text-white': row.original.SessionSettings.Role === 'Reliability',
-              }
-            )}
-          >
-            {`${row.original.SessionSettings.Role}`}
-          </p>
+          <div className="flex flex-row gap-1">
+            <p>{row.original.SessionSettings.Session}</p>
+            <p
+              className={cn(
+                'transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
+                {
+                  'bg-green-600 text-white': row.original.SessionSettings.Role === 'Primary',
+                  'bg-purple-400 text-white': row.original.SessionSettings.Role === 'Reliability',
+                }
+              )}
+            >
+              {`${row.original.SessionSettings.Role}`}
+            </p>
+          </div>
         );
       },
     },
+
     {
       accessorKey: 'SessionSettings.Initials',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Data Collector" />,
@@ -113,13 +118,6 @@ export default function DashboardHistoryPage() {
       header: ({ column }) => <DataTableColumnHeader column={column} title="Date Recorded" />,
       cell: ({ row }) => {
         return <p>{`${new Date(row.original.SessionEnd).toLocaleDateString()}`}</p>;
-      },
-    },
-    {
-      accessorKey: 'EndedEarly',
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Termination" />,
-      cell: ({ row }) => {
-        return <p>{row.original.EndedEarly === true ? 'Manual' : 'Planned'}</p>;
       },
     },
     {
@@ -157,6 +155,48 @@ export default function DashboardHistoryPage() {
               Edit
             </Button>
           </Link>
+
+          {settings.EnableFileDeletion && (
+            <Button
+              variant={'destructive'}
+              className="shadow"
+              size={'sm'}
+              onClick={async () => {
+                const confirm_delete = window.confirm(
+                  `Are you sure you want to delete session file: ${row.original.Filename}? This action cannot be undone.`
+                );
+
+                if (!confirm_delete) return;
+
+                const client_evaluations_folder = await GetHandleEvaluationFolder(
+                  Handle,
+                  CleanUpString(Group),
+                  CleanUpString(Individual),
+                  CleanUpString(Evaluation)
+                );
+
+                const relevant_condition_folder = await client_evaluations_folder.getDirectoryHandle(
+                  CleanUpString(row.original.SessionSettings.Condition),
+                  {
+                    create: true,
+                  }
+                );
+
+                relevant_condition_folder.removeEntry(row.original.Filename).then(() => {
+                  const updated_results = results.filter((r) => r.Filename !== row.original.Filename);
+                  setResults(updated_results);
+
+                  toast('File Deleted.', {
+                    description: 'The current session has been deleted.',
+                    duration: 3000,
+                  });
+                });
+              }}
+            >
+              <DeleteIcon className="mr-2 h-4 w-4" />
+              Delete
+            </Button>
+          )}
         </div>
       ),
     },
@@ -190,7 +230,7 @@ export default function DashboardHistoryPage() {
             from each session in greater detail by using the 'Inspect Session' button.
           </p>
 
-          <DataTable settings={Settings} columns={columns} data={Results} />
+          <DataTable settings={Settings} columns={columns} data={results} />
         </CardContent>
       </Card>
     </PageWrapper>
