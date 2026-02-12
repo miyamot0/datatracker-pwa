@@ -13,7 +13,7 @@ import {
   BuildSessionHistoryBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { KeyManageType } from '../session-recorder/types/session-recorder-types';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,8 @@ import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { SavedSessionResult } from '@/lib/dtos';
 import { toast } from 'sonner';
 import { ModifiedSessionResult } from '@/types/storage';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 
 type LoaderResult = {
   Group: string;
@@ -136,28 +138,32 @@ export default function SessionManagerPage() {
   const { Group, Individual, Evaluation, Session, SavedKeys, Handle, Index } = loaderResult;
 
   const [currentKeys, setCurrentKeys] = useState(SavedKeys);
+  const textareaRef = useRef(null);
 
   const allKeys = [Session.Keyset.FrequencyKeys, Session.Keyset.DurationKeys].flat();
 
   async function saveUpdatedSession() {
+    const text_area_value = textareaRef.current && (textareaRef.current as HTMLTextAreaElement).value;
+
     const client_evaluations_folder = await GetHandleEvaluationFolder(
       Handle,
       CleanUpString(Group),
       CleanUpString(Individual),
-      CleanUpString(Evaluation)
+      CleanUpString(Evaluation),
     );
 
     const relevant_condition_folder = await client_evaluations_folder.getDirectoryHandle(
       CleanUpString(Session.SessionSettings.Condition),
       {
         create: true,
-      }
+      },
     );
 
     const saved_session_data = {
       ...Session,
       FrequencyKeyPresses: currentKeys.filter((key) => key.KeyType === 'Frequency'),
       DurationKeyPresses: currentKeys.filter((key) => key.KeyType === 'Duration'),
+      Comments: text_area_value || '',
     } satisfies SavedSessionResult;
 
     const session_output_file = await relevant_condition_folder.getFileHandle(Index, {
@@ -194,7 +200,7 @@ export default function SessionManagerPage() {
                 size={'sm'}
                 onClick={() => {
                   const confirm_save = window.confirm(
-                    'Are you sure you want to save the changes made to this session file?'
+                    'Are you sure you want to save the changes made to this session file?',
                   );
 
                   if (!confirm_save) {
@@ -279,7 +285,7 @@ export default function SessionManagerPage() {
                             const confirm_delete = window.confirm(
                               `Are you sure you want to delete the key press of "${
                                 key.KeyDescription
-                              }" recorded at ${key.TimeIntoSession.toFixed(2)} seconds? This action cannot be undone.`
+                              }" recorded at ${key.TimeIntoSession.toFixed(2)} seconds? This action cannot be undone.`,
                             );
 
                             if (!confirm_delete) return;
@@ -320,7 +326,7 @@ export default function SessionManagerPage() {
                                   };
                                 }
                                 return k;
-                              })
+                              }),
                             );
                           }}
                         >
@@ -334,6 +340,16 @@ export default function SessionManagerPage() {
               })}
             </TableBody>
           </Table>
+
+          <Separator className="my-4" />
+
+          <div className="w-full">
+            <div className="flex justify-between items-center mb-2">
+              <h1>Comments:</h1>
+              <div></div>
+            </div>
+            <Textarea ref={textareaRef} minLength={3} value={Session.Comments} />
+          </div>
         </CardContent>
       </Card>
     </PageWrapper>
