@@ -18,7 +18,7 @@ export function walkSessionFrequencyKey(SessionSettings: SavedSessionResult, Sch
     const t2 = relevant_schedule_changes[i + 1].TimePressed;
 
     const keys_within_sched_change = FrequencyKeyPresses.filter(
-      (k) => k.KeyName === Key.KeyName && k.TimePressed > t1 && k.TimePressed <= t2
+      (k) => k.KeyName === Key.KeyName && k.TimePressed > t1 && k.TimePressed <= t2,
     );
 
     const n_events_logged = keys_within_sched_change.length;
@@ -31,6 +31,7 @@ export function walkSessionFrequencyKey(SessionSettings: SavedSessionResult, Sch
     KeyDescription: Key.KeyDescription,
     Schedule: Schedule,
     Value: working_count,
+    Bouts: -1,
   };
 }
 
@@ -52,7 +53,7 @@ export function walkSessionDurationKey(SessionSettings: SavedSessionResult, Sche
     const t2 = relevant_schedule_changes[i + 1].TimePressed;
 
     const keys_within_sched_change = DurationKeyPresses.filter(
-      (k) => k.KeyName === Key.KeyName && k.TimePressed > t1 && k.TimePressed <= t2
+      (k) => k.KeyName === Key.KeyName && k.TimePressed > t1 && k.TimePressed <= t2,
     );
 
     const n_events_logged = keys_within_sched_change.length;
