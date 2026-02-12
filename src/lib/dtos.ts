@@ -48,6 +48,7 @@ export type SavedSessionResult = {
   TimerTwo: number;
   TimerThree: number;
   Filename?: string;
+  Comments?: string;
 };
 
 /**

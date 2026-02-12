@@ -31,6 +31,8 @@ import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { getLocalCachedPrefs, setLocalCachedPrefs } from '@/lib/local_storage';
 import BackButton from '@/components/ui/back-button';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
 
 type LoaderResult = {
   Group: string;
@@ -338,7 +340,19 @@ export default function SessionViewerPage() {
 
           <SessionFigure Session={ExpandedSession} PlotData={PlotObject} KeysHidden={filteredKeys} />
 
+          <Separator className="my-4" />
+
           <SessionKeyList Settings={settings} Session={ExpandedSession} />
+
+          <Separator className="my-4" />
+
+          <div className="w-full">
+            <div className="flex justify-between items-center mb-2">
+              <h1>Comments:</h1>
+              <div></div>
+            </div>
+            <Textarea minLength={3} value={ExpandedSession.Comments} readOnly />
+          </div>
         </CardContent>
       </Card>
     </PageWrapper>
