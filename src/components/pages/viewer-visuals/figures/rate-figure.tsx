@@ -76,7 +76,7 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
 
       const { Condition } = main_payload;
       const relevant_payloads = payload.filter(
-        (entry) => entry.payload.Condition === Condition && !entry.name.includes('-Points_')
+        (entry) => entry.payload.Condition === Condition && !entry.name.includes('-Points_'),
       );
       const relevant_payloads_unique = relevant_payloads
         .filter((entry, index, self) => {
@@ -88,7 +88,7 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
         <div className="bg-primary-foreground p-4 border rounded">
           <p className="font-bold">{`Session #${main_payload.session} (${Condition})`}</p>
           <p className="font-semibold text-sm mb-2">{`Session Time: ${(main_payload.SessionTime / 60).toPrecision(
-            2
+            2,
           )} min`}</p>
 
           <div className="flex flex-col text-sm">
@@ -98,12 +98,19 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
                 .replace(payload[0].payload.Condition, '')
                 .replace('-', '');
 
+              const rate_per_min = entry.value;
+              const total_count = (rate_per_min * main_payload.SessionTime) / 60;
+
               return (
-                <div key={index} className="flex flex-row justify-between text-sm">
-                  <span className="font-semibold mr-2">{cleaned_up_tag}</span>
-                  <p key={`item-${index}`} className="text-sm">
-                    {`${entry.value.toFixed(2)}/min`}
-                  </p>
+                <div key={index} className="flex flex-col mb-1">
+                  <div className="flex flex-row justify-between text-sm">
+                    <span className="font-semibold mr-2">{cleaned_up_tag} Count</span>
+                    <p className="text-sm">{`${total_count.toFixed(2)}`}</p>
+                  </div>
+                  <div className="flex flex-row justify-between text-sm">
+                    <span className="font-semibold mr-2">{cleaned_up_tag} Rate</span>
+                    <p className="text-sm">{`${rate_per_min.toFixed(2)}/min`}</p>
+                  </div>
                 </div>
               );
             })}
