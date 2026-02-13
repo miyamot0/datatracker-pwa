@@ -25,6 +25,60 @@ type Props = {
   KeySetFull: ExpandedKeySetInstance[];
 };
 
+const boutNaming = (tag: string) => {
+  return `${tag}-Bouts`;
+};
+
+const boutAverageNaming = (tag: string) => {
+  return `${tag}-Bout-Ave`;
+};
+
+function OutputDisplay({ payloads }: { payloads: any[] }) {
+  const main_payload = payloads[0].payload;
+
+  const pct_session = (data: any) => {
+    return `${data.toFixed(2)}%`;
+  };
+
+  const get_seconds = (data: any) => {
+    return `${((data * main_payload.SessionTime) / 100).toFixed(2)}s`;
+  };
+
+  return (
+    <div className="flex flex-col text-sm">
+      {payloads.map((entry, index) => {
+        const cleaned_up_tag = entry.dataKey.toString().replace(payloads[0].payload.Condition, '').replace('-', '');
+
+        const bout_n = entry.payload[boutNaming(entry.name)];
+        const bout_ave = entry.payload[boutAverageNaming(entry.name)];
+
+        return (
+          <div key={index} className="flex flex-col mb-1">
+            <div className="flex flex-row justify-between text-sm">
+              <span className="font-semibold mr-2">{`${cleaned_up_tag} Total`}</span>
+              <p className="text-sm">{get_seconds(entry.value)}</p>
+            </div>
+            <div className="flex flex-row justify-between text-sm">
+              <span className="font-semibold mr-2">{`${cleaned_up_tag} %`}</span>
+              <p className="text-sm">{pct_session(entry.value)}</p>
+            </div>
+            <div className="flex flex-row justify-between text-sm">
+              <span className="font-semibold mr-2">{`${cleaned_up_tag} Bouts`}</span>
+              <p className="text-sm">{bout_n !== undefined ? `${bout_n}` : 'N/A'}</p>
+            </div>
+            <div className="flex flex-row justify-between text-sm">
+              <span className="font-semibold mr-2">{`${cleaned_up_tag} Ave`}</span>
+              <p key={`item-${index}`} className="text-sm">
+                {bout_ave !== undefined && bout_ave !== 0 ? `${bout_ave}s` : 'N/A'}
+              </p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function ProportionFigureVisualization({ FilteredSessions, ScheduleOption, KeySetFull }: Props) {
   const { Data, MinX, MaxX } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Duration');
 
@@ -37,14 +91,12 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
 
     data.Scores.map((key) => {
       temp_obj[`${key.KeyDescription}`] = (key.Value / data.SessionTime) * 100;
-      temp_obj[`${key.KeyDescription}-Bouts`] = key.Bouts;
-      temp_obj[`${key.KeyDescription}-Bout-Ave`] = key.Bouts > 0 ? (key.Value / key.Bouts).toFixed(2) : 0;
+      temp_obj[boutNaming(key.KeyDescription)] = key.Bouts;
+      temp_obj[boutAverageNaming(key.KeyDescription)] = key.Bouts > 0 ? (key.Value / key.Bouts).toFixed(2) : 0;
     });
 
     return temp_obj;
   });
-
-  console.log(preparedData);
 
   const data_set_parsed_by_condition = GetUniqueConditions(FilteredSessions).map((condition) => {
     return {
@@ -78,9 +130,6 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
         })
         .filter((entry) => !Number.isNaN(entry.value));
 
-      console.log(main_payload);
-      console.log(relevant_payloads_unique);
-
       return (
         <div className="bg-primary-foreground p-4 border rounded">
           <p className="font-bold">{`Session #${main_payload.session} (${Condition})`}</p>
@@ -88,35 +137,7 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
             2,
           )} min`}</p>
 
-          <div className="flex flex-col text-sm">
-            {relevant_payloads_unique.map((entry, index) => {
-              const cleaned_up_tag = entry.dataKey
-                .toString()
-                .replace(payload[0].payload.Condition, '')
-                .replace('-', '');
-
-              return (
-                <div key={index} className="flex flex-col">
-                  <div className="flex flex-row justify-between text-sm">
-                    <span className="font-semibold mr-2">{cleaned_up_tag}</span>
-                    <p key={`item-${index}`} className="text-sm">
-                      {`${((entry.value / 100) * main_payload.SessionTime).toFixed(
-                        2,
-                      )} of ${main_payload.SessionTime.toFixed(2)} seconds (${entry.value.toFixed(2)}%)`}
-                    </p>
-                  </div>
-                  <div className="flex flex-row justify-between text-sm">
-                    <span className="font-semibold mr-2">{`${cleaned_up_tag} Bouts`}</span>
-                    <p key={`item-${index}`} className="text-sm">
-                      {entry.payload[`${entry.name}-Bouts`] !== undefined
-                        ? `${entry.payload[`${entry.name}-Bouts`]}`
-                        : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <OutputDisplay payloads={relevant_payloads_unique} />
         </div>
       );
     }
