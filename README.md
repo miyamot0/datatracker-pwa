@@ -92,6 +92,8 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
  
 @radix-ui/react-select (2.1.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
+@radix-ui/react-separator (1.1.8). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
+ 
 @radix-ui/react-slot (1.1.0). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
 @radix-ui/react-switch (1.1.0). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
