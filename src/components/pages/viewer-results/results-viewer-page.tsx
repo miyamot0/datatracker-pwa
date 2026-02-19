@@ -17,6 +17,7 @@ import { FolderHandleContextType } from '@/context/folder-context';
 import { redirect, useLoaderData } from 'react-router-dom';
 import createHref from '@/lib/links';
 import { toast } from 'sonner';
+import { SessionTerminationOptions } from '@/forms/schema/session-designer-schema';
 
 type LoaderResult = {
   Group: string;
@@ -62,14 +63,37 @@ export const resultsViewerLoader = (ctx: FolderHandleContextType) => {
   };
 };
 
+const ScheduleMappingOptions = [
+  {
+    value: SessionTerminationOptions.TimerMain,
+    label: 'Score Total Time',
+  },
+  {
+    value: SessionTerminationOptions.Timer1,
+    label: 'Score Timer #1 Time',
+  },
+  {
+    value: SessionTerminationOptions.Timer2,
+    label: 'Score Timer #2 Time',
+  },
+  {
+    value: SessionTerminationOptions.Timer3,
+    label: 'Score Timer #3 Time',
+  },
+];
+
+type ScheduleMappingOptionsType = (typeof ScheduleMappingOptions)[number];
+
 export default function ResultsViewerPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { Group, Individual, Evaluation, Results, Keyset } = loaderResult;
 
   const [role, setRole] = useState<DataCollectorRolesType>('Primary');
 
+  const [schedule, setSchedule] = useState<ScheduleMappingOptionsType>(ScheduleMappingOptions[0]);
+
   const results_filtered = Results.sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session).filter(
-    (result) => result.SessionSettings.Role === role
+    (result) => result.SessionSettings.Role === role,
   );
 
   return (
@@ -83,7 +107,7 @@ export default function ResultsViewerPage() {
       className="select-none"
     >
       <div className="flex flex-col w-full gap-4">
-        <div className="flex flex-row items-center">
+        <div className="flex flex-row items-center justify-between">
           <div className="flex flex-row items-center gap-2">
             <p>Filter by Data Collector:</p>
             <Select
@@ -103,13 +127,41 @@ export default function ResultsViewerPage() {
               </SelectContent>
             </Select>
           </div>
+
+          <div className="flex flex-row items-center gap-2">
+            <p>Score By Schedule:</p>
+            <Select
+              value={schedule.value}
+              onValueChange={(value: ScheduleMappingOptionsType['value']) => {
+                const selectedOption = ScheduleMappingOptions.find((option) => option.value === value);
+                if (selectedOption) {
+                  setSchedule(selectedOption);
+                }
+              }}
+            >
+              <SelectTrigger className="w-fit">
+                <SelectValue placeholder="Timer Scoring" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {ScheduleMappingOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {Keyset && Keyset.FrequencyKeys.length > 0 && (
-          <ViewFrequencyResults Keyset={Keyset} Results={results_filtered} />
+          <ViewFrequencyResults Keyset={Keyset} SessionTimer={schedule.value} Results={results_filtered} />
         )}
 
-        {Keyset && Keyset.DurationKeys.length > 0 && <ViewDurationResults Keyset={Keyset} Results={results_filtered} />}
+        {Keyset && Keyset.DurationKeys.length > 0 && (
+          <ViewDurationResults Keyset={Keyset} SessionTimer={schedule.value} Results={results_filtered} />
+        )}
       </div>
     </PageWrapper>
   );

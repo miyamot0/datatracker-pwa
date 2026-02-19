@@ -11,13 +11,15 @@ import { walkSessionFrequencyKey } from '../helpers/schedule_parser';
 import BackButton from '@/components/ui/back-button';
 import createHref from '@/lib/links';
 import { useParams } from 'react-router-dom';
+import { SessionTerminationOptionsType, SessionTerminationOptions } from '@/forms/schema/session-designer-schema';
 
 type Props = {
   Keyset: KeySet;
+  SessionTimer: SessionTerminationOptionsType;
   Results: SavedSessionResult[];
 };
 
-export default function ViewFrequencyResults({ Keyset, Results }: Props) {
+export default function ViewFrequencyResults({ Keyset, SessionTimer, Results }: Props) {
   const { Group, Individual } = useParams();
 
   const hr_results: HumanReadableResults = {
@@ -32,7 +34,7 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
 
   Results.map((result) => {
     const system_events = result.SystemKeyPresses.map((press) => new Date(press.TimePressed)).sort(
-      (a, b) => a.getTime() - b.getTime()
+      (a, b) => a.getTime() - b.getTime(),
     );
 
     if (system_events.length === 0) throw new Error('No system events found');
@@ -59,53 +61,62 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
 
       const total_frequency = score_by_schedule.reduce((partialSum, a) => partialSum + a.Value, 0);
 
-      // Timer #1 Count
-      temp_result.values.push({
-        Key: key.KeyDescription,
-        Value: primary.Value.toString(),
-      });
+      switch (SessionTimer) {
+        case SessionTerminationOptions.TimerMain:
+          // Total Count
+          temp_result.values.push({
+            Key: key.KeyDescription,
+            Value: total_frequency.toString(),
+          });
 
-      // Timer #1 Rate
-      temp_result.values.push({
-        Key: key.KeyDescription,
-        Value: (primary.Value / (result.TimerOne / 60)).toFixed(2),
-      });
+          // Total Rate
+          temp_result.values.push({
+            Key: key.KeyDescription,
+            Value: (total_frequency / (result.TimerMain / 60)).toFixed(2),
+          });
+          break;
+        case SessionTerminationOptions.Timer1:
+          // Timer #1 Count
+          temp_result.values.push({
+            Key: key.KeyDescription,
+            Value: primary.Value.toString(),
+          });
 
-      // Timer #2 Count
-      temp_result.values.push({
-        Key: key.KeyDescription,
-        Value: secondary.Value.toString(),
-      });
+          // Timer #1 Rate
+          temp_result.values.push({
+            Key: key.KeyDescription,
+            Value: (primary.Value / (result.TimerOne / 60)).toFixed(2),
+          });
+          break;
+        case SessionTerminationOptions.Timer2:
+          // Timer #2 Count
+          temp_result.values.push({
+            Key: key.KeyDescription,
+            Value: secondary.Value.toString(),
+          });
 
-      // Timer #2 Rate
-      temp_result.values.push({
-        Key: key.KeyDescription,
-        Value: (secondary.Value / (result.TimerTwo / 60)).toFixed(2),
-      });
+          // Timer #2 Rate
+          temp_result.values.push({
+            Key: key.KeyDescription,
+            Value: (secondary.Value / (result.TimerTwo / 60)).toFixed(2),
+          });
+          break;
+        case SessionTerminationOptions.Timer3:
+          // Timer #3 Count
+          temp_result.values.push({
+            Key: key.KeyDescription,
+            Value: tertiary.Value.toString(),
+          });
 
-      // Timer #3 Count
-      temp_result.values.push({
-        Key: key.KeyDescription,
-        Value: tertiary.Value.toString(),
-      });
-
-      // Timer #3 Rate
-      temp_result.values.push({
-        Key: key.KeyDescription,
-        Value: (tertiary.Value / (result.TimerThree / 60)).toFixed(2),
-      });
-
-      // Total Count
-      temp_result.values.push({
-        Key: key.KeyDescription,
-        Value: total_frequency.toString(),
-      });
-
-      // Total Rate
-      temp_result.values.push({
-        Key: key.KeyDescription,
-        Value: (total_frequency / (result.TimerMain / 60)).toFixed(2),
-      });
+          // Timer #3 Rate
+          temp_result.values.push({
+            Key: key.KeyDescription,
+            Value: (tertiary.Value / (result.TimerThree / 60)).toFixed(2),
+          });
+          break;
+        default:
+          break;
+      }
     });
 
     hr_results.results.push(temp_result);
@@ -113,28 +124,46 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
 
   const csv_string = exportHumanReadableToCSV(hr_results);
 
-  const columnLabels = [
-    'Session #',
-    'Date',
-    'Time',
-    'Condition',
-    'Data Collector',
-    'Therapist',
-    'Duration Session (min)',
-    'Duration Timer #1 (min)',
-    'Duration Timer #2 (min)',
-    'Duration Timer #3 (min)',
-  ];
+  const columnLabels = ['Session #', 'Date', 'Time', 'Condition', 'Data Collector', 'Therapist'];
+
+  switch (SessionTimer) {
+    case SessionTerminationOptions.TimerMain:
+      columnLabels.push('Duration Session (min)');
+      break;
+    case SessionTerminationOptions.Timer1:
+      columnLabels.push('Duration Timer #1 (min)');
+      break;
+    case SessionTerminationOptions.Timer2:
+      columnLabels.push('Duration Timer #2 (min)');
+      break;
+    case SessionTerminationOptions.Timer3:
+      columnLabels.push('Duration Timer #3 (min)');
+      break;
+    default:
+      break;
+  }
 
   hr_results.keys.forEach((entry) => {
-    columnLabels.push(entry.Value + ' (Timer #1 Count)');
-    columnLabels.push(entry.Value + ' (Timer #1 Rate)');
-    columnLabels.push(entry.Value + ' (Timer #2 Count)');
-    columnLabels.push(entry.Value + ' (Timer #2 Rate)');
-    columnLabels.push(entry.Value + ' (Timer #3 Count)');
-    columnLabels.push(entry.Value + ' (Timer #3 Rate)');
-    columnLabels.push(entry.Value + ' (Session Count)');
-    columnLabels.push(entry.Value + ' (Session Rate)');
+    switch (SessionTimer) {
+      case SessionTerminationOptions.TimerMain:
+        columnLabels.push(entry.Value + ' (Session Count)');
+        columnLabels.push(entry.Value + ' (Session Rate)');
+        break;
+      case SessionTerminationOptions.Timer1:
+        columnLabels.push(entry.Value + ' (Timer #1 Count)');
+        columnLabels.push(entry.Value + ' (Timer #1 Rate)');
+        break;
+      case SessionTerminationOptions.Timer2:
+        columnLabels.push(entry.Value + ' (Timer #2 Count)');
+        columnLabels.push(entry.Value + ' (Timer #2 Rate)');
+        break;
+      case SessionTerminationOptions.Timer3:
+        columnLabels.push(entry.Value + ' (Timer #3 Count)');
+        columnLabels.push(entry.Value + ' (Timer #3 Rate)');
+        break;
+      default:
+        break;
+    }
   });
 
   const data = hr_results.results.map((datum) => {
@@ -145,19 +174,33 @@ export default function ViewFrequencyResults({ Keyset, Results }: Props) {
       };
     });
 
-    return [
+    const builder = [
       { value: datum.Session.toString(), readOnly: true },
       { value: datum.Date.toLocaleDateString(), readOnly: true },
       { value: datum.Date.toLocaleTimeString(), readOnly: true },
       { value: datum.Condition.toString(), readOnly: true },
       { value: datum.DataCollector.toString(), readOnly: true },
       { value: datum.Therapist.toString(), readOnly: true },
-      { value: datum.duration.toFixed(2), readOnly: true },
-      { value: datum.Timer1.toFixed(2), readOnly: true },
-      { value: datum.Timer2.toFixed(2), readOnly: true },
-      { value: datum.Timer3.toFixed(2), readOnly: true, mode: 'view' },
-      ...values,
     ];
+
+    switch (SessionTimer) {
+      case SessionTerminationOptions.TimerMain:
+        builder.push({ value: datum.duration.toFixed(2), readOnly: true });
+        break;
+      case SessionTerminationOptions.Timer1:
+        builder.push({ value: datum.Timer1.toFixed(2), readOnly: true });
+        break;
+      case SessionTerminationOptions.Timer2:
+        builder.push({ value: datum.Timer2.toFixed(2), readOnly: true });
+        break;
+      case SessionTerminationOptions.Timer3:
+        builder.push({ value: datum.Timer3.toFixed(2), readOnly: true });
+        break;
+      default:
+        break;
+    }
+
+    return [...builder, ...values];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }) as Matrix<CellBase<any>>;
 
