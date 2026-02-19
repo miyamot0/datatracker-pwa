@@ -18,6 +18,8 @@ import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-s
 import { ExpandedKeySetInstance } from './rate-figure';
 import { generateChartPreparation, generateTicks, GetUniqueConditions } from '../helpers/filtering';
 import { getShape } from '@/lib/shapes';
+import { useGenerateImage } from 'recharts-to-png';
+import { Button } from '@/components/ui/button';
 
 type Props = {
   FilteredSessions: SavedSessionResult[];
@@ -80,6 +82,7 @@ function OutputDisplay({ payloads }: { payloads: any[] }) {
 }
 
 export default function ProportionFigureVisualization({ FilteredSessions, ScheduleOption, KeySetFull }: Props) {
+  const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
   const { Data, MinX, MaxX } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Duration');
 
   const preparedData = Data.map((data) => {
@@ -165,7 +168,7 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <ResponsiveContainer width="100%" height={500} className={'text-base text-primary bg-white'}>
+      <ResponsiveContainer width="100%" height={500} className={'text-base text-primary bg-white'} ref={divRef}>
         <ComposedChart
           width={600}
           height={300}
@@ -274,6 +277,19 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
           <Legend payload={legend_1} align="center" />
         </ComposedChart>
       </ResponsiveContainer>
+      <Button
+        onClick={async () => {
+          const png = await getDivPng();
+          if (png) {
+            const link = document.createElement('a');
+            link.href = png;
+            link.download = 'figure.png';
+            link.click();
+          }
+        }}
+      >
+        {'Download Figure as PNG'}
+      </Button>
     </div>
   );
 }

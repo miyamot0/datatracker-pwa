@@ -6,8 +6,8 @@ import { getShape } from '@/lib/shapes';
 import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-schema';
 import { generateChartPreparation, generateTicks, GetUniqueConditions } from '../helpers/filtering';
 import { SavedSessionResult } from '@/lib/dtos';
-
-//export type DisplayMode = 'CTB' | 'Individual';
+import { useGenerateImage } from 'recharts-to-png';
+import { Button } from '@/components/ui/button';
 
 export type ExpandedKeySetInstance = {
   KeyDescription: string;
@@ -22,6 +22,8 @@ type Props = {
 };
 
 export default function RateFigureVisualization({ FilteredSessions, ScheduleOption, CTBKeys, KeySetFull }: Props) {
+  const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
+
   let maxY = 0;
 
   const { Data, MinX, MaxX } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Frequency');
@@ -67,8 +69,6 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
 
   const x_span = MaxX - MinX;
   const x_ticks = generateTicks(x_span, MinX);
-
-  //console.log(data_set_parsed_by_condition);
 
   const CustomTooltip = ({ active, payload }: { active: boolean; payload: any[] }) => {
     if (active && payload && payload.length) {
@@ -141,7 +141,7 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <ResponsiveContainer width="100%" height={500} className={'text-base text-primary bg-white'}>
+      <ResponsiveContainer width="100%" height={500} className={'text-base text-primary bg-white'} ref={divRef}>
         <ComposedChart
           width={600}
           height={300}
@@ -249,6 +249,19 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
           <Legend payload={legend_1} align="center" />
         </ComposedChart>
       </ResponsiveContainer>
+      <Button
+        onClick={async () => {
+          const png = await getDivPng();
+          if (png) {
+            const link = document.createElement('a');
+            link.href = png;
+            link.download = 'figure.png';
+            link.click();
+          }
+        }}
+      >
+        {'Download Figure as PNG'}
+      </Button>
     </div>
   );
 }

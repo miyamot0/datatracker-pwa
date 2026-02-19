@@ -75,6 +75,7 @@
     "react-spreadsheet": "^0.9.5",
     "react-use-pwa-install": "^1.0.1",
     "recharts": "^2.13",
+    "recharts-to-png": "2.4.1",
     "rehype-highlight": "^7.0.0",
     "scheduler": "^0.23.2",
     "sonner": "^1.5.0",
