@@ -234,6 +234,7 @@ export default function ResultsRateVisualsPage() {
                           .filter((k) => k.Visible === false)
                           .map((k) => k.KeyDescription);
 
+                        // TODO: Share this w/ summarizer
                         setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
                           KeyDescription: hidden_keys,
                           CTBElements: exclude_from_ctb,

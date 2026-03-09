@@ -1,8 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SavedSessionResult } from '@/lib/dtos';
-import { KeySet } from '@/types/keyset';
-import { Code2Icon, TableIcon } from 'lucide-react';
+import { Code2Icon, KeyboardIcon, TableIcon } from 'lucide-react';
 import { exportHumanReadableToCSV } from '@/lib/download';
 import { EntryHolder, HumanReadableResults, HumanReadableResultsRow } from '@/types/export';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
@@ -12,20 +11,34 @@ import BackButton from '@/components/ui/back-button';
 import createHref from '@/lib/links';
 import { useParams } from 'react-router-dom';
 import { SessionTerminationOptionsType, SessionTerminationOptions } from '@/forms/schema/session-designer-schema';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { EnhancedKeySetInstance } from '../results-viewer-page';
+import { useState } from 'react';
+import { setLocalCachedPrefs } from '@/lib/local_storage';
 
 type Props = {
-  Keyset: KeySet;
   SessionTimer: SessionTerminationOptionsType;
   Results: SavedSessionResult[];
+  UnfilteredKeyList: EnhancedKeySetInstance[];
 };
 
-export default function ViewDurationResults({ Keyset, SessionTimer, Results }: Props) {
-  const { Group, Individual } = useParams();
+export default function ViewDurationResults({ SessionTimer, Results, UnfilteredKeyList }: Props) {
+  const { Group, Individual, Evaluation } = useParams();
+  const [filteredKeys, setFilteredKeys] = useState(UnfilteredKeyList);
 
+  const filteredKeySelection = filteredKeys.filter((key) => key.Type === 'Key');
   const hr_results: HumanReadableResults = {
-    keys: Keyset.DurationKeys.map((key) => ({
+    keys: filteredKeySelection.map((key) => ({
       Key: key.KeyDescription,
       Value: key.KeyDescription,
+      Visible: key.Visible,
     })),
     type: 'Duration',
     results: [],
@@ -58,134 +71,136 @@ export default function ViewDurationResults({ Keyset, SessionTimer, Results }: P
     } satisfies HumanReadableResultsRow;
 
     // Note: Loop through each key in the keyset to enforce common ordering
-    Keyset.DurationKeys.map((key) => {
-      const key_obj = result.DurationKeyPresses.filter((k) => k.KeyDescription === key.KeyDescription).sort(
-        (a, b) => new Date(a.TimePressed).valueOf() - new Date(b.TimePressed).valueOf(),
-      );
+    filteredKeys
+      .filter((k) => k.Visible)
+      .map((key) => {
+        const key_obj = result.DurationKeyPresses.filter((k) => k.KeyDescription === key.KeyDescription).sort(
+          (a, b) => new Date(a.TimePressed).valueOf() - new Date(b.TimePressed).valueOf(),
+        );
 
-      const primary = walkSessionDurationKey(result, 'Primary', key);
-      const secondary = walkSessionDurationKey(result, 'Secondary', key);
-      const tertiary = walkSessionDurationKey(result, 'Tertiary', key);
+        const primary = walkSessionDurationKey(result, 'Primary', key);
+        const secondary = walkSessionDurationKey(result, 'Secondary', key);
+        const tertiary = walkSessionDurationKey(result, 'Tertiary', key);
 
-      const score_by_schedule = [primary, secondary, tertiary];
+        const score_by_schedule = [primary, secondary, tertiary];
 
-      // Sum up total duration for this key
-      const total_duration = score_by_schedule.reduce((partialSum, a) => partialSum + a.Value, 0);
+        // Sum up total duration for this key
+        const total_duration = score_by_schedule.reduce((partialSum, a) => partialSum + a.Value, 0);
 
-      // Sum up total bouts for this key
-      const bouts_by_schedule = score_by_schedule.reduce((partialSum, a) => partialSum + a.Bouts, 0);
+        // Sum up total bouts for this key
+        const bouts_by_schedule = score_by_schedule.reduce((partialSum, a) => partialSum + a.Bouts, 0);
 
-      switch (SessionTimer) {
-        case SessionTerminationOptions.TimerMain:
-          // Total Seconds
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: total_duration.toFixed(2),
-          });
+        switch (SessionTimer) {
+          case SessionTerminationOptions.TimerMain:
+            // Total Seconds
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: total_duration.toFixed(2),
+            });
 
-          // Percentage of Session
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: ((total_duration / (session_minutes * 60)) * 100).toFixed(2),
-          });
+            // Percentage of Session
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: ((total_duration / (session_minutes * 60)) * 100).toFixed(2),
+            });
 
-          // Total Bouts
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: bouts_by_schedule.toString(),
-          });
+            // Total Bouts
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: bouts_by_schedule.toString(),
+            });
 
-          // Average Bout Length
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: (total_duration / bouts_by_schedule).toFixed(2),
-          });
+            // Average Bout Length
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: (total_duration / bouts_by_schedule).toFixed(2),
+            });
 
-          break;
-        case SessionTerminationOptions.Timer1:
-          // Timer #1 Seconds
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: primary.Value.toFixed(2),
-          });
+            break;
+          case SessionTerminationOptions.Timer1:
+            // Timer #1 Seconds
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: primary.Value.toFixed(2),
+            });
 
-          // Timer #1 Percentage
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: ((primary.Value / result.TimerOne) * 100).toFixed(2),
-          });
+            // Timer #1 Percentage
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: ((primary.Value / result.TimerOne) * 100).toFixed(2),
+            });
 
-          // Timer #1 Bouts
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: primary.Bouts.toString(),
-          });
+            // Timer #1 Bouts
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: primary.Bouts.toString(),
+            });
 
-          // Timer #1 Average Bout Length
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: (primary.Value / primary.Bouts).toFixed(2),
-          });
+            // Timer #1 Average Bout Length
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: (primary.Value / primary.Bouts).toFixed(2),
+            });
 
-          break;
-        case SessionTerminationOptions.Timer2:
-          // Timer #2 Seconds
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: secondary.Value.toFixed(2),
-          });
+            break;
+          case SessionTerminationOptions.Timer2:
+            // Timer #2 Seconds
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: secondary.Value.toFixed(2),
+            });
 
-          // Timer #2 Percentage
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: ((secondary.Value / result.TimerTwo) * 100).toFixed(2),
-          });
+            // Timer #2 Percentage
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: ((secondary.Value / result.TimerTwo) * 100).toFixed(2),
+            });
 
-          // Timer #2 Bouts
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: secondary.Bouts.toString(),
-          });
+            // Timer #2 Bouts
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: secondary.Bouts.toString(),
+            });
 
-          // Timer #2 Average Bout Length
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: (secondary.Value / secondary.Bouts).toFixed(2),
-          });
-          break;
-        case SessionTerminationOptions.Timer3:
-          // Timer #3 Seconds
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: tertiary.Value.toFixed(2),
-          });
+            // Timer #2 Average Bout Length
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: (secondary.Value / secondary.Bouts).toFixed(2),
+            });
+            break;
+          case SessionTerminationOptions.Timer3:
+            // Timer #3 Seconds
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: tertiary.Value.toFixed(2),
+            });
 
-          // Timer #3 Percentage
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: ((tertiary.Value / result.TimerThree) * 100).toFixed(2),
-          });
+            // Timer #3 Percentage
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: ((tertiary.Value / result.TimerThree) * 100).toFixed(2),
+            });
 
-          // Timer #3 Bouts
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: tertiary.Bouts.toString(),
-          });
+            // Timer #3 Bouts
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: tertiary.Bouts.toString(),
+            });
 
-          // Timer #3 Average Bout Length
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: (tertiary.Value / tertiary.Bouts).toFixed(2),
-          });
+            // Timer #3 Average Bout Length
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: (tertiary.Value / tertiary.Bouts).toFixed(2),
+            });
 
-          break;
-        default:
-          break;
-      }
+            break;
+          default:
+            break;
+        }
 
-      temp_array.push(key_obj.length.toString());
-      temp_array.push((key_obj.length / session_minutes).toFixed(2));
-    });
+        temp_array.push(key_obj.length.toString());
+        temp_array.push((key_obj.length / session_minutes).toFixed(2));
+      });
 
     temp_array.push(session_minutes.toFixed(2));
 
@@ -214,6 +229,8 @@ export default function ViewDurationResults({ Keyset, SessionTimer, Results }: P
   }
 
   hr_results.keys.forEach((entry) => {
+    if (entry.Visible === false) return;
+
     switch (SessionTimer) {
       case SessionTerminationOptions.TimerMain:
         columnLabels.push(entry.Value + ' (Total Seconds)');
@@ -290,6 +307,51 @@ export default function ViewDurationResults({ Keyset, SessionTimer, Results }: P
           <CardDescription>Key Presses are summarized in the table below</CardDescription>
         </div>
         <div className="flex flex-row gap-2">
+          <ToolTipWrapper Label="Show keys to summarize">
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size={'sm'} className="w-fit">
+                  <KeyboardIcon className="mr-2 w-4 h-4" />
+                  Edit Keys Displayed
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {filteredKeys.map((key, index) => (
+                  <DropdownMenuCheckboxItem
+                    key={`key-${index}`}
+                    checked={key.Visible}
+                    onCheckedChange={(checked) => {
+                      const updatedKeys = filteredKeys.map((k) => {
+                        if (k.KeyDescription === key.KeyDescription) {
+                          return {
+                            ...k,
+                            Visible: checked,
+                          };
+                        }
+
+                        return k;
+                      });
+
+                      setFilteredKeys(updatedKeys);
+
+                      const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+
+                      setLocalCachedPrefs(Group!, Individual!, Evaluation!, 'Duration', {
+                        KeyDescription: hidden_keys,
+                        CTBElements: [],
+                        Schedule: SessionTimer,
+                      });
+                    }}
+                  >
+                    {key.KeyDescription}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </ToolTipWrapper>
+
           <ToolTipWrapper Label="Download data as CSV">
             <Button
               size={'sm'}

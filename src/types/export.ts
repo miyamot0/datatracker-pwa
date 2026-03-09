@@ -5,6 +5,7 @@ export type EntryHolder = {
   Key: string;
   KeyCode?: number;
   Value: string;
+  Visible?: boolean;
 };
 
 /**

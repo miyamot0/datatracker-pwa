@@ -1,8 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SavedSessionResult } from '@/lib/dtos';
-import { KeySet } from '@/types/keyset';
-import { Code2Icon, TableIcon } from 'lucide-react';
+import { Code2Icon, KeyboardIcon, PointerIcon, TableIcon } from 'lucide-react';
 import { exportHumanReadableToCSV } from '@/lib/download';
 import { EntryHolder, HumanReadableResults, HumanReadableResultsRow } from '@/types/export';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
@@ -12,21 +11,43 @@ import BackButton from '@/components/ui/back-button';
 import createHref from '@/lib/links';
 import { useParams } from 'react-router-dom';
 import { SessionTerminationOptionsType, SessionTerminationOptions } from '@/forms/schema/session-designer-schema';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useState } from 'react';
+import { setLocalCachedPrefs } from '@/lib/local_storage';
+import { EnhancedKeySetInstance } from '../results-viewer-page';
 
 type Props = {
-  Keyset: KeySet;
   SessionTimer: SessionTerminationOptionsType;
   Results: SavedSessionResult[];
+  UnfilteredKeyList: EnhancedKeySetInstance[];
+  ExcludeFromCTB: {
+    KeyDescription: string;
+    Visible: boolean;
+  }[];
 };
 
-export default function ViewFrequencyResults({ Keyset, SessionTimer, Results }: Props) {
-  const { Group, Individual } = useParams();
+export default function ViewFrequencyResults({ SessionTimer, Results, UnfilteredKeyList, ExcludeFromCTB }: Props) {
+  const { Group, Individual, Evaluation } = useParams();
+  const [ctbSumKeys, setCTBSumKeys] = useState(ExcludeFromCTB);
+  const [filteredKeys, setFilteredKeys] = useState(UnfilteredKeyList);
+
+  // Note no CTB included here by default
+  const filteredKeySelection = filteredKeys.filter((key) => key.Type === 'Key');
+  const includesCTB = filteredKeys.find((key) => key.Type === 'Summary');
 
   const hr_results: HumanReadableResults = {
     type: 'Frequency',
-    keys: Keyset.FrequencyKeys.map((key) => ({
+    keys: filteredKeySelection.map((key) => ({
       Key: key.KeyName,
       Value: key.KeyDescription,
+      Visible: key.Visible,
     })),
 
     results: [],
@@ -52,72 +73,111 @@ export default function ViewFrequencyResults({ Keyset, SessionTimer, Results }: 
       Timer3: result.TimerThree / 60,
     } satisfies HumanReadableResultsRow;
 
-    Keyset.FrequencyKeys.map((key) => {
+    // Note: per session
+    let ctbSum = 0;
+    let ctbDur = 0;
+
+    filteredKeySelection.map((key) => {
       const primary = walkSessionFrequencyKey(result, 'Primary', key);
       const secondary = walkSessionFrequencyKey(result, 'Secondary', key);
       const tertiary = walkSessionFrequencyKey(result, 'Tertiary', key);
-
       const score_by_schedule = [primary, secondary, tertiary];
 
       const total_frequency = score_by_schedule.reduce((partialSum, a) => partialSum + a.Value, 0);
 
       switch (SessionTimer) {
         case SessionTerminationOptions.TimerMain:
-          // Total Count
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: total_frequency.toString(),
-          });
+          if (key.Visible === true) {
+            // Total Count
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: total_frequency.toString(),
+            });
 
-          // Total Rate
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: (total_frequency / (result.TimerMain / 60)).toFixed(2),
-          });
+            // Total Rate
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: (total_frequency / (result.TimerMain / 60)).toFixed(2),
+            });
+          }
+
+          ctbSum = ctbSum + total_frequency;
+          ctbDur = result.TimerMain / 60;
+
           break;
         case SessionTerminationOptions.Timer1:
-          // Timer #1 Count
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: primary.Value.toString(),
-          });
+          if (key.Visible === true) {
+            // Timer #1 Count
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: primary.Value.toString(),
+            });
 
-          // Timer #1 Rate
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: (primary.Value / (result.TimerOne / 60)).toFixed(2),
-          });
+            // Timer #1 Rate
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: (primary.Value / (result.TimerOne / 60)).toFixed(2),
+            });
+          }
+
+          ctbSum = ctbSum + primary.Value;
+          ctbDur = result.TimerOne / 60;
+
           break;
         case SessionTerminationOptions.Timer2:
-          // Timer #2 Count
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: secondary.Value.toString(),
-          });
+          if (key.Visible === true) {
+            // Timer #2 Count
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: secondary.Value.toString(),
+            });
 
-          // Timer #2 Rate
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: (secondary.Value / (result.TimerTwo / 60)).toFixed(2),
-          });
+            // Timer #2 Rate
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: (secondary.Value / (result.TimerTwo / 60)).toFixed(2),
+            });
+          }
+
+          ctbSum = ctbSum + secondary.Value;
+          ctbDur = result.TimerTwo / 60;
+
           break;
         case SessionTerminationOptions.Timer3:
-          // Timer #3 Count
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: tertiary.Value.toString(),
-          });
+          if (key.Visible === true) {
+            // Timer #3 Count
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: tertiary.Value.toString(),
+            });
 
-          // Timer #3 Rate
-          temp_result.values.push({
-            Key: key.KeyDescription,
-            Value: (tertiary.Value / (result.TimerThree / 60)).toFixed(2),
-          });
+            // Timer #3 Rate
+            temp_result.values.push({
+              Key: key.KeyDescription,
+              Value: (tertiary.Value / (result.TimerThree / 60)).toFixed(2),
+            });
+          }
+
+          ctbSum = ctbSum + tertiary.Value;
+          ctbDur = result.TimerThree / 60;
+
           break;
         default:
           break;
       }
     });
+
+    if (includesCTB !== null) {
+      temp_result.values.push({
+        Key: 'CTB (Count)',
+        Value: ctbSum.toString(),
+      });
+
+      temp_result.values.push({
+        Key: 'CTB (Count)',
+        Value: (ctbSum / ctbDur).toFixed(2),
+      });
+    }
 
     hr_results.results.push(temp_result);
   });
@@ -144,6 +204,8 @@ export default function ViewFrequencyResults({ Keyset, SessionTimer, Results }: 
   }
 
   hr_results.keys.forEach((entry) => {
+    if (entry.Visible === false) return;
+
     switch (SessionTimer) {
       case SessionTerminationOptions.TimerMain:
         columnLabels.push(entry.Value + ' (Session Count)');
@@ -165,6 +227,11 @@ export default function ViewFrequencyResults({ Keyset, SessionTimer, Results }: 
         break;
     }
   });
+
+  if (includesCTB !== null) {
+    columnLabels.push('CTB (Count)');
+    columnLabels.push('CTB (Rate)');
+  }
 
   const data = hr_results.results.map((datum) => {
     const values = datum.values.map((datum2) => {
@@ -211,7 +278,92 @@ export default function ViewFrequencyResults({ Keyset, SessionTimer, Results }: 
           <CardTitle>Summary of Session Frequency Data</CardTitle>
           <CardDescription>Key Presses are summarized in the table below</CardDescription>
         </div>
+
         <div className="flex flex-row gap-2">
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-fit" size={'sm'}>
+                <PointerIcon className="mr-2 w-4 h-4" />
+                Keys for CTB Calculation
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuLabel>Toggle Inclusion</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {ctbSumKeys.map((key, index) => (
+                <DropdownMenuCheckboxItem
+                  key={`key-${index}`}
+                  checked={key.Visible}
+                  onCheckedChange={(checked: boolean) => {
+                    const updatedKeys = ctbSumKeys.map((k) => {
+                      if (k.KeyDescription === key.KeyDescription) {
+                        return {
+                          ...k,
+                          Visible: checked,
+                        };
+                      }
+
+                      return k;
+                    });
+
+                    const hidden_keys = filteredKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+
+                    const exclude_from_ctb = updatedKeys
+                      .filter((k) => k.Visible === false)
+                      .map((k) => k.KeyDescription);
+
+                    setLocalCachedPrefs(Group!, Individual!, Evaluation!, 'Rate', {
+                      KeyDescription: hidden_keys,
+                      CTBElements: exclude_from_ctb,
+                      Schedule: SessionTimer,
+                    });
+
+                    setCTBSumKeys(updatedKeys);
+                  }}
+                >
+                  {key.KeyDescription}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <ToolTipWrapper Label="Show keys to summarize">
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size={'sm'} className="w-fit">
+                  <KeyboardIcon className="mr-2 w-4 h-4" />
+                  Edit Keys Displayed
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {filteredKeys.map((key, index) => (
+                  <DropdownMenuCheckboxItem
+                    key={`key-${index}`}
+                    checked={key.Visible}
+                    onCheckedChange={(checked) => {
+                      const updatedKeys = filteredKeys.map((k) => {
+                        if (k.KeyDescription === key.KeyDescription) {
+                          return {
+                            ...k,
+                            Visible: checked,
+                          };
+                        }
+
+                        return k;
+                      });
+
+                      setFilteredKeys(updatedKeys);
+                    }}
+                  >
+                    {key.KeyDescription}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </ToolTipWrapper>
+
           <ToolTipWrapper Label="Download data as CSV">
             <Button
               size={'sm'}

@@ -8,7 +8,7 @@ import { DataCollectorRolesType } from '@/forms/schema/session-designer-schema';
 import { SavedSessionResult } from '@/lib/dtos';
 import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import { CleanUpString } from '@/lib/strings';
-import { KeySet } from '@/types/keyset';
+import { KeySet, KeySetInstance } from '@/types/keyset';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectItem } from '@/components/ui/select';
 import { useState } from 'react';
 import ViewFrequencyResults from './views/view-frequency-results';
@@ -18,6 +18,9 @@ import { redirect, useLoaderData } from 'react-router-dom';
 import createHref from '@/lib/links';
 import { toast } from 'sonner';
 import { SessionTerminationOptions } from '@/forms/schema/session-designer-schema';
+import { getLocalCachedPrefs } from '@/lib/local_storage';
+
+export type EnhancedKeySetInstance = KeySetInstance & { Visible: boolean; Type: 'Key' | 'Summary' };
 
 type LoaderResult = {
   Group: string;
@@ -26,7 +29,35 @@ type LoaderResult = {
   Handle: FileSystemHandle;
   Keyset: KeySet;
   Results: SavedSessionResult[];
+  UnfilteredKeySetF: EnhancedKeySetInstance[];
+  UnfilteredKeySetD: EnhancedKeySetInstance[];
+  ExcludeFromCTB: {
+    KeyDescription: string;
+    Visible: boolean;
+  }[];
+  ScheduleMappingDefault: ScheduleMappingOptionsType;
 };
+
+const ScheduleMappingOptions = [
+  {
+    value: SessionTerminationOptions.TimerMain,
+    label: 'Score Total Time',
+  },
+  {
+    value: SessionTerminationOptions.Timer1,
+    label: 'Score Timer #1 Time',
+  },
+  {
+    value: SessionTerminationOptions.Timer2,
+    label: 'Score Timer #2 Time',
+  },
+  {
+    value: SessionTerminationOptions.Timer3,
+    label: 'Score Timer #3 Time',
+  },
+];
+
+type ScheduleMappingOptionsType = (typeof ScheduleMappingOptions)[number];
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const resultsViewerLoader = (ctx: FolderHandleContextType) => {
@@ -52,6 +83,72 @@ export const resultsViewerLoader = (ctx: FolderHandleContextType) => {
       throw response;
     }
 
+    const stored_prefs_F = getLocalCachedPrefs(Group, Individual, Evaluation, 'Rate');
+
+    const enhancedKeySetF: EnhancedKeySetInstance[] = keyset.FrequencyKeys.map((key) => ({
+      ...key,
+      Visible: true,
+      Type: 'Key',
+    }));
+
+    const ctbEntry = {
+      KeyCode: -1,
+      KeyDescription: 'CTB',
+      KeyName: 'CTB',
+      Visible: true,
+      Type: 'Summary',
+    } satisfies EnhancedKeySetInstance;
+
+    const baseUnfilteredKeysF = [...enhancedKeySetF, ctbEntry].map((key) => {
+      const should_disable = stored_prefs_F.KeyDescription.includes(key.KeyDescription);
+
+      if (should_disable) {
+        return {
+          ...key,
+          Visible: false,
+        } satisfies EnhancedKeySetInstance;
+      }
+
+      return key;
+    });
+
+    const excludeFromCTB = baseUnfilteredKeysF.map((key) => {
+      const should_disable = stored_prefs_F.CTBElements.includes(key.KeyDescription);
+
+      if (should_disable) {
+        return {
+          ...key,
+          Visible: false,
+        };
+      }
+
+      return key;
+    });
+
+    const stored_prefs_D = getLocalCachedPrefs(Group, Individual, Evaluation, 'Duration');
+
+    const enhancedKeySetD: EnhancedKeySetInstance[] = keyset.DurationKeys.map((key) => ({
+      ...key,
+      Visible: true,
+      Type: 'Key',
+    }));
+
+    const baseUnfilteredKeysD = enhancedKeySetD.map((key) => {
+      const should_disable = stored_prefs_D.KeyDescription.includes(key.KeyDescription);
+
+      if (should_disable) {
+        return {
+          ...key,
+          Visible: false,
+        } satisfies EnhancedKeySetInstance;
+      }
+
+      return key;
+    });
+
+    const timerMapping =
+      ScheduleMappingOptions.find((i) => i.value === stored_prefs_F?.Schedule) ?? ScheduleMappingOptions[0];
+
     return {
       Group: CleanUpString(Group),
       Individual: CleanUpString(Individual),
@@ -59,39 +156,30 @@ export const resultsViewerLoader = (ctx: FolderHandleContextType) => {
       Handle: handle,
       Keyset: keyset,
       Results: results,
+      UnfilteredKeySetF: baseUnfilteredKeysF,
+      UnfilteredKeySetD: baseUnfilteredKeysD,
+      ExcludeFromCTB: excludeFromCTB,
+      ScheduleMappingDefault: timerMapping,
     } satisfies LoaderResult;
   };
 };
 
-const ScheduleMappingOptions = [
-  {
-    value: SessionTerminationOptions.TimerMain,
-    label: 'Score Total Time',
-  },
-  {
-    value: SessionTerminationOptions.Timer1,
-    label: 'Score Timer #1 Time',
-  },
-  {
-    value: SessionTerminationOptions.Timer2,
-    label: 'Score Timer #2 Time',
-  },
-  {
-    value: SessionTerminationOptions.Timer3,
-    label: 'Score Timer #3 Time',
-  },
-];
-
-type ScheduleMappingOptionsType = (typeof ScheduleMappingOptions)[number];
-
 export default function ResultsViewerPage() {
   const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Evaluation, Results, Keyset } = loaderResult;
+  const {
+    Group,
+    Individual,
+    Evaluation,
+    Results,
+    Keyset,
+    UnfilteredKeySetF,
+    ExcludeFromCTB,
+    UnfilteredKeySetD,
+    ScheduleMappingDefault,
+  } = loaderResult;
 
   const [role, setRole] = useState<DataCollectorRolesType>('Primary');
-
-  const [schedule, setSchedule] = useState<ScheduleMappingOptionsType>(ScheduleMappingOptions[0]);
-
+  const [schedule, setSchedule] = useState<ScheduleMappingOptionsType>(ScheduleMappingDefault);
   const results_filtered = Results.sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session).filter(
     (result) => result.SessionSettings.Role === role,
   );
@@ -156,11 +244,20 @@ export default function ResultsViewerPage() {
         </div>
 
         {Keyset && Keyset.FrequencyKeys.length > 0 && (
-          <ViewFrequencyResults Keyset={Keyset} SessionTimer={schedule.value} Results={results_filtered} />
+          <ViewFrequencyResults
+            SessionTimer={schedule.value}
+            Results={results_filtered}
+            ExcludeFromCTB={ExcludeFromCTB}
+            UnfilteredKeyList={UnfilteredKeySetF}
+          />
         )}
 
         {Keyset && Keyset.DurationKeys.length > 0 && (
-          <ViewDurationResults Keyset={Keyset} SessionTimer={schedule.value} Results={results_filtered} />
+          <ViewDurationResults
+            SessionTimer={schedule.value}
+            Results={results_filtered}
+            UnfilteredKeyList={UnfilteredKeySetD}
+          />
         )}
       </div>
     </PageWrapper>
