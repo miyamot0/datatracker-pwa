@@ -30,6 +30,7 @@ import ProportionFigureVisualization from './figures/proportion-figure';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
 import { toast } from 'sonner';
+import { FIGURE_TEXT_OPTIONS, FigureVisualSizing } from '@/types/accessibility';
 
 type LoaderResult = {
   Group: string;
@@ -130,6 +131,7 @@ export default function ResultsProportionVisualsPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { Group, Individual, Evaluation, ShowKeys, DynamicKeySet, Results, Schedule } = loaderResult;
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
+  const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
   const [schedule, setSchedule] = useState<SessionTerminationOptionsType>(Schedule);
 
   const results_filtered = FilterByPrimaryRole(Results);
@@ -218,6 +220,29 @@ export default function ResultsProportionVisualsPage() {
             </DropdownMenu>
 
             <div className="flex flex-row items-center gap-2 w-fit">
+              <div className="flex flex-row items-center gap-2 w-fit my-0 py-0">
+                <p>Magnification:</p>
+                <Select
+                  value={figureTextSize}
+                  onValueChange={(value: FigureVisualSizing) => {
+                    setFigureTextSize(value);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Text Size" className="" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {FIGURE_TEXT_OPTIONS.map((opt) => (
+                        <SelectItem value={opt.value} key={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <p>Select Timer to Reference:</p>
               <Select
                 value={schedule}
@@ -267,6 +292,7 @@ export default function ResultsProportionVisualsPage() {
               FilteredSessions={results_filtered}
               ScheduleOption={schedule}
               KeySetFull={filteredKeys}
+              FigureTextSize={figureTextSize}
             />
           )}
         </CardContent>

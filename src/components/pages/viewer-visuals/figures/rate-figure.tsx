@@ -1,6 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { ResponsiveContainer, ComposedChart, Line, Scatter, XAxis, Label, YAxis, Tooltip, Legend } from 'recharts';
+import {
+  ResponsiveContainer,
+  ComposedChart,
+  Line,
+  Scatter,
+  XAxis,
+  Label,
+  YAxis,
+  Tooltip,
+  Legend,
+  ZAxis,
+} from 'recharts';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { getShape } from '@/lib/shapes';
 import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-schema';
@@ -9,6 +20,8 @@ import { SavedSessionResult } from '@/lib/dtos';
 import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { FIGURE_TEXT_OPTIONS, FigureVisualSizing } from '@/types/accessibility';
 
 export type ExpandedKeySetInstance = {
   KeyDescription: string;
@@ -23,6 +36,7 @@ type Props = {
   ScheduleOption: SessionTerminationOptionsType;
   CTBKeys: ExpandedKeySetInstance[];
   KeySetFull: ExpandedKeySetInstance[];
+  FigureTextSize: FigureVisualSizing;
 };
 
 export default function RateFigureVisualization({
@@ -33,6 +47,7 @@ export default function RateFigureVisualization({
   ScheduleOption,
   CTBKeys,
   KeySetFull,
+  FigureTextSize,
 }: Props) {
   const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
   const navigator = useNavigate();
@@ -98,13 +113,16 @@ export default function RateFigureVisualization({
         .filter((entry) => !Number.isNaN(entry.value));
 
       return (
-        <div className="bg-primary-foreground p-4 border rounded">
+        <div
+          className={cn('bg-primary-foreground p-4 border rounded', {
+            'text-xl': FigureTextSize == FIGURE_TEXT_OPTIONS[1].value,
+            'text-2xl': FigureTextSize == FIGURE_TEXT_OPTIONS[2].value,
+          })}
+        >
           <p className="font-bold">{`Session #${main_payload.session} (${Condition})`}</p>
-          <p className="font-semibold text-sm mb-2">{`Session Time: ${(main_payload.SessionTime / 60).toPrecision(
-            2,
-          )} min`}</p>
+          <p className="font-semibold mb-2">{`Session Time: ${(main_payload.SessionTime / 60).toPrecision(2)} min`}</p>
 
-          <div className="flex flex-col text-sm">
+          <div className="flex flex-col ">
             {relevant_payloads_unique.map((entry, index) => {
               const cleaned_up_tag = entry.dataKey
                 .toString()
@@ -116,13 +134,13 @@ export default function RateFigureVisualization({
 
               return (
                 <div key={index} className="flex flex-col mb-1">
-                  <div className="flex flex-row justify-between text-sm">
+                  <div className="flex flex-row justify-between">
                     <span className="font-semibold mr-2">{cleaned_up_tag} Count</span>
-                    <p className="text-sm">{`${total_count.toFixed(2)}`}</p>
+                    <p className="">{`${total_count.toFixed(2)}`}</p>
                   </div>
-                  <div className="flex flex-row justify-between text-sm">
+                  <div className="flex flex-row justify-between">
                     <span className="font-semibold mr-2">{cleaned_up_tag} Rate</span>
-                    <p className="text-sm">{`${rate_per_min.toFixed(2)}/min`}</p>
+                    <p className="">{`${rate_per_min.toFixed(2)}/min`}</p>
                   </div>
                 </div>
               );
@@ -152,9 +170,25 @@ export default function RateFigureVisualization({
 
   legend_1.push(...legend_2);
 
+  let markerSize = 100;
+
+  if (FigureTextSize == 'large') {
+    markerSize = 150;
+  } else if (FigureTextSize == 'extraLarge') {
+    markerSize = 200;
+  }
+
   return (
     <div className="flex flex-col gap-4 w-full">
-      <ResponsiveContainer width="100%" height={500} className={'text-base text-primary bg-white'} ref={divRef}>
+      <ResponsiveContainer
+        width="100%"
+        height={500}
+        className={cn('text-base text-primary bg-white', {
+          'text-xl': FigureTextSize == FIGURE_TEXT_OPTIONS[1].value,
+          'text-2xl': FigureTextSize == FIGURE_TEXT_OPTIONS[2].value,
+        })}
+        ref={divRef}
+      >
         <ComposedChart
           width={600}
           height={300}
@@ -211,6 +245,8 @@ export default function RateFigureVisualization({
             return lines;
           })}
 
+          <ZAxis type="number" range={[markerSize]} />
+
           <XAxis
             dataKey="session"
             domain={[MinX, MaxX]}
@@ -235,7 +271,7 @@ export default function RateFigureVisualization({
                 fill: 'black',
                 fontWeight: 'bold',
               }}
-              offset={5}
+              offset={0}
               position={'insideBottom'}
               value={'Session'}
             />

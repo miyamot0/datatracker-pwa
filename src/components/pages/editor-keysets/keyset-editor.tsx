@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import DurationDialogKeyCreator from './dialogs/duration-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import FrequencyDialogKeyCreator from './dialogs/frequency-dialog';
-import { DeleteIcon } from 'lucide-react';
+import { ArrowDown, ArrowUp, DeleteIcon } from 'lucide-react';
 import {
   BuildEvaluationsBreadcrumb,
   BuildGroupBreadcrumb,
@@ -58,8 +58,22 @@ export default function KeySetEditor() {
     Group,
     Individual,
     KeySet,
-    Context
+    Context,
   );
+
+  const moveItemUp = <T,>(array: T[], index: number): T[] => {
+    if (index === 0) return array; // Already at the top
+    const newArray = [...array];
+    [newArray[index - 1], newArray[index]] = [newArray[index], newArray[index - 1]];
+    return newArray;
+  };
+
+  const moveItemDown = <T,>(array: T[], index: number): T[] => {
+    if (index === array.length - 1) return array; // Already at the bottom
+    const newArray = [...array];
+    [newArray[index], newArray[index + 1]] = [newArray[index + 1], newArray[index]];
+    return newArray;
+  };
 
   if (status === 'loading') {
     return <LoadingDisplay />;
@@ -112,7 +126,39 @@ export default function KeySetEditor() {
                   <TableRow key={index}>
                     <TableCell>{key.KeyDescription}</TableCell>
                     <TableCell>{key.KeyName}</TableCell>
-                    <TableCell>
+                    <TableCell className="flex flex-row gap-2">
+                      <Button
+                        size={'sm'}
+                        variant={'outline'}
+                        disabled={index === 0}
+                        onClick={() => {
+                          const newFrequencyKeys = moveItemUp(data.FrequencyKeys, index);
+                          const new_state = {
+                            ...data,
+                            FrequencyKeys: newFrequencyKeys,
+                          };
+                          mutateKeySet(new_state);
+                        }}
+                      >
+                        <ArrowUp size={14} className="mr" />
+                      </Button>
+
+                      <Button
+                        size={'sm'}
+                        variant={'outline'}
+                        disabled={index === data.FrequencyKeys.length - 1}
+                        onClick={() => {
+                          const newFrequencyKeys = moveItemDown(data.FrequencyKeys, index);
+                          const new_state = {
+                            ...data,
+                            FrequencyKeys: newFrequencyKeys,
+                          };
+                          mutateKeySet(new_state);
+                        }}
+                      >
+                        <ArrowDown size={14} className="mr" />
+                      </Button>
+
                       <Button
                         size={'sm'}
                         variant={'destructive'}
@@ -130,7 +176,7 @@ export default function KeySetEditor() {
                           mutateKeySet(new_state);
                         }}
                       >
-                        <DeleteIcon className="mr-2" />
+                        <DeleteIcon size={14} className="mr-2" />
                         Delete
                       </Button>
                     </TableCell>
@@ -168,7 +214,39 @@ export default function KeySetEditor() {
                   <TableRow key={index}>
                     <TableCell>{key.KeyDescription}</TableCell>
                     <TableCell>{key.KeyName}</TableCell>
-                    <TableCell>
+                    <TableCell className="flex flex-row gap-2">
+                      <Button
+                        size={'sm'}
+                        variant={'outline'}
+                        disabled={index === 0}
+                        onClick={() => {
+                          const newDurationKeys = moveItemUp(data.DurationKeys, index);
+                          const new_state = {
+                            ...data,
+                            DurationKeys: newDurationKeys,
+                          };
+                          mutateKeySet(new_state);
+                        }}
+                      >
+                        <ArrowUp size={14} className="mr" />
+                      </Button>
+
+                      <Button
+                        size={'sm'}
+                        variant={'outline'}
+                        disabled={index === data.DurationKeys.length - 1}
+                        onClick={() => {
+                          const newDurationKeys = moveItemDown(data.DurationKeys, index);
+                          const new_state = {
+                            ...data,
+                            DurationKeys: newDurationKeys,
+                          };
+                          mutateKeySet(new_state);
+                        }}
+                      >
+                        <ArrowDown size={14} className="mr" />
+                      </Button>
+
                       <Button
                         size={'sm'}
                         variant={'destructive'}
@@ -185,7 +263,7 @@ export default function KeySetEditor() {
                           mutateKeySet(new_state);
                         }}
                       >
-                        <DeleteIcon className="mr-2" />
+                        <DeleteIcon size={14} className="mr-2" />
                         Delete
                       </Button>
                     </TableCell>

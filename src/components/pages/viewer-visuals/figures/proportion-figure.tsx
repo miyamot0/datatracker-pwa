@@ -21,6 +21,8 @@ import { getShape } from '@/lib/shapes';
 import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { FIGURE_TEXT_OPTIONS, FigureVisualSizing } from '@/types/accessibility';
+import { cn } from '@/lib/utils';
 
 type Props = {
   Group: string;
@@ -29,6 +31,7 @@ type Props = {
   FilteredSessions: SavedSessionResult[];
   ScheduleOption: SessionTerminationOptionsType;
   KeySetFull: ExpandedKeySetInstance[];
+  FigureTextSize: FigureVisualSizing;
 };
 
 const boutNaming = (tag: string) => {
@@ -92,6 +95,7 @@ export default function ProportionFigureVisualization({
   FilteredSessions,
   ScheduleOption,
   KeySetFull,
+  FigureTextSize,
 }: Props) {
   const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
   const navigator = useNavigate();
@@ -147,11 +151,14 @@ export default function ProportionFigureVisualization({
         .filter((entry) => !Number.isNaN(entry.value));
 
       return (
-        <div className="bg-primary-foreground p-4 border rounded">
+        <div
+          className={cn('bg-primary-foreground p-4 border rounded', {
+            'text-xl': FigureTextSize == FIGURE_TEXT_OPTIONS[1].value,
+            'text-2xl': FigureTextSize == FIGURE_TEXT_OPTIONS[2].value,
+          })}
+        >
           <p className="font-bold">{`Session #${main_payload.session} (${Condition})`}</p>
-          <p className="font-semibold text-sm mb-2">{`Session Time: ${(main_payload.SessionTime / 60).toPrecision(
-            2,
-          )} min`}</p>
+          <p className="font-semibold mb-2">{`Session Time: ${(main_payload.SessionTime / 60).toPrecision(2)} min`}</p>
 
           <OutputDisplay payloads={relevant_payloads_unique} />
         </div>
@@ -179,6 +186,14 @@ export default function ProportionFigureVisualization({
 
   legend_1.push(...legend_2);
 
+  let markerSize = 100;
+
+  if (FigureTextSize == 'large') {
+    markerSize = 150;
+  } else if (FigureTextSize == 'extraLarge') {
+    markerSize = 200;
+  }
+
   return (
     <div className="flex flex-col gap-4 w-full">
       <ResponsiveContainer width="100%" height={500} className={'text-base text-primary bg-white'} ref={divRef}>
@@ -192,6 +207,10 @@ export default function ProportionFigureVisualization({
             left: 10,
             bottom: 10,
           }}
+          className={cn('text-base text-primary bg-white', {
+            'text-xl': FigureTextSize == FIGURE_TEXT_OPTIONS[1].value,
+            'text-2xl': FigureTextSize == FIGURE_TEXT_OPTIONS[2].value,
+          })}
         >
           <text x={'50%'} y={25} textAnchor="middle" dominantBaseline="central">
             <tspan className="text-2xl font-bold">Visualization of Data as Proportion of Session</tspan>
@@ -237,6 +256,8 @@ export default function ProportionFigureVisualization({
 
             return lines;
           })}
+
+          <ZAxis type="number" range={[markerSize]} />
 
           <XAxis
             dataKey="session"
