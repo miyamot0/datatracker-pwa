@@ -1,13 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { ResponsiveContainer, ComposedChart, Line, Scatter, XAxis, Label, YAxis, Tooltip, Legend } from 'recharts';
+import {
+  ResponsiveContainer,
+  ComposedChart,
+  Line,
+  Scatter,
+  XAxis,
+  Label,
+  YAxis,
+  Tooltip,
+  Legend,
+  ZAxis,
+} from 'recharts';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { getShape } from '@/lib/shapes';
 import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-schema';
 import { generateChartPreparation, generateTicks, GetUniqueConditions } from '../helpers/filtering';
 import { SavedSessionResult } from '@/lib/dtos';
-
-//export type DisplayMode = 'CTB' | 'Individual';
+import { useGenerateImage } from 'recharts-to-png';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { FIGURE_TEXT_OPTIONS, FigureVisualSizing } from '@/types/accessibility';
 
 export type ExpandedKeySetInstance = {
   KeyDescription: string;
@@ -15,13 +29,29 @@ export type ExpandedKeySetInstance = {
 };
 
 type Props = {
+  Group: string;
+  Individual: string;
+  Evaluation: string;
   FilteredSessions: SavedSessionResult[];
   ScheduleOption: SessionTerminationOptionsType;
   CTBKeys: ExpandedKeySetInstance[];
   KeySetFull: ExpandedKeySetInstance[];
+  FigureTextSize: FigureVisualSizing;
 };
 
-export default function RateFigureVisualization({ FilteredSessions, ScheduleOption, CTBKeys, KeySetFull }: Props) {
+export default function RateFigureVisualization({
+  Group,
+  Individual,
+  Evaluation,
+  FilteredSessions,
+  ScheduleOption,
+  CTBKeys,
+  KeySetFull,
+  FigureTextSize,
+}: Props) {
+  const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
+  const navigator = useNavigate();
+
   let maxY = 0;
 
   const { Data, MinX, MaxX } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Frequency');
@@ -68,15 +98,13 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
   const x_span = MaxX - MinX;
   const x_ticks = generateTicks(x_span, MinX);
 
-  //console.log(data_set_parsed_by_condition);
-
   const CustomTooltip = ({ active, payload }: { active: boolean; payload: any[] }) => {
     if (active && payload && payload.length) {
       const main_payload = payload[0].payload;
 
       const { Condition } = main_payload;
       const relevant_payloads = payload.filter(
-        (entry) => entry.payload.Condition === Condition && !entry.name.includes('-Points_')
+        (entry) => entry.payload.Condition === Condition && !entry.name.includes('-Points_'),
       );
       const relevant_payloads_unique = relevant_payloads
         .filter((entry, index, self) => {
@@ -85,25 +113,35 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
         .filter((entry) => !Number.isNaN(entry.value));
 
       return (
-        <div className="bg-primary-foreground p-4 border rounded">
+        <div
+          className={cn('bg-primary-foreground p-4 border rounded', {
+            'text-xl': FigureTextSize == FIGURE_TEXT_OPTIONS[1].value,
+            'text-2xl': FigureTextSize == FIGURE_TEXT_OPTIONS[2].value,
+          })}
+        >
           <p className="font-bold">{`Session #${main_payload.session} (${Condition})`}</p>
-          <p className="font-semibold text-sm mb-2">{`Session Time: ${(main_payload.SessionTime / 60).toPrecision(
-            2
-          )} min`}</p>
+          <p className="font-semibold mb-2">{`Session Time: ${(main_payload.SessionTime / 60).toPrecision(2)} min`}</p>
 
-          <div className="flex flex-col text-sm">
+          <div className="flex flex-col ">
             {relevant_payloads_unique.map((entry, index) => {
               const cleaned_up_tag = entry.dataKey
                 .toString()
                 .replace(payload[0].payload.Condition, '')
                 .replace('-', '');
 
+              const rate_per_min = entry.value;
+              const total_count = (rate_per_min * main_payload.SessionTime) / 60;
+
               return (
-                <div key={index} className="flex flex-row justify-between text-sm">
-                  <span className="font-semibold mr-2">{cleaned_up_tag}</span>
-                  <p key={`item-${index}`} className="text-sm">
-                    {`${entry.value.toFixed(2)}/min`}
-                  </p>
+                <div key={index} className="flex flex-col mb-1">
+                  <div className="flex flex-row justify-between">
+                    <span className="font-semibold mr-2">{cleaned_up_tag} Count</span>
+                    <p className="">{`${total_count.toFixed(2)}`}</p>
+                  </div>
+                  <div className="flex flex-row justify-between">
+                    <span className="font-semibold mr-2">{cleaned_up_tag} Rate</span>
+                    <p className="">{`${rate_per_min.toFixed(2)}/min`}</p>
+                  </div>
                 </div>
               );
             })}
@@ -132,9 +170,25 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
 
   legend_1.push(...legend_2);
 
+  let markerSize = 100;
+
+  if (FigureTextSize == 'large') {
+    markerSize = 150;
+  } else if (FigureTextSize == 'extraLarge') {
+    markerSize = 200;
+  }
+
   return (
     <div className="flex flex-col gap-4 w-full">
-      <ResponsiveContainer width="100%" height={500} className={'text-base text-primary bg-white'}>
+      <ResponsiveContainer
+        width="100%"
+        height={500}
+        className={cn('text-base text-primary bg-white', {
+          'text-xl': FigureTextSize == FIGURE_TEXT_OPTIONS[1].value,
+          'text-2xl': FigureTextSize == FIGURE_TEXT_OPTIONS[2].value,
+        })}
+        ref={divRef}
+      >
         <ComposedChart
           width={600}
           height={300}
@@ -172,6 +226,14 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
                   <Scatter
                     data={condition.data}
                     animationDuration={100}
+                    onDoubleClick={(props) => {
+                      const stringIndex = `${props.session}_${props.Condition}_Primary`;
+                      const linkGenerated = `/session/${Group!}/${Individual!}/${Evaluation!}/history/${stringIndex}`;
+
+                      navigator(linkGenerated, {
+                        unstable_viewTransition: true,
+                      });
+                    }}
                     dataKey={`${key.KeyDescription}`}
                     fill={FIGURE_PATH_COLORS[index_dynamic]}
                     shape={shape}
@@ -182,6 +244,8 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
 
             return lines;
           })}
+
+          <ZAxis type="number" range={[markerSize]} />
 
           <XAxis
             dataKey="session"
@@ -207,7 +271,7 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
                 fill: 'black',
                 fontWeight: 'bold',
               }}
-              offset={5}
+              offset={0}
               position={'insideBottom'}
               value={'Session'}
             />
@@ -242,6 +306,19 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
           <Legend payload={legend_1} align="center" />
         </ComposedChart>
       </ResponsiveContainer>
+      <Button
+        onClick={async () => {
+          const png = await getDivPng();
+          if (png) {
+            const link = document.createElement('a');
+            link.href = png;
+            link.download = 'figure.png';
+            link.click();
+          }
+        }}
+      >
+        {'Download Figure as PNG'}
+      </Button>
     </div>
   );
 }

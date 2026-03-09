@@ -58,7 +58,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
   const wakelockRef = useRef<WakeLockSentinel>();
 
   const [runningState, setRunningState] = useState<'Not Started' | 'Started' | 'Completed' | 'Cancelled'>(
-    'Not Started'
+    'Not Started',
   );
 
   const [startTime, setStartTime] = useState<Date | null>(null);
@@ -106,7 +106,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
 
         if (ended_early) {
           const confirm_save = window.confirm(
-            'This data will be saved even though the session ended early. Are you sure?'
+            'This session was terminated early. If you would like to save the results, click "OK", otherwise click "Cancel" to discard the session and return to the session overview to re-attempt the session.',
           );
 
           if (confirm_save === false) {
@@ -131,7 +131,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
           secondsElapsedFirst.current,
           secondsElapsedSecond.current,
           secondsElapsedThird.current,
-          ended_early
+          ended_early,
         );
 
         secondsElapsedTotal.current += INCREMENT;
@@ -158,7 +158,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
                   label: 'Load Next Session',
                   onClick: () => {
                     navigator_(
-                      `/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`
+                      `/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`,
                     );
                   },
                 },
@@ -173,7 +173,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
             'Error Saving Results',
             'An error occurred while saving the results. Please try again.',
             3000,
-            true
+            true,
           );
         }
       };
@@ -302,6 +302,10 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
       return;
     }
 
+    if (ev.key === 'Space' || ev.key === ' ') {
+      ev.preventDefault();
+    }
+
     if (!totalTimerRef.current) {
       if (ev.key === 'Enter' && runningState === 'Not Started') {
         //setActiveTimer("Primary");
@@ -335,7 +339,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
           } satisfies KeyManageType,
         ]);
 
-        // Requestion wake-lock
+        // Request wake-lock
         const request_wake_lock = async () => {
           if (navigator && navigator.wakeLock) {
             wakelockRef.current = await navigator.wakeLock.request('screen');
@@ -441,7 +445,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
       label={`Record ${Evaluation} Session`}
       className="select-none"
     >
-      <div className="flex flex-col w-full gap-4 max-w-screen-2xl">
+      <div className="flex flex-col w-full gap-4">
         <div className="w-full flex flex-row justify-between select-none">
           <div className="flex-1 flex flex-row">
             <p
@@ -450,7 +454,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
                 {
                   'bg-green-600 text-white': Settings.Role === 'Primary',
                   'bg-purple-400 text-white': Settings.Role === 'Reliability',
-                }
+                },
               )}
             >
               {`${Settings.Role} Data Collector`}
@@ -464,7 +468,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
                   'bg-orange-400 text-white': Settings.TimerOption === 'End on Timer #2',
                   'bg-red-400 text-white': Settings.TimerOption === 'End on Timer #3',
                   //'bg-blue-400 text-white': Settings.TimerOption === 'End on Timer #1 and #2 Total',
-                }
+                },
               )}
             >
               {Settings.TimerOption} ({Settings.DurationS}s)
@@ -486,7 +490,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
           </div>
         </div>
 
-        <SessionRecorderTallies KeysPressed={keysPressed} Keyset={Keyset} />
+        <SessionRecorderTallies KeysPressed={keysPressed} Keyset={Keyset} Settings={applicationSettings} />
 
         <div className="grid grid-cols-2 w-full gap-4 select-none">
           <SessionRecorderInstructions {...{ Evaluation, Settings }} />

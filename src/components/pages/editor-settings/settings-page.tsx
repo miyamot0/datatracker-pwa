@@ -10,10 +10,14 @@ import {
   ElevatedPrivilegesType,
   ENFORCED_NAMING_OPTIONS,
   EnforceDataFolderType,
+  KEY_DISPLAY_OPTIONS,
+  KeyDisplayTypes,
   NOTIFICATION_SETTINGS_OPTIONS,
   NotificationSettingsTypes,
   POST_SESSION_BX_OPTIONS,
   PostSessionBxTypes,
+  ScreenSizingOptions,
+  ScreenSizingTypes,
   THEME_OPTIONS,
   ThemeTypes,
   TOOL_TIP_OPTIONS,
@@ -67,6 +71,72 @@ export default function SettingsPage() {
           </SettingsFormItemWrapper>
 
           <SettingsFormItemWrapper
+            Label="Options for Key Displays"
+            Description="Toggle standard or dense key layouts (i.e., many keys loaded)"
+          >
+            <Select
+              value={settings.KeyDisplay}
+              onValueChange={(value: KeyDisplayTypes) => {
+                const newSettings = {
+                  ...settings,
+                  KeyDisplay: value,
+                } satisfies ApplicationSettingsTypes;
+
+                setSettings(newSettings);
+                saveSettings(newSettings);
+
+                displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+              }}
+            >
+              <SelectTrigger className="w-full md:max-w-[250px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {KEY_DISPLAY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </SettingsFormItemWrapper>
+
+          <SettingsFormItemWrapper
+            Label="Options for Screen Displays"
+            Description="Toggle standard or extra wide layouts (i.e., for larger monitors)"
+          >
+            <Select
+              value={settings.DisplaySize}
+              onValueChange={(value: ScreenSizingTypes) => {
+                const newSettings = {
+                  ...settings,
+                  DisplaySize: value,
+                } satisfies ApplicationSettingsTypes;
+
+                setSettings(newSettings);
+                saveSettings(newSettings);
+
+                displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+              }}
+            >
+              <SelectTrigger className="w-full md:max-w-[250px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {ScreenSizingOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </SettingsFormItemWrapper>
+
+          <SettingsFormItemWrapper
             Label="After-Session Program Behavior"
             Description="Set preferences for how the program should respond after each session"
           >
@@ -100,7 +170,7 @@ export default function SettingsPage() {
 
           <SettingsFormItemWrapper
             Label="Provide Elevated Privileges"
-            Description="Override typical behavior and allow the deletion of data (Warning: Risk of permanent data loss)"
+            Description="Override typical behavior and allow the copying/deleting/renaming of data (Warning: Risk of permanent data loss)"
           >
             <Select
               value={settings.EnableFileDeletion ? 'true' : 'false'}

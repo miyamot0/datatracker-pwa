@@ -23,6 +23,7 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
       plugins.push(
         VitePWA({
           registerType: 'autoUpdate',
+          showMaximumFileSizeToCacheInBytesWarning: false,
           devOptions: {
             enabled: false,
           },
@@ -139,7 +140,7 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
               },
             ],
           },
-        })
+        }),
       );
       break;
 
@@ -150,7 +151,7 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
           overrideConfig: {
             base: './',
           },
-        })
+        }),
       );
       plugins.push({
         name: 'delete-unnecessary',

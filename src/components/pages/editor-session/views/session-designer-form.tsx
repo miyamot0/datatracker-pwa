@@ -147,7 +147,7 @@ export default function SessionDesigner({
       className="select-none"
     >
       <div className="w-full grid grid-cols-3 gap-2 max-w-screen-2xl">
-        <Card className="w-full col-span-2">
+        <Card className="w-full col-span-2 h-fit">
           <CardHeader className="flex flex-row w-full justify-between">
             <div className="flex flex-col gap-1.5">
               <CardTitle>Session Designer</CardTitle>
@@ -170,7 +170,7 @@ export default function SessionDesigner({
                         'Error Adding Condition',
                         'The condition provided already exists',
                         3000,
-                        true
+                        true,
                       );
 
                       return;
@@ -181,7 +181,7 @@ export default function SessionDesigner({
                         handle!,
                         Group,
                         Individual,
-                        Evaluation
+                        Evaluation,
                       );
 
                       await evaluations_folder.getDirectoryHandle(input, {
@@ -193,7 +193,7 @@ export default function SessionDesigner({
                       displayConditionalNotification(
                         settings,
                         'Condition Added',
-                        `The condition '${input}' has been added`
+                        `The condition '${input}' has been added`,
                       );
                     }
                   }}

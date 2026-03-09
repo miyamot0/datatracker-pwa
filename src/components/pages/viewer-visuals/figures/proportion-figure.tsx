@@ -18,14 +18,88 @@ import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-s
 import { ExpandedKeySetInstance } from './rate-figure';
 import { generateChartPreparation, generateTicks, GetUniqueConditions } from '../helpers/filtering';
 import { getShape } from '@/lib/shapes';
+import { useGenerateImage } from 'recharts-to-png';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { FIGURE_TEXT_OPTIONS, FigureVisualSizing } from '@/types/accessibility';
+import { cn } from '@/lib/utils';
 
 type Props = {
+  Group: string;
+  Individual: string;
+  Evaluation: string;
   FilteredSessions: SavedSessionResult[];
   ScheduleOption: SessionTerminationOptionsType;
   KeySetFull: ExpandedKeySetInstance[];
+  FigureTextSize: FigureVisualSizing;
 };
 
-export default function ProportionFigureVisualization({ FilteredSessions, ScheduleOption, KeySetFull }: Props) {
+const boutNaming = (tag: string) => {
+  return `${tag}-Bouts`;
+};
+
+const boutAverageNaming = (tag: string) => {
+  return `${tag}-Bout-Ave`;
+};
+
+function OutputDisplay({ payloads }: { payloads: any[] }) {
+  const main_payload = payloads[0].payload;
+
+  const pct_session = (data: any) => {
+    return `${data.toFixed(2)}%`;
+  };
+
+  const get_seconds = (data: any) => {
+    return `${((data * main_payload.SessionTime) / 100).toFixed(2)}s`;
+  };
+
+  return (
+    <div className="flex flex-col text-sm">
+      {payloads.map((entry, index) => {
+        const cleaned_up_tag = entry.dataKey.toString().replace(payloads[0].payload.Condition, '').replace('-', '');
+
+        const bout_n = entry.payload[boutNaming(entry.name)];
+        const bout_ave = entry.payload[boutAverageNaming(entry.name)];
+
+        return (
+          <div key={index} className="flex flex-col mb-1">
+            <div className="flex flex-row justify-between text-sm">
+              <span className="font-semibold mr-2">{`${cleaned_up_tag} Total`}</span>
+              <p className="text-sm">{get_seconds(entry.value)}</p>
+            </div>
+            <div className="flex flex-row justify-between text-sm">
+              <span className="font-semibold mr-2">{`${cleaned_up_tag} %`}</span>
+              <p className="text-sm">{pct_session(entry.value)}</p>
+            </div>
+            <div className="flex flex-row justify-between text-sm">
+              <span className="font-semibold mr-2">{`${cleaned_up_tag} Bouts`}</span>
+              <p className="text-sm">{bout_n !== undefined ? `${bout_n}` : 'N/A'}</p>
+            </div>
+            <div className="flex flex-row justify-between text-sm">
+              <span className="font-semibold mr-2">{`${cleaned_up_tag} Ave`}</span>
+              <p key={`item-${index}`} className="text-sm">
+                {bout_ave !== undefined && bout_ave !== 0 ? `${bout_ave}s` : 'N/A'}
+              </p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function ProportionFigureVisualization({
+  Group,
+  Individual,
+  Evaluation,
+  FilteredSessions,
+  ScheduleOption,
+  KeySetFull,
+  FigureTextSize,
+}: Props) {
+  const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
+  const navigator = useNavigate();
+
   const { Data, MinX, MaxX } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Duration');
 
   const preparedData = Data.map((data) => {
@@ -37,6 +111,8 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
 
     data.Scores.map((key) => {
       temp_obj[`${key.KeyDescription}`] = (key.Value / data.SessionTime) * 100;
+      temp_obj[boutNaming(key.KeyDescription)] = key.Bouts;
+      temp_obj[boutAverageNaming(key.KeyDescription)] = key.Bouts > 0 ? (key.Value / key.Bouts).toFixed(2) : 0;
     });
 
     return temp_obj;
@@ -66,7 +142,7 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
       const { Condition } = main_payload;
 
       const relevant_payloads = payload.filter(
-        (entry) => entry.payload.Condition === Condition && !entry.name.includes('-Points_')
+        (entry) => entry.payload.Condition === Condition && !entry.name.includes('-Points_'),
       );
       const relevant_payloads_unique = relevant_payloads
         .filter((entry, index, self) => {
@@ -75,31 +151,16 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
         .filter((entry) => !Number.isNaN(entry.value));
 
       return (
-        <div className="bg-primary-foreground p-4 border rounded">
+        <div
+          className={cn('bg-primary-foreground p-4 border rounded', {
+            'text-xl': FigureTextSize == FIGURE_TEXT_OPTIONS[1].value,
+            'text-2xl': FigureTextSize == FIGURE_TEXT_OPTIONS[2].value,
+          })}
+        >
           <p className="font-bold">{`Session #${main_payload.session} (${Condition})`}</p>
-          <p className="font-semibold text-sm mb-2">{`Session Time: ${(main_payload.SessionTime / 60).toPrecision(
-            2
-          )} min`}</p>
+          <p className="font-semibold mb-2">{`Session Time: ${(main_payload.SessionTime / 60).toPrecision(2)} min`}</p>
 
-          <div className="flex flex-col text-sm">
-            {relevant_payloads_unique.map((entry, index) => {
-              const cleaned_up_tag = entry.dataKey
-                .toString()
-                .replace(payload[0].payload.Condition, '')
-                .replace('-', '');
-
-              return (
-                <div key={index} className="flex flex-row justify-between text-sm">
-                  <span className="font-semibold mr-2">{cleaned_up_tag}</span>
-                  <p key={`item-${index}`} className="text-sm">
-                    {`${((entry.value / 100) * main_payload.SessionTime).toFixed(
-                      2
-                    )} of ${main_payload.SessionTime.toFixed(2)} seconds (${entry.value.toFixed(2)}%)`}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
+          <OutputDisplay payloads={relevant_payloads_unique} />
         </div>
       );
     }
@@ -125,9 +186,17 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
 
   legend_1.push(...legend_2);
 
+  let markerSize = 100;
+
+  if (FigureTextSize == 'large') {
+    markerSize = 150;
+  } else if (FigureTextSize == 'extraLarge') {
+    markerSize = 200;
+  }
+
   return (
     <div className="flex flex-col gap-4 w-full">
-      <ResponsiveContainer width="100%" height={500} className={'text-base text-primary bg-white'}>
+      <ResponsiveContainer width="100%" height={500} className={'text-base text-primary bg-white'} ref={divRef}>
         <ComposedChart
           width={600}
           height={300}
@@ -138,6 +207,10 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
             left: 10,
             bottom: 10,
           }}
+          className={cn('text-base text-primary bg-white', {
+            'text-xl': FigureTextSize == FIGURE_TEXT_OPTIONS[1].value,
+            'text-2xl': FigureTextSize == FIGURE_TEXT_OPTIONS[2].value,
+          })}
         >
           <text x={'50%'} y={25} textAnchor="middle" dominantBaseline="central">
             <tspan className="text-2xl font-bold">Visualization of Data as Proportion of Session</tspan>
@@ -167,6 +240,14 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
                     dataKey={`${key.KeyDescription}`}
                     fill={FIGURE_PATH_COLORS[index_dynamic]}
                     shape={shape}
+                    onDoubleClick={(props) => {
+                      const stringIndex = `${props.session}_${props.Condition}_Primary`;
+                      const linkGenerated = `/session/${Group!}/${Individual!}/${Evaluation!}/history/${stringIndex}`;
+
+                      navigator(linkGenerated, {
+                        unstable_viewTransition: true,
+                      });
+                    }}
                     stroke="black"
                   />
                 </React.Fragment>
@@ -175,6 +256,8 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
 
             return lines;
           })}
+
+          <ZAxis type="number" range={[markerSize]} />
 
           <XAxis
             dataKey="session"
@@ -236,6 +319,19 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
           <Legend payload={legend_1} align="center" />
         </ComposedChart>
       </ResponsiveContainer>
+      <Button
+        onClick={async () => {
+          const png = await getDivPng();
+          if (png) {
+            const link = document.createElement('a');
+            link.href = png;
+            link.download = 'figure.png';
+            link.click();
+          }
+        }}
+      >
+        {'Download Figure as PNG'}
+      </Button>
     </div>
   );
 }

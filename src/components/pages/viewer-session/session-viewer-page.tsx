@@ -31,6 +31,8 @@ import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { getLocalCachedPrefs, setLocalCachedPrefs } from '@/lib/local_storage';
 import BackButton from '@/components/ui/back-button';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
 
 type LoaderResult = {
   Group: string;
@@ -215,15 +217,61 @@ export default function SessionViewerPage() {
             <CardTitle>Session Inspector</CardTitle>
             <CardDescription>Information Regarding Keys Illustrated Below</CardDescription>
           </div>
-          <BackButton
-            Label="Back to Session History"
-            Href={createHref({
-              type: 'Evaluation Session Viewer',
-              group: Group,
-              individual: Individual,
-              evaluation: Evaluation,
-            })}
-          />
+
+          <div className="flex flex-row gap-2">
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-fit" size={'sm'}>
+                  <KeyboardIcon className="mr-2 w-4 h-4" />
+                  Edit Keys Displayed
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {filteredKeys.map((key, index) => (
+                  <DropdownMenuCheckboxItem
+                    key={`key-${index}`}
+                    checked={key.Visible}
+                    onCheckedChange={(checked) => {
+                      const updatedKeys = filteredKeys.map((k) => {
+                        if (k.KeyDescription === key.KeyDescription) {
+                          return {
+                            ...k,
+                            Visible: checked,
+                          };
+                        }
+
+                        return k;
+                      });
+
+                      setFilteredKeys(updatedKeys);
+
+                      const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+
+                      setLocalCachedPrefs(Group, Individual, Evaluation, `${Group} ${Individual} ${Evaluation}`, {
+                        KeyDescription: hidden_keys,
+                        CTBElements: [],
+                        Schedule: 'End on Timer #1',
+                      });
+                    }}
+                  >
+                    {key.KeyDescription}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <BackButton
+              Label="Back to Session History"
+              Href={createHref({
+                type: 'Evaluation Session Viewer',
+                group: Group,
+                individual: Individual,
+                evaluation: Evaluation,
+              })}
+            />
+          </div>
         </CardHeader>
 
         <CardContent className="w-full flex flex-col gap-2">
@@ -252,7 +300,7 @@ export default function SessionViewerPage() {
               </div>
 
               <div>
-                <span className="font-bold">Data Rollector Role: </span> {ExpandedSession.SessionSettings.Role}
+                <span className="font-bold">Data Collector Role: </span> {ExpandedSession.SessionSettings.Role}
               </div>
 
               <div>
@@ -289,56 +337,21 @@ export default function SessionViewerPage() {
             </div>
           )}
 
-          <div className="w-full flex flex-row justify-end mb-4">
-            <div className="flex flex-row gap-4">
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-fit">
-                    <KeyboardIcon className="mr-2 w-4 h-4" />
-                    Edit Keys Displayed
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {filteredKeys.map((key, index) => (
-                    <DropdownMenuCheckboxItem
-                      key={`key-${index}`}
-                      checked={key.Visible}
-                      onCheckedChange={(checked) => {
-                        const updatedKeys = filteredKeys.map((k) => {
-                          if (k.KeyDescription === key.KeyDescription) {
-                            return {
-                              ...k,
-                              Visible: checked,
-                            };
-                          }
-
-                          return k;
-                        });
-
-                        setFilteredKeys(updatedKeys);
-
-                        const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
-
-                        setLocalCachedPrefs(Group, Individual, Evaluation, `${Group} ${Individual} ${Evaluation}`, {
-                          KeyDescription: hidden_keys,
-                          CTBElements: [],
-                          Schedule: 'End on Timer #1',
-                        });
-                      }}
-                    >
-                      {key.KeyDescription}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-
           <SessionFigure Session={ExpandedSession} PlotData={PlotObject} KeysHidden={filteredKeys} />
 
+          <Separator className="my-4" />
+
           <SessionKeyList Settings={settings} Session={ExpandedSession} />
+
+          <Separator className="my-4" />
+
+          <div className="w-full">
+            <div className="flex justify-between items-center mb-2">
+              <h1>Comments:</h1>
+              <div></div>
+            </div>
+            <Textarea minLength={3} value={ExpandedSession.Comments} readOnly />
+          </div>
         </CardContent>
       </Card>
     </PageWrapper>

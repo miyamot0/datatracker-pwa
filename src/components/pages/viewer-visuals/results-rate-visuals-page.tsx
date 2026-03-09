@@ -30,6 +30,7 @@ import { FolderHandleContextType } from '@/context/folder-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
 import { toast } from 'sonner';
+import { FIGURE_TEXT_OPTIONS, FigureVisualSizing } from '@/types/accessibility';
 
 type LoaderResult = {
   Group: string;
@@ -155,6 +156,7 @@ export default function ResultsRateVisualsPage() {
     loaderResult;
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
   const [schedule, setSchedule] = useState<SessionTerminationOptionsType>(Schedule);
+  const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
   const [ctbSumKeys, setCTBSumKeys] = useState(ExcludeKeysFromCTB);
 
   const results_filtered = FilterByPrimaryRole(Results);
@@ -175,7 +177,7 @@ export default function ResultsRateVisualsPage() {
             <CardTitle>Visualization of Behavioral Rates</CardTitle>
             <CardDescription>Options for Visualizing Data Provided Below</CardDescription>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-row gap-2">
             <Link
               unstable_viewTransition
               to={createHref({
@@ -190,6 +192,7 @@ export default function ResultsRateVisualsPage() {
                 See Proportion
               </Button>
             </Link>
+
             <BackButton
               Label="Back to Evaluations"
               Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
@@ -234,6 +237,7 @@ export default function ResultsRateVisualsPage() {
                           .filter((k) => k.Visible === false)
                           .map((k) => k.KeyDescription);
 
+                        // TODO: Share this w/ summarizer
                         setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
                           KeyDescription: hidden_keys,
                           CTBElements: exclude_from_ctb,
@@ -297,41 +301,66 @@ export default function ResultsRateVisualsPage() {
               </DropdownMenu>
             </div>
 
-            <div className="flex flex-row items-center gap-2 w-fit">
-              <p>Select Timer to Reference:</p>
-              <Select
-                value={schedule}
-                onValueChange={(value: SessionTerminationOptionsType) => {
-                  setSchedule(value);
+            <div className="flex flex-row gap-2">
+              <div className="flex flex-row items-center gap-2 w-fit my-0 py-0">
+                <p>Magnification:</p>
+                <Select
+                  value={figureTextSize}
+                  onValueChange={(value: FigureVisualSizing) => {
+                    setFigureTextSize(value);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Text Size" className="" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {FIGURE_TEXT_OPTIONS.map((opt) => (
+                        <SelectItem value={opt.value} key={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                  const hidden_keys = filteredKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+              <div className="flex flex-row items-center gap-2 w-fit">
+                <p>Timer to Reference:</p>
+                <Select
+                  value={schedule}
+                  onValueChange={(value: SessionTerminationOptionsType) => {
+                    setSchedule(value);
 
-                  const exclude_from_ctb = ctbSumKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+                    const hidden_keys = filteredKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
 
-                  setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
-                    KeyDescription: hidden_keys,
-                    CTBElements: exclude_from_ctb,
-                    Schedule: value,
-                  });
-                }}
-              >
-                <SelectTrigger className="w-fit">
-                  <SelectValue placeholder="Data Collector Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value={'End on Timer #1' as SessionTerminationOptionsType}>
-                      Score on Timer #1 Time
-                    </SelectItem>
-                    <SelectItem value={'End on Timer #2' as SessionTerminationOptionsType}>
-                      Score on Timer #2 Time
-                    </SelectItem>
-                    <SelectItem value={'End on Timer #3' as SessionTerminationOptionsType}>
-                      Score on Timer #3 Time
-                    </SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+                    const exclude_from_ctb = ctbSumKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+
+                    setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
+                      KeyDescription: hidden_keys,
+                      CTBElements: exclude_from_ctb,
+                      Schedule: value,
+                    });
+                  }}
+                >
+                  <SelectTrigger className="w-fit">
+                    <SelectValue placeholder="Data Collector Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value={'End on Timer #1' as SessionTerminationOptionsType}>
+                        Score on Timer #1 Time
+                      </SelectItem>
+                      <SelectItem value={'End on Timer #2' as SessionTerminationOptionsType}>
+                        Score on Timer #2 Time
+                      </SelectItem>
+                      <SelectItem value={'End on Timer #3' as SessionTerminationOptionsType}>
+                        Score on Timer #3 Time
+                      </SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -348,6 +377,10 @@ export default function ResultsRateVisualsPage() {
               ScheduleOption={schedule}
               CTBKeys={ctbSumKeys}
               KeySetFull={filteredKeys}
+              Group={Group}
+              Individual={Individual}
+              Evaluation={Evaluation}
+              FigureTextSize={figureTextSize}
             />
           )}
         </CardContent>

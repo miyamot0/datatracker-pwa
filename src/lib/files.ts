@@ -322,14 +322,14 @@ export async function saveSessionOutcomesToFile(
     CleanUpString(evaluation)
   );
 
-  const relevent_condition_folder = await client_evaluations_folder.getDirectoryHandle(
+  const relevant_condition_folder = await client_evaluations_folder.getDirectoryHandle(
     CleanUpString(Settings.Condition),
     {
       create: true,
     }
   );
 
-  const session_output_file = await relevent_condition_folder.getFileHandle(
+  const session_output_file = await relevant_condition_folder.getFileHandle(
     `${Settings.Session}_${Settings.Condition}_${Settings.Role}.json`,
     { create: true }
   );
@@ -378,6 +378,7 @@ export async function castSavedFilesToSessionResults(
     const file_text = await file_data.text();
 
     const session_result = JSON.parse(file_text) as SavedSessionResult;
+    session_result.Filename = file.name;
 
     if (session_result) {
       session_results.push(session_result);

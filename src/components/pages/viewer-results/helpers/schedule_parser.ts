@@ -18,7 +18,7 @@ export function walkSessionFrequencyKey(SessionSettings: SavedSessionResult, Sch
     const t2 = relevant_schedule_changes[i + 1].TimePressed;
 
     const keys_within_sched_change = FrequencyKeyPresses.filter(
-      (k) => k.KeyName === Key.KeyName && k.TimePressed > t1 && k.TimePressed <= t2
+      (k) => k.KeyName === Key.KeyName && k.TimePressed > t1 && k.TimePressed <= t2,
     );
 
     const n_events_logged = keys_within_sched_change.length;
@@ -31,6 +31,7 @@ export function walkSessionFrequencyKey(SessionSettings: SavedSessionResult, Sch
     KeyDescription: Key.KeyDescription,
     Schedule: Schedule,
     Value: working_count,
+    Bouts: -1,
   };
 }
 
@@ -41,6 +42,8 @@ export function walkSessionDurationKey(SessionSettings: SavedSessionResult, Sche
 
   const is_even = relevant_schedule_changes.length % 2 === 0;
 
+  const bouts = relevant_schedule_changes.length / 2;
+
   if (!is_even) throw new Error('Schedule changes must be even');
 
   let working_duration = 0;
@@ -50,7 +53,7 @@ export function walkSessionDurationKey(SessionSettings: SavedSessionResult, Sche
     const t2 = relevant_schedule_changes[i + 1].TimePressed;
 
     const keys_within_sched_change = DurationKeyPresses.filter(
-      (k) => k.KeyName === Key.KeyName && k.TimePressed > t1 && k.TimePressed <= t2
+      (k) => k.KeyName === Key.KeyName && k.TimePressed > t1 && k.TimePressed <= t2,
     );
 
     const n_events_logged = keys_within_sched_change.length;
@@ -88,5 +91,6 @@ export function walkSessionDurationKey(SessionSettings: SavedSessionResult, Sche
     KeyDescription: Key.KeyDescription,
     Schedule: Schedule,
     Value: working_duration,
+    Bouts: bouts,
   };
 }

@@ -76,6 +76,62 @@ export function useQueryEvaluationsFixed(Group: string, Client: string, Context:
     }
   };
 
+  const mutateEvaluation = async (evaluation: string) => {
+    const input = window.prompt('Enter a new name for the this evaluation.');
+
+    if (!input) return;
+
+    if (data.data.includes(input)) {
+      alert('An evaluation with this name already exists.');
+      return;
+    }
+
+    if (input.trim().length < 4) {
+      alert('Evaluation name must be at least 4 characters long.');
+      return;
+    }
+
+    const group_dir = await handle!.getDirectoryHandle(CleanUpString(Group));
+    const client_dir = await group_dir.getDirectoryHandle(CleanUpString(Client));
+    const old_evaluation_dir = await client_dir.getDirectoryHandle(evaluation);
+
+    const new_evaluation_dir = await client_dir.getDirectoryHandle(input, { create: true });
+
+    for await (const item of old_evaluation_dir.values()) {
+      if (item.kind === 'file') {
+        const file = await old_evaluation_dir.getFileHandle(item.name);
+        const new_file = await new_evaluation_dir.getFileHandle(item.name, { create: true });
+        const file_data = await file.getFile();
+        const writable = await new_file.createWritable();
+        await writable.write(file_data);
+        await writable.close();
+      } else if (item.kind === 'directory') {
+        const old_sub_dir = await old_evaluation_dir.getDirectoryHandle(item.name);
+        const new_sub_dir = await new_evaluation_dir.getDirectoryHandle(item.name, { create: true });
+        for await (const sub_item of old_sub_dir.values()) {
+          if (sub_item.kind === 'file') {
+            const file = await old_sub_dir.getFileHandle(sub_item.name);
+            const new_file = await new_sub_dir.getFileHandle(sub_item.name, { create: true });
+            const file_data = await file.getFile();
+            const writable = await new_file.createWritable();
+            await writable.write(file_data);
+            await writable.close();
+          }
+        }
+      }
+    }
+
+    await client_dir.removeEntry(evaluation, { recursive: true });
+
+    displayConditionalNotification(
+      settings,
+      'Evaluation Renamed',
+      'The evaluation folder has been successfully renamed.'
+    );
+
+    incrementVersion();
+  };
+
   useEffect(() => {
     pullEvaluationFolders(handle!, Group, Client).then((response) => {
       setData(response);
@@ -93,6 +149,7 @@ export function useQueryEvaluationsFixed(Group: string, Client: string, Context:
       refresh: incrementVersion,
       addEvaluation,
       removeEvaluations,
+      mutateEvaluation,
     };
   }
 
@@ -104,5 +161,6 @@ export function useQueryEvaluationsFixed(Group: string, Client: string, Context:
     refresh: incrementVersion,
     addEvaluation,
     removeEvaluations,
+    mutateEvaluation,
   };
 }

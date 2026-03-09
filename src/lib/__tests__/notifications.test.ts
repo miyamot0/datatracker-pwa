@@ -18,6 +18,8 @@ describe('displayConditionalNotification', () => {
     EnforceDataFolderName: true,
     EnableToolTip: true,
     IsReturningUser: true,
+    KeyDisplay: 'standard',
+    DisplaySize: 'standard',
   };
 
   beforeEach(() => {
@@ -52,7 +54,7 @@ describe('displayConditionalNotification', () => {
       'Success Title',
       'Success Description',
       3000,
-      false
+      false,
     );
 
     expect(toast.success).not.toHaveBeenCalled();
@@ -70,7 +72,7 @@ describe('displayConditionalNotification', () => {
       'Success Title',
       'Success Description',
       3000,
-      false
+      false,
     );
 
     expect(toast.success).not.toHaveBeenCalled();
@@ -88,7 +90,7 @@ describe('displayConditionalNotification', () => {
       'Error Title',
       'Error Description',
       3000,
-      true
+      true,
     );
 
     expect(toast.error).toHaveBeenCalledWith('Error Title', {
@@ -104,7 +106,7 @@ describe('displayConditionalNotification', () => {
       'Success Title',
       'Success Description',
       undefined,
-      false
+      false,
     );
 
     expect(toast.success).toHaveBeenCalledWith('Success Title', {
