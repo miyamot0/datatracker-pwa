@@ -445,7 +445,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
       label={`Record ${Evaluation} Session`}
       className="select-none"
     >
-      <div className="flex flex-col w-full gap-4 max-w-screen-2xl">
+      <div className="flex flex-col w-full gap-4">
         <div className="w-full flex flex-row justify-between select-none">
           <div className="flex-1 flex flex-row">
             <p

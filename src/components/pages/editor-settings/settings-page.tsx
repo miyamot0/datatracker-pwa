@@ -16,6 +16,8 @@ import {
   NotificationSettingsTypes,
   POST_SESSION_BX_OPTIONS,
   PostSessionBxTypes,
+  ScreenSizingOptions,
+  ScreenSizingTypes,
   THEME_OPTIONS,
   ThemeTypes,
   TOOL_TIP_OPTIONS,
@@ -92,6 +94,39 @@ export default function SettingsPage() {
               <SelectContent>
                 <SelectGroup>
                   {KEY_DISPLAY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </SettingsFormItemWrapper>
+
+          <SettingsFormItemWrapper
+            Label="Options for Screen Displays"
+            Description="Toggle standard or extra wide layouts (i.e., for larger monitors)"
+          >
+            <Select
+              value={settings.DisplaySize}
+              onValueChange={(value: ScreenSizingTypes) => {
+                const newSettings = {
+                  ...settings,
+                  DisplaySize: value,
+                } satisfies ApplicationSettingsTypes;
+
+                setSettings(newSettings);
+                saveSettings(newSettings);
+
+                displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+              }}
+            >
+              <SelectTrigger className="w-full md:max-w-[250px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {ScreenSizingOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>

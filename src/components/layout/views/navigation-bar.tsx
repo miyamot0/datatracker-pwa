@@ -29,7 +29,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
   const { handle } = useContext(FolderHandleContext);
 
   return (
-    <div className={cn('flex flex-row justify-between w-full max-w-screen-2xl py-4 items-center select-none')}>
+    <div className={cn('flex flex-row justify-between w-full py-4 items-center select-none')}>
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

@@ -20,6 +20,18 @@ export const KEY_DISPLAY_OPTIONS: { value: KeyDisplayTypes; label: string }[] = 
 ];
 
 /**
+ * Types for screen size options
+ */
+
+export type ScreenSizingTypes = 'standard' | 'wide' | 'extra-wide';
+
+export const ScreenSizingOptions: { value: ScreenSizingTypes; label: string }[] = [
+  { value: 'standard', label: 'Standard' },
+  { value: 'wide', label: 'Wide' },
+  { value: 'extra-wide', label: 'Extra Wide' },
+];
+
+/**
  * Types for after-session recording preferences
  */
 export type PostSessionBxTypes = 'AwaitInput' | 'AutoAdvance';
@@ -96,6 +108,7 @@ export type ApplicationSettingsTypes = {
   EnableToolTip: boolean;
   IsReturningUser: boolean;
   KeyDisplay: KeyDisplayTypes;
+  DisplaySize: ScreenSizingTypes;
 };
 
 export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
@@ -106,4 +119,5 @@ export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
   EnableToolTip: true,
   IsReturningUser: true,
   KeyDisplay: 'standard',
+  DisplaySize: 'standard',
 };
