@@ -107,10 +107,10 @@ const AppRoot = () => {
             <Route path="/settings">
               <Route index element={<SettingsPage />} />
             </Route>
-          </Route>
-        )
+          </Route>,
+        ),
       ),
-    [dataContext]
+    [dataContext],
   );
 
   return <RouterProvider future={{ v7_startTransition: true }} router={router} />;

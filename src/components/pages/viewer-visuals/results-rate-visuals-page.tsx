@@ -349,6 +349,9 @@ export default function ResultsRateVisualsPage() {
               ScheduleOption={schedule}
               CTBKeys={ctbSumKeys}
               KeySetFull={filteredKeys}
+              Group={Group}
+              Individual={Individual}
+              Evaluation={Evaluation}
             />
           )}
         </CardContent>

@@ -261,6 +261,9 @@ export default function ResultsProportionVisualsPage() {
 
           {DynamicKeySet && (
             <ProportionFigureVisualization
+              Group={Group}
+              Individual={Individual}
+              Evaluation={Evaluation}
               FilteredSessions={results_filtered}
               ScheduleOption={schedule}
               KeySetFull={filteredKeys}

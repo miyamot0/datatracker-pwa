@@ -20,8 +20,12 @@ import { generateChartPreparation, generateTicks, GetUniqueConditions } from '..
 import { getShape } from '@/lib/shapes';
 import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 type Props = {
+  Group: string;
+  Individual: string;
+  Evaluation: string;
   FilteredSessions: SavedSessionResult[];
   ScheduleOption: SessionTerminationOptionsType;
   KeySetFull: ExpandedKeySetInstance[];
@@ -81,8 +85,17 @@ function OutputDisplay({ payloads }: { payloads: any[] }) {
   );
 }
 
-export default function ProportionFigureVisualization({ FilteredSessions, ScheduleOption, KeySetFull }: Props) {
+export default function ProportionFigureVisualization({
+  Group,
+  Individual,
+  Evaluation,
+  FilteredSessions,
+  ScheduleOption,
+  KeySetFull,
+}: Props) {
   const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
+  const navigator = useNavigate();
+
   const { Data, MinX, MaxX } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Duration');
 
   const preparedData = Data.map((data) => {
@@ -208,6 +221,14 @@ export default function ProportionFigureVisualization({ FilteredSessions, Schedu
                     dataKey={`${key.KeyDescription}`}
                     fill={FIGURE_PATH_COLORS[index_dynamic]}
                     shape={shape}
+                    onDoubleClick={(props) => {
+                      const stringIndex = `${props.session}_${props.Condition}_Primary`;
+                      const linkGenerated = `/session/${Group!}/${Individual!}/${Evaluation!}/history/${stringIndex}`;
+
+                      navigator(linkGenerated, {
+                        unstable_viewTransition: true,
+                      });
+                    }}
                     stroke="black"
                   />
                 </React.Fragment>

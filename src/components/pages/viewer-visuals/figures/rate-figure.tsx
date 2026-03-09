@@ -8,6 +8,7 @@ import { generateChartPreparation, generateTicks, GetUniqueConditions } from '..
 import { SavedSessionResult } from '@/lib/dtos';
 import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 export type ExpandedKeySetInstance = {
   KeyDescription: string;
@@ -15,14 +16,26 @@ export type ExpandedKeySetInstance = {
 };
 
 type Props = {
+  Group: string;
+  Individual: string;
+  Evaluation: string;
   FilteredSessions: SavedSessionResult[];
   ScheduleOption: SessionTerminationOptionsType;
   CTBKeys: ExpandedKeySetInstance[];
   KeySetFull: ExpandedKeySetInstance[];
 };
 
-export default function RateFigureVisualization({ FilteredSessions, ScheduleOption, CTBKeys, KeySetFull }: Props) {
+export default function RateFigureVisualization({
+  Group,
+  Individual,
+  Evaluation,
+  FilteredSessions,
+  ScheduleOption,
+  CTBKeys,
+  KeySetFull,
+}: Props) {
   const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
+  const navigator = useNavigate();
 
   let maxY = 0;
 
@@ -179,6 +192,14 @@ export default function RateFigureVisualization({ FilteredSessions, ScheduleOpti
                   <Scatter
                     data={condition.data}
                     animationDuration={100}
+                    onDoubleClick={(props) => {
+                      const stringIndex = `${props.session}_${props.Condition}_Primary`;
+                      const linkGenerated = `/session/${Group!}/${Individual!}/${Evaluation!}/history/${stringIndex}`;
+
+                      navigator(linkGenerated, {
+                        unstable_viewTransition: true,
+                      });
+                    }}
                     dataKey={`${key.KeyDescription}`}
                     fill={FIGURE_PATH_COLORS[index_dynamic]}
                     shape={shape}
