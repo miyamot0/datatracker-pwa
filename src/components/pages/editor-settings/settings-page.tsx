@@ -10,6 +10,8 @@ import {
   ElevatedPrivilegesType,
   ENFORCED_NAMING_OPTIONS,
   EnforceDataFolderType,
+  KEY_DISPLAY_OPTIONS,
+  KeyDisplayTypes,
   NOTIFICATION_SETTINGS_OPTIONS,
   NotificationSettingsTypes,
   POST_SESSION_BX_OPTIONS,
@@ -57,6 +59,39 @@ export default function SettingsPage() {
               <SelectContent>
                 <SelectGroup>
                   {THEME_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </SettingsFormItemWrapper>
+
+          <SettingsFormItemWrapper
+            Label="Options for Key Displays"
+            Description="Toggle standard or dense key layouts (i.e., many keys loaded)"
+          >
+            <Select
+              value={settings.KeyDisplay}
+              onValueChange={(value: KeyDisplayTypes) => {
+                const newSettings = {
+                  ...settings,
+                  KeyDisplay: value,
+                } satisfies ApplicationSettingsTypes;
+
+                setSettings(newSettings);
+                saveSettings(newSettings);
+
+                displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+              }}
+            >
+              <SelectTrigger className="w-full md:max-w-[250px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {KEY_DISPLAY_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>

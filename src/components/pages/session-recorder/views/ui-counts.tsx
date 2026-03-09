@@ -1,95 +1,95 @@
-import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { KeySet } from '@/types/keyset';
+import { KeySet, KeySetInstance } from '@/types/keyset';
 import { KeyManageType } from '../types/session-recorder-types';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 type Props = {
   Keyset: KeySet;
   KeysPressed: KeyManageType[];
+  Settings: ApplicationSettingsTypes;
 };
 
-export default function SessionRecorderTallies({ Keyset, KeysPressed }: Props) {
+const generateTableCols = (
+  Keys: KeySetInstance[],
+  KeysPressed: KeyManageType[],
+  NumCols: number,
+  KeyType: 'Frequency' | 'Duration',
+  IsSecondary: boolean = false,
+) => {
+  const isNarrow = NumCols > 1;
+  const KeyLabel = KeyType === 'Duration' ? (isNarrow ? '(D)' : '(Duration)') : isNarrow ? '(F)' : '(Frequency)';
+
+  return (
+    <Table
+      className={cn('', {
+        '': IsSecondary,
+      })}
+    >
+      <TableHeader>
+        <TableRow>
+          <TableHead className="text-primary">Key {KeyLabel}</TableHead>
+          <TableHead className="text-primary">Description</TableHead>
+          <TableHead className="text-primary">Count</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {Keys.map((key, index) => (
+          <TableRow key={index}>
+            <TableCell className="text-primary">{key.KeyName}</TableCell>
+            <TableCell className="text-primary">{key.KeyDescription}</TableCell>
+            <TableCell className="text-primary">
+              {KeysPressed.filter((rec_key) => rec_key.KeyCode === key.KeyCode).length}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+};
+
+const MIN_KEY_COUNT_FOR_SPLIT = 3;
+
+export default function SessionRecorderTallies({ Keyset, KeysPressed, Settings }: Props) {
+  const isDense = Settings.KeyDisplay === 'dense';
+
+  const frequency_keys = Keyset.FrequencyKeys.length;
+  const freqTablesToShow = isDense && frequency_keys > MIN_KEY_COUNT_FOR_SPLIT ? 2 : 1;
+  const freqHalf = Math.ceil(frequency_keys / freqTablesToShow);
+
+  const duration_keys = Keyset.DurationKeys.length;
+  const durTablesToShow = isDense && duration_keys > MIN_KEY_COUNT_FOR_SPLIT ? 2 : 1;
+  const durHalf = Math.ceil(duration_keys / durTablesToShow);
+
   return (
     <div className="grid grid-cols-2 w-full gap-4 select-none">
-      <div className="w-full border rounded shadow-xl bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-primary">Key (Frequency)</TableHead>
-              <TableHead className="text-primary">Description</TableHead>
-              <TableHead className="text-primary">Count</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Keyset.FrequencyKeys.map((key, index) => (
-              <TableRow key={index}>
-                <TableHead className="text-primary">{key.KeyName}</TableHead>
-                <TableHead className="text-primary">{key.KeyDescription}</TableHead>
-                <TableHead className="text-primary">
-                  {KeysPressed.filter((rec_key) => rec_key.KeyCode === key.KeyCode).length}
-                </TableHead>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <div
+        className={cn('w-full border rounded shadow-xl bg-card grid grid-cols-1 divide-x', {
+          'lg:grid-cols-2 ': freqTablesToShow == 2,
+        })}
+      >
+        {freqTablesToShow === 1 ? (
+          generateTableCols(Keyset.FrequencyKeys, KeysPressed, freqTablesToShow, 'Frequency')
+        ) : (
+          <>
+            {generateTableCols(Keyset.FrequencyKeys.slice(0, freqHalf), KeysPressed, freqTablesToShow, 'Frequency')}
+            {generateTableCols(Keyset.FrequencyKeys.slice(freqHalf), KeysPressed, freqTablesToShow, 'Frequency', true)}
+          </>
+        )}
       </div>
-      <div className="w-full border rounded shadow-xl bg-card">
-        <Table className="text-sm">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-primary">Key (Duration)</TableHead>
-              <TableHead className="text-primary">Description</TableHead>
-              <TableHead className="text-primary">Rounds</TableHead>
-              <TableHead className="text-primary">Duration</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Keyset.DurationKeys.map((key, index) => {
-              const matching_keys = KeysPressed.filter((rec_key) => rec_key.KeyCode === key.KeyCode);
-              const rounds = Math.floor(matching_keys.length / 2);
-
-              let active_duration = 0;
-
-              const is_odd = matching_keys.length % 2 === 1;
-
-              if (is_odd) {
-                const current_time = new Date();
-                const last_key = matching_keys.slice(-1)[0].TimePressed;
-
-                active_duration = (current_time.getTime() - last_key.getTime()) / 1000;
-              }
-
-              let duration = 0;
-
-              const offset = is_odd ? -1 : 0;
-
-              for (let i = 0; i < matching_keys.length + offset; i += 2) {
-                const start = matching_keys[i].TimePressed;
-                const end = matching_keys[i + 1].TimePressed;
-
-                duration += (end.getTime() - start.getTime()) / 1000;
-              }
-
-              return (
-                <TableRow key={index}>
-                  <TableHead className="text-primary">{key.KeyName}</TableHead>
-                  <TableHead className="text-primary">{key.KeyDescription}</TableHead>
-                  <TableHead className="text-primary">{rounds}</TableHead>
-                  <TableHead className="w-[150px] flex flex-row items-center text-primary">
-                    <div
-                      className={cn('transition-colors bg-transparent rounded-full px-2', {
-                        'bg-green-500 text-white': is_odd,
-                      })}
-                    >
-                      {duration.toFixed(2)}
-                      {is_odd ? ` + ${active_duration.toFixed(2)}` : ''}
-                    </div>
-                  </TableHead>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+      <div
+        className={cn('w-full border rounded shadow-xl bg-card grid grid-cols-1 divide-x', {
+          'grid-cols-2': durTablesToShow == 2,
+        })}
+      >
+        {durTablesToShow === 1 ? (
+          generateTableCols(Keyset.DurationKeys, KeysPressed, durTablesToShow, 'Duration')
+        ) : (
+          <>
+            {generateTableCols(Keyset.DurationKeys.slice(0, durHalf), KeysPressed, durTablesToShow, 'Duration')}
+            {generateTableCols(Keyset.DurationKeys.slice(durHalf), KeysPressed, durTablesToShow, 'Duration', true)}
+          </>
+        )}
       </div>
     </div>
   );

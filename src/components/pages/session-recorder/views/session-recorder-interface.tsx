@@ -490,7 +490,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
           </div>
         </div>
 
-        <SessionRecorderTallies KeysPressed={keysPressed} Keyset={Keyset} />
+        <SessionRecorderTallies KeysPressed={keysPressed} Keyset={Keyset} Settings={applicationSettings} />
 
         <div className="grid grid-cols-2 w-full gap-4 select-none">
           <SessionRecorderInstructions {...{ Evaluation, Settings }} />

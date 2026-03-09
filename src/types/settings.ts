@@ -10,6 +10,16 @@ export const THEME_OPTIONS: { value: ThemeTypes; label: string }[] = [
 ];
 
 /**
+ * Types for key display options
+ */
+export type KeyDisplayTypes = 'standard' | 'dense';
+
+export const KEY_DISPLAY_OPTIONS: { value: KeyDisplayTypes; label: string }[] = [
+  { value: 'standard', label: 'Standard' },
+  { value: 'dense', label: 'Dense' },
+];
+
+/**
  * Types for after-session recording preferences
  */
 export type PostSessionBxTypes = 'AwaitInput' | 'AutoAdvance';
@@ -85,6 +95,7 @@ export type ApplicationSettingsTypes = {
   EnforceDataFolderName: boolean;
   EnableToolTip: boolean;
   IsReturningUser: boolean;
+  KeyDisplay: KeyDisplayTypes;
 };
 
 export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
@@ -94,4 +105,5 @@ export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
   EnforceDataFolderName: true,
   EnableToolTip: true,
   IsReturningUser: true,
+  KeyDisplay: 'standard',
 };
