@@ -11,10 +11,13 @@ import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { DataTable } from '@/components/ui/data-table-common';
 import LoadingDisplay from '@/components/ui/loading-display';
 import { FolderHandleContextType } from '@/context/folder-context';
-import { useQueryKeyboardsMetaFixed } from '@/hooks/keyboards/useQueryKeyboardsMeta';
+import { queryClient } from '@/context/query-client';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
+import { mutateKeyboardsAll } from '@/queries/designer/mutate-keyboards-all';
+import { fetchKeyboardsAll } from '@/queries/designer/query-keyboards-all';
 import { KeySet, KeySetInstance } from '@/types/keyset';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { ImportIcon } from 'lucide-react';
 import { redirect, useLoaderData } from 'react-router-dom';
@@ -69,14 +72,25 @@ const remapKeysToString = (keys: KeySetInstance[]) => {
 export default function ViewerKeysetPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { Group, Individual, Context } = loaderResult;
-  const { data, status, error, importExistingKeysets } = useQueryKeyboardsMetaFixed(Group, Individual, Context);
 
-  if (status === 'loading') {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['/', Group, 'metaKeyboards'],
+    queryFn: () => fetchKeyboardsAll({ Context, Group, Individual }),
+  });
+
+  const mutateKeyboardsGlobal = useMutation({
+    mutationFn: mutateKeyboardsAll,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/', Group, 'metaKeyboards'], data);
+    },
+  });
+
+  if (isLoading) {
     return <LoadingDisplay />;
   }
 
-  if (error) {
-    return <div>{error}</div>;
+  if (error || !data) {
+    return <div>{error?.message}</div>;
   }
 
   const dataToDisplay: KeySetImportDisplayType[] = data.map((record) => {
@@ -132,7 +146,10 @@ export default function ViewerKeysetPage() {
             <CardTitle>Keyset Import</CardTitle>
             <CardDescription>Import a keyset file to use in your evaluations.</CardDescription>
           </div>
-          <BackButton Label="Back" />
+          <BackButton
+            Label="Back to KeySets"
+            Href={createHref({ type: 'Keysets', group: Group, individual: Individual })}
+          />
         </CardHeader>
 
         <CardContent className="flex flex-col gap-1.5">
@@ -156,15 +173,19 @@ export default function ViewerKeysetPage() {
             callback={(rows) => {
               const keysetsToImport = rows.map((row) => row.OriginalKeyset);
 
-              toast.promise(async () => await importExistingKeysets(keysetsToImport), {
-                loading: 'Deleting client folders...',
-                success: () => {
-                  return 'Client folders have been deleted successfully!';
+              toast.promise(
+                async () =>
+                  await mutateKeyboardsGlobal.mutateAsync({ Context, Group, Individual, KeySets: keysetsToImport }),
+                {
+                  loading: 'Importing keyset...',
+                  success: () => {
+                    return 'KeySets have been deleted successfully!';
+                  },
+                  error: () => {
+                    return 'An error occurred while importing KeySets.';
+                  },
                 },
-                error: () => {
-                  return 'An error occurred while deleting client folders.';
-                },
-              });
+              );
             }}
           />
         </CardContent>
