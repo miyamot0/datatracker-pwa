@@ -1,9 +1,8 @@
 import PageWrapper from '@/components/layout/page-wrapper';
 import UnauthorizedDisplay from './displays/unauthorized-display';
-import AuthorizedDisplay from './displays/authorized-display';
-import { useQueryGroupsFixed } from '@/hooks/groups/useQueryGroups';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { useLoaderData } from 'react-router-dom';
+import AuthorizedDisplayPage from './views/authorized-display';
 
 type LoaderResult = {
   AuthStatus: 'Authorized' | 'Unauthorized';
@@ -33,8 +32,6 @@ export default function DashboardPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { AuthStatus, Context } = loaderResult;
 
-  const { data, status, error, addGroup, copyDemoData, removeGroups } = useQueryGroupsFixed(Context);
-
   if (AuthStatus === 'Unauthorized') {
     return (
       <PageWrapper label={'Folder Authorization'} className="select-none">
@@ -43,16 +40,9 @@ export default function DashboardPage() {
     );
   }
 
-  if (status === 'error') return <div>{error}</div>;
-
   return (
     <PageWrapper label={'Group Dashboard'} className="select-none">
-      <AuthorizedDisplay
-        Groups={data}
-        AddGroup={async () => await addGroup()}
-        RemoveGroups={async (groups: string[]) => removeGroups(groups)}
-        AddExamples={async () => await copyDemoData()}
-      />
+      <AuthorizedDisplayPage Context={Context} />
     </PageWrapper>
   );
 }

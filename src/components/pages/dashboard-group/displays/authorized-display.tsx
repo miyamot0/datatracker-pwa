@@ -7,23 +7,30 @@ import { DataTable } from '../../../ui/data-table-common';
 import { Link } from 'react-router-dom';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { ColumnDef } from '@tanstack/react-table';
-import { FolderHandleContext } from '@/context/folder-context';
-import { useContext } from 'react';
+import { FolderHandleContextType } from '@/context/folder-context';
 import { toast } from 'sonner';
+import { useMutation } from '@tanstack/react-query';
+import { DemoDataFolderName, mutationGroups } from '@/queries/groups/mutate-groups';
+import { queryClient } from '@/App';
 
 type Props = {
   Groups: string[];
-  AddGroup: () => void;
-  RemoveGroups: (group: string[]) => void;
-  AddExamples: () => void;
+  Context: FolderHandleContextType;
 };
 
 type GroupTableRow = {
   Group: string;
 };
 
-export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroups, AddExamples }: Props) {
-  const { settings } = useContext(FolderHandleContext);
+export default function AuthorizedDisplay({ Groups, Context }: Props) {
+  const { settings } = Context;
+
+  const mutateGroups = useMutation({
+    mutationFn: mutationGroups,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/'], data);
+    },
+  });
 
   const columns: ColumnDef<GroupTableRow>[] = [
     {
@@ -78,15 +85,24 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroups, AddE
           })}
           callback={(rows) => {
             const groupNames = rows.map((row) => row.Group);
-            toast.promise(async () => await RemoveGroups(groupNames), {
-              loading: 'Deleting group folders...',
-              success: () => {
-                return 'Group folders have been deleted successfully!';
+
+            toast.promise(
+              async () =>
+                await mutateGroups.mutateAsync({
+                  Group: groupNames,
+                  Context,
+                  Action: 'Delete',
+                }),
+              {
+                loading: 'Removing folders...',
+                success: () => {
+                  return 'Folders removed.';
+                },
+                error: () => {
+                  return 'Folders were not removed.';
+                },
               },
-              error: () => {
-                return 'An error occurred while deleting group folders.';
-              },
-            });
+            );
           }}
           filterCol="Group"
           optionalButtons={
@@ -96,15 +112,31 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroups, AddE
                 size={'sm'}
                 className="shadow"
                 onClick={async () => {
-                  toast.promise(async () => await AddExamples(), {
-                    loading: 'Writing example data to disk...',
-                    success: () => {
-                      return 'Example data has been added! Create a separate "DataTracker" folder elsewhere on your disk to explore "Sync" functionality';
+                  const input = window.confirm(
+                    `This will create an ${DemoDataFolderName} folder for you. Do you wish to proceed?`,
+                  );
+
+                  if (!input) {
+                    throw new Error('Error: User cancelled action');
+                  }
+
+                  toast.promise(
+                    async () =>
+                      mutateGroups.mutateAsync({
+                        Group: [DemoDataFolderName],
+                        Context,
+                        Action: 'Demo',
+                      }),
+                    {
+                      loading: 'Writing example data to disk...',
+                      success: () => {
+                        return 'Example data has been added! Create a separate "DataTracker" folder elsewhere on your disk to explore "Sync" functionality';
+                      },
+                      error: () => {
+                        return 'Files were not written to disk.';
+                      },
                     },
-                    error: () => {
-                      return 'Files were not written to disk.';
-                    },
-                  });
+                  );
                 }}
               >
                 <DatabaseIcon className="mr-2 h-4 w-4" />
@@ -116,7 +148,37 @@ export default function AuthorizedDisplay({ Groups, AddGroup, RemoveGroups, AddE
                 size={'sm'}
                 className="shadow"
                 onClick={async () => {
-                  await AddGroup();
+                  const input = window.prompt('Enter a name for the new group.');
+
+                  if (!input) return;
+
+                  if (Groups.includes(input)) {
+                    alert('Group already exists.');
+                    return;
+                  }
+
+                  if (input.trim().length < 4) {
+                    alert('Group name must be at least 4 characters long.');
+                    return;
+                  }
+
+                  toast.promise(
+                    async () =>
+                      await mutateGroups.mutateAsync({
+                        Group: [input.trim()],
+                        Context,
+                        Action: 'Add',
+                      }),
+                    {
+                      loading: 'Creating folders...',
+                      success: () => {
+                        return 'New folder created.';
+                      },
+                      error: () => {
+                        return 'Folder was not created.';
+                      },
+                    },
+                  );
                 }}
               >
                 <FolderPlus className="mr-2 h-4 w-4" />
