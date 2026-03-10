@@ -113,7 +113,7 @@ export function useQueryKeyboardsFixed(Group: string, Client: string, Context: F
 
   const removeKeyboards = async (keyboards: KeySet[]) => {
     const confirm_delete = window.confirm(
-      `Are you sure you want to delete ${keyboards.length} keyboard(s)? This CANNOT be undone.`
+      `Are you sure you want to delete ${keyboards.length} keyboard(s)? This CANNOT be undone.`,
     );
 
     if (confirm_delete) {

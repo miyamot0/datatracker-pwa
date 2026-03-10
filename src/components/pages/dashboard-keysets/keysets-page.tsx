@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Copy, Edit2, ImportIcon, Plus } from 'lucide-react';
 import { Link, redirect, useLoaderData } from 'react-router-dom';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import { useQueryKeyboardsFixed } from '@/hooks/keyboards/useQueryKeyboards';
 import createHref from '@/lib/links';
 import LoadingDisplay from '@/components/ui/loading-display';
 import BackButton from '@/components/ui/back-button';
@@ -20,6 +19,10 @@ import { DataTable } from '@/components/ui/data-table-common';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
 import { toast } from 'sonner';
+import { fetchKeyboards } from '@/queries/designer/query-keyboards';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { mutationKeyboards } from '@/queries/designer/mutate-keyboards';
+import { queryClient } from '@/context/query-client';
 
 type LoaderResult = {
   Group: string;
@@ -54,18 +57,24 @@ export default function KeySetsPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { Group, Individual, Context } = loaderResult;
 
-  const { data, status, error, addKeyboard, removeKeyboards, duplicateKeyboard } = useQueryKeyboardsFixed(
-    Group,
-    Individual,
-    Context
-  );
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['/', Group, Individual, 'keyboards'],
+    queryFn: () => fetchKeyboards({ Context, Group, Individual }),
+  });
 
-  if (status === 'loading') {
+  const mutateKeyboards = useMutation({
+    mutationFn: mutationKeyboards,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/', Group, Individual, 'keyboards'], data);
+    },
+  });
+
+  if (isLoading) {
     return <LoadingDisplay />;
   }
 
-  if (error) {
-    return <div>{error}</div>;
+  if (error || !data) {
+    return <div>{error?.message}</div>;
   }
 
   const columns: ColumnDef<KeySet>[] = [
@@ -117,7 +126,35 @@ export default function KeySetsPage() {
               size={'sm'}
               variant={'outline'}
               onClick={async () => {
-                await duplicateKeyboard(row.original);
+                const new_key_set_name = window.prompt(
+                  'Enter the name for the duplicated KeySet:',
+                  `${row.original.Name}_Copy`,
+                );
+
+                if (!new_key_set_name) return;
+
+                if (new_key_set_name.trim().length < 4) return;
+
+                toast.promise(
+                  async () =>
+                    await mutateKeyboards.mutateAsync({
+                      Group,
+                      Individual,
+                      Keysets: [row.original.Name],
+                      Rename: new_key_set_name.trim(),
+                      Context,
+                      Action: 'Duplicate',
+                    }),
+                  {
+                    loading: 'Duplicating existing KeySet...',
+                    success: () => {
+                      return 'KeySet has been created successfully!';
+                    },
+                    error: () => {
+                      return 'An error occurred while creating KeySet.';
+                    },
+                  },
+                );
               }}
             >
               <Copy className="h-4 w-4 mr-2" />
@@ -171,15 +208,33 @@ export default function KeySetsPage() {
             columns={columns}
             data={data}
             callback={(rows) => {
-              toast.promise(async () => await removeKeyboards(rows), {
-                loading: 'Deleting KeySet files...',
-                success: () => {
-                  return 'KeySet files have been deleted successfully!';
+              const keySetNames = rows.map((k) => k.Name);
+
+              const confirm_delete = window.confirm(
+                `Are you sure you want to delete ${keySetNames.length} KeySets? This CANNOT be undone.`,
+              );
+
+              if (!confirm_delete) return;
+
+              toast.promise(
+                async () =>
+                  await mutateKeyboards.mutateAsync({
+                    Group,
+                    Individual,
+                    Keysets: keySetNames,
+                    Context,
+                    Action: 'Delete',
+                  }),
+                {
+                  loading: 'Deleting KeySet files...',
+                  success: () => {
+                    return 'KeySet files have been deleted successfully!';
+                  },
+                  error: () => {
+                    return 'An error occurred while deleting KeySet files.';
+                  },
                 },
-                error: () => {
-                  return 'An error occurred while deleting KeySet files.';
-                },
-              });
+              );
             }}
             filterCol="Name"
             optionalButtons={
@@ -190,7 +245,41 @@ export default function KeySetsPage() {
                     className="shadow"
                     size={'sm'}
                     onClick={async () => {
-                      await addKeyboard();
+                      const new_keyset_name = window && window.prompt('Enter the name of the keyset');
+
+                      if (!new_keyset_name) return;
+
+                      if (new_keyset_name.trim().length < 4) {
+                        window.alert('Keyset name must be at least 4 characters long');
+                        return;
+                      }
+
+                      const keySetMatch = data.find((ks) => ks.Name === new_keyset_name.trim());
+
+                      if (keySetMatch) {
+                        window.alert('A keyset with this name already exists. Please choose a different name.');
+                        return;
+                      }
+
+                      toast.promise(
+                        async () =>
+                          await mutateKeyboards.mutateAsync({
+                            Group,
+                            Individual,
+                            Keysets: [new_keyset_name.trim()],
+                            Context,
+                            Action: 'Add',
+                          }),
+                        {
+                          loading: 'Creating new KeySet',
+                          success: () => {
+                            return 'KeySet has been created successfully!';
+                          },
+                          error: () => {
+                            return 'An error occurred while creating KeySet.';
+                          },
+                        },
+                      );
                     }}
                   >
                     <Plus className="mr-2 h-4 w-4" />
