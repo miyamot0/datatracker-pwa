@@ -118,17 +118,7 @@ export const mutationKeyboards = async ({
     }
 
     case 'Rename': {
-      /*
-      if (!Rename) throw new Error('Rename is required for renaming');
-
-      await copyDirectory(individual_dir, Evaluations, Rename);
-
-      // Delete prior name
-      await individual_dir.removeEntry(Evaluations[0], { recursive: true });
-
-      // Rename entry
-      newEvaluationsList = newEvaluationsList.map((e) => (e === Evaluations[0] ? Rename : e));
-      */
+      // TODO: Rename keyboard in future
 
       break;
     }
