@@ -15,6 +15,7 @@ import { deserializeKeySet } from './keyset';
  * @param Individual The individual name
  * @param Evaluation The evaluation name
  * @returns The handle to the evaluation folder
+ * @deprecated
  */
 export const GetHandleEvaluationFolder = async (
   Handle: FileSystemDirectoryHandle,
@@ -57,6 +58,7 @@ export const GetHandleKeyboardsFolder = async (
  *
  * @param files The handle to the evaluation folder
  * @returns The settings file
+ * @deprecated
  */
 export const GetSettingsFileFromEvaluationFolder = async (files: FileSystemDirectoryHandle) => {
   try {

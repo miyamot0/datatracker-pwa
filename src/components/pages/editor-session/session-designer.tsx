@@ -1,14 +1,12 @@
 import { CleanUpString } from '@/lib/strings';
-import { GetSettingsFileFromEvaluationFolder } from '@/lib/files';
-import { SavedSettings } from '@/lib/dtos';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { redirect, useLoaderData } from 'react-router-dom';
 import createHref from '@/lib/links';
-import { GetHandleEvaluationFolder } from '@/lib/files';
 import SessionDesignerForm from './views/session-designer-form';
 import { useQuery } from '@tanstack/react-query';
 import { fetchConditions } from '@/queries/conditions/query-conditions';
 import { fetchKeyboards } from '@/queries/keysets/query-keyboards';
+import { fetchSessionParams } from '@/queries/session/query-session-params';
 
 type LoaderResult = {
   Group: string;
@@ -16,7 +14,6 @@ type LoaderResult = {
   Evaluation: string;
   Handle: FileSystemDirectoryHandle;
   Context: FolderHandleContextType;
-  SessionSettings: SavedSettings;
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -32,44 +29,19 @@ export const sessionDesignerPageLoader = (ctx: FolderHandleContextType) => {
       throw response;
     }
 
-    /*
-    // TODO: Formally remove
-    const { Keysets, KeysetFilenames, Conditions } = await pullSessionDesignerParametersFixed(
-      handle,
-      Group,
-      Individual,
-      Evaluation,
-    );
-    */
-
-    const files = await GetHandleEvaluationFolder(
-      handle,
-      CleanUpString(Group),
-      CleanUpString(Individual),
-      CleanUpString(Evaluation),
-    );
-
-    if (!files) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    const sessionSettings = await GetSettingsFileFromEvaluationFolder(files);
-
     return {
       Group: CleanUpString(Group),
       Individual: CleanUpString(Individual),
       Evaluation: CleanUpString(Evaluation),
       Handle: handle,
       Context: ctx,
-      SessionSettings: sessionSettings,
     } satisfies LoaderResult;
   };
 };
 
 export function SessionDesignerPage() {
   const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Evaluation, Context, Handle, SessionSettings } = loaderResult;
+  const { Group, Individual, Evaluation, Context, Handle } = loaderResult;
 
   const {
     data: dataCondition,
@@ -89,11 +61,20 @@ export function SessionDesignerPage() {
     queryFn: () => fetchKeyboards({ Context, Group, Individual }),
   });
 
-  if (loadingCondition || loadingKeySets) {
+  const {
+    data: dataSessionParams,
+    isLoading: loadingSessionParams,
+    error: errorSessionParams,
+  } = useQuery({
+    queryKey: ['/', Group, Individual, Evaluation, 'settings'],
+    queryFn: () => fetchSessionParams({ Context, Group, Individual, Evaluation }),
+  });
+
+  if (loadingCondition || loadingKeySets || loadingSessionParams) {
     return <div>Loading...</div>;
   }
 
-  if (errorCondition || errorKeySets || !dataCondition || !dataKeySets) {
+  if (errorCondition || errorKeySets || errorSessionParams || !dataCondition || !dataKeySets || !dataSessionParams) {
     return <div>Error</div>;
   }
 
@@ -106,7 +87,7 @@ export function SessionDesignerPage() {
       Conditions={dataCondition}
       Keysets={dataKeySets}
       Context={Context}
-      SessionSettings={SessionSettings}
+      SessionSettings={dataSessionParams}
     />
   );
 }
