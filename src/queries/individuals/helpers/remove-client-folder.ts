@@ -7,6 +7,7 @@ import { toast } from 'sonner';
  * @param Handle The handle to the file system
  * @param Group The group name
  * @param Individual The individual name
+ * @deprecated Cut out in favor of cache-able solution
  * @returns
  */
 export async function removeClientFolder(Handle: FileSystemDirectoryHandle, Group: string, Individual: string) {

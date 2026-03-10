@@ -1,3 +1,4 @@
+import { queryClient } from '@/App';
 import PageWrapper from '@/components/layout/page-wrapper';
 import BackButton from '@/components/ui/back-button';
 import { BuildGroupBreadcrumb } from '@/components/ui/breadcrumb-entries';
@@ -8,9 +9,11 @@ import { DataTable } from '@/components/ui/data-table-common';
 import LoadingDisplay from '@/components/ui/loading-display';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContextType } from '@/context/folder-context';
-import { useQueryClientsFixed } from '@/hooks/clients/useQueryClients';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
+import { mutationIndividuals } from '@/queries/individuals/mutate-individuals';
+import { fetchIndividuals } from '@/queries/individuals/query-individuals';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { FolderInput, FolderPlus } from 'lucide-react';
 import { Link, redirect, useLoaderData } from 'react-router-dom';
@@ -50,14 +53,24 @@ export default function ClientsPage() {
   const { Group, Context } = loaderResult;
   const { settings } = Context;
 
-  const { data, status, error, addClient, removeClients } = useQueryClientsFixed(Group, Context);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['/', Group],
+    queryFn: () => fetchIndividuals({ Context, Group }),
+  });
 
-  if (status === 'loading') {
+  const mutateIndividuals = useMutation({
+    mutationFn: mutationIndividuals,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/', Group], data);
+    },
+  });
+
+  if (isLoading) {
     return <LoadingDisplay />;
   }
 
-  if (error) {
-    return <div>{error}</div>;
+  if (error || !data) {
+    return <div>{error?.message}</div>;
   }
 
   const columns: ColumnDef<ClientTableRow>[] = [
@@ -67,7 +80,6 @@ export default function ClientsPage() {
     },
     {
       accessorKey: 'Actions',
-
       header: () => <div className="text-right">Client Folder Actions</div>,
       cell: ({ row }) => (
         <div className="flex flex-row justify-end">
@@ -119,15 +131,24 @@ export default function ClientsPage() {
             callback={(rows) => {
               const individualNames = rows.map((row) => row.Individual);
 
-              toast.promise(async () => await removeClients(individualNames), {
-                loading: 'Deleting client folders...',
-                success: () => {
-                  return 'Client folders have been deleted successfully!';
+              toast.promise(
+                async () =>
+                  await mutateIndividuals.mutateAsync({
+                    Group,
+                    Individual: individualNames,
+                    Context,
+                    Action: 'Delete',
+                  }),
+                {
+                  loading: 'Deleting client folders...',
+                  success: () => {
+                    return 'Client folders have been deleted successfully!';
+                  },
+                  error: () => {
+                    return 'An error occurred while deleting client folders.';
+                  },
                 },
-                error: () => {
-                  return 'An error occurred while deleting client folders.';
-                },
-              });
+              );
             }}
             filterCol="Individual"
             optionalButtons={
@@ -137,7 +158,38 @@ export default function ClientsPage() {
                   className="shadow"
                   size={'sm'}
                   onClick={async () => {
-                    await addClient();
+                    const input = window.prompt('Enter a name for the new group.');
+
+                    if (!input) return;
+
+                    if (data.includes(input.trim())) {
+                      window.alert('Client already exists.');
+                      return;
+                    }
+
+                    if (input.trim().length < 4) {
+                      window.alert('Client name must be at least 4 characters long.');
+                      return;
+                    }
+
+                    toast.promise(
+                      async () =>
+                        await mutateIndividuals.mutateAsync({
+                          Group,
+                          Individual: [input.trim()],
+                          Context,
+                          Action: 'Add',
+                        }),
+                      {
+                        loading: 'Creating individual folders...',
+                        success: () => {
+                          return 'New individual folder created!';
+                        },
+                        error: () => {
+                          return 'An error occurred while adding individual folder.';
+                        },
+                      },
+                    );
                   }}
                 >
                   <FolderPlus className="mr-2 h-4 w-4" />
