@@ -20,7 +20,7 @@ export const GetHandleEvaluationFolder = async (
   Handle: FileSystemDirectoryHandle,
   Group: string,
   Individual: string,
-  Evaluation: string
+  Evaluation: string,
 ) => {
   const individuals = await Handle.getDirectoryHandle(CleanUpString(Group), {
     create: true,
@@ -42,7 +42,7 @@ export const GetHandleEvaluationFolder = async (
 export const GetHandleKeyboardsFolder = async (
   Handle: FileSystemDirectoryHandle,
   Group: string,
-  Individual: string
+  Individual: string,
 ) => {
   const individuals_folder = await Handle.getDirectoryHandle(CleanUpString(Group), { create: true });
   const keyboards_folder = await individuals_folder.getDirectoryHandle(CleanUpString(Individual), { create: true });
@@ -85,7 +85,7 @@ export const GetResultsFromEvaluationFolder = async (
   Handle: FileSystemDirectoryHandle,
   Group: string,
   Individual: string,
-  Evaluation: string
+  Evaluation: string,
 ) => {
   const result = await castSavedFilesToSessionResults(Handle, Group, Individual, Evaluation);
 
@@ -114,13 +114,14 @@ export const GetResultsFromEvaluationFolder = async (
  * @param Group The group name
  * @param Individual The individual name
  * @param Evaluation The evaluation name
+ * @deprecated
  *
  */
 export async function pullSessionDesignerParametersFixed(
   Handle: FileSystemDirectoryHandle,
   Group: string,
   Individual: string,
-  Evaluation: string
+  Evaluation: string,
 ) {
   const perms = await Handle.requestPermission({ mode: 'readwrite' });
 
@@ -183,13 +184,13 @@ export async function pullSessionSettings(
   Handle: FileSystemDirectoryHandle,
   Group: string,
   Individual: string,
-  Evaluation: string
+  Evaluation: string,
 ) {
   const files = await GetHandleEvaluationFolder(
     Handle,
     CleanUpString(Group),
     CleanUpString(Individual),
-    CleanUpString(Evaluation)
+    CleanUpString(Evaluation),
   );
 
   if (!files) throw new Error('No files found for this evaluation');
@@ -210,7 +211,7 @@ export async function pullSessionOutcomesFiles(
   Handle: FileSystemDirectoryHandle,
   Group: string,
   Individual: string,
-  Evaluation: string
+  Evaluation: string,
 ) {
   const individuals = await Handle.getDirectoryHandle(CleanUpString(Group), {
     create: true,
@@ -256,13 +257,13 @@ export async function saveSessionSettingsToFile(
   Group: string,
   Individual: string,
   Evaluation: string,
-  Settings: SavedSettings
+  Settings: SavedSettings,
 ) {
   const files = await GetHandleEvaluationFolder(
     Handle,
     CleanUpString(Group),
     CleanUpString(Individual),
-    CleanUpString(Evaluation)
+    CleanUpString(Evaluation),
   );
 
   if (!files) throw new Error('No directory found for this evaluation');
@@ -313,25 +314,25 @@ export async function saveSessionOutcomesToFile(
   timerSecondsOne: number,
   timerSecondsTwo: number,
   timerSecondsThree: number,
-  endedEarly = false
+  endedEarly = false,
 ) {
   const client_evaluations_folder = await GetHandleEvaluationFolder(
     Handle,
     CleanUpString(group),
     CleanUpString(client),
-    CleanUpString(evaluation)
+    CleanUpString(evaluation),
   );
 
   const relevant_condition_folder = await client_evaluations_folder.getDirectoryHandle(
     CleanUpString(Settings.Condition),
     {
       create: true,
-    }
+    },
   );
 
   const session_output_file = await relevant_condition_folder.getFileHandle(
     `${Settings.Session}_${Settings.Condition}_${Settings.Role}.json`,
-    { create: true }
+    { create: true },
   );
 
   const saved_session_data = {
@@ -367,7 +368,7 @@ export async function castSavedFilesToSessionResults(
   Handle: FileSystemDirectoryHandle,
   Group: string,
   Individual: string,
-  Evaluation: string
+  Evaluation: string,
 ) {
   const files = await pullSessionOutcomesFiles(Handle, Group, Individual, Evaluation);
 

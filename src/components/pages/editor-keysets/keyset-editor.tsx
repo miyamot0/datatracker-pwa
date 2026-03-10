@@ -17,10 +17,10 @@ import LoadingDisplay from '@/components/ui/loading-display';
 import createHref from '@/lib/links';
 import BackButton from '@/components/ui/back-button';
 import { FolderHandleContextType } from '@/context/folder-context';
-import { fetchKeyboards } from '@/queries/designer/query-keyboards';
+import { fetchKeyboards } from '@/queries/keysets/query-keyboards';
 import { KeySetInstance, KeySet } from '@/types/keyset';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { mutationKeyboards } from '@/queries/designer/mutate-keyboards';
+import { mutationKeyboards } from '@/queries/keysets/mutate-keyboards';
 import { queryClient } from '@/context/query-client';
 
 type LoaderResult = {

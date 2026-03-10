@@ -18,7 +18,7 @@ import {
   SessionTerminationOptionsDescriptions,
 } from '@/forms/schema/session-designer-schema';
 import { CleanUpString } from '@/lib/strings';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -39,6 +39,9 @@ import { useNavigate } from 'react-router-dom';
 import createHref from '@/lib/links';
 import { GetHandleEvaluationFolder } from '@/lib/files';
 import BackButton from '@/components/ui/back-button';
+import { mutationConditions } from '@/queries/conditions/mutate-conditions';
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/context/query-client';
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
@@ -47,8 +50,6 @@ type Props = {
   Evaluation: string;
   Conditions: string[];
   Keysets: KeySet[];
-  KeysetFilenames: string[];
-  SetConditions: Dispatch<SetStateAction<string[]>>;
   Context: FolderHandleContextType;
   SessionSettings: SavedSettings;
 };
@@ -60,13 +61,18 @@ export default function SessionDesigner({
   Evaluation,
   Conditions,
   Keysets,
-  KeysetFilenames,
-  SetConditions,
   SessionSettings,
   Context,
 }: Props) {
-  const { handle, settings } = Context;
+  const { settings } = Context;
   const navigate = useNavigate();
+
+  const mutateConditions = useMutation({
+    mutationFn: mutationConditions,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/', Group, Individual, Evaluation, 'conditions'], data);
+    },
+  });
 
   const form = useForm<SessionDesignerSchemaType>({
     resolver: zodResolver(SessionDesignerSchema),
@@ -177,18 +183,14 @@ export default function SessionDesigner({
                     }
 
                     if (input.trim().length > 0) {
-                      const evaluations_folder = await GetHandleEvaluationFolder(
-                        handle!,
+                      await mutateConditions.mutateAsync({
                         Group,
                         Individual,
                         Evaluation,
-                      );
-
-                      await evaluations_folder.getDirectoryHandle(input, {
-                        create: true,
+                        Condition: input.trim(),
+                        Context,
+                        Action: 'Add',
                       });
-
-                      SetConditions([...Conditions, input.trim()]);
 
                       displayConditionalNotification(
                         settings,
@@ -274,9 +276,9 @@ export default function SessionDesigner({
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Available KeySet Files</SelectLabel>
-                            {KeysetFilenames.map((keyset) => (
-                              <SelectItem key={keyset} value={keyset}>
-                                {keyset}
+                            {Keysets.map((k) => (
+                              <SelectItem key={k.id} value={k.Name}>
+                                {k.Name}
                               </SelectItem>
                             ))}
                           </SelectGroup>

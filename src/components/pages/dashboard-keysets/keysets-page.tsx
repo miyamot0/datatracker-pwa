@@ -19,9 +19,9 @@ import { DataTable } from '@/components/ui/data-table-common';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
 import { toast } from 'sonner';
-import { fetchKeyboards } from '@/queries/designer/query-keyboards';
+import { fetchKeyboards } from '@/queries/keysets/query-keyboards';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { mutationKeyboards } from '@/queries/designer/mutate-keyboards';
+import { mutationKeyboards } from '@/queries/keysets/mutate-keyboards';
 import { queryClient } from '@/context/query-client';
 
 type LoaderResult = {

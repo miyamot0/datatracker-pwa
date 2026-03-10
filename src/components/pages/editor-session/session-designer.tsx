@@ -1,13 +1,14 @@
 import { CleanUpString } from '@/lib/strings';
-import { useState } from 'react';
-import { GetSettingsFileFromEvaluationFolder, pullSessionDesignerParametersFixed } from '@/lib/files';
+import { GetSettingsFileFromEvaluationFolder } from '@/lib/files';
 import { SavedSettings } from '@/lib/dtos';
-import { KeySet } from '@/types/keyset';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { redirect, useLoaderData } from 'react-router-dom';
 import createHref from '@/lib/links';
 import { GetHandleEvaluationFolder } from '@/lib/files';
 import SessionDesignerForm from './views/session-designer-form';
+import { useQuery } from '@tanstack/react-query';
+import { fetchConditions } from '@/queries/conditions/query-conditions';
+import { fetchKeyboards } from '@/queries/keysets/query-keyboards';
 
 type LoaderResult = {
   Group: string;
@@ -15,9 +16,6 @@ type LoaderResult = {
   Evaluation: string;
   Handle: FileSystemDirectoryHandle;
   Context: FolderHandleContextType;
-  Keysets: KeySet[];
-  KeysetFilenames: string[];
-  Conditions: string[];
   SessionSettings: SavedSettings;
 };
 
@@ -34,18 +32,21 @@ export const sessionDesignerPageLoader = (ctx: FolderHandleContextType) => {
       throw response;
     }
 
+    /*
+    // TODO: Formally remove
     const { Keysets, KeysetFilenames, Conditions } = await pullSessionDesignerParametersFixed(
       handle,
       Group,
       Individual,
-      Evaluation
+      Evaluation,
     );
+    */
 
     const files = await GetHandleEvaluationFolder(
       handle,
       CleanUpString(Group),
       CleanUpString(Individual),
-      CleanUpString(Evaluation)
+      CleanUpString(Evaluation),
     );
 
     if (!files) {
@@ -59,9 +60,6 @@ export const sessionDesignerPageLoader = (ctx: FolderHandleContextType) => {
       Group: CleanUpString(Group),
       Individual: CleanUpString(Individual),
       Evaluation: CleanUpString(Evaluation),
-      Keysets,
-      KeysetFilenames,
-      Conditions,
       Handle: handle,
       Context: ctx,
       SessionSettings: sessionSettings,
@@ -71,21 +69,42 @@ export const sessionDesignerPageLoader = (ctx: FolderHandleContextType) => {
 
 export function SessionDesignerPage() {
   const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Evaluation, Keysets, KeysetFilenames, Conditions, Context, Handle, SessionSettings } =
-    loaderResult;
+  const { Group, Individual, Evaluation, Context, Handle, SessionSettings } = loaderResult;
 
-  const [conditions, setConditions] = useState<string[]>(Conditions);
+  const {
+    data: dataCondition,
+    isLoading: loadingCondition,
+    error: errorCondition,
+  } = useQuery({
+    queryKey: ['/', Group, Individual, Evaluation, 'conditions'],
+    queryFn: () => fetchConditions(Context, Group, Individual, Evaluation),
+  });
+
+  const {
+    data: dataKeySets,
+    isLoading: loadingKeySets,
+    error: errorKeySets,
+  } = useQuery({
+    queryKey: ['/', Group, Individual, 'keyboards'],
+    queryFn: () => fetchKeyboards({ Context, Group, Individual }),
+  });
+
+  if (loadingCondition || loadingKeySets) {
+    return <div>Loading...</div>;
+  }
+
+  if (errorCondition || errorKeySets || !dataCondition || !dataKeySets) {
+    return <div>Error</div>;
+  }
 
   return (
     <SessionDesignerForm
       Handle={Handle}
       Group={Group}
-      Individual={CleanUpString(Individual)}
-      Evaluation={CleanUpString(Evaluation)}
-      Conditions={conditions}
-      Keysets={Keysets}
-      KeysetFilenames={KeysetFilenames.map((keyset) => keyset.replace('.json', ''))}
-      SetConditions={setConditions}
+      Individual={Individual}
+      Evaluation={Evaluation}
+      Conditions={dataCondition}
+      Keysets={dataKeySets}
       Context={Context}
       SessionSettings={SessionSettings}
     />
