@@ -1,4 +1,3 @@
-import { queryClient } from '@/App';
 import PageWrapper from '@/components/layout/page-wrapper';
 import BackButton from '@/components/ui/back-button';
 import { BuildGroupBreadcrumb } from '@/components/ui/breadcrumb-entries';
@@ -8,7 +7,8 @@ import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { DataTable } from '@/components/ui/data-table-common';
 import LoadingDisplay from '@/components/ui/loading-display';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import { FolderHandleContextType } from '@/context/folder-context';
+import { FolderHandleContextType, } from '@/context/folder-context';
+import { queryClient } from '@/context/query-client';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { mutationIndividuals } from '@/queries/individuals/mutate-individuals';

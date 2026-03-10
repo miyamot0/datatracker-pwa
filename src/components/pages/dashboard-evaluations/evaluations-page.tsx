@@ -16,10 +16,12 @@ import {
 import LoadingDisplay from '@/components/ui/loading-display';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContextType } from '@/context/folder-context';
-import { useQueryEvaluationsFixed } from '@/hooks/evaluations/useQueryEvaluations';
-import { GetHandleEvaluationFolder } from '@/lib/files';
+import { queryClient } from '@/context/query-client';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
+import { mutationEvaluations } from '@/queries/evaluations/mutate-evaluations';
+import { fetchEvaluations } from '@/queries/evaluations/query-evaluations';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ColumnDef, Row } from '@tanstack/react-table';
 import {
   ChartColumnIcon,
@@ -72,20 +74,27 @@ type EvaluationTableRow = {
 
 export default function EvaluationsPage() {
   const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Context, Handle } = loaderResult;
+  const { Group, Individual, Context } = loaderResult;
   const { settings } = Context;
-  const { data, status, error, addEvaluation, removeEvaluations, mutateEvaluation, refresh } = useQueryEvaluationsFixed(
-    Group,
-    Individual,
-    Context,
-  );
 
-  if (status === 'loading') {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['/', Group, Individual],
+    queryFn: () => fetchEvaluations({ Context, Group, Individual }),
+  });
+
+  const mutateEvaluations = useMutation({
+    mutationFn: mutationEvaluations,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/', Group, Individual], data);
+    },
+  });
+
+  if (isLoading) {
     return <LoadingDisplay />;
   }
 
-  if (error) {
-    return <div>{error}</div>;
+  if (error || !data) {
+    return <div>{error?.message}</div>;
   }
 
   const DynamicButtonList = ({ row }: { row: Row<EvaluationTableRow> }) => {
@@ -191,65 +200,73 @@ export default function EvaluationsPage() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={async () => {
-                    const duplicate_action = async () => {
-                      const new_evaluation_name = window.prompt(
-                        'Enter the name for the duplicated evaluation:',
-                        `${row.original.Evaluation}_Copy`,
-                      );
+                    const new_evaluation_name = window.prompt(
+                      'Enter the name for the duplicated evaluation:',
+                      `${row.original.Evaluation}_Copy`,
+                    );
 
-                      if (!new_evaluation_name) return;
+                    if (!new_evaluation_name) return;
 
-                      const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
-                      const client_dir = await group_dir.getDirectoryHandle(CleanUpString(Individual));
-                      const new_eval_dir = await client_dir.getDirectoryHandle(new_evaluation_name, { create: true });
-                      const old_eval_dir = await GetHandleEvaluationFolder(
-                        Handle,
-                        Group,
-                        Individual,
-                        row.original.Evaluation,
-                      );
+                    if (new_evaluation_name.trim().length < 4) return;
 
-                      for await (const entry of old_eval_dir.values()) {
-                        if (entry.kind === 'directory') {
-                          const old_eval_sub_dir = await old_eval_dir.getDirectoryHandle(entry.name, { create: false });
-                          const new_eval_sub_dir = await new_eval_dir.getDirectoryHandle(entry.name, { create: true });
-
-                          const child_files = entry.values();
-
-                          for await (const child_entry of child_files) {
-                            if (child_entry.kind === 'file') {
-                              const og_file_handle = await old_eval_sub_dir.getFileHandle(child_entry.name);
-                              const og_file_data = await og_file_handle.getFile();
-
-                              const new_file_handle = await new_eval_sub_dir.getFileHandle(child_entry.name, {
-                                create: true,
-                              });
-                              const writable = await new_file_handle.createWritable();
-                              await writable.write(og_file_data);
-                              await writable.close();
-                            }
-                          }
-                        }
-                      }
-
-                      refresh();
-                    };
-
-                    toast.promise(async () => await duplicate_action(), {
-                      loading: 'Duplicating existing evaluation...',
-                      success: () => {
-                        return 'Evaluation folders have been created successfully!';
+                    toast.promise(
+                      async () =>
+                        await mutateEvaluations.mutateAsync({
+                          Group,
+                          Individual,
+                          Evaluations: [row.original.Evaluation],
+                          Rename: new_evaluation_name,
+                          Context,
+                          Action: 'Duplicate',
+                        }),
+                      {
+                        loading: 'Duplicating existing evaluation...',
+                        success: () => {
+                          return 'Evaluation folders have been created successfully!';
+                        },
+                        error: () => {
+                          return 'An error occurred while creating evaluation folders.';
+                        },
                       },
-                      error: () => {
-                        return 'An error occurred while creating evaluation folders.';
-                      },
-                    });
+                    );
                   }}
                 >
                   <Copy className="mr-2 h-4 w-4" />
                   Duplicate Evaluation
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => mutateEvaluation(row.original.Evaluation)}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    const new_evaluation_name = window.prompt(
+                      'Enter a new name for the evaluation:',
+                      `${row.original.Evaluation}`,
+                    );
+
+                    if (!new_evaluation_name) return;
+
+                    if (new_evaluation_name.trim().length < 4) return;
+
+                    toast.promise(
+                      async () =>
+                        await mutateEvaluations.mutateAsync({
+                          Group,
+                          Individual,
+                          Evaluations: [row.original.Evaluation],
+                          Rename: new_evaluation_name,
+                          Context,
+                          Action: 'Rename',
+                        }),
+                      {
+                        loading: 'Renaming existing evaluation...',
+                        success: () => {
+                          return 'Evaluation folders have been renamed successfully!';
+                        },
+                        error: () => {
+                          return 'An error occurred while renaming evaluation folders.';
+                        },
+                      },
+                    );
+                  }}
+                >
                   <Edit2 className="mr-2 h-4 w-4" />
                   Rename Evaluation
                 </DropdownMenuItem>
@@ -311,15 +328,31 @@ export default function EvaluationsPage() {
             callback={(rows) => {
               const evaluationNames = rows.map((row) => row.Evaluation);
 
-              toast.promise(async () => await removeEvaluations(evaluationNames), {
-                loading: 'Deleting evaluation folders...',
-                success: () => {
-                  return 'Evaluation folders have been deleted successfully!';
+              const confirm_delete = window.confirm(
+                `Are you sure you want to delete ${evaluationNames.length} evaluations? This CANNOT be undone.`,
+              );
+
+              if (!confirm_delete) return;
+
+              toast.promise(
+                async () =>
+                  await mutateEvaluations.mutateAsync({
+                    Group,
+                    Individual,
+                    Evaluations: evaluationNames,
+                    Context,
+                    Action: 'Delete',
+                  }),
+                {
+                  loading: 'Deleting evaluation folders...',
+                  success: () => {
+                    return 'Evaluation folders have been deleted successfully!';
+                  },
+                  error: () => {
+                    return 'An error occurred while deleting evaluation folders.';
+                  },
                 },
-                error: () => {
-                  return 'An error occurred while deleting evaluation folders.';
-                },
-              });
+              );
             }}
             filterCol="Evaluation"
             optionalButtons={
@@ -330,7 +363,39 @@ export default function EvaluationsPage() {
                     size={'sm'}
                     className="shadow"
                     onClick={async () => {
-                      await addEvaluation();
+                      const input = window.prompt('Enter a name for the new evaluation.');
+
+                      if (!input) return;
+
+                      if (data.includes(input.trim())) {
+                        alert('Evaluation already exists.');
+                        return;
+                      }
+
+                      if (input.trim().length < 4) {
+                        alert('Evaluation name must be at least 4 characters long.');
+                        return;
+                      }
+
+                      toast.promise(
+                        async () =>
+                          await mutateEvaluations.mutateAsync({
+                            Group,
+                            Individual,
+                            Evaluations: [input.trim()],
+                            Context,
+                            Action: 'Add',
+                          }),
+                        {
+                          loading: 'Creating evaluation folders...',
+                          success: () => {
+                            return 'Evaluation folders have been created successfully!';
+                          },
+                          error: () => {
+                            return 'An error occurred while creating the evaluation folder.';
+                          },
+                        },
+                      );
                     }}
                   >
                     <FilePlus className="w-4 h-4 mr-2" />

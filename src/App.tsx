@@ -35,7 +35,8 @@ import ResultsProportionVisualsPage, {
   resultsViewerProportion,
 } from './components/pages/viewer-visuals/results-proportion-visuals-page';
 import SessionManagerPage, { sessionManagerLoader } from './components/pages/session-manager/session-manager-page';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './context/query-client';
 
 const AppRoot = () => {
   const dataContext = useContext(FolderHandleContext) as unknown as FolderHandleContextType;
@@ -116,8 +117,6 @@ const AppRoot = () => {
 
   return <RouterProvider future={{ v7_startTransition: true }} router={router} />;
 };
-
-export const queryClient = new QueryClient();
 
 function App() {
   return (

@@ -11,7 +11,7 @@ import { FolderHandleContextType } from '@/context/folder-context';
 import { toast } from 'sonner';
 import { useMutation } from '@tanstack/react-query';
 import { DemoDataFolderName, mutationGroups } from '@/queries/groups/mutate-groups';
-import { queryClient } from '@/App';
+import { queryClient } from '@/context/query-client';
 
 type Props = {
   Groups: string[];
@@ -85,6 +85,14 @@ export default function AuthorizedDisplay({ Groups, Context }: Props) {
           })}
           callback={(rows) => {
             const groupNames = rows.map((row) => row.Group);
+
+            const confirm_delete = window.confirm(
+              `Are you sure you want to delete ${groupNames.length} groups? This CANNOT be undone.`,
+            );
+
+            if (!confirm_delete) {
+              return;
+            }
 
             toast.promise(
               async () =>

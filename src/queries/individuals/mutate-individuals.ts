@@ -1,7 +1,7 @@
-import { queryClient } from '@/App';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { fetchIndividuals } from './query-individuals';
 import { CleanUpString } from '@/lib/strings';
+import { queryClient } from '@/context/query-client';
 
 export const mutationIndividuals = async ({
   Group,
@@ -20,7 +20,7 @@ export const mutationIndividuals = async ({
   });
 
   if (!individuals) {
-    throw new Error('Stock not found');
+    throw new Error('Individuals not found');
   }
 
   let newIndividualList = individuals;

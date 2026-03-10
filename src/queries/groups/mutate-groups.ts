@@ -1,6 +1,6 @@
-import { queryClient } from '@/App';
 import { fetchGroups } from './query-groups';
 import { FolderHandleContextType } from '@/context/folder-context';
+import { queryClient } from '@/context/query-client';
 import { DataExampleFiles } from '@/lib/data';
 
 export const DemoDataFolderName = 'Example DataTracker Group';
@@ -20,7 +20,7 @@ export const mutationGroups = async ({
   });
 
   if (!groups) {
-    throw new Error('Stock not found');
+    throw new Error('Groups not found');
   }
 
   let newGroups = groups;
@@ -29,6 +29,7 @@ export const mutationGroups = async ({
     await Context.handle!.getDirectoryHandle(Group[0], { create: true });
     newGroups.push(Group[0]);
   } else if (Action == 'Delete') {
+    await Context.handle!.removeEntry(Group[0], { recursive: true });
     newGroups = newGroups.filter((g) => g != Group[0]);
   } else if (Action == 'Demo') {
     await copyDemoData(newGroups, Context);
