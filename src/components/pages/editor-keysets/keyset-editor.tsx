@@ -13,11 +13,15 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { redirect, useLoaderData } from 'react-router-dom';
 import { CleanUpString } from '@/lib/strings';
-import { useQuerySingleKeyboardFixed } from '@/hooks/keyboards/useQuerySingleKeyboard';
 import LoadingDisplay from '@/components/ui/loading-display';
 import createHref from '@/lib/links';
 import BackButton from '@/components/ui/back-button';
 import { FolderHandleContextType } from '@/context/folder-context';
+import { fetchKeyboards } from '@/queries/designer/query-keyboards';
+import { KeySetInstance, KeySet } from '@/types/keyset';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { mutationKeyboards } from '@/queries/designer/mutate-keyboards';
+import { queryClient } from '@/context/query-client';
 
 type LoaderResult = {
   Group: string;
@@ -54,12 +58,17 @@ export default function KeySetEditor() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { Group, Individual, KeySet, Context } = loaderResult;
 
-  const { data, error, status, handle, mutateKeySet, addKeyCallback } = useQuerySingleKeyboardFixed(
-    Group,
-    Individual,
-    KeySet,
-    Context,
-  );
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['/', Group, Individual, 'keyboards'],
+    queryFn: () => fetchKeyboards({ Context, Group, Individual }),
+  });
+
+  const mutateKeyboards = useMutation({
+    mutationFn: mutationKeyboards,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/', Group, Individual, 'keyboards'], data);
+    },
+  });
 
   const moveItemUp = <T,>(array: T[], index: number): T[] => {
     if (index === 0) return array; // Already at the top
@@ -75,17 +84,55 @@ export default function KeySetEditor() {
     return newArray;
   };
 
-  if (status === 'loading') {
+  if (isLoading) {
     return <LoadingDisplay />;
   }
 
-  if (error) {
-    return <div>{error}</div>;
+  if (error || !data) {
+    return <div>{error?.message}</div>;
   }
 
-  if (!Group || !Individual || !KeySet || !handle || !data) {
+  if (!Group || !Individual || !KeySet || !data) {
     throw new Error('Params missing.');
   }
+
+  const relevantKeySet = data.find((ks) => ks.Name === KeySet);
+
+  if (!relevantKeySet) {
+    return <div>KeySet not found.</div>;
+  }
+
+  const addKeyCallback = async (base_keyset: KeySet, new_key: KeySetInstance, type: 'Duration' | 'Frequency') => {
+    let new_state = {
+      ...base_keyset,
+      lastModified: new Date(),
+    };
+
+    if (type === 'Duration') {
+      new_state = {
+        ...new_state,
+        DurationKeys: [...base_keyset.DurationKeys, new_key],
+      };
+    } else {
+      new_state = {
+        ...new_state,
+        FrequencyKeys: [...base_keyset.FrequencyKeys, new_key],
+      };
+    }
+
+    await mutateKeySet(new_state);
+  };
+
+  const mutateKeySet = async (new_keyset: KeySet) => {
+    await mutateKeyboards.mutateAsync({
+      Group,
+      Individual,
+      Keysets: [],
+      NewKeySet: new_keyset,
+      Context,
+      Action: 'Update',
+    });
+  };
 
   return (
     <PageWrapper
@@ -107,9 +154,9 @@ export default function KeySetEditor() {
             </div>
 
             <div className="flex flex-row gap-2">
-              <FrequencyDialogKeyCreator KeySet={data} Callback={addKeyCallback} />
+              <FrequencyDialogKeyCreator KeySet={relevantKeySet} Callback={addKeyCallback} />
 
-              <BackButton Label="Back" />
+              <BackButton Label="Back" Href={createHref({ type: 'Keysets', group: Group, individual: Individual })} />
             </div>
           </CardHeader>
           <CardContent className="flex-1">
@@ -122,7 +169,7 @@ export default function KeySetEditor() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.FrequencyKeys.map((key, index) => (
+                {relevantKeySet.FrequencyKeys.map((key, index) => (
                   <TableRow key={index}>
                     <TableCell>{key.KeyDescription}</TableCell>
                     <TableCell>{key.KeyName}</TableCell>
@@ -132,9 +179,9 @@ export default function KeySetEditor() {
                         variant={'outline'}
                         disabled={index === 0}
                         onClick={() => {
-                          const newFrequencyKeys = moveItemUp(data.FrequencyKeys, index);
+                          const newFrequencyKeys = moveItemUp(relevantKeySet.FrequencyKeys, index);
                           const new_state = {
-                            ...data,
+                            ...relevantKeySet,
                             FrequencyKeys: newFrequencyKeys,
                           };
                           mutateKeySet(new_state);
@@ -146,11 +193,11 @@ export default function KeySetEditor() {
                       <Button
                         size={'sm'}
                         variant={'outline'}
-                        disabled={index === data.FrequencyKeys.length - 1}
+                        disabled={index === relevantKeySet.FrequencyKeys.length - 1}
                         onClick={() => {
-                          const newFrequencyKeys = moveItemDown(data.FrequencyKeys, index);
+                          const newFrequencyKeys = moveItemDown(relevantKeySet.FrequencyKeys, index);
                           const new_state = {
-                            ...data,
+                            ...relevantKeySet,
                             FrequencyKeys: newFrequencyKeys,
                           };
                           mutateKeySet(new_state);
@@ -169,8 +216,8 @@ export default function KeySetEditor() {
                           if (!confirmation) return;
 
                           const new_state = {
-                            ...data,
-                            FrequencyKeys: data.FrequencyKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
+                            ...relevantKeySet,
+                            FrequencyKeys: relevantKeySet.FrequencyKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
                           };
 
                           mutateKeySet(new_state);
@@ -195,9 +242,9 @@ export default function KeySetEditor() {
             </div>
 
             <div className="flex flex-row gap-2">
-              <DurationDialogKeyCreator KeySet={data} Callback={addKeyCallback} />
+              <DurationDialogKeyCreator KeySet={relevantKeySet} Callback={addKeyCallback} />
 
-              <BackButton Label="Back" />
+              <BackButton Label="Back" Href={createHref({ type: 'Keysets', group: Group, individual: Individual })} />
             </div>
           </CardHeader>
           <CardContent className="flex-1">
@@ -210,7 +257,7 @@ export default function KeySetEditor() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.DurationKeys.map((key, index) => (
+                {relevantKeySet.DurationKeys.map((key, index) => (
                   <TableRow key={index}>
                     <TableCell>{key.KeyDescription}</TableCell>
                     <TableCell>{key.KeyName}</TableCell>
@@ -220,9 +267,9 @@ export default function KeySetEditor() {
                         variant={'outline'}
                         disabled={index === 0}
                         onClick={() => {
-                          const newDurationKeys = moveItemUp(data.DurationKeys, index);
+                          const newDurationKeys = moveItemUp(relevantKeySet.DurationKeys, index);
                           const new_state = {
-                            ...data,
+                            ...relevantKeySet,
                             DurationKeys: newDurationKeys,
                           };
                           mutateKeySet(new_state);
@@ -234,11 +281,11 @@ export default function KeySetEditor() {
                       <Button
                         size={'sm'}
                         variant={'outline'}
-                        disabled={index === data.DurationKeys.length - 1}
+                        disabled={index === relevantKeySet.DurationKeys.length - 1}
                         onClick={() => {
-                          const newDurationKeys = moveItemDown(data.DurationKeys, index);
+                          const newDurationKeys = moveItemDown(relevantKeySet.DurationKeys, index);
                           const new_state = {
-                            ...data,
+                            ...relevantKeySet,
                             DurationKeys: newDurationKeys,
                           };
                           mutateKeySet(new_state);
@@ -256,8 +303,8 @@ export default function KeySetEditor() {
                           if (!confirmation) return;
 
                           const new_state = {
-                            ...data,
-                            DurationKeys: data.DurationKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
+                            ...relevantKeySet,
+                            DurationKeys: relevantKeySet.DurationKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
                           };
 
                           mutateKeySet(new_state);

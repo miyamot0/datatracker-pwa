@@ -11,6 +11,7 @@ export const mutationKeyboards = async ({
   Individual,
   Keysets,
   Rename,
+  NewKeySet,
   Context,
   Action,
 }: {
@@ -18,8 +19,9 @@ export const mutationKeyboards = async ({
   Individual: string;
   Keysets: string[];
   Rename?: string;
+  NewKeySet?: KeySet;
   Context: FolderHandleContextType;
-  Action: 'Add' | 'Delete' | 'Duplicate' | 'Rename';
+  Action: 'Add' | 'Delete' | 'Duplicate' | 'Rename' | 'Update';
 }): Promise<KeySet[]> => {
   const keysets = await queryClient.fetchQuery({
     queryKey: ['/', Group, Individual, 'keyboards'],
@@ -93,6 +95,28 @@ export const mutationKeyboards = async ({
 
       break;
     }
+    case 'Update': {
+      if (!NewKeySet) {
+        throw new Error('Keysets not supplied');
+      }
+
+      const key_board = await individual_dir.getFileHandle(`${NewKeySet.Name}.json`);
+
+      const writer = await key_board.createWritable();
+      await writer.write(serializeKeySet(NewKeySet));
+      await writer.close();
+
+      newKeysetsList = newKeysetsList.map((k) => {
+        if (k.Name == NewKeySet.Name) {
+          return NewKeySet;
+        }
+
+        return k;
+      });
+
+      break;
+    }
+
     case 'Rename': {
       /*
       if (!Rename) throw new Error('Rename is required for renaming');
