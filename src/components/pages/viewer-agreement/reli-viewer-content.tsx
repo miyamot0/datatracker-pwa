@@ -11,6 +11,11 @@ type Props = {
   Results: ModifiedSessionResult[];
 };
 
+type KeyedReli = {
+  KeyName: string;
+  Value: number;
+};
+
 export default function ReliabilityViewerContent({ Group, Individual, Results }: Props) {
   const recent_keyset = Results.slice(-1)[0].Keyset;
 
@@ -51,12 +56,12 @@ export default function ReliabilityViewerContent({ Group, Individual, Results }:
 
   f_headings.unshift('Session #');
 
-  const EIA_f_values: number[] = [];
-  const PIA_f_values: number[] = [];
-  const TIA_f_values: number[] = [];
-  const OIA_f_values: number[] = [];
-  const NIA_f_values: number[] = [];
-  const PMA_f_values: number[] = [];
+  const EIA_f_values: KeyedReli[] = [];
+  const PIA_f_values: KeyedReli[] = [];
+  const TIA_f_values: KeyedReli[] = [];
+  const OIA_f_values: KeyedReli[] = [];
+  const NIA_f_values: KeyedReli[] = [];
+  const PMA_f_values: KeyedReli[] = [];
 
   const f_rows = sessions.map((session) => {
     const temp_array = [{ value: session.toString(), readOnly: true }];
@@ -78,12 +83,12 @@ export default function ReliabilityViewerContent({ Group, Individual, Results }:
 
       const { EIA, PIA, TIA, OIA, NIA, PMA } = session_to_show;
 
-      EIA_f_values.push(EIA);
-      PIA_f_values.push(PIA);
-      TIA_f_values.push(TIA);
-      OIA_f_values.push(OIA);
-      NIA_f_values.push(NIA);
-      PMA_f_values.push(PMA);
+      EIA_f_values.push({ Value: EIA, KeyName: key.KeyName });
+      PIA_f_values.push({ Value: PIA, KeyName: key.KeyName });
+      TIA_f_values.push({ Value: TIA, KeyName: key.KeyName });
+      OIA_f_values.push({ Value: OIA, KeyName: key.KeyName });
+      NIA_f_values.push({ Value: NIA, KeyName: key.KeyName });
+      PMA_f_values.push({ Value: PMA, KeyName: key.KeyName });
 
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       (temp_array.push({
@@ -117,48 +122,65 @@ export default function ReliabilityViewerContent({ Group, Individual, Results }:
 
   const mean_f_row = [{ value: 'Averaged', readOnly: true }];
 
-  console.log(EIA_f_values);
+  recent_keyset.FrequencyKeys.forEach((key) => {
+    const relevantEIA_f_values = EIA_f_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantPIA_f_values = PIA_f_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantTIA_f_values = TIA_f_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantOIA_f_values = OIA_f_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantNIA_f_values = NIA_f_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantPMA_f_values = PMA_f_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
 
-  recent_keyset.FrequencyKeys.forEach(() => {
     mean_f_row.push({
-      value: (EIA_f_values.reduce((a, b) => a + b, 0) / EIA_f_values.length).toFixed(2) ?? '',
+      value: (relevantEIA_f_values.reduce((a, b) => a + b, 0) / relevantEIA_f_values.length).toFixed(2) ?? '',
       readOnly: true,
     });
 
     mean_f_row.push({
-      value: (PIA_f_values.reduce((a, b) => a + b, 0) / PIA_f_values.length).toFixed(2) ?? '',
+      value: (relevantPIA_f_values.reduce((a, b) => a + b, 0) / relevantPIA_f_values.length).toFixed(2) ?? '',
       readOnly: true,
     });
 
     mean_f_row.push({
-      value: (TIA_f_values.reduce((a, b) => a + b, 0) / TIA_f_values.length).toFixed(2) ?? '',
+      value: (relevantTIA_f_values.reduce((a, b) => a + b, 0) / relevantTIA_f_values.length).toFixed(2) ?? '',
       readOnly: true,
     });
 
     mean_f_row.push({
-      value: (OIA_f_values.reduce((a, b) => a + b, 0) / OIA_f_values.length).toFixed(2) ?? '',
+      value: (relevantOIA_f_values.reduce((a, b) => a + b, 0) / relevantOIA_f_values.length).toFixed(2) ?? '',
       readOnly: true,
     });
 
     mean_f_row.push({
-      value: (NIA_f_values.reduce((a, b) => a + b, 0) / NIA_f_values.length).toFixed(2) ?? '',
+      value: (relevantNIA_f_values.reduce((a, b) => a + b, 0) / relevantNIA_f_values.length).toFixed(2) ?? '',
       readOnly: true,
     });
 
     mean_f_row.push({
-      value: (PMA_f_values.reduce((a, b) => a + b, 0) / PMA_f_values.length).toFixed(2) ?? '',
+      value: (relevantPMA_f_values.reduce((a, b) => a + b, 0) / relevantPMA_f_values.length).toFixed(2) ?? '',
       readOnly: true,
     });
   });
 
   f_rows.push(mean_f_row);
 
-  const EIA_d_values: number[] = [];
-  const PIA_d_values: number[] = [];
-  const TIA_d_values: number[] = [];
-  const OIA_d_values: number[] = [];
-  const NIA_d_values: number[] = [];
-  const PMA_d_values: number[] = [];
+  const EIA_d_values: KeyedReli[] = [];
+  const PIA_d_values: KeyedReli[] = [];
+  const TIA_d_values: KeyedReli[] = [];
+  const OIA_d_values: KeyedReli[] = [];
+  const NIA_d_values: KeyedReli[] = [];
+  const PMA_d_values: KeyedReli[] = [];
 
   const d_headings = recent_keyset.DurationKeys.flatMap((key) => {
     return [
@@ -193,12 +215,12 @@ export default function ReliabilityViewerContent({ Group, Individual, Results }:
 
       const { EIA, PIA, TIA, OIA, NIA, PMA } = session_to_show;
 
-      EIA_d_values.push(EIA);
-      PIA_d_values.push(PIA);
-      TIA_d_values.push(TIA);
-      OIA_d_values.push(OIA);
-      NIA_d_values.push(NIA);
-      PMA_d_values.push(PMA);
+      EIA_d_values.push({ KeyName: key.KeyName, Value: EIA });
+      PIA_d_values.push({ KeyName: key.KeyName, Value: PIA });
+      TIA_d_values.push({ KeyName: key.KeyName, Value: TIA });
+      OIA_d_values.push({ KeyName: key.KeyName, Value: OIA });
+      NIA_d_values.push({ KeyName: key.KeyName, Value: NIA });
+      PMA_d_values.push({ KeyName: key.KeyName, Value: PMA });
 
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       (temp_array.push({
@@ -232,34 +254,53 @@ export default function ReliabilityViewerContent({ Group, Individual, Results }:
 
   const mean_d_row = [{ value: 'Averaged', readOnly: true }];
 
-  recent_keyset.FrequencyKeys.forEach(() => {
+  recent_keyset.DurationKeys.forEach((key) => {
+    const relevantEIA_d_values = EIA_d_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantPIA_d_values = PIA_d_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantTIA_d_values = TIA_d_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantOIA_d_values = OIA_d_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantNIA_d_values = NIA_d_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantPMA_d_values = PMA_d_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+
     mean_d_row.push({
-      value: (EIA_d_values.reduce((a, b) => a + b, 0) / EIA_d_values.length).toFixed(2) ?? '',
+      value: (relevantEIA_d_values.reduce((a, b) => a + b, 0) / relevantEIA_d_values.length).toFixed(2) ?? '',
       readOnly: true,
     });
 
     mean_d_row.push({
-      value: (PIA_d_values.reduce((a, b) => a + b, 0) / PIA_d_values.length).toFixed(2) ?? '',
+      value: (relevantPIA_d_values.reduce((a, b) => a + b, 0) / relevantPIA_d_values.length).toFixed(2) ?? '',
       readOnly: true,
     });
 
     mean_d_row.push({
-      value: (TIA_d_values.reduce((a, b) => a + b, 0) / TIA_d_values.length).toFixed(2) ?? '',
+      value: (relevantTIA_d_values.reduce((a, b) => a + b, 0) / relevantTIA_d_values.length).toFixed(2) ?? '',
       readOnly: true,
     });
 
     mean_d_row.push({
-      value: (OIA_d_values.reduce((a, b) => a + b, 0) / OIA_d_values.length).toFixed(2) ?? '',
+      value: (relevantOIA_d_values.reduce((a, b) => a + b, 0) / relevantOIA_d_values.length).toFixed(2) ?? '',
       readOnly: true,
     });
 
     mean_d_row.push({
-      value: (NIA_d_values.reduce((a, b) => a + b, 0) / NIA_d_values.length).toFixed(2) ?? '',
+      value: (relevantNIA_d_values.reduce((a, b) => a + b, 0) / relevantNIA_d_values.length).toFixed(2) ?? '',
       readOnly: true,
     });
 
     mean_d_row.push({
-      value: (PMA_d_values.reduce((a, b) => a + b, 0) / PMA_d_values.length).toFixed(2) ?? '',
+      value: (relevantPMA_d_values.reduce((a, b) => a + b, 0) / relevantPMA_d_values.length).toFixed(2) ?? '',
       readOnly: true,
     });
   });
