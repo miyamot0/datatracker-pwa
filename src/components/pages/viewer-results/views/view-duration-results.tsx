@@ -19,9 +19,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EnhancedKeySetInstance } from '../results-viewer-page';
 import { useState } from 'react';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
+import { EnhancedKeySetInstance } from '@/types/keyset';
 
 type Props = {
   SessionTimer: SessionTerminationOptionsType;
@@ -307,50 +307,48 @@ export default function ViewDurationResults({ SessionTimer, Results, UnfilteredK
           <CardDescription>Key Presses are summarized in the table below</CardDescription>
         </div>
         <div className="flex flex-row gap-2">
-          <ToolTipWrapper Label="Show keys to summarize">
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size={'sm'} className="w-fit">
-                  <KeyboardIcon className="mr-2 w-4 h-4" />
-                  Edit Keys Displayed
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {filteredKeys.map((key, index) => (
-                  <DropdownMenuCheckboxItem
-                    key={`key-${index}`}
-                    checked={key.Visible}
-                    onCheckedChange={(checked) => {
-                      const updatedKeys = filteredKeys.map((k) => {
-                        if (k.KeyDescription === key.KeyDescription) {
-                          return {
-                            ...k,
-                            Visible: checked,
-                          };
-                        }
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size={'sm'} className="w-fit">
+                <KeyboardIcon className="mr-2 w-4 h-4" />
+                Edit Keys Displayed
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {filteredKeys.map((key, index) => (
+                <DropdownMenuCheckboxItem
+                  key={`key-${index}`}
+                  checked={key.Visible}
+                  onCheckedChange={(checked) => {
+                    const updatedKeys = filteredKeys.map((k) => {
+                      if (k.KeyDescription === key.KeyDescription) {
+                        return {
+                          ...k,
+                          Visible: checked,
+                        };
+                      }
 
-                        return k;
-                      });
+                      return k;
+                    });
 
-                      setFilteredKeys(updatedKeys);
+                    setFilteredKeys(updatedKeys);
 
-                      const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+                    const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
 
-                      setLocalCachedPrefs(Group!, Individual!, Evaluation!, 'Duration', {
-                        KeyDescription: hidden_keys,
-                        CTBElements: [],
-                        Schedule: SessionTimer,
-                      });
-                    }}
-                  >
-                    {key.KeyDescription}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </ToolTipWrapper>
+                    setLocalCachedPrefs(Group!, Individual!, Evaluation!, 'Duration', {
+                      KeyDescription: hidden_keys,
+                      CTBElements: [],
+                      Schedule: SessionTimer,
+                    });
+                  }}
+                >
+                  {key.KeyDescription}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <ToolTipWrapper Label="Download data as CSV">
             <Button

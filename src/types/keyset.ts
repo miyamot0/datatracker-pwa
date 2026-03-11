@@ -24,6 +24,8 @@ export type KeySet = {
  */
 export type KeySetExtended = KeySet & { Group: string; Individual: string };
 
+export type EnhancedKeySetInstance = KeySetInstance & { Visible: boolean; Type: 'Key' | 'Summary' };
+
 /**
  * Keyset type more amenable to serialization
  */
