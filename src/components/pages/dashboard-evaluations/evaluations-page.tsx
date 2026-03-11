@@ -1,4 +1,6 @@
 import PageWrapper from '@/components/layout/page-wrapper';
+import { ErrorDisplay } from '@/components/suspense/error-display';
+import { LoadingDisplay } from '@/components/suspense/loading-display';
 import BackButton from '@/components/ui/back-button';
 import { BuildGroupBreadcrumb, BuildIndividualsBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { Button } from '@/components/ui/button';
@@ -13,7 +15,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import LoadingDisplay from '@/components/ui/loading-display';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { queryClient } from '@/context/query-client';
@@ -89,13 +90,9 @@ export default function EvaluationsPage() {
     },
   });
 
-  if (isLoading) {
-    return <LoadingDisplay />;
-  }
+  if (isLoading) return <LoadingDisplay />;
 
-  if (error || !data) {
-    return <div>{error?.message}</div>;
-  }
+  if (error || data == undefined) return <ErrorDisplay Text={'An error occurred while fetching evaluations.'} />;
 
   const DynamicButtonList = ({ row }: { row: Row<EvaluationTableRow> }) => {
     return (

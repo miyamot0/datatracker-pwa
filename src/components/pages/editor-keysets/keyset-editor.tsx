@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { redirect, useLoaderData } from 'react-router-dom';
 import { CleanUpString } from '@/lib/strings';
-import LoadingDisplay from '@/components/ui/loading-display';
 import createHref from '@/lib/links';
 import BackButton from '@/components/ui/back-button';
 import { FolderHandleContextType } from '@/context/folder-context';
@@ -22,6 +21,8 @@ import { KeySetInstance, KeySet } from '@/types/keyset';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { mutationKeyboards } from '@/queries/keysets/mutate-keyboards';
 import { queryClient } from '@/context/query-client';
+import { ErrorDisplay } from '@/components/suspense/error-display';
+import { LoadingDisplay } from '@/components/suspense/loading-display';
 
 type LoaderResult = {
   Group: string;
@@ -84,13 +85,9 @@ export default function KeySetEditor() {
     return newArray;
   };
 
-  if (isLoading) {
-    return <LoadingDisplay />;
-  }
+  if (isLoading) return <LoadingDisplay />;
 
-  if (error || !data) {
-    return <div>{error?.message}</div>;
-  }
+  if (error || data == undefined) return <ErrorDisplay Text={'An error occurred while fetching session outcomes.'} />;
 
   if (!Group || !Individual || !KeySet || !data) {
     throw new Error('Params missing.');

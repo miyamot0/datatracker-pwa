@@ -24,6 +24,8 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { queryClient } from '@/context/query-client';
 import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outcomes';
 import { toast } from 'sonner';
+import { ErrorDisplay } from '@/components/suspense/error-display';
+import { LoadingDisplay } from '@/components/suspense/loading-display';
 
 type LoaderResult = {
   Group: string;
@@ -72,12 +74,9 @@ export default function DashboardHistoryPage() {
     },
   });
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-  if (error || !data) {
-    return <div>Error loading session outcomes.</div>;
-  }
+  if (isLoading) return <LoadingDisplay />;
+
+  if (error || data == undefined) return <ErrorDisplay Text={'An error occurred while fetching session outcomes.'} />;
 
   const columns: ColumnDef<ModifiedSessionResult>[] = [
     {

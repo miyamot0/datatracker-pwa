@@ -7,6 +7,8 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchConditions } from '@/queries/conditions/query-conditions';
 import { fetchKeyboards } from '@/queries/keysets/query-keyboards';
 import { fetchSessionParams } from '@/queries/session/query-session-params';
+import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { ErrorDisplay } from '@/components/suspense/error-display';
 
 type LoaderResult = {
   Group: string;
@@ -70,13 +72,10 @@ export function SessionDesignerPage() {
     queryFn: () => fetchSessionParams({ Context, Group, Individual, Evaluation }),
   });
 
-  if (loadingCondition || loadingKeySets || loadingSessionParams) {
-    return <div>Loading...</div>;
-  }
+  if (loadingCondition || loadingKeySets || loadingSessionParams) return <LoadingDisplay />;
 
-  if (errorCondition || errorKeySets || errorSessionParams || !dataCondition || !dataKeySets || !dataSessionParams) {
-    return <div>Error</div>;
-  }
+  if (errorCondition || errorKeySets || errorSessionParams || !dataCondition || !dataKeySets || !dataSessionParams)
+    return <ErrorDisplay Text={'An error occurred while fetching session outcomes.'} />;
 
   return (
     <SessionDesignerForm

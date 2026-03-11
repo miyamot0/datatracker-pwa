@@ -10,7 +10,6 @@ import { Copy, Edit2, ImportIcon, Plus } from 'lucide-react';
 import { Link, redirect, useLoaderData } from 'react-router-dom';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import createHref from '@/lib/links';
-import LoadingDisplay from '@/components/ui/loading-display';
 import BackButton from '@/components/ui/back-button';
 import { ColumnDef } from '@tanstack/react-table';
 import { KeySet } from '@/types/keyset';
@@ -23,6 +22,8 @@ import { fetchKeyboards } from '@/queries/keysets/query-keyboards';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { mutationKeyboards } from '@/queries/keysets/mutate-keyboards';
 import { queryClient } from '@/context/query-client';
+import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { ErrorDisplay } from '@/components/suspense/error-display';
 
 type LoaderResult = {
   Group: string;
@@ -69,13 +70,9 @@ export default function KeySetsPage() {
     },
   });
 
-  if (isLoading) {
-    return <LoadingDisplay />;
-  }
+  if (isLoading) return <LoadingDisplay />;
 
-  if (error || !data) {
-    return <div>{error?.message}</div>;
-  }
+  if (error || data == undefined) return <ErrorDisplay Text={'An error occurred while fetching keysets.'} />;
 
   const columns: ColumnDef<KeySet>[] = [
     {
