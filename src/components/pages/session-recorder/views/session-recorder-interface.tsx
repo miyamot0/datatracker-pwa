@@ -143,6 +143,7 @@ export default function SessionRecorderInterface({
           }
         }
 
+        // TODO: Revisit once query session outcomes is implemented
         await saveSessionOutcomesToFile(
           Handle,
           Settings,

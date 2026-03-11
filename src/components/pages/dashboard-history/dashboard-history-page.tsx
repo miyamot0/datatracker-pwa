@@ -6,7 +6,6 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { GetHandleEvaluationFolder, GetResultsFromEvaluationFolder } from '@/lib/files';
 import createHref from '@/lib/links';
 import { cn } from '@/lib/utils';
 import { Edit2Icon, SearchIcon } from 'lucide-react';
@@ -20,16 +19,18 @@ import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { DataTable } from '@/components/ui/data-table-common';
 import { ApplicationSettingsTypes } from '@/types/settings';
 import { ModifiedSessionResult } from '@/types/storage';
-import { useState } from 'react';
+import { fetchSessionOutcomes } from '@/queries/outcomes/query-session-outcomes';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { queryClient } from '@/context/query-client';
+import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outcomes';
 import { toast } from 'sonner';
 
 type LoaderResult = {
   Group: string;
   Individual: string;
   Evaluation: string;
-  Handle: FileSystemDirectoryHandle;
-  Results: ModifiedSessionResult[];
   Settings: ApplicationSettingsTypes;
+  Context: FolderHandleContextType;
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -45,23 +46,11 @@ export const sessionHistoryLoader = (ctx: FolderHandleContextType) => {
       throw response;
     }
 
-    const { results } = await GetResultsFromEvaluationFolder(handle, Group, Individual, Evaluation);
-
-    const clean_results = results
-      .map((r) => {
-        return {
-          ...r,
-          Filename: r.Filename!,
-        };
-      })
-      .sort((a, b) => new Date(b.SessionSettings.Session).valueOf() - new Date(a.SessionSettings.Session).valueOf());
-
     return {
+      Context: ctx,
       Group: CleanUpString(Group),
       Individual: CleanUpString(Individual),
       Evaluation: CleanUpString(Evaluation),
-      Handle: handle,
-      Results: clean_results,
       Settings: settings,
     } satisfies LoaderResult;
   };
@@ -69,9 +58,26 @@ export const sessionHistoryLoader = (ctx: FolderHandleContextType) => {
 
 export default function DashboardHistoryPage() {
   const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Evaluation, Handle, Results, Settings } = loaderResult;
+  const { Group, Individual, Evaluation, Settings, Context } = loaderResult;
 
-  const [results, setResults] = useState(Results);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['/', Group, Individual, Evaluation, 'outcomes'],
+    queryFn: () => fetchSessionOutcomes({ Context, Group, Individual, Evaluation }),
+  });
+
+  const mutateSessionOutcomes = useMutation({
+    mutationFn: mutationSettingsOutcomes,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/', Group, Individual, Evaluation, 'outcomes'], data);
+    },
+  });
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (error || !data) {
+    return <div>Error loading session outcomes.</div>;
+  }
 
   const columns: ColumnDef<ModifiedSessionResult>[] = [
     {
@@ -87,7 +93,7 @@ export default function DashboardHistoryPage() {
                 {
                   'bg-green-600 text-white': row.original.SessionSettings.Role === 'Primary',
                   'bg-purple-400 text-white': row.original.SessionSettings.Role === 'Reliability',
-                }
+                },
               )}
             >
               {`${row.original.SessionSettings.Role}`}
@@ -191,42 +197,30 @@ export default function DashboardHistoryPage() {
           <DataTable
             settings={Settings}
             columns={columns}
-            data={results}
+            data={data}
             callback={async (rows) => {
-              const fileNames = rows.map((row) => row.Filename);
+              // TODO: Confirm deletion with user
 
-              const client_evaluations_folder = await GetHandleEvaluationFolder(
-                Handle,
-                CleanUpString(Group),
-                CleanUpString(Individual),
-                CleanUpString(Evaluation)
+              toast.promise(
+                async () =>
+                  await mutateSessionOutcomes.mutateAsync({
+                    Context,
+                    Group,
+                    Individual,
+                    Evaluation,
+                    Outcomes: rows,
+                    Action: 'Delete',
+                  }),
+                {
+                  loading: 'Deleting specific session files...',
+                  success: () => {
+                    return 'Session files have been deleted successfully!';
+                  },
+                  error: () => {
+                    return 'An error occurred while deleting specific session files.';
+                  },
+                },
               );
-
-              const removeSelectedFiles = async (fileNames: string[]) => {
-                for await (const entry of await client_evaluations_folder.values()) {
-                  if (entry.kind === 'directory') {
-                    const condition_folder = await client_evaluations_folder.getDirectoryHandle(entry.name);
-
-                    for await (const fileName of await condition_folder.values()) {
-                      if (fileNames.includes(fileName.name)) {
-                        await condition_folder.removeEntry(fileName.name);
-                      }
-                    }
-                  }
-                }
-
-                setResults((prev) => prev.filter((r) => !fileNames.includes(r.Filename)));
-              };
-
-              toast.promise(async () => await removeSelectedFiles(fileNames), {
-                loading: 'Deleting specific session files...',
-                success: () => {
-                  return 'Session files have been deleted successfully!';
-                },
-                error: () => {
-                  return 'An error occurred while deleting specific session files.';
-                },
-              });
             }}
             customCheckboxButton2={<>Rename Conditions</>}
             callback2={async (rows) => {
@@ -235,78 +229,29 @@ export default function DashboardHistoryPage() {
                 return;
               }
 
-              const file_names_to_move = rows.map((row) => row.Filename);
+              // TODO: Limit to sane characters and length (i.e., no dupes or short entries)
 
-              const moveSelectedFiles = async () => {
-                const client_evaluations_folder = await GetHandleEvaluationFolder(
-                  Handle,
-                  CleanUpString(Group),
-                  CleanUpString(Individual),
-                  CleanUpString(Evaluation)
-                );
-
-                const moved_condition_handle = await client_evaluations_folder.getDirectoryHandle(
-                  new_condition.trim(),
-                  {
-                    create: true,
-                  }
-                );
-
-                const new_session_files: ModifiedSessionResult[] = [];
-
-                for await (const filename of await client_evaluations_folder.values()) {
-                  if (filename.kind === 'directory') {
-                    const condition_folder = await client_evaluations_folder.getDirectoryHandle(filename.name);
-                    for await (const sub_dir_file of await condition_folder.values()) {
-                      if (file_names_to_move.includes(sub_dir_file.name)) {
-                        const relevant_result = rows.find((r) => r.Filename === sub_dir_file.name);
-
-                        if (!relevant_result) return;
-
-                        const new_object = { ...relevant_result };
-                        new_object.SessionSettings.Condition = new_condition.trim();
-
-                        const new_file_name = GenerateSavedFileName(new_object.SessionSettings);
-                        const new_file_handle = await moved_condition_handle.getFileHandle(new_file_name, {
-                          create: true,
-                        });
-
-                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                        const { Filename, ...ModifiedResult } = relevant_result;
-
-                        const writer = await new_file_handle.createWritable();
-                        await writer.write(JSON.stringify(ModifiedResult));
-                        await writer.close();
-
-                        const file_to_add = { ...new_object, Filename: new_file_name };
-                        new_session_files.push(file_to_add);
-
-                        await condition_folder.removeEntry(sub_dir_file.name);
-                      }
-                    }
-                  }
-                }
-
-                const updated_results = results
-                  .filter((r) => !file_names_to_move.includes(r.Filename))
-                  .concat(new_session_files)
-                  .sort(
-                    (a, b) =>
-                      new Date(b.SessionSettings.Session).valueOf() - new Date(a.SessionSettings.Session).valueOf()
-                  );
-
-                setResults(updated_results);
-              };
-
-              toast.promise(async () => await moveSelectedFiles(), {
-                loading: 'Re-conditioning selected sessions...',
-                success: () => {
-                  return 'Session files have been updated successfully!';
+              toast.promise(
+                async () =>
+                  await mutateSessionOutcomes.mutateAsync({
+                    Context,
+                    Group,
+                    Individual,
+                    Evaluation,
+                    Outcomes: rows,
+                    Action: 'EditCondition',
+                    ConditionRename: new_condition,
+                  }),
+                {
+                  loading: 'Renaming conditions for selected session files...',
+                  success: () => {
+                    return 'Session files have been renamed successfully!';
+                  },
+                  error: () => {
+                    return 'An error occurred while renaming conditions for selected session files.';
+                  },
                 },
-                error: () => {
-                  return 'An error occurred while updating specific session files.';
-                },
-              });
+              );
 
               // TODO: Clear out blanks
               /*
