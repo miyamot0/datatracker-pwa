@@ -23,7 +23,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { SavedSettings, toSavedSettings } from '@/lib/dtos';
+import { SavedSettings } from '@/lib/dtos';
 import { KeySet } from '@/types/keyset';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FolderHandleContextType } from '@/context/folder-context';
@@ -37,7 +37,6 @@ import { FolderPlus } from 'lucide-react';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { useNavigate } from 'react-router-dom';
 import createHref from '@/lib/links';
-import { GetHandleEvaluationFolder } from '@/lib/files';
 import BackButton from '@/components/ui/back-button';
 import { mutationConditions } from '@/queries/conditions/mutate-conditions';
 import { useMutation } from '@tanstack/react-query';
@@ -120,7 +119,15 @@ export default function SessionDesigner({
   }, [Evaluation, Group, Handle, Individual, form, Keysets, settings, SessionSettings]);
 
   function onSubmit(values: z.infer<typeof SessionDesignerSchema>) {
-    const newer_settings = toSavedSettings(values);
+    navigate(`/session/${Group}/${Individual}/${Evaluation}/run/${values.SessionKeySet}`, {
+      unstable_viewTransition: true,
+    });
+
+    //const newer_settings = toSavedSettings(values);
+
+    /*
+
+    // TODO: Is this even necessary?
 
     GetHandleEvaluationFolder(Handle, CleanUpString(Group), CleanUpString(Individual), CleanUpString(Evaluation))
       .then(async (files) => {
@@ -133,13 +140,14 @@ export default function SessionDesigner({
         await writer.write(JSON.stringify(newer_settings));
         await writer.close();
 
-        navigate(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}/run`, {
+        navigate(`/session/${Group}/${Individual}/${Evaluation}/run/${values.SessionKeySet}`, {
           unstable_viewTransition: true,
         });
       })
       .catch(() => {
         //console.error(error);
       });
+    */
   }
 
   return (

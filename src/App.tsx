@@ -81,7 +81,7 @@ const AppRoot = () => {
                   <Route path=":Evaluation">
                     <Route index element={<SessionDesignerPage />} loader={sessionDesignerPageLoader(dataContext)} />
                     <Route
-                      path="run"
+                      path="run/:KeySet"
                       element={<SessionRecorderPage />}
                       loader={sessionRecorderPageLoader(dataContext)}
                     />
