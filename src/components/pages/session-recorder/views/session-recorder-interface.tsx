@@ -74,6 +74,7 @@ export default function SessionRecorderInterface({
   const secondsElapsedActive = useRef<number>(0);
 
   const wakelockRef = useRef<WakeLockSentinel>();
+  const endingProcessedRef = useRef<boolean>(false);
 
   const [runningState, setRunningState] = useState<'Not Started' | 'Started' | 'Completed' | 'Cancelled'>(
     'Not Started',
@@ -93,6 +94,13 @@ export default function SessionRecorderInterface({
     }
 
     if (runningState === 'Completed' || runningState === 'Cancelled') {
+      // Prevent multiple executions for the same state change
+      if (endingProcessedRef.current) {
+        return;
+      }
+
+      endingProcessedRef.current = true;
+
       const save_output = async () => {
         if (!startTime) throw new Error('No start time found.');
 
@@ -341,6 +349,9 @@ export default function SessionRecorderInterface({
 
         setRunningState('Started');
         setStartTime(new Date());
+
+        // Reset the ending processed flag for new session
+        endingProcessedRef.current = false;
 
         setSystemKeysPressed([
           ...systemKeysPressed,
