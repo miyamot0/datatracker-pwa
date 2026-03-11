@@ -52,6 +52,7 @@ export default function SessionRecorderPage() {
   } = useQuery({
     queryKey: ['/', Group, Individual, Evaluation, 'conditions'],
     queryFn: () => fetchConditions(Context, Group, Individual, Evaluation),
+    enabled: false,
   });
 
   const {
@@ -61,6 +62,7 @@ export default function SessionRecorderPage() {
   } = useQuery({
     queryKey: ['/', Group, Individual, 'keyboards'],
     queryFn: () => fetchKeyboards({ Context, Group, Individual }),
+    enabled: false,
   });
 
   const {
@@ -70,6 +72,7 @@ export default function SessionRecorderPage() {
   } = useQuery({
     queryKey: ['/', Group, Individual, Evaluation, 'settings'],
     queryFn: () => fetchSessionParams({ Context, Group, Individual, Evaluation }),
+    enabled: false,
   });
 
   if (loadingCondition || loadingKeySets || loadingSessionParams) {
@@ -88,6 +91,7 @@ export default function SessionRecorderPage() {
 
   return (
     <SessionRecorderInterface
+      Context={Context}
       Handle={Handle}
       Group={Group}
       Individual={Individual}

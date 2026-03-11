@@ -23,7 +23,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { SavedSettings } from '@/lib/dtos';
+import { SavedSettings, toSavedSettings } from '@/lib/dtos';
 import { KeySet } from '@/types/keyset';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FolderHandleContextType } from '@/context/folder-context';
@@ -41,6 +41,7 @@ import BackButton from '@/components/ui/back-button';
 import { mutationConditions } from '@/queries/conditions/mutate-conditions';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/context/query-client';
+import { mutationSettingsParams } from '@/queries/session/mutate-session-params';
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
@@ -70,6 +71,17 @@ export default function SessionDesigner({
     mutationFn: mutationConditions,
     onSuccess: (data) => {
       queryClient.setQueryData(['/', Group, Individual, Evaluation, 'conditions'], data);
+    },
+  });
+
+  const mutateSettings = useMutation({
+    mutationFn: mutationSettingsParams,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/', Group, Individual, Evaluation, 'settings'], data);
+
+      navigate(`/session/${Group}/${Individual}/${Evaluation}/run/${data.KeySet}`, {
+        unstable_viewTransition: true,
+      });
     },
   });
 
@@ -119,35 +131,8 @@ export default function SessionDesigner({
   }, [Evaluation, Group, Handle, Individual, form, Keysets, settings, SessionSettings]);
 
   function onSubmit(values: z.infer<typeof SessionDesignerSchema>) {
-    navigate(`/session/${Group}/${Individual}/${Evaluation}/run/${values.SessionKeySet}`, {
-      unstable_viewTransition: true,
-    });
-
-    //const newer_settings = toSavedSettings(values);
-
-    /*
-
-    // TODO: Is this even necessary?
-
-    GetHandleEvaluationFolder(Handle, CleanUpString(Group), CleanUpString(Individual), CleanUpString(Evaluation))
-      .then(async (files) => {
-        if (!files) throw new Error('No directory found for this evaluation');
-
-        const settings_file = await files.getFileHandle('settings.json', {
-          create: true,
-        });
-        const writer = await settings_file.createWritable();
-        await writer.write(JSON.stringify(newer_settings));
-        await writer.close();
-
-        navigate(`/session/${Group}/${Individual}/${Evaluation}/run/${values.SessionKeySet}`, {
-          unstable_viewTransition: true,
-        });
-      })
-      .catch(() => {
-        //console.error(error);
-      });
-    */
+    const newer_settings = toSavedSettings(values);
+    mutateSettings.mutate({ Group, Individual, Evaluation, Context, Settings: newer_settings });
   }
 
   return (

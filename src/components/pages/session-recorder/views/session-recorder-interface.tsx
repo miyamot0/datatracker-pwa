@@ -5,8 +5,7 @@ import { cn } from '@/lib/utils';
 import { KeySet } from '@/types/keyset';
 import { useState, useRef, useEffect, useContext } from 'react';
 import { KeyManageType, KeyTiming, TimerSetting } from '../types/session-recorder-types';
-import { pullSessionSettings, saveSessionOutcomesToFile, saveSessionSettingsToFile } from '@/lib/files';
-import { CleanUpString } from '@/lib/strings';
+import { saveSessionOutcomesToFile } from '@/lib/files';
 import { toast } from 'sonner';
 import SessionRecorderInstructions from '../views/ui-instructions';
 import KeyHistoryListing from '../views/ui-key-listing';
@@ -19,10 +18,14 @@ import {
   BuildSessionDesignerBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
 import { displayConditionalNotification } from '@/lib/notifications';
-import { FolderHandleContext } from '@/context/folder-context';
+import { FolderHandleContext, FolderHandleContextType } from '@/context/folder-context';
 import { useNavigate } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
+import { mutationSettingsParams } from '@/queries/session/mutate-session-params';
+import { queryClient } from '@/context/query-client';
 
 type Props = {
+  Context: FolderHandleContextType;
   Handle: FileSystemDirectoryHandle;
   Group: string;
   Individual: string;
@@ -38,12 +41,27 @@ const TIME_UNIT = 1000;
 // Increment--Proportional to seconds change
 const INCREMENT = TIME_DELTA / TIME_UNIT;
 
-export default function SessionRecorderInterface({ Handle, Group, Individual, Evaluation, Keyset, Settings }: Props) {
+export default function SessionRecorderInterface({
+  Context,
+  Handle,
+  Group,
+  Individual,
+  Evaluation,
+  Keyset,
+  Settings,
+}: Props) {
   const navigator_ = useNavigate();
   const { settings: applicationSettings } = useContext(FolderHandleContext);
 
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
   const [systemKeysPressed, setSystemKeysPressed] = useState<KeyManageType[]>([]);
+
+  const mutateSettings = useMutation({
+    mutationFn: mutationSettingsParams,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/', Group, Individual, Evaluation, 'settings'], data);
+    },
+  });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setTickCount] = useState<number>(0);
@@ -110,7 +128,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
           );
 
           if (confirm_save === false) {
-            navigator_(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`, {
+            navigator_(`/session/${Group}/${Individual}/${Evaluation}`, {
               unstable_viewTransition: true,
             });
             return;
@@ -136,17 +154,28 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
 
         secondsElapsedTotal.current += INCREMENT;
 
-        const settings = await pullSessionSettings(Handle, Group, Individual, Evaluation);
+        //const settings = await pullSessionSettings(Handle, Group, Individual, Evaluation);
 
         if (wakelockRef.current) wakelockRef.current.release();
         wakelockRef.current = undefined;
 
         try {
-          await saveSessionSettingsToFile(Handle, Group, Individual, Evaluation, settings);
+          // TODO: Confirm bx
+          //await saveSessionSettingsToFile(Handle, Group, Individual, Evaluation, settings);
+          await mutateSettings.mutateAsync({
+            Group,
+            Individual,
+            Evaluation,
+            Context,
+            Settings: {
+              ...Settings,
+              Session: Settings.Session + 1,
+            },
+          });
 
           switch (applicationSettings.PostSessionBx) {
             case 'AutoAdvance':
-              navigator_(`/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`);
+              navigator_(`/session/${Group}/${Individual}/${Evaluation}`);
 
               break;
 
@@ -157,9 +186,7 @@ export default function SessionRecorderInterface({ Handle, Group, Individual, Ev
                 action: {
                   label: 'Load Next Session',
                   onClick: () => {
-                    navigator_(
-                      `/session/${CleanUpString(Group)}/${CleanUpString(Individual)}/${CleanUpString(Evaluation)}`,
-                    );
+                    navigator_(`/session/${Group}/${Individual}/${Evaluation}`);
                   },
                 },
               });
