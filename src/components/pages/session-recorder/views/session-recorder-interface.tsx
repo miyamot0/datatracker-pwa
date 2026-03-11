@@ -162,14 +162,11 @@ export default function SessionRecorderInterface({
 
         secondsElapsedTotal.current += INCREMENT;
 
-        //const settings = await pullSessionSettings(Handle, Group, Individual, Evaluation);
-
         if (wakelockRef.current) wakelockRef.current.release();
         wakelockRef.current = undefined;
 
         try {
           // TODO: Confirm bx
-          //await saveSessionSettingsToFile(Handle, Group, Individual, Evaluation, settings);
           await mutateSettings.mutateAsync({
             Group,
             Individual,

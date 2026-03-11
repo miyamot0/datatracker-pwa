@@ -253,6 +253,7 @@ export async function pullSessionOutcomesFiles(
  * @param Individual The individual name
  * @param Evaluation The evaluation name
  * @param Settings The settings to save
+ * @deprecated
  */
 export async function saveSessionSettingsToFile(
   Handle: FileSystemDirectoryHandle,
