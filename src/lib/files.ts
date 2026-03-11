@@ -366,6 +366,7 @@ export async function saveSessionOutcomesToFile(
  * @param Group The group name
  * @param Individual The individual name
  * @param Keyset The keyset to save
+ * @deprecated
  */
 export async function castSavedFilesToSessionResults(
   Handle: FileSystemDirectoryHandle,

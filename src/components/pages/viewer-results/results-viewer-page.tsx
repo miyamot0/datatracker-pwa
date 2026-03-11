@@ -12,6 +12,8 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchSessionOutcomes } from '@/queries/outcomes/query-session-outcomes';
 import ResultsViewerContent from './views/results-viewer-content';
 import { PullRelevantSetup } from './helpers/results_setup';
+import LoadingDisplay from '@/components/ui/loading-display';
+import { ErrorDisplay } from '@/components/suspense/error-display';
 
 type LoaderResult = {
   Group: string;
@@ -53,8 +55,9 @@ export default function ResultsViewerPage() {
     queryFn: () => fetchSessionOutcomes({ Context, Group, Individual, Evaluation }),
   });
 
-  if (isLoading) return <div>...is loading</div>;
-  if (error || !data) return <div>{error?.message}</div>;
+  if (isLoading) return <LoadingDisplay />;
+
+  if (error || !data) return <ErrorDisplay Text={error?.message} />;
 
   const prep = PullRelevantSetup(Group, Individual, Evaluation, data[0].Keyset);
 
