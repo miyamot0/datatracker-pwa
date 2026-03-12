@@ -1,20 +1,22 @@
-import { FolderHandleContextType } from '@/context/folder-context';
 import { EvaluationRecord } from '../keysets/mutate-keyboards';
 
-export const fetchEvaluationsAll = async ({ Context }: { Context: FolderHandleContextType }) => {
-  const { handle } = Context;
+export const evaluationsAllQueryOptions = (Handle: FileSystemDirectoryHandle) => ({
+  queryKey: ['/', 'metaEvaluations'],
+  queryFn: () => fetchEvaluationsAll({ Handle }),
+});
 
+export const fetchEvaluationsAll = async ({ Handle }: { Handle: FileSystemDirectoryHandle }) => {
   try {
     const temp_evaluation_folders = [] as EvaluationRecord[];
 
-    const dataTrackHighLevelEntries = await handle!.values();
+    const dataTrackHighLevelEntries = await Handle.values();
 
     for await (const possibleGroupFolder of dataTrackHighLevelEntries) {
       if (possibleGroupFolder.name === '.DS_Store') continue;
 
       if (possibleGroupFolder.kind === 'directory') {
         // Note: This is for the Group folder
-        const actualGroupFolderHandle = await handle!.getDirectoryHandle(possibleGroupFolder.name);
+        const actualGroupFolderHandle = await Handle.getDirectoryHandle(possibleGroupFolder.name);
         const individual_entries = await actualGroupFolderHandle.values();
 
         for await (const possibleIndividualFolder of individual_entries) {

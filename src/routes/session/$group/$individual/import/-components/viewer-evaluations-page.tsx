@@ -1,3 +1,4 @@
+import { queryClient } from '@/App';
 import PageWrapper from '@/components/layout/page-wrapper';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
@@ -10,56 +11,22 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
-import { FolderHandleContextType } from '@/context/folder-context';
-import { queryClient } from '@/context/query-client';
+import { FolderHandleContext } from '@/context/folder-context';
 import createHref from '@/lib/links';
-import { CleanUpString } from '@/lib/strings';
 import { mutationEvaluationsAll } from '@/queries/evaluations/mutate-evaluations-all';
-import { fetchEvaluationsAll } from '@/queries/evaluations/query-evaluations-all';
+import { evaluationsAllQueryOptions } from '@/queries/evaluations/query-evaluations-all';
 import { EvaluationRecord } from '@/queries/keysets/mutate-keyboards';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { ImportIcon } from 'lucide-react';
-import { redirect, useLoaderData } from 'react-router-dom';
+import { useContext } from 'react';
 import { toast } from 'sonner';
 
-type LoaderResult = {
-  Group: string;
-  Individual: string;
-  Handle: FileSystemHandle;
-  Context: FolderHandleContextType;
-};
+export default function ViewerEvaluationsPage({ Group, Individual }: { Group: string; Individual: string }) {
+  const Context = useContext(FolderHandleContext);
+  const { handle } = Context;
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const evaluationImportPageLoader = (ctx: FolderHandleContextType) => {
-  const { handle } = ctx;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return async ({ params }: any) => {
-    const { Group, Individual } = params;
-
-    if (!Group || !Individual || !handle) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    return {
-      Group: CleanUpString(Group),
-      Individual: CleanUpString(Individual),
-      Handle: handle,
-      Context: ctx,
-    } satisfies LoaderResult;
-  };
-};
-
-export default function ViewerEvaluationsPage() {
-  const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Context } = loaderResult;
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['/', 'metaEvaluations'],
-    queryFn: () => fetchEvaluationsAll({ Context }),
-  });
+  const { data, isLoading, error } = useQuery(evaluationsAllQueryOptions(handle!));
 
   const mutateEvaluationsMeta = useMutation({
     mutationFn: mutationEvaluationsAll,
@@ -146,7 +113,7 @@ export default function ViewerEvaluationsPage() {
               toast.promise(
                 async () =>
                   await mutateEvaluationsMeta.mutateAsync({
-                    Context,
+                    Handle: handle!,
                     Group,
                     Individual,
                     RelevantRecords: rows,

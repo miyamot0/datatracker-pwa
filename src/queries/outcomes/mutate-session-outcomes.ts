@@ -1,9 +1,8 @@
-import { FolderHandleContextType } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
-import { queryClient } from '@/context/query-client';
-import { fetchSessionOutcomes } from './query-session-outcomes';
+import { sessionOutcomesQueryOptions } from './query-session-outcomes';
 import { ModifiedSessionResult } from '@/types/storage';
 import { GenerateSavedFileName } from '@/lib/writer';
+import { queryClient } from '@/App';
 
 const DeleteSessions = async (
   cleanedOutcomes: ModifiedSessionResult[],
@@ -89,7 +88,7 @@ export const mutationSettingsOutcomes = async ({
   Evaluation,
   Outcomes,
   ConditionRename,
-  Context,
+  Handle,
   Action,
 }: {
   Group: string;
@@ -97,19 +96,18 @@ export const mutationSettingsOutcomes = async ({
   Evaluation: string;
   Outcomes: ModifiedSessionResult[];
   ConditionRename?: string;
-  Context: FolderHandleContextType;
+  Handle: FileSystemDirectoryHandle;
   Action: 'Delete' | 'EditCondition';
 }): Promise<ModifiedSessionResult[]> => {
-  const sessionOutcomes: ModifiedSessionResult[] = await queryClient.fetchQuery({
-    queryKey: ['/', Group, Individual, Evaluation, 'outcomes'],
-    queryFn: () => fetchSessionOutcomes({ Context, Group, Individual, Evaluation }),
-  });
+  const sessionOutcomes: ModifiedSessionResult[] = await queryClient.fetchQuery(
+    sessionOutcomesQueryOptions(Handle, Group, Individual, Evaluation),
+  );
 
   if (!sessionOutcomes) {
     throw new Error('Outcomes not found');
   }
 
-  const group_dir = await Context.handle!.getDirectoryHandle(CleanUpString(Group));
+  const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
   const individual_dir = await group_dir.getDirectoryHandle(Individual);
   const evaluation_dir = await individual_dir.getDirectoryHandle(Evaluation);
 

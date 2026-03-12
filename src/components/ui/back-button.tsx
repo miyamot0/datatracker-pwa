@@ -12,7 +12,7 @@ export default function BackButton({ Label, Href }: Props) {
 
   const handleClick = () => {
     if (window.history.state && window.history.state.idx > 0) {
-      router.history.back();
+      router.history.go(-1);
     }
   };
 

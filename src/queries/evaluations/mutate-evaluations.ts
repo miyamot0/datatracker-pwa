@@ -1,7 +1,6 @@
-import { FolderHandleContextType } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
-import { fetchEvaluations } from './query-evaluations';
-import { queryClient } from '@/context/query-client';
+import { evaluationQueryOptions } from './query-evaluations';
+import { queryClient } from '@/App';
 
 const copyDirectory = async (individual_dir: FileSystemDirectoryHandle, Evaluations: string[], Rename: string) => {
   const oldEvaluationDir = await individual_dir.getDirectoryHandle(Evaluations[0]);
@@ -37,20 +36,17 @@ export const mutationEvaluations = async ({
   Individual,
   Evaluations,
   Rename,
-  Context,
+  Handle,
   Action,
 }: {
   Group: string;
   Individual: string;
   Evaluations: string[];
   Rename?: string;
-  Context: FolderHandleContextType;
+  Handle: FileSystemDirectoryHandle;
   Action: 'Add' | 'Delete' | 'Duplicate' | 'Rename';
 }): Promise<string[]> => {
-  const evaluations: string[] = await queryClient.fetchQuery({
-    queryKey: ['/', Group],
-    queryFn: () => fetchEvaluations({ Context, Group, Individual }),
-  });
+  const evaluations: string[] = await queryClient.fetchQuery(evaluationQueryOptions(Handle, Group, Individual));
 
   if (!evaluations) {
     throw new Error('Evaluations not found');
@@ -58,7 +54,7 @@ export const mutationEvaluations = async ({
 
   let newEvaluationsList = evaluations;
 
-  const group_dir = await Context.handle!.getDirectoryHandle(CleanUpString(Group));
+  const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
   const individual_dir = await group_dir.getDirectoryHandle(Individual);
 
   switch (Action) {

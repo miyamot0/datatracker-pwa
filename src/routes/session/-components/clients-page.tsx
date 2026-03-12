@@ -1,3 +1,4 @@
+import { queryClient } from '@/App';
 import PageWrapper from '@/components/layout/page-wrapper';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
@@ -8,56 +9,25 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import { FolderHandleContextType } from '@/context/folder-context';
-import { queryClient } from '@/context/query-client';
+import { FolderHandleContext } from '@/context/folder-context';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { mutationIndividuals } from '@/queries/individuals/mutate-individuals';
-import { fetchIndividuals } from '@/queries/individuals/query-individuals';
+import { clientQueryOptions } from '@/queries/individuals/query-individuals';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import { ColumnDef } from '@tanstack/react-table';
 import { FolderInput, FolderPlus } from 'lucide-react';
-import { Link, redirect, useLoaderData } from 'react-router-dom';
+import { useContext } from 'react';
 import { toast } from 'sonner';
-
-type LoaderResult = {
-  Group: string;
-  Context: FolderHandleContextType;
-};
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const clientsPageLoader = (ctx: FolderHandleContextType) => {
-  const { handle } = ctx;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return async ({ params }: any) => {
-    const { Group } = params;
-
-    if (!Group || !handle) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    return {
-      Group: CleanUpString(Group!),
-      Context: ctx,
-    } satisfies LoaderResult;
-  };
-};
 
 type ClientTableRow = {
   Individual: string;
 };
 
-export default function ClientsPage() {
-  const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Context } = loaderResult;
-  const { settings } = Context;
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['/', Group],
-    queryFn: () => fetchIndividuals({ Context, Group }),
-  });
+export default function ClientsPage({ Group }: { Group: string }) {
+  const { settings, handle } = useContext(FolderHandleContext);
+  const { data, isLoading, error } = useQuery(clientQueryOptions(handle!, Group));
 
   const mutateIndividuals = useMutation({
     mutationFn: mutationIndividuals,
@@ -82,7 +52,6 @@ export default function ClientsPage() {
         <div className="flex flex-row justify-end">
           <Button size={'sm'} variant={'outline'} className="flex flex-row divide-x justify-between mx-0 px-0 shadow">
             <Link
-              unstable_viewTransition
               className="px-3 hover:underline flex flex-row items-center"
               to={createHref({
                 type: 'Evaluations',
@@ -132,8 +101,8 @@ export default function ClientsPage() {
                 async () =>
                   await mutateIndividuals.mutateAsync({
                     Group,
-                    Individual: individualNames,
-                    Context,
+                    Individuals: individualNames,
+                    Handle: handle!,
                     Action: 'Delete',
                   }),
                 {
@@ -141,8 +110,8 @@ export default function ClientsPage() {
                   success: () => {
                     return 'Client folders have been deleted successfully!';
                   },
-                  error: () => {
-                    return 'An error occurred while deleting client folders.';
+                  error: (e: Error) => {
+                    return `An error occurred while deleting client folders: ${e.message}.`;
                   },
                 },
               );
@@ -173,8 +142,8 @@ export default function ClientsPage() {
                       async () =>
                         await mutateIndividuals.mutateAsync({
                           Group,
-                          Individual: [input.trim()],
-                          Context,
+                          Individuals: [input.trim()],
+                          Handle: handle!,
                           Action: 'Add',
                         }),
                       {
@@ -182,8 +151,8 @@ export default function ClientsPage() {
                         success: () => {
                           return 'New individual folder created!';
                         },
-                        error: () => {
-                          return 'An error occurred while adding individual folder.';
+                        error: (e: Error) => {
+                          return `An error occurred while adding individual folder: ${e.message}.`;
                         },
                       },
                     );

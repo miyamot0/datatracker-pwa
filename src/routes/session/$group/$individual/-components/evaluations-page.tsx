@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { queryClient } from '@/App';
 import PageWrapper from '@/components/layout/page-wrapper';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
@@ -16,17 +18,18 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import { FolderHandleContextType } from '@/context/folder-context';
-import { queryClient } from '@/context/query-client';
+import { FolderHandleContext } from '@/context/folder-context';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { mutationEvaluations } from '@/queries/evaluations/mutate-evaluations';
-import { fetchEvaluations } from '@/queries/evaluations/query-evaluations';
+import { evaluationQueryOptions } from '@/queries/evaluations/query-evaluations';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import { ColumnDef, Row } from '@tanstack/react-table';
 import {
   ChartColumnIcon,
   ChevronDown,
+  ChevronLeft,
   Copy,
   Disc3,
   Edit2,
@@ -37,51 +40,18 @@ import {
   SearchIcon,
   Table2Icon,
 } from 'lucide-react';
-import { Link, redirect, useLoaderData } from 'react-router-dom';
+import { useContext } from 'react';
 import { toast } from 'sonner';
-
-type LoaderResult = {
-  Group: string;
-  Individual: string;
-  Handle: FileSystemDirectoryHandle;
-  Context: FolderHandleContextType;
-};
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const evaluationsPageLoader = (ctx: FolderHandleContextType) => {
-  const { handle } = ctx;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return async ({ params }: any) => {
-    const { Group, Individual } = params;
-
-    if (!Group || !Individual || !handle) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    return {
-      Group: CleanUpString(Group),
-      Individual: CleanUpString(Individual),
-      Handle: handle,
-      Context: ctx,
-    } satisfies LoaderResult;
-  };
-};
 
 type EvaluationTableRow = {
   Evaluation: string;
 };
 
-export default function EvaluationsPage() {
-  const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Context } = loaderResult;
-  const { settings } = Context;
+export default function EvaluationsPage({ Group, Individual }: { Group: string; Individual: string }) {
+  const Context = useContext(FolderHandleContext);
+  const { settings, handle } = Context;
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['/', Group, Individual],
-    queryFn: () => fetchEvaluations({ Context, Group, Individual }),
-  });
+  const { data, isLoading, error } = useQuery(evaluationQueryOptions(handle!, Group, Individual));
 
   const mutateEvaluations = useMutation({
     mutationFn: mutationEvaluations,
@@ -98,18 +68,18 @@ export default function EvaluationsPage() {
     return (
       <Button size={'sm'} variant={'outline'} className="flex flex-row divide-x justify-between mx-0 px-0 shadow">
         <Link
-          unstable_viewTransition
           className="px-3 hover:underline flex flex-row items-center"
-          to={createHref({
-            type: 'Session Designer',
+          to="/session/$group/$individual/$evaluation"
+          params={{
             group: Group,
             individual: Individual,
             evaluation: row.original.Evaluation,
-          })}
+          }}
         >
           <Disc3 className="mr-2 h-4 w-4" />
           Record Sessions
         </Link>
+
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <ChevronDown className="w-fit px-2" />
@@ -119,14 +89,13 @@ export default function EvaluationsPage() {
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Link
-                unstable_viewTransition
                 className="flex flex-row items-center"
-                to={createHref({
-                  type: 'Evaluation Session Viewer',
+                to="/session/$group/$individual/$evaluation/history"
+                params={{
                   group: Group,
                   individual: Individual,
                   evaluation: row.original.Evaluation,
-                })}
+                }}
               >
                 <SearchIcon className="mr-2 h-4 w-4" />
                 Review Session Data
@@ -134,14 +103,13 @@ export default function EvaluationsPage() {
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Link
-                unstable_viewTransition
                 className="flex flex-row items-center"
-                to={createHref({
-                  type: 'Evaluation Viewer',
+                to="/session/$group/$individual/$evaluation/view"
+                params={{
                   group: Group,
                   individual: Individual,
                   evaluation: row.original.Evaluation,
-                })}
+                }}
               >
                 <Table2Icon className="mr-2 h-4 w-4" />
                 Summarize Session Data
@@ -149,14 +117,13 @@ export default function EvaluationsPage() {
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Link
-                unstable_viewTransition
                 className="flex flex-row items-center"
-                to={createHref({
-                  type: 'Evaluation Visualizer-Rate',
+                to="/session/$group/$individual/$evaluation/rate"
+                params={{
                   group: Group,
                   individual: Individual,
                   evaluation: row.original.Evaluation,
-                })}
+                }}
               >
                 <ScatterChartIcon className="mr-2 h-4 w-4" />
                 Analyze Frequency Data
@@ -164,14 +131,13 @@ export default function EvaluationsPage() {
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Link
-                unstable_viewTransition
                 className="flex flex-row items-center"
-                to={createHref({
-                  type: 'Evaluation Visualizer-Proportion',
+                to="/session/$group/$individual/$evaluation/proportion"
+                params={{
                   group: Group,
                   individual: Individual,
                   evaluation: row.original.Evaluation,
-                })}
+                }}
               >
                 <ScatterChartIcon className="mr-2 h-4 w-4" />
                 Analyze Duration Data
@@ -179,14 +145,13 @@ export default function EvaluationsPage() {
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Link
-                unstable_viewTransition
                 className="flex flex-row items-center"
-                to={createHref({
-                  type: 'Reli Viewer',
+                to="/session/$group/$individual/$evaluation/reli"
+                params={{
                   group: Group,
                   individual: Individual,
                   evaluation: row.original.Evaluation,
-                })}
+                }}
               >
                 <ChartColumnIcon className="mr-2 h-4 w-4" />
                 Calculate Reliability
@@ -213,7 +178,7 @@ export default function EvaluationsPage() {
                           Individual,
                           Evaluations: [row.original.Evaluation],
                           Rename: new_evaluation_name,
-                          Context,
+                          Handle: handle!,
                           Action: 'Duplicate',
                         }),
                       {
@@ -221,8 +186,8 @@ export default function EvaluationsPage() {
                         success: () => {
                           return 'Evaluation folders have been created successfully!';
                         },
-                        error: () => {
-                          return 'An error occurred while creating evaluation folders.';
+                        error: (e: Error) => {
+                          return `An error occurred while creating evaluation folders: ${e.message}`;
                         },
                       },
                     );
@@ -249,7 +214,7 @@ export default function EvaluationsPage() {
                           Individual,
                           Evaluations: [row.original.Evaluation],
                           Rename: new_evaluation_name,
-                          Context,
+                          Handle: handle!,
                           Action: 'Rename',
                         }),
                       {
@@ -257,8 +222,8 @@ export default function EvaluationsPage() {
                         success: () => {
                           return 'Evaluation folders have been renamed successfully!';
                         },
-                        error: () => {
-                          return 'An error occurred while renaming evaluation folders.';
+                        error: (e: Error) => {
+                          return `An error occurred while renaming evaluation folders: ${e.message}`;
                         },
                       },
                     );
@@ -304,7 +269,12 @@ export default function EvaluationsPage() {
             <CardDescription>Select Evaluation to Build Session</CardDescription>
           </div>
           <div className="flex flex-row gap-2">
-            <BackButton Label="Back to Clients" Href={createHref({ type: 'Individuals', group: Group })} />
+            <Link to="/session/$group" params={{ group: Group }}>
+              <Button variant={'outline'} className="shadow" size={'sm'}>
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Back to Individuals
+              </Button>
+            </Link>
           </div>
         </CardHeader>
 
@@ -337,7 +307,7 @@ export default function EvaluationsPage() {
                     Group,
                     Individual,
                     Evaluations: evaluationNames,
-                    Context,
+                    Handle: handle!,
                     Action: 'Delete',
                   }),
                 {
@@ -345,8 +315,8 @@ export default function EvaluationsPage() {
                   success: () => {
                     return 'Evaluation folders have been deleted successfully!';
                   },
-                  error: () => {
-                    return 'An error occurred while deleting evaluation folders.';
+                  error: (e: Error) => {
+                    return `An error occurred while deleting evaluation folders: ${e.message}`;
                   },
                 },
               );
@@ -380,7 +350,7 @@ export default function EvaluationsPage() {
                             Group,
                             Individual,
                             Evaluations: [input.trim()],
-                            Context,
+                            Handle: handle!,
                             Action: 'Add',
                           }),
                         {
@@ -388,8 +358,8 @@ export default function EvaluationsPage() {
                           success: () => {
                             return 'Evaluation folders have been created successfully!';
                           },
-                          error: () => {
-                            return 'An error occurred while creating the evaluation folder.';
+                          error: (e: Error) => {
+                            return `An error occurred while creating the evaluation folder: ${e.message}`;
                           },
                         },
                       );
@@ -399,13 +369,13 @@ export default function EvaluationsPage() {
                     Create
                   </Button>
                 </ToolTipWrapper>
+
                 <Link
-                  unstable_viewTransition
-                  to={createHref({
-                    type: 'Evaluations Import',
+                  to={'/session/$group/$individual/import'}
+                  params={{
                     group: Group,
                     individual: Individual,
-                  })}
+                  }}
                 >
                   <ToolTipWrapper Label="Import an existing evaluation for the current individual">
                     <Button variant={'outline'} className="shadow" size={'sm'}>
@@ -414,13 +384,13 @@ export default function EvaluationsPage() {
                     </Button>
                   </ToolTipWrapper>
                 </Link>
+
                 <Link
-                  unstable_viewTransition
-                  to={createHref({
-                    type: 'Keysets',
+                  to="/session/$group/$individual/keysets"
+                  params={{
                     group: Group,
                     individual: Individual,
-                  })}
+                  }}
                 >
                   <ToolTipWrapper Label="Manage KeySets across evaluations">
                     <Button variant={'outline'} className="shadow" size={'sm'}>

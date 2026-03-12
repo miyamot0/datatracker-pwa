@@ -1,22 +1,29 @@
-import { FolderHandleContextType } from '@/context/folder-context';
 import { SavedSessionResult } from '@/lib/dtos';
 import { CleanUpString } from '@/lib/strings';
 import { ModifiedSessionResult } from '@/types/storage';
 
+export const sessionOutcomesQueryOptions = (
+  Handle: FileSystemDirectoryHandle,
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+) => ({
+  queryKey: ['/', Group, Individual, Evaluation, 'outcomes'],
+  queryFn: () => fetchSessionOutcomes({ Handle, Group, Individual, Evaluation }),
+});
+
 export const fetchSessionOutcomes = async ({
-  Context,
+  Handle,
   Group,
   Individual,
   Evaluation,
 }: {
-  Context: FolderHandleContextType;
+  Handle: FileSystemDirectoryHandle;
   Group: string;
   Individual: string;
   Evaluation: string;
 }): Promise<ModifiedSessionResult[]> => {
-  const { handle } = Context;
-
-  const group_folder = await handle!.getDirectoryHandle(CleanUpString(Group));
+  const group_folder = await Handle.getDirectoryHandle(CleanUpString(Group));
   const individual_folder = await group_folder.getDirectoryHandle(CleanUpString(Individual));
   const evaluations = await individual_folder.getDirectoryHandle(CleanUpString(Evaluation));
 

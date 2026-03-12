@@ -1,5 +1,3 @@
-import { CleanUpString } from './strings';
-
 /**
  * Route information type guards
  */
@@ -100,7 +98,7 @@ export type RouteInformationType =
  * @returns
  */
 export default function createHref(route: RouteInformationType) {
-  const _ = CleanUpString;
+  //const _ = CleanUpString;
 
   switch (route.type) {
     //case 'Home':
@@ -114,29 +112,29 @@ export default function createHref(route: RouteInformationType) {
     case 'Settings':
       return '/settings';
     case 'Individuals':
-      return `/session/${_(route.group)}`;
+      return `/session/${route.group}`;
     case 'Evaluations':
-      return `/session/${_(route.group)}/${_(route.individual)}`;
+      return `/session/${route.group}/${route.individual}`;
     case 'Evaluations Import':
-      return `/session/${_(route.group)}/${_(route.individual)}/import`;
+      return `/session/${route.group}/${route.individual}/import`;
     case 'Session Designer':
-      return `/session/${_(route.group)}/${_(route.individual)}/${_(route.evaluation)}`;
+      return `/session/${route.group}/${route.individual}/${route.evaluation}`;
     case 'Evaluation Viewer':
-      return `/session/${_(route.group)}/${_(route.individual)}/${_(route.evaluation)}/view`;
+      return `/session/${route.group}/${route.individual}/${route.evaluation}/view`;
     case 'Evaluation Session Viewer':
-      return `/session/${_(route.group)}/${_(route.individual)}/${_(route.evaluation)}/history`;
+      return `/session/${route.group}/${route.individual}/${route.evaluation}/history`;
     case 'Evaluation Session Analysis':
-      return `/session/${_(route.group)}/${_(route.individual)}/${_(route.evaluation)}/history/${route.index}`;
+      return `/session/${route.group}/${route.individual}/${route.evaluation}/history/${route.index}`;
     case 'Evaluation Session Manager':
-      return `/session/${_(route.group)}/${_(route.individual)}/${_(route.evaluation)}/history/edit/${route.index}`;
+      return `/session/${route.group}/${route.individual}/${route.evaluation}/history/edit/${route.index}`;
     case 'Evaluation Visualizer-Rate':
-      return `/session/${_(route.group)}/${_(route.individual)}/${_(route.evaluation)}/rate`;
+      return `/session/${route.group}/${route.individual}/${route.evaluation}/rate`;
     case 'Evaluation Visualizer-Proportion':
-      return `/session/${_(route.group)}/${_(route.individual)}/${_(route.evaluation)}/proportion`;
+      return `/session/${route.group}/${route.individual}/${route.evaluation}/proportion`;
     case 'Reli Viewer':
-      return `/session/${_(route.group)}/${_(route.individual)}/${_(route.evaluation)}/reli`;
+      return `/session/${route.group}/${route.individual}/${route.evaluation}/reli`;
     case 'Keysets':
-      return `/session/${_(route.group)}/${_(route.individual)}/keysets`;
+      return `/session/${route.group}/${route.individual}/keysets`;
     case 'Sync Page':
       return '/dashboard/sync';
     default:

@@ -1,9 +1,9 @@
-import { FolderContextProvider, FolderHandleContext, FolderHandleContextType } from './context/folder-context';
+import { FolderContextProvider } from './context/folder-context';
 import { ThemeProvider } from './components/ui/theme-provider';
 import { routeTree } from './routeTree.gen';
-import { RouterProvider, createRouter } from '@tanstack/react-router';
+import { RouterProvider, createHashHistory, createRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useContext } from 'react';
+import { routerHandle, RouterHandle } from './context/router-context';
 
 /*
 
@@ -90,20 +90,23 @@ const AppRoot = () => {
 */
 
 export interface CustomizedRouterContext {
-  handle: FileSystemDirectoryHandle | undefined;
+  routerHandle: RouterHandle;
   //settings: ApplicationSettingsTypes;
   queryClient: QueryClient;
-  ctx: FolderHandleContextType;
+  //ctx: FolderHandleContextType;
 }
+
+const hashHistory = createHashHistory();
 
 // Set up a Router instance
 const router = createRouter({
   routeTree,
+  history: hashHistory,
   context: {
     queryClient: undefined!,
-    handle: undefined,
+    routerHandle: undefined!,
     //settings: undefined!,
-    ctx: undefined!,
+    //ctx: undefined!,
   },
 });
 
@@ -117,14 +120,18 @@ declare module '@tanstack/react-router' {
 export const queryClient = new QueryClient();
 
 function App() {
-  const dataContext = useContext(FolderHandleContext) as unknown as FolderHandleContextType;
-
   return (
     <>
       <ThemeProvider defaultTheme="system">
         <FolderContextProvider>
           <QueryClientProvider client={queryClient}>
-            <RouterProvider router={router} context={{ ctx: dataContext, queryClient: queryClient }} />
+            <RouterProvider
+              router={router}
+              context={{
+                routerHandle: routerHandle,
+                queryClient: queryClient,
+              }}
+            />
             {
               //<AppRoot />
             }

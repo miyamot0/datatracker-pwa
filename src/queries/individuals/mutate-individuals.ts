@@ -1,23 +1,19 @@
-import { FolderHandleContextType } from '@/context/folder-context';
-import { fetchIndividuals } from './query-individuals';
+import { clientQueryOptions } from './query-individuals';
 import { CleanUpString } from '@/lib/strings';
-import { queryClient } from '@/context/query-client';
+import { queryClient } from '@/App';
 
 export const mutationIndividuals = async ({
   Group,
-  Individual,
-  Context,
+  Individuals,
+  Handle,
   Action,
 }: {
   Group: string;
-  Individual: string[];
-  Context: FolderHandleContextType;
+  Individuals: string[];
+  Handle: FileSystemDirectoryHandle;
   Action: 'Add' | 'Delete';
 }): Promise<string[]> => {
-  const individuals: string[] = await queryClient.fetchQuery({
-    queryKey: ['/', Group],
-    queryFn: () => fetchIndividuals({ Context, Group }),
-  });
+  const individuals: string[] = await queryClient.fetchQuery(clientQueryOptions(Handle, Group));
 
   if (!individuals) {
     throw new Error('Individuals not found');
@@ -25,13 +21,13 @@ export const mutationIndividuals = async ({
 
   let newIndividualList = individuals;
 
-  const group_dir = await Context.handle!.getDirectoryHandle(CleanUpString(Group));
+  const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
 
   if (Action == 'Add') {
-    await group_dir.getDirectoryHandle(Individual[0], { create: true });
-    newIndividualList.push(Individual[0]);
+    await group_dir.getDirectoryHandle(Individuals[0], { create: true });
+    newIndividualList.push(Individuals[0]);
   } else if (Action == 'Delete') {
-    for (const indiv in individuals) {
+    for (const indiv of Individuals) {
       await group_dir.removeEntry(indiv, { recursive: true });
       newIndividualList = newIndividualList.filter((i) => i != indiv);
     }

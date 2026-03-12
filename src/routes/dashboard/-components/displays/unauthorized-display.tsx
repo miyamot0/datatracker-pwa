@@ -5,8 +5,10 @@ import { FolderHandleContext } from '@/context/folder-context';
 import { useContext } from 'react';
 import { displayConditionalNotification } from '@/lib/notifications';
 import BackButton from '@/components/ui/back-button';
+import { useRouter } from '@tanstack/react-router';
 
 export default function UnauthorizedDisplay() {
+  const router = useRouter();
   const { setHandle, settings } = useContext(FolderHandleContext);
 
   return (
@@ -42,18 +44,20 @@ export default function UnauthorizedDisplay() {
                   'Error Authorizing Directory',
                   "Please select a folder named 'DataTracker' to continue.",
                   3000,
-                  true
+                  true,
                 );
                 return;
               }
 
               if (directory_picker) {
                 setHandle(directory_picker);
+                router.options.context.routerHandle.setHandle(directory_picker);
+                router.invalidate();
 
                 displayConditionalNotification(
                   settings,
                   'Access Authorized',
-                  'You can you interact with files in the relevant folder.'
+                  'You can you interact with files in the relevant folder.',
                 );
               }
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -63,7 +67,7 @@ export default function UnauthorizedDisplay() {
                 'Error Authorizing Directory',
                 'Please select an applicable, non-system folder to continue.',
                 3000,
-                true
+                true,
               );
             }
           }}

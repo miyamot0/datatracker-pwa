@@ -3,8 +3,8 @@ import { DocumentationObjects } from '@/lib/docs';
 import createHref from '@/lib/links';
 import { KeywordColors } from '@/types/colors';
 import { FrontMatterUniversalType } from '@/types/mdx';
-import { createFileRoute } from '@tanstack/react-router';
-import DocumentationEntryPage from './(components)/viewer-documentation-entry/documentation-entry-page';
+import { createFileRoute, redirect } from '@tanstack/react-router';
+import DocumentationEntryPage from './-components/viewer-documentation-entry/documentation-entry-page';
 
 export const Route = createFileRoute('/documentation/$slug')({
   loader: ({ params }) => {
@@ -13,7 +13,9 @@ export const Route = createFileRoute('/documentation/$slug')({
     const Entry = DocumentationObjects.find((entry) => entry.matter.filename.replaceAll('.md', '') === slug);
 
     if (!Entry || !Entry.matter) {
-      throw createHref({ type: 'Documentation' });
+      throw redirect({
+        href: createHref({ type: 'Documentation' }),
+      });
     }
 
     const FrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(

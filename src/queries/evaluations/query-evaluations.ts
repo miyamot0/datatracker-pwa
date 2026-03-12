@@ -1,21 +1,23 @@
-import { FolderHandleContextType } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
 
+export const evaluationQueryOptions = (Handle: FileSystemDirectoryHandle, Group: string, Individual: string) => ({
+  queryKey: ['/', Group, Individual],
+  queryFn: () => fetchEvaluations({ Handle, Group, Individual }),
+});
+
 export const fetchEvaluations = async ({
-  Context,
+  Handle,
   Group,
   Individual,
 }: {
-  Context: FolderHandleContextType;
+  Handle: FileSystemDirectoryHandle;
   Group: string;
   Individual: string;
 }) => {
-  const { handle } = Context;
-
   const temp_evaluations = [] as string[];
 
   try {
-    const group_folder = await handle!.getDirectoryHandle(CleanUpString(Group));
+    const group_folder = await Handle.getDirectoryHandle(CleanUpString(Group));
     const individual_folder = await group_folder.getDirectoryHandle(CleanUpString(Individual));
     const entries = await individual_folder.values();
 

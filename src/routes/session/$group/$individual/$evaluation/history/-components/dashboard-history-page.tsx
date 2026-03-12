@@ -9,63 +9,35 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import createHref from '@/lib/links';
 import { cn } from '@/lib/utils';
 import { Edit2Icon, SearchIcon } from 'lucide-react';
-import { Link, redirect, useLoaderData } from 'react-router-dom';
-import { FolderHandleContextType } from '@/context/folder-context';
-import { CleanUpString } from '@/lib/strings';
 import { GenerateSavedFileName } from '@/lib/writer';
 import BackButton from '@/components/ui/back-button';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
-import { ApplicationSettingsTypes } from '@/types/settings';
 import { ModifiedSessionResult } from '@/types/storage';
-import { fetchSessionOutcomes } from '@/queries/outcomes/query-session-outcomes';
+import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { queryClient } from '@/context/query-client';
 import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outcomes';
 import { toast } from 'sonner';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { queryClient } from '@/App';
+import { useContext } from 'react';
+import { FolderHandleContext } from '@/context/folder-context';
+import { Link } from '@tanstack/react-router';
 
-type LoaderResult = {
+export default function DashboardHistoryPage({
+  Group,
+  Individual,
+  Evaluation,
+}: {
   Group: string;
   Individual: string;
   Evaluation: string;
-  Settings: ApplicationSettingsTypes;
-  Context: FolderHandleContextType;
-};
+}) {
+  const { settings, handle } = useContext(FolderHandleContext);
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const sessionHistoryLoader = (ctx: FolderHandleContextType) => {
-  const { handle, settings } = ctx;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return async ({ params }: any) => {
-    const { Group, Individual, Evaluation } = params;
-
-    if (!Group || !Individual || !Evaluation || !handle) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    return {
-      Context: ctx,
-      Group: CleanUpString(Group),
-      Individual: CleanUpString(Individual),
-      Evaluation: CleanUpString(Evaluation),
-      Settings: settings,
-    } satisfies LoaderResult;
-  };
-};
-
-export default function DashboardHistoryPage() {
-  const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Evaluation, Settings, Context } = loaderResult;
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['/', Group, Individual, Evaluation, 'outcomes'],
-    queryFn: () => fetchSessionOutcomes({ Context, Group, Individual, Evaluation }),
-  });
+  const { data, isLoading, error } = useQuery(sessionOutcomesQueryOptions(handle!, Group, Individual, Evaluation));
 
   const mutateSessionOutcomes = useMutation({
     mutationFn: mutationSettingsOutcomes,
@@ -130,29 +102,30 @@ export default function DashboardHistoryPage() {
         <div className="flex flex-row justify-end gap-2">
           <Link
             className="flex flex-row items-center"
-            to={createHref({
-              type: 'Evaluation Session Analysis',
+            to="/session/$group/$individual/$evaluation/history/$index"
+            params={{
               group: Group,
               individual: Individual,
               evaluation: Evaluation,
               index: GenerateSavedFileName(row.original.SessionSettings).replaceAll('.json', ''),
-            })}
+            }}
           >
             <Button variant={'outline'} className="shadow" size={'sm'}>
               <SearchIcon className="mr-2 h-4 w-4" />
               View
             </Button>
           </Link>
-          {Settings.EnableFileDeletion && (
+
+          {settings.EnableFileDeletion && (
             <Link
               className="flex flex-row items-center"
-              to={createHref({
-                type: 'Evaluation Session Manager',
+              to="/session/$group/$individual/$evaluation/history/edit/$index"
+              params={{
                 group: Group,
                 individual: Individual,
                 evaluation: Evaluation,
-                index: row.original.Filename,
-              })}
+                index: GenerateSavedFileName(row.original.SessionSettings).replaceAll('.json', ''),
+              }}
             >
               <Button variant={'outline'} className="shadow" size={'sm'}>
                 <Edit2Icon className="mr-2 h-4 w-4" />
@@ -194,7 +167,7 @@ export default function DashboardHistoryPage() {
           </p>
 
           <DataTable
-            settings={Settings}
+            settings={settings}
             columns={columns}
             data={data}
             callback={async (rows) => {
@@ -203,7 +176,7 @@ export default function DashboardHistoryPage() {
               toast.promise(
                 async () =>
                   await mutateSessionOutcomes.mutateAsync({
-                    Context,
+                    Handle: handle!,
                     Group,
                     Individual,
                     Evaluation,
@@ -233,7 +206,7 @@ export default function DashboardHistoryPage() {
               toast.promise(
                 async () =>
                   await mutateSessionOutcomes.mutateAsync({
-                    Context,
+                    Handle: handle!,
                     Group,
                     Individual,
                     Evaluation,

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import createHref from '@/lib/links';
 import { DatabaseIcon, FolderInput, FolderPlus } from 'lucide-react';
-import { DataTable } from '../../../ui/data-table-common';
+import { DataTable } from '../../../../components/ui/data-table-common';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { ColumnDef } from '@tanstack/react-table';
 import { FolderHandleContext } from '@/context/folder-context';
@@ -45,7 +45,8 @@ export default function AuthorizedDisplayContent({ Groups }: Props) {
           <Button size={'sm'} variant={'outline'} className="flex flex-row divide-x justify-between mx-0 px-0 shadow">
             <Link
               className="px-3 hover:underline flex flex-row items-center"
-              to={createHref({ type: 'Individuals', group: row.original.Group })}
+              to="/session/$group"
+              params={{ group: row.original.Group }}
             >
               <FolderInput className="mr-2 h-4 w-4" />
               Open Group

@@ -1,17 +1,14 @@
-import { FolderHandleContextType } from '@/context/folder-context';
-import { queryClient } from '@/context/query-client';
-import { fetchEvaluationsAll } from './query-evaluations-all';
+import { evaluationsAllQueryOptions } from './query-evaluations-all';
 import { EvaluationRecord } from '../keysets/mutate-keyboards';
+import { queryClient } from '@/App';
 
 const DuplicateEvaluationRecord = async (
-  Context: FolderHandleContextType,
+  Handle: FileSystemDirectoryHandle,
   Group: string,
   Individual: string,
   Evaluation: EvaluationRecord,
 ): Promise<EvaluationRecord> => {
-  const { handle } = Context;
-
-  const g_folder = await handle!.getDirectoryHandle(Group);
+  const g_folder = await Handle.getDirectoryHandle(Group);
   const i_folder = await g_folder.getDirectoryHandle(Individual);
   const e_folder = await i_folder.getDirectoryHandle(Evaluation.Evaluation, { create: true });
 
@@ -35,19 +32,16 @@ export const mutationEvaluationsAll = async ({
   Group,
   Individual,
   RelevantRecords,
-  Context,
+  Handle,
   Action,
 }: {
   Group: string;
   Individual: string;
   RelevantRecords?: EvaluationRecord[];
-  Context: FolderHandleContextType;
+  Handle: FileSystemDirectoryHandle;
   Action: 'Import';
 }): Promise<EvaluationRecord[]> => {
-  const evaluationsAll: EvaluationRecord[] = await queryClient.fetchQuery({
-    queryKey: ['/', 'metaEvaluations'],
-    queryFn: () => fetchEvaluationsAll({ Context }),
-  });
+  const evaluationsAll: EvaluationRecord[] = await queryClient.fetchQuery(evaluationsAllQueryOptions(Handle));
 
   if (!evaluationsAll) {
     throw new Error('Evaluations not found');
@@ -58,7 +52,7 @@ export const mutationEvaluationsAll = async ({
   switch (Action) {
     case 'Import': {
       for (const evaluation of RelevantRecords ?? []) {
-        const newEntry = await DuplicateEvaluationRecord(Context, Group, Individual, evaluation);
+        const newEntry = await DuplicateEvaluationRecord(Handle, Group, Individual, evaluation);
 
         newEvaluationRecordsList.push(newEntry);
       }
