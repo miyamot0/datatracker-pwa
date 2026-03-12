@@ -1,78 +1,29 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { FrontMatterUniversalType } from '@/types/mdx';
+import { FrontMatterUniversalType, ParsedFrontMatterType } from '@/types/mdx';
 import PageWrapper from '@/components/layout/page-wrapper';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { BuildDocumentationBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { Badge } from '@/components/ui/badge';
 import { KeywordColors } from '@/types/colors';
 import { cn } from '@/lib/utils';
-import { generateKeywordColors } from '@/lib/colors';
-import { Link, redirect, useLoaderData } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MdViewer } from '@/components/pages/viewer-documentation-entry/views/md-viewer';
-import { DocumentationObjects } from '@/lib/docs';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import BackButton from '@/components/ui/back-button';
 import createHref from '@/lib/links';
-import { FolderHandleContextType } from '@/context/folder-context';
+import { Link } from '@tanstack/react-router';
+import { MdViewer } from './views/md-viewer';
 
-type LoaderResult = {
+export default function DocumentationEntryPage({
+  KeywordArray,
+  PreviousEntry,
+  NextEntry,
+  Entry,
+}: {
   FrontMatter: FrontMatterUniversalType[];
   KeywordArray: KeywordColors[];
-  Context: FolderHandleContextType;
-  PreviousEntry:
-    | {
-        matter: any;
-        value: string;
-      }
-    | undefined;
-  NextEntry:
-    | {
-        matter: any;
-        value: string;
-      }
-    | undefined;
-  Entry: {
-    matter: any;
-    value: string;
-  };
-};
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const documentationEntryPageLoader = (ctx: FolderHandleContextType) => {
-  return async ({ params }: any) => {
-    const { slug } = params;
-
-    const Entry = DocumentationObjects.find((entry) => entry.matter.filename.replaceAll('.md', '') === slug);
-
-    if (!Entry || !Entry.matter) {
-      const response = redirect(createHref({ type: 'Documentation' }));
-      throw response;
-    }
-
-    const FrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(
-      (entry) => entry.matter as FrontMatterUniversalType
-    );
-    const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
-
-    const PreviousEntry = DocumentationObjects.find((e) => e.matter.index === Entry.matter.index - 1);
-    const NextEntry = DocumentationObjects.find((e) => e.matter.index === Entry.matter.index + 1);
-
-    return {
-      FrontMatter,
-      KeywordArray,
-      Context: ctx,
-      PreviousEntry,
-      NextEntry,
-      Entry,
-    } satisfies LoaderResult;
-  };
-};
-
-export default function DocumentationEntryPage() {
-  const loaderResult = useLoaderData() as LoaderResult;
-  const { KeywordArray, PreviousEntry, NextEntry, Entry } = loaderResult;
-
+  PreviousEntry?: ParsedFrontMatterType;
+  NextEntry?: ParsedFrontMatterType;
+  Entry: ParsedFrontMatterType;
+}) {
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -110,8 +61,8 @@ export default function DocumentationEntryPage() {
         </CardContent>
         <CardFooter className="flex flex-row justify-between">
           <Link
-            unstable_viewTransition
-            to={`/documentation/${PreviousEntry?.matter.filename.replaceAll('.md', '')}`}
+            to={`/documentation/$slug`}
+            params={{ slug: PreviousEntry?.matter.filename.replaceAll('.md', '') ?? '/documentation' }}
             onClick={scrollToTop}
             className={cn('flex flex-row', {
               'pointer-events-none disabled': !PreviousEntry,
@@ -124,8 +75,8 @@ export default function DocumentationEntryPage() {
           </Link>
 
           <Link
-            unstable_viewTransition
-            to={`/documentation/${NextEntry?.matter.filename.replaceAll('.md', '')}`}
+            to={`/documentation/$slug`}
+            params={{ slug: NextEntry?.matter.filename.replaceAll('.md', '') ?? '/documentation' }}
             onClick={scrollToTop}
             className={cn('flex flex-row', {
               'pointer-events-none disabled': !NextEntry,

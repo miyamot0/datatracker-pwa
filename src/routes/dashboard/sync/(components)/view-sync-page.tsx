@@ -1,9 +1,7 @@
 import PageWrapper from '@/components/layout/page-wrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FolderHandleContextType } from '@/context/folder-context';
-import createHref from '@/lib/links';
-import { useMemo, useState } from 'react';
-import { redirect, useLoaderData } from 'react-router-dom';
+import { FolderHandleContext } from '@/context/folder-context';
+import { useContext, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileSyncingStatus } from '@/types/sync';
 import SyncToRemoteTable from './tables/sync-to-remote-table';
@@ -14,29 +12,8 @@ import { displayConditionalNotification } from '@/lib/notifications';
 import BackButton from '@/components/ui/back-button';
 import { WrappedButton } from './views/wrapped-btn';
 
-type LoaderResult = {
-  Context: FolderHandleContextType;
-};
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const syncPageLoader = (ctx: FolderHandleContextType) => {
-  const { handle } = ctx;
-
-  return async () => {
-    if (!handle) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    return {
-      Context: ctx,
-    } satisfies LoaderResult;
-  };
-};
-
 export default function ViewSyncPage() {
-  const loaderResult = useLoaderData() as LoaderResult;
-  const { Context } = loaderResult;
+  const Context = useContext(FolderHandleContext);
   const { settings, handle } = Context;
 
   const [remote_handle, setRemoteHandle] = useState<FileSystemDirectoryHandle | undefined>();
@@ -90,7 +67,7 @@ export default function ViewSyncPage() {
                 'Error Authorizing Remote Directory',
                 "Please select a remote folder named 'DataTracker' to continue.",
                 3000,
-                true
+                true,
               );
               return;
             }
@@ -101,7 +78,7 @@ export default function ViewSyncPage() {
               displayConditionalNotification(
                 settings,
                 'Access Authorized',
-                'You can you interact with files in the relevant folder.'
+                'You can you interact with files in the relevant folder.',
               );
             }
           } catch {

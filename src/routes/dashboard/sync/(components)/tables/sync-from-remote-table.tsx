@@ -19,7 +19,7 @@ type Props = {
 async function writeOutFileToLocal(
   remoteDirectory: FileSystemDirectoryHandle,
   handle: FileSystemDirectoryHandle,
-  value: SyncEntryTableRow
+  value: SyncEntryTableRow,
 ) {
   if (!remoteDirectory || !handle) return;
 
@@ -41,7 +41,7 @@ async function syncAllFiles(
   rows: SyncEntryTableRow[],
   Handle: FileSystemDirectoryHandle,
   RemoteHandle: FileSystemDirectoryHandle,
-  SetLocalCallback: React.Dispatch<React.SetStateAction<string[]>>
+  SetLocalCallback: React.Dispatch<React.SetStateAction<string[]>>,
 ) {
   const files_added: string[] = [];
   for (const row of rows) {
@@ -68,7 +68,7 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
         }
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {

@@ -4,26 +4,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import createHref from '@/lib/links';
 import { DatabaseIcon, FolderInput, FolderPlus } from 'lucide-react';
 import { DataTable } from '../../../ui/data-table-common';
-import { Link } from 'react-router-dom';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { ColumnDef } from '@tanstack/react-table';
-import { FolderHandleContextType } from '@/context/folder-context';
+import { FolderHandleContext } from '@/context/folder-context';
 import { toast } from 'sonner';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DemoDataFolderName, mutationGroups } from '@/queries/groups/mutate-groups';
-import { queryClient } from '@/context/query-client';
+import { useContext } from 'react';
+import { Link } from '@tanstack/react-router';
 
 type Props = {
   Groups: string[];
-  Context: FolderHandleContextType;
 };
 
 type GroupTableRow = {
   Group: string;
 };
 
-export default function AuthorizedDisplay({ Groups, Context }: Props) {
-  const { settings } = Context;
+export default function AuthorizedDisplayContent({ Groups }: Props) {
+  const { settings, handle } = useContext(FolderHandleContext);
+  const queryClient = useQueryClient();
 
   const mutateGroups = useMutation({
     mutationFn: mutationGroups,
@@ -44,7 +44,6 @@ export default function AuthorizedDisplay({ Groups, Context }: Props) {
         <div className="flex flex-row justify-end">
           <Button size={'sm'} variant={'outline'} className="flex flex-row divide-x justify-between mx-0 px-0 shadow">
             <Link
-              unstable_viewTransition
               className="px-3 hover:underline flex flex-row items-center"
               to={createHref({ type: 'Individuals', group: row.original.Group })}
             >
@@ -98,7 +97,7 @@ export default function AuthorizedDisplay({ Groups, Context }: Props) {
               async () =>
                 await mutateGroups.mutateAsync({
                   Group: groupNames,
-                  Context,
+                  Handle: handle!,
                   Action: 'Delete',
                 }),
               {
@@ -106,8 +105,8 @@ export default function AuthorizedDisplay({ Groups, Context }: Props) {
                 success: () => {
                   return 'Folders removed.';
                 },
-                error: () => {
-                  return 'Folders were not removed.';
+                error: (e: Error) => {
+                  return `Folders were not removed: ${e.message}`;
                 },
               },
             );
@@ -132,7 +131,7 @@ export default function AuthorizedDisplay({ Groups, Context }: Props) {
                     async () =>
                       mutateGroups.mutateAsync({
                         Group: [DemoDataFolderName],
-                        Context,
+                        Handle: handle!,
                         Action: 'Demo',
                       }),
                     {
@@ -140,8 +139,8 @@ export default function AuthorizedDisplay({ Groups, Context }: Props) {
                       success: () => {
                         return 'Example data has been added! Create a separate "DataTracker" folder elsewhere on your disk to explore "Sync" functionality';
                       },
-                      error: () => {
-                        return 'Files were not written to disk.';
+                      error: (e: Error) => {
+                        return `Files were not written to disk: ${e.message}`;
                       },
                     },
                   );
@@ -174,7 +173,7 @@ export default function AuthorizedDisplay({ Groups, Context }: Props) {
                     async () =>
                       await mutateGroups.mutateAsync({
                         Group: [input.trim()],
-                        Context,
+                        Handle: handle!,
                         Action: 'Add',
                       }),
                     {
@@ -182,8 +181,8 @@ export default function AuthorizedDisplay({ Groups, Context }: Props) {
                       success: () => {
                         return 'New folder created.';
                       },
-                      error: () => {
-                        return 'Folder was not created.';
+                      error: (e: Error) => {
+                        return `Folder was not created: ${e.message}.`;
                       },
                     },
                   );

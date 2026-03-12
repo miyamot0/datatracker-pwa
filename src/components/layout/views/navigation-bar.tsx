@@ -11,8 +11,8 @@ import AuthorizationStatus from './authorization-status';
 import createHref from '@/lib/links';
 import { Button } from '@/components/ui/button';
 import { MenuIcon, RefreshCcw } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { Link } from '@tanstack/react-router';
 import { FolderHandleContext } from '@/context/folder-context';
 
 export type BreadCrumbListing = {
@@ -34,7 +34,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link unstable_viewTransition to={createHref({ type: 'Home' })} className={cn('underline')}>
+              <Link to={createHref({ type: 'Home' })} className={cn('underline')}>
                 Home
               </Link>
             </BreadcrumbLink>
@@ -46,7 +46,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link unstable_viewTransition to={breadcrumb.href} className={cn('underline')}>
+                    <Link to={breadcrumb.href} className={cn('underline')}>
                       {breadcrumb.label}
                     </Link>
                   </BreadcrumbLink>
@@ -69,8 +69,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
         <AuthorizationStatus />
 
         <Link
-          unstable_viewTransition
-          to={createHref({ type: 'Sync Page' })}
+          to={'/dashboard/sync'}
           className={cn('flex flex-row gap-2 items-center', {
             'disabled cursor-default pointer-events-none opacity-50': !handle,
           })}
@@ -86,11 +85,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
           </Button>
         </Link>
 
-        <Link
-          unstable_viewTransition
-          to={createHref({ type: 'Settings' })}
-          className="flex flex-row gap-2 items-center"
-        >
+        <Link to={'/settings'} className="flex flex-row gap-2 items-center">
           <Button
             name="Settings button"
             aria-label="Settings Button"

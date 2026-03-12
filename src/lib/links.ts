@@ -103,8 +103,8 @@ export default function createHref(route: RouteInformationType) {
   const _ = CleanUpString;
 
   switch (route.type) {
-    case 'Home':
-      return '/';
+    //case 'Home':
+    //  return '/';
     case 'Documentation':
       return '/documentation';
     case 'Documentation Entry':

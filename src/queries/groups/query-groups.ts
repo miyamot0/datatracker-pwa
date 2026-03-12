@@ -1,10 +1,11 @@
-import { FolderHandleContextType } from '@/context/folder-context';
+export const groupQueryOptions = (Handle: FileSystemDirectoryHandle) => ({
+  queryKey: ['/'],
+  queryFn: () => fetchGroups(Handle),
+});
 
-export const fetchGroups = async (Context: FolderHandleContextType) => {
-  const { handle } = Context;
-
+export const fetchGroups = async (Handle: FileSystemDirectoryHandle) => {
   try {
-    const entries = await handle!.values();
+    const entries = await Handle.values();
     const temp_group_folders = [] as string[];
 
     for await (const entry of entries) {

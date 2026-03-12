@@ -10,3 +10,11 @@ export type FrontMatterUniversalType = {
   description: string;
   index: number;
 };
+
+/**
+ * This is the type for the parsed frontmatter and content of an MD file
+ */
+export type ParsedFrontMatterType = {
+  matter: FrontMatterUniversalType;
+  value: string;
+};

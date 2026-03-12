@@ -1,42 +1,11 @@
-import { createHashRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
-import HomePage from './components/pages/home/home-page';
 import { FolderContextProvider, FolderHandleContext, FolderHandleContextType } from './context/folder-context';
 import { ThemeProvider } from './components/ui/theme-provider';
-import SettingsPage from './components/pages/editor-settings/settings-page';
-import DocumentationListingPage, {
-  documentationListingPageLoader,
-} from './components/pages/viewer-documentation-list/documentation-listing-page';
-import DocumentationEntryPage, {
-  documentationEntryPageLoader,
-} from './components/pages/viewer-documentation-entry/documentation-entry-page';
-import DashboardPage, { groupsPageLoader } from './components/pages/dashboard-group/dashboard-page';
-import ClientsPage, { clientsPageLoader } from './components/pages/dashboard-clients/clients-page';
-import EvaluationsPage, { evaluationsPageLoader } from './components/pages/dashboard-evaluations/evaluations-page';
-import KeySetsPage, { keysetsPageLoader } from './components/pages/dashboard-keysets/keysets-page';
-import KeySetEditor, { keysetEditorPageLoader } from './components/pages/editor-keysets/keyset-editor';
-import { sessionDesignerPageLoader, SessionDesignerPage } from './components/pages/editor-session/session-designer';
-import ResultsViewerPage, { resultsViewerLoader } from './components/pages/viewer-results/results-viewer-page';
-import ResultsRateVisualsPage, { resultsViewerRate } from './components/pages/viewer-visuals/results-rate-visuals-page';
-import ReliabilityViewerPage, { reliViewerLoader } from './components/pages/viewer-agreement/reli-viewer-page';
-import SessionRecorderPage, {
-  sessionRecorderPageLoader,
-} from './components/pages/session-recorder/session-recorder-page';
-import ViewerKeysetPage from './components/pages/viewer-keysets/viewer-keysets-page';
-import ViewerEvaluationsPage, {
-  evaluationImportPageLoader,
-} from './components/pages/viewer-evaluations/viewer-evaluations-page';
-import ViewSyncPage, { syncPageLoader } from './components/pages/viewer-sync-queue/view-sync-page';
-import { useContext, useMemo } from 'react';
-import DashboardHistoryPage, {
-  sessionHistoryLoader,
-} from './components/pages/dashboard-history/dashboard-history-page';
-import SessionViewerPage, { sessionViewerLoader } from './components/pages/viewer-session/session-viewer-page';
-import ResultsProportionVisualsPage, {
-  resultsViewerProportion,
-} from './components/pages/viewer-visuals/results-proportion-visuals-page';
-import SessionManagerPage, { sessionManagerLoader } from './components/pages/session-manager/session-manager-page';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from './context/query-client';
+import { routeTree } from './routeTree.gen';
+import { RouterProvider, createRouter } from '@tanstack/react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useContext } from 'react';
+
+/*
 
 const AppRoot = () => {
   const dataContext = useContext(FolderHandleContext) as unknown as FolderHandleContextType;
@@ -118,13 +87,47 @@ const AppRoot = () => {
   return <RouterProvider future={{ v7_startTransition: true }} router={router} />;
 };
 
+*/
+
+export interface CustomizedRouterContext {
+  handle: FileSystemDirectoryHandle | undefined;
+  //settings: ApplicationSettingsTypes;
+  queryClient: QueryClient;
+  ctx: FolderHandleContextType;
+}
+
+// Set up a Router instance
+const router = createRouter({
+  routeTree,
+  context: {
+    queryClient: undefined!,
+    handle: undefined,
+    //settings: undefined!,
+    ctx: undefined!,
+  },
+});
+
+// Register things for type safety
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
+
+export const queryClient = new QueryClient();
+
 function App() {
+  const dataContext = useContext(FolderHandleContext) as unknown as FolderHandleContextType;
+
   return (
     <>
       <ThemeProvider defaultTheme="system">
         <FolderContextProvider>
           <QueryClientProvider client={queryClient}>
-            <AppRoot />
+            <RouterProvider router={router} context={{ ctx: dataContext, queryClient: queryClient }} />
+            {
+              //<AppRoot />
+            }
           </QueryClientProvider>
         </FolderContextProvider>
       </ThemeProvider>

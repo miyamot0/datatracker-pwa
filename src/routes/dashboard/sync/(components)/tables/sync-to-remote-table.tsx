@@ -16,7 +16,7 @@ type Props = {
 async function writeOutFileToRemote(
   remoteDirectory: FileSystemDirectoryHandle,
   handle: FileSystemDirectoryHandle,
-  value: SyncEntryTableRow
+  value: SyncEntryTableRow,
 ) {
   if (!remoteDirectory || !handle) return;
 
@@ -38,7 +38,7 @@ async function syncAllFiles(
   rows: SyncEntryTableRow[],
   Handle: FileSystemDirectoryHandle,
   RemoteHandle: FileSystemDirectoryHandle,
-  SetRemoteCallback: React.Dispatch<React.SetStateAction<string[]>>
+  SetRemoteCallback: React.Dispatch<React.SetStateAction<string[]>>,
 ) {
   const files_added: string[] = [];
   for (const row of rows) {
@@ -65,7 +65,7 @@ export default function SyncToRemoteTable({ Handle, RemoteHandle }: Props) {
         }
       }
     },
-    []
+    [],
   );
 
   useEffect(() => {

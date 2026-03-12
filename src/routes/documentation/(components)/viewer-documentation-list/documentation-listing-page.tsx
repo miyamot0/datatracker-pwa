@@ -2,44 +2,21 @@ import PageWrapper from '@/components/layout/page-wrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { generateKeywordColors } from '@/lib/colors';
 import { FrontMatterUniversalType } from '@/types/mdx';
 import { cn } from '@/lib/utils';
 import { KeywordColors } from '@/types/colors';
 import { BookIcon, ChevronRight } from 'lucide-react';
-import { Link, useLoaderData } from 'react-router-dom';
-import { DocumentationObjects } from '@/lib/docs';
 import BackButton from '@/components/ui/back-button';
 import createHref from '@/lib/links';
-import { FolderHandleContextType } from '@/context/folder-context';
+import { Link } from '@tanstack/react-router';
 
-type LoaderResult = {
+export default function DocumentationListingPage({
+  FrontMatter,
+  KeywordArray,
+}: {
   FrontMatter: FrontMatterUniversalType[];
   KeywordArray: KeywordColors[];
-  Context: FolderHandleContextType;
-};
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const documentationListingPageLoader = (ctx: FolderHandleContextType) => {
-  return async () => {
-    const FrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(
-      (entry) => entry.matter as FrontMatterUniversalType
-    );
-
-    const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
-
-    return {
-      FrontMatter,
-      KeywordArray,
-      Context: ctx,
-    } satisfies LoaderResult;
-  };
-};
-
-export default function DocumentationListingPage() {
-  const loaderResult = useLoaderData() as LoaderResult;
-  const { FrontMatter, KeywordArray } = loaderResult;
-
+}) {
   return (
     <PageWrapper label={'Documentation'} className="select-none">
       <Card className="w-full max-w-screen-2xl">
@@ -84,8 +61,8 @@ export default function DocumentationListingPage() {
                 </div>
 
                 <Link
-                  unstable_viewTransition
-                  to={`/documentation/${entry.filename.replaceAll('.md', '')}`}
+                  to={`/documentation/$slug`}
+                  params={{ slug: entry.filename.replaceAll('.md', '') }}
                   className="w-full md:w-fit"
                 >
                   <Button variant={'outline'} className="shadow w-full md:w-fit " size={'sm'}>

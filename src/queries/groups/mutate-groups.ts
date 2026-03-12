@@ -1,23 +1,19 @@
-import { fetchGroups } from './query-groups';
-import { FolderHandleContextType } from '@/context/folder-context';
-import { queryClient } from '@/context/query-client';
+import { queryClient } from '@/App';
+import { groupQueryOptions } from './query-groups';
 import { DataExampleFiles } from '@/lib/data';
 
 export const DemoDataFolderName = 'Example DataTracker Group';
 
 export const mutationGroups = async ({
   Group,
-  Context,
+  Handle,
   Action,
 }: {
   Group: string[];
-  Context: FolderHandleContextType;
+  Handle: FileSystemDirectoryHandle;
   Action: 'Add' | 'Delete' | 'Demo';
 }): Promise<string[]> => {
-  const groups: string[] = await queryClient.fetchQuery({
-    queryKey: ['/'],
-    queryFn: () => fetchGroups(Context),
-  });
+  const groups: string[] = await queryClient.fetchQuery(groupQueryOptions(Handle));
 
   if (!groups) {
     throw new Error('Groups not found');
@@ -26,13 +22,13 @@ export const mutationGroups = async ({
   let newGroups = groups;
 
   if (Action == 'Add') {
-    await Context.handle!.getDirectoryHandle(Group[0], { create: true });
+    await Handle.getDirectoryHandle(Group[0], { create: true });
     newGroups.push(Group[0]);
   } else if (Action == 'Delete') {
-    await Context.handle!.removeEntry(Group[0], { recursive: true });
+    await Handle.removeEntry(Group[0], { recursive: true });
     newGroups = newGroups.filter((g) => g != Group[0]);
   } else if (Action == 'Demo') {
-    await copyDemoData(newGroups, Context);
+    await copyDemoData(newGroups, Handle);
 
     newGroups.push(DemoDataFolderName);
   }
@@ -40,16 +36,14 @@ export const mutationGroups = async ({
   return newGroups;
 };
 
-const copyDemoData = async (Groups: string[], Context: FolderHandleContextType) => {
-  const { handle } = Context;
-
+const copyDemoData = async (Groups: string[], Handle: FileSystemDirectoryHandle) => {
   if (Groups.includes(DemoDataFolderName)) {
     alert(`The ${DemoDataFolderName} folder already exists. Delete it if you'd like to re-load example data.`);
 
     throw new Error(`${DemoDataFolderName} already exists`);
   }
 
-  const folder = await handle!.getDirectoryHandle(DemoDataFolderName, { create: true });
+  const folder = await Handle.getDirectoryHandle(DemoDataFolderName, { create: true });
 
   for (const file of DataExampleFiles) {
     const participantId = file.path[0];

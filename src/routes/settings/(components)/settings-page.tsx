@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useContext } from 'react';
-import SettingsFormItemWrapper from './views/settings-form-item-wrapper';
+import SettingsFormItemWrapper from './settings-form-item-wrapper';
 import {
   ApplicationSettingsTypes,
   ELEVATED_PRIVILEGES_OPTIONS,

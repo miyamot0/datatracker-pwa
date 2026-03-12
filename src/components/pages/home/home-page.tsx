@@ -11,7 +11,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Link, useNavigate } from 'react-router-dom';
 import licenseInformation from '@/assets/licenses.json';
 import { cn } from '@/lib/utils';
 import { usePWAInstall } from 'react-use-pwa-install';
@@ -21,22 +20,25 @@ import ImageCarousel from './views/img-carousel';
 import { FolderHandleContext } from '@/context/folder-context';
 import { ApplicationSettingsTypes } from '@/types/settings';
 import { toast } from 'sonner';
+import { Link, useNavigate } from '@tanstack/react-router';
 
 export default function HomePage() {
   const install = usePWAInstall();
   const [display, setDisplay] = useState<'loading' | 'desktop' | 'mobile'>('loading');
   const { settings, saveSettings, setSettings } = useContext(FolderHandleContext);
-  const navigate = useNavigate();
+  const navigate = useNavigate({ from: '/' });
 
   useEffect(() => {
     setDisplay(isOnMobilePlatform() === true ? 'mobile' : 'desktop');
 
-    if (settings && settings.IsReturningUser === false) {
+    if (settings.IsReturningUser === false) {
       toast('Welcome! View Program Documentation for information on initial setup and use.', {
         duration: 4000,
         action: {
           label: 'Read Docs',
-          onClick: () => navigate(createHref({ type: 'Documentation' }), { unstable_viewTransition: true }),
+          onClick: () => {
+            navigate({ to: '/documentation' });
+          },
         },
         onAutoClose: () => {
           const newSettings = {
@@ -66,11 +68,7 @@ export default function HomePage() {
       <ImageCarousel />
 
       <div className="max-w-lg flex flex-col w-full py-8 gap-4">
-        <Link
-          to={createHref({ type: 'Documentation' })}
-          className="flex flex-row gap-2 items-center"
-          unstable_viewTransition
-        >
+        <Link to={createHref({ type: 'Documentation' })} className="flex flex-row gap-2 items-center">
           <Button variant={'outline'} className="w-full shadow-xl">
             <BookTextIcon className="mr-2 h-4 w-4" />
             Program Documentation
@@ -119,7 +117,7 @@ export default function HomePage() {
         </Dialog>
 
         {display === 'desktop' && (
-          <Link to={createHref({ type: 'Dashboard' })} className="flex flex-row" unstable_viewTransition>
+          <Link to={createHref({ type: 'Dashboard' })} className="flex flex-row">
             <Button className="w-full shadow-xl">
               <ChartLineIcon className="mr-2 h-4 w-4" />
               Load Application
