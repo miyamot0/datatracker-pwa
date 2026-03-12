@@ -11,58 +11,32 @@ import {
   BuildIndividualsBreadcrumb,
   BuildKeysetBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { redirect, useLoaderData } from 'react-router-dom';
 import { CleanUpString } from '@/lib/strings';
 import createHref from '@/lib/links';
 import BackButton from '@/components/ui/back-button';
-import { FolderHandleContextType } from '@/context/folder-context';
-import { fetchKeyboards } from '@/queries/keysets/query-keyboards';
+import { FolderHandleContext } from '@/context/folder-context';
+import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { KeySetInstance, KeySet } from '@/types/keyset';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { mutationKeyboards } from '@/queries/keysets/mutate-keyboards';
-import { queryClient } from '@/context/query-client';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { useContext } from 'react';
+import { queryClient } from '@/App';
 
-type LoaderResult = {
+export default function KeySetEditor({
+  Group,
+  Individual,
+  KeySet,
+}: {
   Group: string;
   Individual: string;
   KeySet: string;
-  Handle: FileSystemHandle;
-  Context: FolderHandleContextType;
-};
+}) {
+  const Context = useContext(FolderHandleContext);
+  const { handle } = Context;
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const keysetEditorPageLoader = (ctx: FolderHandleContextType) => {
-  const { handle } = ctx;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return async ({ params }: any) => {
-    const { Group, Individual, KeySet } = params;
-
-    if (!Group || !Individual || !KeySet || !handle) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    return {
-      Group: CleanUpString(Group),
-      Individual: CleanUpString(Individual),
-      KeySet: CleanUpString(KeySet),
-      Handle: handle,
-      Context: ctx,
-    } satisfies LoaderResult;
-  };
-};
-
-export default function KeySetEditor() {
-  const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, KeySet, Context } = loaderResult;
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['/', Group, Individual, 'keyboards'],
-    queryFn: () => fetchKeyboards({ Context, Group, Individual }),
-  });
+  const { data, isLoading, error } = useQuery(keyboardQueryOptions(handle!, Group, Individual));
 
   const mutateKeyboards = useMutation({
     mutationFn: mutationKeyboards,
@@ -126,7 +100,7 @@ export default function KeySetEditor() {
       Individual,
       Keysets: [],
       NewKeySet: new_keyset,
-      Context,
+      Handle: handle!,
       Action: 'Update',
     });
   };

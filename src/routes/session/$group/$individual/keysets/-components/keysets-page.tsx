@@ -7,7 +7,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Copy, Edit2, ImportIcon, Plus } from 'lucide-react';
-import { Link, redirect, useLoaderData } from 'react-router-dom';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import createHref from '@/lib/links';
 import BackButton from '@/components/ui/back-button';
@@ -15,53 +14,22 @@ import { ColumnDef } from '@tanstack/react-table';
 import { KeySet } from '@/types/keyset';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
-import { FolderHandleContextType } from '@/context/folder-context';
-import { CleanUpString } from '@/lib/strings';
+import { FolderHandleContext } from '@/context/folder-context';
 import { toast } from 'sonner';
-import { fetchKeyboards } from '@/queries/keysets/query-keyboards';
+import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { mutationKeyboards } from '@/queries/keysets/mutate-keyboards';
-import { queryClient } from '@/context/query-client';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { ErrorDisplay } from '@/components/suspense/error-display';
+import { queryClient } from '@/App';
+import { useContext } from 'react';
+import { Link } from '@tanstack/react-router';
 
-type LoaderResult = {
-  Group: string;
-  Individual: string;
-  Handle: FileSystemHandle;
-  Context: FolderHandleContextType;
-};
+export default function KeySetsPage({ Group, Individual }: { Group: string; Individual: string }) {
+  const Context = useContext(FolderHandleContext);
+  const { handle } = Context;
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const keysetsPageLoader = (ctx: FolderHandleContextType) => {
-  const { handle } = ctx;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return async ({ params }: any) => {
-    const { Group, Individual } = params;
-
-    if (!Group || !Individual || !handle) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    return {
-      Group: CleanUpString(Group),
-      Individual: CleanUpString(Individual),
-      Handle: handle,
-      Context: ctx,
-    } satisfies LoaderResult;
-  };
-};
-
-export default function KeySetsPage() {
-  const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Context } = loaderResult;
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['/', Group, Individual, 'keyboards'],
-    queryFn: () => fetchKeyboards({ Context, Group, Individual }),
-  });
+  const { data, isLoading, error } = useQuery(keyboardQueryOptions(handle!, Group, Individual));
 
   const mutateKeyboards = useMutation({
     mutationFn: mutationKeyboards,
@@ -139,7 +107,7 @@ export default function KeySetsPage() {
                       Individual,
                       Keysets: [row.original.Name],
                       Rename: new_key_set_name.trim(),
-                      Context,
+                      Handle: handle!,
                       Action: 'Duplicate',
                     }),
                   {
@@ -157,7 +125,14 @@ export default function KeySetsPage() {
               <Copy className="h-4 w-4 mr-2" />
               Duplicate
             </Button>
-            <Link unstable_viewTransition to={`/session/${Group}/${Individual}/keysets/${row.original.Name}`}>
+            <Link
+              to="/session/$group/$individual/keysets/$keyset"
+              params={{
+                group: Group,
+                individual: Individual,
+                keyset: row.original.Name,
+              }}
+            >
               <Button size={'sm'} variant={'outline'}>
                 <Edit2 className="h-4 w-4 mr-2" />
                 Edit
@@ -219,7 +194,7 @@ export default function KeySetsPage() {
                     Group,
                     Individual,
                     Keysets: keySetNames,
-                    Context,
+                    Handle: handle!,
                     Action: 'Delete',
                   }),
                 {
@@ -264,7 +239,7 @@ export default function KeySetsPage() {
                             Group,
                             Individual,
                             Keysets: [new_keyset_name.trim()],
-                            Context,
+                            Handle: handle!,
                             Action: 'Add',
                           }),
                         {
@@ -286,8 +261,11 @@ export default function KeySetsPage() {
                 <ToolTipWrapper Label="Import an existing KeySet for this client">
                   <Button variant={'outline'} className="shadow" size={'sm'}>
                     <Link
-                      to={`/session/${Group}/${Individual}/keysets/import`}
-                      unstable_viewTransition
+                      to="/session/$group/$individual/keysets/import"
+                      params={{
+                        group: Group,
+                        individual: Individual,
+                      }}
                       className="flex flex-row items-center"
                     >
                       <ImportIcon className="mr-2 h-4 w-4" />

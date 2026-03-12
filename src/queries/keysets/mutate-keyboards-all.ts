@@ -1,28 +1,25 @@
-import { FolderHandleContextType } from '@/context/folder-context';
 import { KeySet } from '@/types/keyset';
 import { importExistingKeysets } from './helpers/import-keysets';
-import { queryClient } from '@/context/query-client';
 import { fetchKeyboardsAll } from './query-keyboards-all';
+import { queryClient } from '@/App';
 
 export const mutateKeyboardsAll = async ({
-  Context,
+  Handle,
   Group,
   Individual,
   KeySets,
 }: {
-  Context: FolderHandleContextType;
+  Handle: FileSystemDirectoryHandle;
   Group: string;
   Individual: string;
   KeySets: KeySet[];
 }) => {
-  const { handle } = Context;
-
   const keysets = await queryClient.fetchQuery({
     queryKey: ['/', Group, 'metaKeyboards'],
-    queryFn: () => fetchKeyboardsAll({ Context, Group, Individual }),
+    queryFn: () => fetchKeyboardsAll({ Handle, Group, Individual }),
   });
 
-  const newKeySets = await importExistingKeysets(handle!, Group, Individual, KeySets);
+  const newKeySets = await importExistingKeysets(Handle, Group, Individual, KeySets);
   const client_keyboards_by_name = newKeySets.map((keyboard) => keyboard.Name);
 
   return keysets.filter(

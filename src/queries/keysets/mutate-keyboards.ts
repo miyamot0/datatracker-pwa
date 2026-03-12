@@ -1,10 +1,9 @@
-import { FolderHandleContextType } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
-import { queryClient } from '@/context/query-client';
-import { fetchKeyboards } from './query-keyboards';
+import { keyboardQueryOptions } from './query-keyboards';
 import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
 import { v4 as uuidv4 } from 'uuid';
 import { KeySet } from '@/types/keyset';
+import { queryClient } from '@/App';
 
 export type EvaluationRecord = {
   Group: string;
@@ -19,7 +18,7 @@ export const mutationKeyboards = async ({
   Keysets,
   Rename,
   NewKeySet,
-  Context,
+  Handle,
   Action,
 }: {
   Group: string;
@@ -27,13 +26,10 @@ export const mutationKeyboards = async ({
   Keysets: string[];
   Rename?: string;
   NewKeySet?: KeySet;
-  Context: FolderHandleContextType;
+  Handle: FileSystemDirectoryHandle;
   Action: 'Add' | 'Delete' | 'Duplicate' | 'Rename' | 'Update';
 }): Promise<KeySet[]> => {
-  const keysets = await queryClient.fetchQuery({
-    queryKey: ['/', Group, Individual, 'keyboards'],
-    queryFn: () => fetchKeyboards({ Context, Group, Individual }),
-  });
+  const keysets: KeySet[] = await queryClient.fetchQuery(keyboardQueryOptions(Handle, Group, Individual));
 
   if (!keysets) {
     throw new Error('Keysets not found');
@@ -41,7 +37,7 @@ export const mutationKeyboards = async ({
 
   let newKeysetsList = keysets;
 
-  const group_dir = await Context.handle!.getDirectoryHandle(CleanUpString(Group));
+  const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
   const individual_dir = await group_dir.getDirectoryHandle(Individual);
 
   switch (Action) {

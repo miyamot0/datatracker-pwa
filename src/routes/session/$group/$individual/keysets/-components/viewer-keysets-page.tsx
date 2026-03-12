@@ -1,3 +1,4 @@
+import { queryClient } from '@/App';
 import PageWrapper from '@/components/layout/page-wrapper';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import BackButton from '@/components/ui/back-button';
@@ -10,47 +11,16 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
-import { FolderHandleContextType } from '@/context/folder-context';
-import { queryClient } from '@/context/query-client';
+import { FolderHandleContext } from '@/context/folder-context';
 import createHref from '@/lib/links';
-import { CleanUpString } from '@/lib/strings';
 import { mutateKeyboardsAll } from '@/queries/keysets/mutate-keyboards-all';
-import { fetchKeyboardsAll } from '@/queries/keysets/query-keyboards-all';
+import { keyboardsAllQueryOptions } from '@/queries/keysets/query-keyboards-all';
 import { KeySet, KeySetInstance } from '@/types/keyset';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { ImportIcon } from 'lucide-react';
-import { redirect, useLoaderData } from 'react-router-dom';
+import { useContext } from 'react';
 import { toast } from 'sonner';
-
-type LoaderResult = {
-  Group: string;
-  Individual: string;
-  Handle: FileSystemHandle;
-  Context: FolderHandleContextType;
-};
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const keysetsPageLoader = (ctx: FolderHandleContextType) => {
-  const { handle } = ctx;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return async ({ params }: any) => {
-    const { Group, Individual } = params;
-
-    if (!Group || !Individual || !handle) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    return {
-      Group: CleanUpString(Group),
-      Individual: CleanUpString(Individual),
-      Handle: handle,
-      Context: ctx,
-    } satisfies LoaderResult;
-  };
-};
 
 type KeySetImportDisplayType = {
   Group: string;
@@ -69,14 +39,11 @@ const remapKeysToString = (keys: KeySetInstance[]) => {
     .join(', ');
 };
 
-export default function ViewerKeysetPage() {
-  const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Context } = loaderResult;
+export default function ViewerKeysetPage({ Group, Individual }: { Group: string; Individual: string }) {
+  const Context = useContext(FolderHandleContext);
+  const { handle } = Context;
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['/', Group, 'metaKeyboards'],
-    queryFn: () => fetchKeyboardsAll({ Context, Group, Individual }),
-  });
+  const { data, isLoading, error } = useQuery(keyboardsAllQueryOptions(handle!, Group, Individual));
 
   const mutateKeyboardsGlobal = useMutation({
     mutationFn: mutateKeyboardsAll,
@@ -175,14 +142,19 @@ export default function ViewerKeysetPage() {
 
               toast.promise(
                 async () =>
-                  await mutateKeyboardsGlobal.mutateAsync({ Context, Group, Individual, KeySets: keysetsToImport }),
+                  await mutateKeyboardsGlobal.mutateAsync({
+                    Handle: handle!,
+                    Group,
+                    Individual,
+                    KeySets: keysetsToImport,
+                  }),
                 {
                   loading: 'Importing keyset...',
                   success: () => {
                     return 'KeySets have been deleted successfully!';
                   },
-                  error: () => {
-                    return 'An error occurred while importing KeySets.';
+                  error: (e: Error) => {
+                    return `An error occurred while importing KeySets: ${e.message}.`;
                   },
                 },
               );

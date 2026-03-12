@@ -1,26 +1,28 @@
-import { FolderHandleContextType } from '@/context/folder-context';
 import { readKeyboardParameters } from '@/lib/reader';
 import { CleanUpString } from '@/lib/strings';
 import { KeySetExtended } from '@/types/keyset';
 
+export const keyboardsAllQueryOptions = (Handle: FileSystemDirectoryHandle, Group: string, Individual: string) => ({
+  queryKey: ['/', Group, 'metaKeyboards'],
+  queryFn: () => fetchKeyboardsAll({ Handle, Group, Individual }),
+});
+
 export const fetchKeyboardsAll = async ({
-  Context,
+  Handle,
   Group,
   Individual,
 }: {
-  Context: FolderHandleContextType;
+  Handle: FileSystemDirectoryHandle;
   Group: string;
   Individual: string;
 }) => {
-  const { handle } = Context;
-
   let keysets: KeySetExtended[] = [];
 
   try {
-    for await (const groupFolderEntry of handle!.values()) {
+    for await (const groupFolderEntry of Handle.values()) {
       if (groupFolderEntry.kind !== 'directory') continue;
 
-      const group_dir_handle = await handle!.getDirectoryHandle(CleanUpString(groupFolderEntry.name), {
+      const group_dir_handle = await Handle.getDirectoryHandle(CleanUpString(groupFolderEntry.name), {
         create: false,
       });
 

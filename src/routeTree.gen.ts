@@ -20,6 +20,8 @@ import { Route as SessionGroupIndividualIndexRouteImport } from './routes/sessio
 import { Route as SessionGroupIndividualKeysetsIndexRouteImport } from './routes/session/$group/$individual/keysets/index'
 import { Route as SessionGroupIndividualImportIndexRouteImport } from './routes/session/$group/$individual/import/index'
 import { Route as SessionGroupIndividualEvaluationIndexRouteImport } from './routes/session/$group/$individual/$evaluation/index'
+import { Route as SessionGroupIndividualKeysetsImportRouteImport } from './routes/session/$group/$individual/keysets/import'
+import { Route as SessionGroupIndividualKeysetsKeysetRouteImport } from './routes/session/$group/$individual/keysets/$keyset'
 import { Route as SessionGroupIndividualEvaluationViewIndexRouteImport } from './routes/session/$group/$individual/$evaluation/view/index'
 import { Route as SessionGroupIndividualEvaluationReliIndexRouteImport } from './routes/session/$group/$individual/$evaluation/reli/index'
 import { Route as SessionGroupIndividualEvaluationRateIndexRouteImport } from './routes/session/$group/$individual/$evaluation/rate/index'
@@ -87,6 +89,18 @@ const SessionGroupIndividualEvaluationIndexRoute =
     path: '/session/$group/$individual/$evaluation/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const SessionGroupIndividualKeysetsImportRoute =
+  SessionGroupIndividualKeysetsImportRouteImport.update({
+    id: '/session/$group/$individual/keysets/import',
+    path: '/session/$group/$individual/keysets/import',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const SessionGroupIndividualKeysetsKeysetRoute =
+  SessionGroupIndividualKeysetsKeysetRouteImport.update({
+    id: '/session/$group/$individual/keysets/$keyset',
+    path: '/session/$group/$individual/keysets/$keyset',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const SessionGroupIndividualEvaluationViewIndexRoute =
   SessionGroupIndividualEvaluationViewIndexRouteImport.update({
     id: '/session/$group/$individual/$evaluation/view/',
@@ -139,6 +153,8 @@ export interface FileRoutesByFullPath {
   '/dashboard/sync/': typeof DashboardSyncIndexRoute
   '/session/$group/': typeof SessionGroupIndexRoute
   '/session/$group/$individual/': typeof SessionGroupIndividualIndexRoute
+  '/session/$group/$individual/keysets/$keyset': typeof SessionGroupIndividualKeysetsKeysetRoute
+  '/session/$group/$individual/keysets/import': typeof SessionGroupIndividualKeysetsImportRoute
   '/session/$group/$individual/$evaluation/': typeof SessionGroupIndividualEvaluationIndexRoute
   '/session/$group/$individual/import/': typeof SessionGroupIndividualImportIndexRoute
   '/session/$group/$individual/keysets/': typeof SessionGroupIndividualKeysetsIndexRoute
@@ -159,6 +175,8 @@ export interface FileRoutesByTo {
   '/dashboard/sync': typeof DashboardSyncIndexRoute
   '/session/$group': typeof SessionGroupIndexRoute
   '/session/$group/$individual': typeof SessionGroupIndividualIndexRoute
+  '/session/$group/$individual/keysets/$keyset': typeof SessionGroupIndividualKeysetsKeysetRoute
+  '/session/$group/$individual/keysets/import': typeof SessionGroupIndividualKeysetsImportRoute
   '/session/$group/$individual/$evaluation': typeof SessionGroupIndividualEvaluationIndexRoute
   '/session/$group/$individual/import': typeof SessionGroupIndividualImportIndexRoute
   '/session/$group/$individual/keysets': typeof SessionGroupIndividualKeysetsIndexRoute
@@ -180,6 +198,8 @@ export interface FileRoutesById {
   '/dashboard/sync/': typeof DashboardSyncIndexRoute
   '/session/$group/': typeof SessionGroupIndexRoute
   '/session/$group/$individual/': typeof SessionGroupIndividualIndexRoute
+  '/session/$group/$individual/keysets/$keyset': typeof SessionGroupIndividualKeysetsKeysetRoute
+  '/session/$group/$individual/keysets/import': typeof SessionGroupIndividualKeysetsImportRoute
   '/session/$group/$individual/$evaluation/': typeof SessionGroupIndividualEvaluationIndexRoute
   '/session/$group/$individual/import/': typeof SessionGroupIndividualImportIndexRoute
   '/session/$group/$individual/keysets/': typeof SessionGroupIndividualKeysetsIndexRoute
@@ -202,6 +222,8 @@ export interface FileRouteTypes {
     | '/dashboard/sync/'
     | '/session/$group/'
     | '/session/$group/$individual/'
+    | '/session/$group/$individual/keysets/$keyset'
+    | '/session/$group/$individual/keysets/import'
     | '/session/$group/$individual/$evaluation/'
     | '/session/$group/$individual/import/'
     | '/session/$group/$individual/keysets/'
@@ -222,6 +244,8 @@ export interface FileRouteTypes {
     | '/dashboard/sync'
     | '/session/$group'
     | '/session/$group/$individual'
+    | '/session/$group/$individual/keysets/$keyset'
+    | '/session/$group/$individual/keysets/import'
     | '/session/$group/$individual/$evaluation'
     | '/session/$group/$individual/import'
     | '/session/$group/$individual/keysets'
@@ -242,6 +266,8 @@ export interface FileRouteTypes {
     | '/dashboard/sync/'
     | '/session/$group/'
     | '/session/$group/$individual/'
+    | '/session/$group/$individual/keysets/$keyset'
+    | '/session/$group/$individual/keysets/import'
     | '/session/$group/$individual/$evaluation/'
     | '/session/$group/$individual/import/'
     | '/session/$group/$individual/keysets/'
@@ -263,6 +289,8 @@ export interface RootRouteChildren {
   DashboardSyncIndexRoute: typeof DashboardSyncIndexRoute
   SessionGroupIndexRoute: typeof SessionGroupIndexRoute
   SessionGroupIndividualIndexRoute: typeof SessionGroupIndividualIndexRoute
+  SessionGroupIndividualKeysetsKeysetRoute: typeof SessionGroupIndividualKeysetsKeysetRoute
+  SessionGroupIndividualKeysetsImportRoute: typeof SessionGroupIndividualKeysetsImportRoute
   SessionGroupIndividualEvaluationIndexRoute: typeof SessionGroupIndividualEvaluationIndexRoute
   SessionGroupIndividualImportIndexRoute: typeof SessionGroupIndividualImportIndexRoute
   SessionGroupIndividualKeysetsIndexRoute: typeof SessionGroupIndividualKeysetsIndexRoute
@@ -354,6 +382,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SessionGroupIndividualEvaluationIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/session/$group/$individual/keysets/import': {
+      id: '/session/$group/$individual/keysets/import'
+      path: '/session/$group/$individual/keysets/import'
+      fullPath: '/session/$group/$individual/keysets/import'
+      preLoaderRoute: typeof SessionGroupIndividualKeysetsImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/session/$group/$individual/keysets/$keyset': {
+      id: '/session/$group/$individual/keysets/$keyset'
+      path: '/session/$group/$individual/keysets/$keyset'
+      fullPath: '/session/$group/$individual/keysets/$keyset'
+      preLoaderRoute: typeof SessionGroupIndividualKeysetsKeysetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/session/$group/$individual/$evaluation/view/': {
       id: '/session/$group/$individual/$evaluation/view/'
       path: '/session/$group/$individual/$evaluation/view'
@@ -415,6 +457,10 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardSyncIndexRoute: DashboardSyncIndexRoute,
   SessionGroupIndexRoute: SessionGroupIndexRoute,
   SessionGroupIndividualIndexRoute: SessionGroupIndividualIndexRoute,
+  SessionGroupIndividualKeysetsKeysetRoute:
+    SessionGroupIndividualKeysetsKeysetRoute,
+  SessionGroupIndividualKeysetsImportRoute:
+    SessionGroupIndividualKeysetsImportRoute,
   SessionGroupIndividualEvaluationIndexRoute:
     SessionGroupIndividualEvaluationIndexRoute,
   SessionGroupIndividualImportIndexRoute:

@@ -1,9 +1,9 @@
-import { createFileRoute, redirect } from '@tanstack/react-router';
-import KeySetsPage from './-components/keysets-page';
-import { CleanUpString } from '@/lib/strings';
 import createHref from '@/lib/links';
+import { CleanUpString } from '@/lib/strings';
+import { createFileRoute, redirect } from '@tanstack/react-router';
+import ViewerKeysetPage from './-components/viewer-keysets-page';
 
-export const Route = createFileRoute('/session/$group/$individual/keysets/')({
+export const Route = createFileRoute('/session/$group/$individual/keysets/import')({
   loader: ({ params, context }) => {
     const { group, individual } = params;
     const { routerHandle } = context;
@@ -25,5 +25,5 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/')({
 function RouteComponent() {
   const { Group, Individual } = Route.useLoaderData();
 
-  return <KeySetsPage Group={Group} Individual={Individual} />;
+  return <ViewerKeysetPage Group={Group} Individual={Individual} />;
 }

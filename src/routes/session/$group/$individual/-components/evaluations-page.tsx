@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { queryClient } from '@/App';
 import PageWrapper from '@/components/layout/page-wrapper';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
-import BackButton from '@/components/ui/back-button';
 import { BuildGroupBreadcrumb, BuildIndividualsBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -19,7 +17,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContext } from '@/context/folder-context';
-import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { mutationEvaluations } from '@/queries/evaluations/mutate-evaluations';
 import { evaluationQueryOptions } from '@/queries/evaluations/query-evaluations';
@@ -49,8 +46,8 @@ type EvaluationTableRow = {
 
 export default function EvaluationsPage({ Group, Individual }: { Group: string; Individual: string }) {
   const Context = useContext(FolderHandleContext);
-  const { settings, handle } = Context;
 
+  const { settings, handle } = Context;
   const { data, isLoading, error } = useQuery(evaluationQueryOptions(handle!, Group, Individual));
 
   const mutateEvaluations = useMutation({
