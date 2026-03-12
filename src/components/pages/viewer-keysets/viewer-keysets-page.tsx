@@ -1,4 +1,5 @@
 import PageWrapper from '@/components/layout/page-wrapper';
+import { LoadingDisplay } from '@/components/suspense/loading-display';
 import BackButton from '@/components/ui/back-button';
 import {
   BuildGroupBreadcrumb,
@@ -9,7 +10,6 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
-import LoadingDisplay from '@/components/ui/loading-display';
 import { FolderHandleContextType } from '@/context/folder-context';
 import { queryClient } from '@/context/query-client';
 import createHref from '@/lib/links';

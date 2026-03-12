@@ -12,8 +12,8 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchSessionOutcomes } from '@/queries/outcomes/query-session-outcomes';
 import ResultsViewerContent from './views/results-viewer-content';
 import { PullRelevantSetup } from './helpers/results_setup';
-import LoadingDisplay from '@/components/ui/loading-display';
 import { ErrorDisplay } from '@/components/suspense/error-display';
+import { LoadingDisplay } from '@/components/suspense/loading-display';
 
 type LoaderResult = {
   Group: string;
