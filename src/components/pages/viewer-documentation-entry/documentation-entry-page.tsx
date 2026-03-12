@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { generateKeywordColors } from '@/lib/colors';
 import { Link, redirect, useLoaderData } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MdViewer } from '@/helpers/md-viewer';
+import { MdViewer } from '@/components/pages/viewer-documentation-entry/views/md-viewer';
 import { DocumentationObjects } from '@/lib/docs';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import BackButton from '@/components/ui/back-button';

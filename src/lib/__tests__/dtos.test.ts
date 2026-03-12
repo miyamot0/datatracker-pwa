@@ -3,7 +3,7 @@ import {
   DataCollectorRolesType,
   SessionDesignerSchemaType,
   SessionTerminationOptionsType,
-} from '../../forms/schema/session-designer-schema';
+} from '../../components/pages/editor-session/forms/schema/session-designer-schema';
 
 const DEFAULT_KEY_SET = 'asdf';
 

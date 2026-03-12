@@ -10,7 +10,10 @@ import { walkSessionDurationKey } from '../helpers/schedule_parser';
 import BackButton from '@/components/ui/back-button';
 import createHref from '@/lib/links';
 import { useParams } from 'react-router-dom';
-import { SessionTerminationOptionsType, SessionTerminationOptions } from '@/forms/schema/session-designer-schema';
+import {
+  SessionTerminationOptionsType,
+  SessionTerminationOptions,
+} from '@/components/pages/editor-session/forms/schema/session-designer-schema';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,

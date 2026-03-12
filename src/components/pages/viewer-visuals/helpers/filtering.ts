@@ -1,4 +1,4 @@
-import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-schema';
+import { SessionTerminationOptionsType } from '@/components/pages/editor-session/forms/schema/session-designer-schema';
 import { SavedSessionResult } from '@/lib/dtos';
 import { walkSessionDurationKey, walkSessionFrequencyKey } from '../../viewer-results/helpers/schedule_parser';
 
@@ -41,7 +41,7 @@ function pullSessionTime(session: SavedSessionResult, schedule: SessionTerminati
 export function generateChartPreparation(
   FilteredSessions: SavedSessionResult[],
   ScheduleOption: SessionTerminationOptionsType,
-  Perspective: 'Frequency' | 'Duration'
+  Perspective: 'Frequency' | 'Duration',
 ) {
   let minX = 1;
   let maxX = 0;

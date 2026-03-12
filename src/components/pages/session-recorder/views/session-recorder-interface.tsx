@@ -1,5 +1,5 @@
 import PageWrapper from '@/components/layout/page-wrapper';
-import { useEventListener } from '@/helpers/event-listeners';
+import { useEventListener } from '@/components/pages/session-recorder/helpers/event-listeners';
 import { SavedSettings } from '@/lib/dtos';
 import { cn } from '@/lib/utils';
 import { KeySet } from '@/types/keyset';

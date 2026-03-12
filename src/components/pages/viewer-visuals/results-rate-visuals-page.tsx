@@ -11,7 +11,7 @@ import { KeySet, KeySetInstance } from '@/types/keyset';
 import { useState } from 'react';
 import { FilterByPrimaryRole } from './helpers/filtering';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-schema';
+import { SessionTerminationOptionsType } from '@/components/pages/editor-session/forms/schema/session-designer-schema';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,

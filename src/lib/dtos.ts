@@ -3,7 +3,7 @@ import {
   DataCollectorRolesType,
   SessionDesignerSchemaType,
   SessionTerminationOptionsType,
-} from '@/forms/schema/session-designer-schema';
+} from '@/components/pages/editor-session/forms/schema/session-designer-schema';
 import { KeySet } from '@/types/keyset';
 
 /**

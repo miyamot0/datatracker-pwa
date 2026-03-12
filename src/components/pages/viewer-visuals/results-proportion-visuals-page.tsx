@@ -4,7 +4,7 @@ import {
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-schema';
+import { SessionTerminationOptionsType } from '@/components/pages/editor-session/forms/schema/session-designer-schema';
 import { SavedSessionResult } from '@/lib/dtos';
 import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import { CleanUpString } from '@/lib/strings';

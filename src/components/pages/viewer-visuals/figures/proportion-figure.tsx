@@ -14,7 +14,7 @@ import {
 import { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { SavedSessionResult } from '@/lib/dtos';
-import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-schema';
+import { SessionTerminationOptionsType } from '@/components/pages/editor-session/forms/schema/session-designer-schema';
 import { ExpandedKeySetInstance } from './rate-figure';
 import { generateChartPreparation, generateTicks, GetUniqueConditions } from '../helpers/filtering';
 import { getShape } from '@/lib/shapes';
