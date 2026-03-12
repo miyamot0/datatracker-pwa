@@ -1,14 +1,16 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import createHref from '@/lib/links';
 import Spreadsheet from 'react-spreadsheet';
-import { calculateReliabilityDuration, calculateReliabilityFrequency, getCorrespondingSessionPairs } from '@/lib/reli';
+import { calculateReliabilityDuration, calculateReliabilityFrequency } from '@/lib/reli';
 import BackButton from '@/components/ui/back-button';
-import { ModifiedSessionResult } from '@/types/storage';
+import { ReliabilityPairType } from '@/types/reli';
+import { KeySet } from '@/types/keyset';
 
 type Props = {
   Group: string;
   Individual: string;
-  Results: ModifiedSessionResult[];
+  Paired: ReliabilityPairType[];
+  Keyset: KeySet;
 };
 
 type KeyedReli = {
@@ -16,34 +18,15 @@ type KeyedReli = {
   Value: number;
 };
 
-export default function ReliabilityViewerContent({ Group, Individual, Results }: Props) {
-  const recent_keyset = Results.slice(-1)[0].Keyset;
+export default function ReliabilityViewerContent({ Group, Individual, Paired, Keyset }: Props) {
+  const sessions_scored_frequency = Paired.map((pair) => calculateReliabilityFrequency(pair, Keyset.FrequencyKeys));
+  const sessions_scored_duration = Paired.map((pair) => calculateReliabilityDuration(pair, Keyset.DurationKeys));
 
-  const results_primary = Results.sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session).filter(
-    (result) => result.SessionSettings.Role === 'Primary',
-  );
+  const sessions = Paired.map((pair) => pair.primary.SessionSettings.Session).filter((value, index, array) => {
+    return array.indexOf(value) === index;
+  });
 
-  const results_reli = Results.sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session).filter(
-    (result) => result.SessionSettings.Role === 'Reliability',
-  );
-
-  const pairedSessionData = getCorrespondingSessionPairs(results_primary, results_reli);
-
-  const sessions_scored_frequency = pairedSessionData.map((pair) =>
-    calculateReliabilityFrequency(pair, recent_keyset.FrequencyKeys),
-  );
-
-  const sessions_scored_duration = pairedSessionData.map((pair) =>
-    calculateReliabilityDuration(pair, recent_keyset.DurationKeys),
-  );
-
-  const sessions = pairedSessionData
-    .map((pair) => pair.primary.SessionSettings.Session)
-    .filter((value, index, array) => {
-      return array.indexOf(value) === index;
-    });
-
-  const f_headings = recent_keyset.FrequencyKeys.flatMap((key) => {
+  const f_headings = Keyset.FrequencyKeys.flatMap((key) => {
     return [
       `${key.KeyDescription} (EIA)`,
       `${key.KeyDescription} (PIA)`,
@@ -66,7 +49,7 @@ export default function ReliabilityViewerContent({ Group, Individual, Results }:
   const f_rows = sessions.map((session) => {
     const temp_array = [{ value: session.toString(), readOnly: true }];
 
-    recent_keyset.FrequencyKeys.forEach((key) => {
+    Keyset.FrequencyKeys.forEach((key) => {
       const session_to_show = sessions_scored_frequency
         .flat()
         .find((s) => s.Session === session && s.KeyName === key.KeyName);
@@ -122,7 +105,7 @@ export default function ReliabilityViewerContent({ Group, Individual, Results }:
 
   const mean_f_row = [{ value: 'Averaged', readOnly: true }];
 
-  recent_keyset.FrequencyKeys.forEach((key) => {
+  Keyset.FrequencyKeys.forEach((key) => {
     const relevantEIA_f_values = EIA_f_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
       (k) => k.Value,
     );
@@ -182,7 +165,7 @@ export default function ReliabilityViewerContent({ Group, Individual, Results }:
   const NIA_d_values: KeyedReli[] = [];
   const PMA_d_values: KeyedReli[] = [];
 
-  const d_headings = recent_keyset.DurationKeys.flatMap((key) => {
+  const d_headings = Keyset.DurationKeys.flatMap((key) => {
     return [
       `${key.KeyDescription} (EIA)`,
       `${key.KeyDescription} (PIA)`,
@@ -198,7 +181,7 @@ export default function ReliabilityViewerContent({ Group, Individual, Results }:
   const d_rows = sessions.map((session) => {
     const temp_array = [{ value: session.toString(), readOnly: true }];
 
-    recent_keyset.DurationKeys.forEach((key) => {
+    Keyset.DurationKeys.forEach((key) => {
       const session_to_show = sessions_scored_duration
         .flat()
         .find((s) => s.Session === session && s.KeyName === key.KeyName);
@@ -254,7 +237,7 @@ export default function ReliabilityViewerContent({ Group, Individual, Results }:
 
   const mean_d_row = [{ value: 'Averaged', readOnly: true }];
 
-  recent_keyset.DurationKeys.forEach((key) => {
+  Keyset.DurationKeys.forEach((key) => {
     const relevantEIA_d_values = EIA_d_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
       (k) => k.Value,
     );

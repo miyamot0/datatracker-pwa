@@ -8,12 +8,13 @@ import { FolderHandleContextType } from '@/context/folder-context';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { redirect, useLoaderData } from 'react-router-dom';
-import ReliabilityBlank from './alternates/reli-blank';
+import ReliabilityBlank from './views/reli-blank';
 import { fetchSessionOutcomes } from '@/queries/outcomes/query-session-outcomes';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { useQuery } from '@tanstack/react-query';
-import ReliabilityViewerContent from './reli-viewer-content';
+import ReliabilityViewerContent from './views/reli-viewer-content';
+import { getCorrespondingSessionPairs } from '@/lib/reli';
 
 type LoaderResult = {
   Group: string;
@@ -57,7 +58,29 @@ export default function ReliabilityViewerPage() {
 
   if (error || !data) return <ErrorDisplay Text={error?.message} />;
 
-  if (data.length < 1) {
+  if (data.length == 0) {
+    return (
+      <ReliabilityBlank
+        Group={CleanUpString(Group!)}
+        Individual={CleanUpString(Individual!)}
+        Evaluation={CleanUpString(Evaluation!)}
+      />
+    );
+  }
+
+  const KeySet = data.slice(-1)[0].Keyset;
+
+  const resultsPrimary = data
+    .sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session)
+    .filter((result) => result.SessionSettings.Role === 'Primary');
+
+  const resultsReli = data
+    .sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session)
+    .filter((result) => result.SessionSettings.Role === 'Reliability');
+
+  const pairedSessionData = getCorrespondingSessionPairs(resultsPrimary, resultsReli);
+
+  if (pairedSessionData.length < 1) {
     return (
       <ReliabilityBlank
         Group={CleanUpString(Group!)}
@@ -77,7 +100,7 @@ export default function ReliabilityViewerPage() {
       label={`Reliability for ${CleanUpString(Evaluation)}`}
       className="select-none"
     >
-      <ReliabilityViewerContent Group={Group} Individual={Individual} Results={data} />
+      <ReliabilityViewerContent Group={Group} Individual={Individual} Paired={pairedSessionData} Keyset={KeySet} />
     </PageWrapper>
   );
 }
