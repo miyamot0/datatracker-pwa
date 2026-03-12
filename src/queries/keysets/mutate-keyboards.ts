@@ -6,6 +6,13 @@ import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
 import { v4 as uuidv4 } from 'uuid';
 import { KeySet } from '@/types/keyset';
 
+export type EvaluationRecord = {
+  Group: string;
+  Individual: string;
+  Evaluation: string;
+  Conditions: string[];
+};
+
 export const mutationKeyboards = async ({
   Group,
   Individual,

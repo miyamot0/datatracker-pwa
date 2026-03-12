@@ -1,4 +1,6 @@
 import PageWrapper from '@/components/layout/page-wrapper';
+import { ErrorDisplay } from '@/components/suspense/error-display';
+import { LoadingDisplay } from '@/components/suspense/loading-display';
 import BackButton from '@/components/ui/back-button';
 import {
   BuildGroupBreadcrumb,
@@ -8,12 +10,14 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
-import LoadingDisplay from '@/components/ui/loading-display';
 import { FolderHandleContextType } from '@/context/folder-context';
-import { EvaluationRecord } from '@/hooks/evaluations/types/query-response-type-evaluations';
-import { useQueryEvaluationsMetaFixed } from '@/hooks/evaluations/useQueryEvaluationsMeta';
+import { queryClient } from '@/context/query-client';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
+import { mutationEvaluationsAll } from '@/queries/evaluations/mutate-evaluations-all';
+import { fetchEvaluationsAll } from '@/queries/evaluations/query-evaluations-all';
+import { EvaluationRecord } from '@/queries/keysets/mutate-keyboards';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { ImportIcon } from 'lucide-react';
 import { redirect, useLoaderData } from 'react-router-dom';
@@ -52,22 +56,28 @@ export default function ViewerEvaluationsPage() {
   const loaderResult = useLoaderData() as LoaderResult;
   const { Group, Individual, Context } = loaderResult;
 
-  const { data, status, error, addEvaluationFolders } = useQueryEvaluationsMetaFixed(Group, Individual, Context);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['/', 'metaEvaluations'],
+    queryFn: () => fetchEvaluationsAll({ Context }),
+  });
 
-  if (status === 'loading') {
-    return <LoadingDisplay />;
-  }
+  const mutateEvaluationsMeta = useMutation({
+    mutationFn: mutationEvaluationsAll,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/', 'metaEvaluations'], data);
+    },
+  });
 
-  if (error) {
-    return <div>{error}</div>;
-  }
+  if (isLoading) return <LoadingDisplay />;
+
+  if (error || data == undefined) return <ErrorDisplay Text={'An error occurred while fetching evaluations.'} />;
 
   const current_evaluations = data
     .filter((record) => record.Individual === Individual)
     .map((record) => record.Evaluation);
 
   const filtered_data = data.filter(
-    (record) => record.Individual !== Individual && !current_evaluations.includes(record.Evaluation)
+    (record) => record.Individual !== Individual && !current_evaluations.includes(record.Evaluation),
   );
 
   const columns: ColumnDef<EvaluationRecord>[] = [
@@ -86,7 +96,7 @@ export default function ViewerEvaluationsPage() {
     {
       accessorKey: 'Conditions',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Conditions" />,
-      cell: ({ row }) => <div className="flex flex-row gap-1">{row.original.Conditions.join(', ')}</div>,
+      cell: ({ row }) => <div className="flex flex-row gap-1">{row.original.Conditions?.join(', ')}</div>,
     },
   ];
 
@@ -133,15 +143,25 @@ export default function ViewerEvaluationsPage() {
               </>
             }
             callback={(rows) => {
-              toast.promise(async () => await addEvaluationFolders(rows), {
-                loading: 'Deleting client folders...',
-                success: () => {
-                  return 'Client folders have been deleted successfully!';
+              toast.promise(
+                async () =>
+                  await mutateEvaluationsMeta.mutateAsync({
+                    Context,
+                    Group,
+                    Individual,
+                    RelevantRecords: rows,
+                    Action: 'Import',
+                  }),
+                {
+                  loading: 'Importing evaluations...',
+                  success: () => {
+                    return 'Client folders have been imported successfully!';
+                  },
+                  error: () => {
+                    return 'An error occurred while importing folders.';
+                  },
                 },
-                error: () => {
-                  return 'An error occurred while deleting client folders.';
-                },
-              });
+              );
             }}
           />
         </CardContent>
