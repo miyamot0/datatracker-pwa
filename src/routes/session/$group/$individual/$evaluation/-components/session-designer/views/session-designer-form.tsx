@@ -16,9 +16,9 @@ import {
   SessionDesignerSchema,
   SessionDesignerSchemaType,
   SessionTerminationOptionsDescriptions,
-} from '@/components/pages/editor-session/forms/schema/session-designer-schema';
+} from '@/routes/session/$group/$individual/$evaluation/-components/session-designer/forms/schema/session-designer-schema';
 import { CleanUpString } from '@/lib/strings';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -26,7 +26,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { SavedSettings, toSavedSettings } from '@/lib/dtos';
 import { KeySet } from '@/types/keyset';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FolderHandleContextType } from '@/context/folder-context';
+import { FolderHandleContext } from '@/context/folder-context';
 import {
   BuildEvaluationsBreadcrumb,
   BuildGroupBreadcrumb,
@@ -35,37 +35,34 @@ import {
 import { displayConditionalNotification } from '@/lib/notifications';
 import { FolderPlus } from 'lucide-react';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import { useNavigate } from 'react-router-dom';
 import createHref from '@/lib/links';
 import BackButton from '@/components/ui/back-button';
 import { mutationConditions } from '@/queries/conditions/mutate-conditions';
 import { useMutation } from '@tanstack/react-query';
-import { queryClient } from '@/context/query-client';
 import { mutationSettingsParams } from '@/queries/session/mutate-session-params';
+import { queryClient } from '@/App';
 
 type Props = {
-  Handle: FileSystemDirectoryHandle;
   Group: string;
   Individual: string;
   Evaluation: string;
   Conditions: string[];
   Keysets: KeySet[];
-  Context: FolderHandleContextType;
   SessionSettings: SavedSettings;
 };
 
 export default function SessionDesigner({
-  Handle,
   Group,
   Individual,
   Evaluation,
   Conditions,
   Keysets,
   SessionSettings,
-  Context,
 }: Props) {
-  const { settings } = Context;
-  const navigate = useNavigate();
+  const { settings, handle } = useContext(FolderHandleContext);
+  //const navigate = useNavigate({
+  //  from: `/session/$group/$individual/$evaluation/`,
+  //});
 
   const mutateConditions = useMutation({
     mutationFn: mutationConditions,
@@ -79,9 +76,11 @@ export default function SessionDesigner({
     onSuccess: (data) => {
       queryClient.setQueryData(['/', Group, Individual, Evaluation, 'settings'], data);
 
-      navigate(`/session/${Group}/${Individual}/${Evaluation}/run/${data.KeySet}`, {
-        unstable_viewTransition: true,
-      });
+      //navigate({ to: '/session/$group/$individual/$evaluation/run/$keyset' });
+
+      //navigate(`/session/${Group}/${Individual}/${Evaluation}/run/${data.KeySet}`, {
+      //  unstable_viewTransition: true,
+      //});
     },
   });
 
@@ -128,11 +127,11 @@ export default function SessionDesigner({
     form.trigger('SessionKeySet');
 
     return () => {};
-  }, [Evaluation, Group, Handle, Individual, form, Keysets, settings, SessionSettings]);
+  }, [Evaluation, Group, handle, Individual, form, Keysets, settings, SessionSettings]);
 
   function onSubmit(values: z.infer<typeof SessionDesignerSchema>) {
     const newer_settings = toSavedSettings(values);
-    mutateSettings.mutate({ Group, Individual, Evaluation, Context, Settings: newer_settings });
+    mutateSettings.mutate({ Group, Individual, Evaluation, Handle: handle!, Settings: newer_settings });
   }
 
   return (
@@ -181,7 +180,7 @@ export default function SessionDesigner({
                         Individual,
                         Evaluation,
                         Condition: input.trim(),
-                        Context,
+                        Handle: handle!,
                         Action: 'Add',
                       });
 

@@ -1,34 +1,33 @@
-import { FolderHandleContextType } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
-import { queryClient } from '@/context/query-client';
 import { fetchSessionParams } from './query-session-params';
 import { SavedSettings } from '@/lib/dtos';
+import { queryClient } from '@/App';
 
 export const mutationSettingsParams = async ({
   Group,
   Individual,
   Evaluation,
   Settings,
-  Context,
+  Handle,
 }: {
   Group: string;
   Individual: string;
   Evaluation: string;
   Settings: SavedSettings;
-  Context: FolderHandleContextType;
+  Handle: FileSystemDirectoryHandle;
 }): Promise<SavedSettings> => {
   const savedSettings: SavedSettings = await queryClient.fetchQuery({
     queryKey: ['/', Group, Individual, Evaluation, 'settings'],
-    queryFn: () => fetchSessionParams({ Context, Group, Individual, Evaluation }),
+    queryFn: () => fetchSessionParams({ Handle, Group, Individual, Evaluation }),
   });
 
   if (!savedSettings) {
     throw new Error('Settings not found');
   }
 
-  const group_dir = await Context.handle!.getDirectoryHandle(CleanUpString(Group));
-  const individual_dir = await group_dir.getDirectoryHandle(Individual);
-  const evaluation_dir = await individual_dir.getDirectoryHandle(Evaluation);
+  const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
+  const individual_dir = await group_dir.getDirectoryHandle(CleanUpString(Individual));
+  const evaluation_dir = await individual_dir.getDirectoryHandle(CleanUpString(Evaluation));
 
   const settings_file = await evaluation_dir.getFileHandle('settings.json', {
     create: true,

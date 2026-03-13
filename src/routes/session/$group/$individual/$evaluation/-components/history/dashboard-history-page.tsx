@@ -102,12 +102,12 @@ export default function DashboardHistoryPage({
         <div className="flex flex-row justify-end gap-2">
           <Link
             className="flex flex-row items-center"
-            to="/session/$group/$individual/$evaluation/history/$index"
+            to="/session/$group/$individual/$evaluation/history/view/$file"
             params={{
               group: Group,
               individual: Individual,
               evaluation: Evaluation,
-              index: GenerateSavedFileName(row.original.SessionSettings).replaceAll('.json', ''),
+              file: GenerateSavedFileName(row.original.SessionSettings).replaceAll('.json', ''),
             }}
           >
             <Button variant={'outline'} className="shadow" size={'sm'}>
@@ -119,12 +119,12 @@ export default function DashboardHistoryPage({
           {settings.EnableFileDeletion && (
             <Link
               className="flex flex-row items-center"
-              to="/session/$group/$individual/$evaluation/history/edit/$index"
+              to="/session/$group/$individual/$evaluation/history/edit/$file"
               params={{
                 group: Group,
                 individual: Individual,
                 evaluation: Evaluation,
-                index: GenerateSavedFileName(row.original.SessionSettings).replaceAll('.json', ''),
+                file: GenerateSavedFileName(row.original.SessionSettings).replaceAll('.json', ''),
               }}
             >
               <Button variant={'outline'} className="shadow" size={'sm'}>

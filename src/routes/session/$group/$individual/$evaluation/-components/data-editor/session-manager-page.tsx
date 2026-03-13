@@ -1,10 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { redirect, useLoaderData } from 'react-router-dom';
-import { FolderHandleContextType } from '@/context/folder-context';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
-import { GetHandleEvaluationFolder, GetResultsFromEvaluationFolder } from '@/lib/files';
+import { GetHandleEvaluationFolder } from '@/lib/files';
 import PageWrapper from '@/components/layout/page-wrapper';
 import {
   BuildEvaluationsBreadcrumb,
@@ -13,9 +9,9 @@ import {
   BuildSessionHistoryBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useRef, useState } from 'react';
+import { useContext, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { KeyManageType } from '../session-recorder/types/session-recorder-types';
+import { KeyManageType } from '../../../../../../../components/pages/session-recorder/types/session-recorder-types';
 import { Button } from '@/components/ui/button';
 import { Pencil1Icon } from '@radix-ui/react-icons';
 import { DeleteIcon, SaveIcon } from 'lucide-react';
@@ -26,80 +22,7 @@ import { toast } from 'sonner';
 import { ModifiedSessionResult } from '@/types/storage';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-
-type LoaderResult = {
-  Group: string;
-  Individual: string;
-  Evaluation: string;
-  Condition: string;
-  Handle: FileSystemDirectoryHandle;
-  Session: ModifiedSessionResult;
-  Index: string;
-  SavedKeys: KeyManageType[];
-  Context: FolderHandleContextType;
-};
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const sessionManagerLoader = (ctx: FolderHandleContextType) => {
-  const { handle, settings } = ctx;
-
-  return async ({ params }: any) => {
-    const { Group, Individual, Evaluation, Index } = params;
-
-    if (!Group || !Individual || !Evaluation || !Index || !handle) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    if (!settings.EnableFileDeletion) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    const FileString = CleanUpString(Index);
-
-    const { results } = await GetResultsFromEvaluationFolder(handle, Group, Individual, Evaluation);
-
-    if (!results) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    const modified_session: ModifiedSessionResult[] = results.map((session) => {
-      return {
-        ...session,
-        Filename: session.Filename!,
-      };
-    });
-
-    const relevant_session = modified_session.find((s) => s.Filename.includes(FileString));
-
-    if (relevant_session) {
-      const saved_keys = [
-        ...relevant_session.FrequencyKeyPresses,
-        ...relevant_session.DurationKeyPresses,
-        ...relevant_session.SystemKeyPresses,
-      ].sort((a, b) => a.TimeIntoSession - b.TimeIntoSession);
-
-      return {
-        Group: CleanUpString(Group),
-        Individual: CleanUpString(Individual),
-        Evaluation: CleanUpString(Evaluation),
-        // Note: Condition is pulled from FOLDER name
-        Condition: CleanUpString(relevant_session.SessionSettings.Condition),
-        Handle: handle,
-        Session: relevant_session,
-        SavedKeys: saved_keys,
-        Context: ctx,
-        Index: Index,
-      } satisfies LoaderResult;
-    }
-
-    const response = redirect(createHref({ type: 'Dashboard' }));
-
-    throw response;
-  };
-};
+import { FolderHandleContext } from '@/context/folder-context';
 
 function ColoredDot({ KeyObject }: { KeyObject: KeyManageType }) {
   let key_color = '#fff';
@@ -133,9 +56,23 @@ function ColoredDot({ KeyObject }: { KeyObject: KeyManageType }) {
   );
 }
 
-export default function SessionManagerPage() {
-  const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Evaluation, Session, SavedKeys, Handle, Index } = loaderResult;
+export default function SessionManagerPage({
+  Group,
+  Individual,
+  Evaluation,
+  Session,
+  SavedKeys,
+  Index,
+}: {
+  Group: string;
+  Individual: string;
+  Evaluation: string;
+  Condition: string;
+  Session: ModifiedSessionResult;
+  Index: string;
+  SavedKeys: KeyManageType[];
+}) {
+  const { handle } = useContext(FolderHandleContext);
 
   const [currentKeys, setCurrentKeys] = useState(SavedKeys);
   const textareaRef = useRef(null);
@@ -143,10 +80,11 @@ export default function SessionManagerPage() {
   const allKeys = [Session.Keyset.FrequencyKeys, Session.Keyset.DurationKeys].flat();
 
   async function saveUpdatedSession() {
+    // TODO: This is broken
     const text_area_value = textareaRef.current && (textareaRef.current as HTMLTextAreaElement).value;
 
     const client_evaluations_folder = await GetHandleEvaluationFolder(
-      Handle,
+      handle!,
       CleanUpString(Group),
       CleanUpString(Individual),
       CleanUpString(Evaluation),

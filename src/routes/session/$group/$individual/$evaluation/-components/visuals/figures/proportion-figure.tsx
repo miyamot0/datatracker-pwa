@@ -15,7 +15,7 @@ import {
 import { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { SavedSessionResult } from '@/lib/dtos';
-import { SessionTerminationOptionsType } from '@/components/pages/editor-session/forms/schema/session-designer-schema';
+import { SessionTerminationOptionsType } from '@/routes/session/$group/$individual/$evaluation/-components/session-designer/forms/schema/session-designer-schema';
 import { generateChartPreparation, generateTicks, GetUniqueConditions } from '../helpers/filtering';
 import { getShape } from '@/lib/shapes';
 import { useGenerateImage } from 'recharts-to-png';
@@ -106,8 +106,7 @@ export default function ProportionFigureVisualization({
   const { Data, MinX, MaxX } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Duration');
 
   const preparedData = Data.map((data) => {
-    // eslint-disable-next-line prefer-const, @typescript-eslint/no-explicit-any
-    let temp_obj = {} as any;
+    const temp_obj = {} as any;
     temp_obj.session = data.Session;
     temp_obj.Condition = data.Condition;
     temp_obj.SessionTime = data.SessionTime;
@@ -131,14 +130,7 @@ export default function ProportionFigureVisualization({
   const x_span = MaxX - MinX;
   const x_ticks = generateTicks(x_span, MinX);
 
-  const CustomTooltip = ({
-    active,
-    payload,
-  }: {
-    active: boolean;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    payload: any[];
-  }) => {
+  const CustomTooltip = ({ active, payload }: { active: boolean; payload: any[] }) => {
     if (active && payload && payload.length) {
       const main_payload = payload[0].payload;
 
@@ -171,7 +163,6 @@ export default function ProportionFigureVisualization({
     return null;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const legend_1: any[] = data_set_parsed_by_condition.map((item, index) => ({
     id: item.name,
     type: 'circle',
@@ -248,12 +239,12 @@ export default function ProportionFigureVisualization({
                       //const linkGenerated = `/session/${Group!}/${Individual!}/${Evaluation!}/history/${stringIndex}`;
 
                       navigate({
-                        to: '/session/$group/$individual/$evaluation/history/$index',
+                        to: '/session/$group/$individual/$evaluation/history/view/$file',
                         params: {
                           group: Group,
                           individual: Individual,
                           evaluation: Evaluation,
-                          index: stringIndex,
+                          file: stringIndex,
                         },
                       });
                     }}

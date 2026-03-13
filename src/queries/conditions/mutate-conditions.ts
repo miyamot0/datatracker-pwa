@@ -1,26 +1,25 @@
-import { FolderHandleContextType } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
-import { queryClient } from '@/context/query-client';
 import { fetchConditions } from './query-conditions';
+import { queryClient } from '@/App';
 
 export const mutationConditions = async ({
   Group,
   Individual,
   Evaluation,
   Condition,
-  Context,
+  Handle,
   Action,
 }: {
   Group: string;
   Individual: string;
   Evaluation: string;
   Condition: string;
-  Context: FolderHandleContextType;
+  Handle: FileSystemDirectoryHandle;
   Action: 'Add';
 }): Promise<string[]> => {
   const conditions: string[] = await queryClient.fetchQuery({
     queryKey: ['/', Group, Individual, Evaluation, 'conditions'],
-    queryFn: () => fetchConditions(Context, Group, Individual, Evaluation),
+    queryFn: () => fetchConditions(Handle, Group, Individual, Evaluation),
   });
 
   if (!conditions) {
@@ -29,9 +28,9 @@ export const mutationConditions = async ({
 
   const newConditionsList = conditions;
 
-  const group_dir = await Context.handle!.getDirectoryHandle(CleanUpString(Group));
-  const individual_dir = await group_dir.getDirectoryHandle(Individual);
-  const evaluation_dir = await individual_dir.getDirectoryHandle(Evaluation);
+  const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
+  const individual_dir = await group_dir.getDirectoryHandle(CleanUpString(Individual));
+  const evaluation_dir = await individual_dir.getDirectoryHandle(CleanUpString(Evaluation));
 
   switch (Action) {
     case 'Add':

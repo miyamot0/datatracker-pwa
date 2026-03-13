@@ -4,10 +4,8 @@ import {
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { FolderHandleContextType } from '@/context/folder-context';
-import createHref from '@/lib/links';
+import { FolderHandleContext } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
-import { redirect, useLoaderData } from 'react-router-dom';
 import ReliabilityBlank from './views/reli-blank';
 import { fetchSessionOutcomes } from '@/queries/outcomes/query-session-outcomes';
 import { ErrorDisplay } from '@/components/suspense/error-display';
@@ -15,43 +13,22 @@ import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { useQuery } from '@tanstack/react-query';
 import ReliabilityViewerContent from './views/reli-viewer-content';
 import { getCorrespondingSessionPairs } from '@/lib/reli';
+import { useContext } from 'react';
 
-type LoaderResult = {
+export default function ReliabilityViewerPage({
+  Group,
+  Individual,
+  Evaluation,
+}: {
   Group: string;
   Individual: string;
   Evaluation: string;
-  Context: FolderHandleContextType;
-};
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const reliViewerLoader = (ctx: FolderHandleContextType) => {
-  const { handle } = ctx;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return async ({ params }: any) => {
-    const { Group, Individual, Evaluation } = params;
-
-    if (!Group || !Individual || !Evaluation || !handle) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    return {
-      Group: CleanUpString(Group!),
-      Individual: CleanUpString(Individual!),
-      Evaluation: CleanUpString(Evaluation!),
-      Context: ctx,
-    } satisfies LoaderResult;
-  };
-};
-
-export default function ReliabilityViewerPage() {
-  const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Evaluation, Context } = loaderResult;
+}) {
+  const { handle } = useContext(FolderHandleContext);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['/', Group, Individual, Evaluation, 'outcomes'],
-    queryFn: () => fetchSessionOutcomes({ Context, Group, Individual, Evaluation }),
+    queryFn: () => fetchSessionOutcomes({ Handle: handle!, Group, Individual, Evaluation }),
   });
 
   if (isLoading) return <LoadingDisplay />;

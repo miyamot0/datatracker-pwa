@@ -1,9 +1,7 @@
-import { SessionTerminationOptionsType } from '@/components/pages/editor-session/forms/schema/session-designer-schema';
-import {
-  walkSessionDurationKey,
-  walkSessionFrequencyKey,
-} from '@/components/pages/viewer-results/helpers/schedule_parser';
+import { SessionTerminationOptionsType } from '@/routes/session/$group/$individual/$evaluation/-components/session-designer/forms/schema/session-designer-schema';
+
 import { SavedSessionResult } from '@/lib/dtos';
+import { walkSessionDurationKey, walkSessionFrequencyKey } from '../../results/helpers/schedule_parser';
 
 export function FilterByPrimaryRole(results: SavedSessionResult[]) {
   return results

@@ -1,4 +1,4 @@
-import { SessionTerminationOptions } from '@/components/pages/editor-session/forms/schema/session-designer-schema';
+import { SessionTerminationOptions } from '@/routes/session/$group/$individual/$evaluation/-components/session-designer/forms/schema/session-designer-schema';
 
 export const ScheduleMappingOptions = [
   {

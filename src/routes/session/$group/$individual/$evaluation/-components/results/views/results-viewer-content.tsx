@@ -1,7 +1,7 @@
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ViewDurationResults from './view-duration-results';
 import ViewFrequencyResults from './view-frequency-results';
-import { DataCollectorRolesType } from '@/components/pages/editor-session/forms/schema/session-designer-schema';
+import { DataCollectorRolesType } from '@/routes/session/$group/$individual/$evaluation/-components/session-designer/forms/schema/session-designer-schema';
 import { useState } from 'react';
 import { ModifiedSessionResult } from '@/types/storage';
 import { EnhancedKeySetInstance, KeySet } from '@/types/keyset';
@@ -14,6 +14,9 @@ type Props = {
   ExcludeFromCTB: EnhancedKeySetInstance[];
   Results: ModifiedSessionResult[];
   Keyset: KeySet;
+  Group: string;
+  Individual: string;
+  Evaluation: string;
 };
 
 export default function ResultsViewerContent({
@@ -23,6 +26,9 @@ export default function ResultsViewerContent({
   ExcludeFromCTB,
   Results,
   Keyset,
+  Group,
+  Individual,
+  Evaluation,
 }: Props) {
   const [role, setRole] = useState<DataCollectorRolesType>('Primary');
   const [schedule, setSchedule] = useState<ScheduleMappingOptionsType>(TimerMapping);
@@ -95,6 +101,9 @@ export default function ResultsViewerContent({
           SessionTimer={schedule.value}
           Results={filteredResults}
           UnfilteredKeyList={UnfilteredKeysDuration}
+          Group={Group}
+          Individual={Individual}
+          Evaluation={Evaluation}
         />
       )}
     </div>

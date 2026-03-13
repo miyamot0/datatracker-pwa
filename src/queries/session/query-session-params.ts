@@ -1,21 +1,18 @@
-import { FolderHandleContextType } from '@/context/folder-context';
 import { DEFAULT_SESSION_SETTINGS, SavedSettings } from '@/lib/dtos';
 import { CleanUpString } from '@/lib/strings';
 
 export const fetchSessionParams = async ({
-  Context,
+  Handle,
   Group,
   Individual,
   Evaluation,
 }: {
-  Context: FolderHandleContextType;
+  Handle: FileSystemDirectoryHandle;
   Group: string;
   Individual: string;
   Evaluation: string;
 }): Promise<SavedSettings> => {
-  const { handle } = Context;
-
-  const group_folder = await handle!.getDirectoryHandle(CleanUpString(Group));
+  const group_folder = await Handle.getDirectoryHandle(CleanUpString(Group));
   const individual_folder = await group_folder.getDirectoryHandle(CleanUpString(Individual));
   const evaluations = await individual_folder.getDirectoryHandle(CleanUpString(Evaluation));
 

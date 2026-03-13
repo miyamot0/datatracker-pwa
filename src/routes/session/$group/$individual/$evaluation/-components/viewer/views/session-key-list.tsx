@@ -1,4 +1,4 @@
-import { ExpandedSavedSessionResult } from '../session-viewer-page';
+import { ExpandedSavedSessionResult } from '../../../../routes/session/$group/$individual/$evaluation/-components/viewer/session-viewer-page';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table-common';

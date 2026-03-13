@@ -1,6 +1,6 @@
+import { KeyTiming } from '@/components/pages/session-recorder/types/session-recorder-types';
 import { SavedSessionResult } from '@/lib/dtos';
 import { KeySetInstance } from '@/types/keyset';
-import { KeyTiming } from '../../session-recorder/types/session-recorder-types';
 
 export function walkSessionFrequencyKey(SessionSettings: SavedSessionResult, Schedule: KeyTiming, Key: KeySetInstance) {
   const { SystemKeyPresses, FrequencyKeyPresses } = SessionSettings;
