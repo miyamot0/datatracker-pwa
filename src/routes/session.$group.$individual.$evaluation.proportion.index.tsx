@@ -1,10 +1,10 @@
-import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import createHref from '@/lib/links';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
 import { CleanUpString } from '@/lib/strings';
 import { KeySet, KeySetInstance } from '@/types/keyset';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import ResultsProportionVisualsPage from '../components/visualize-outcomes/proportion/results-proportion-visuals-page';
+import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/proportion/')({
   loader: async ({ params, context }) => {
@@ -17,12 +17,11 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/pr
       });
     }
 
-    const { keyset, results } = await GetResultsFromEvaluationFolder(
-      routerHandle.handle!,
-      group,
-      individual,
-      evaluation,
+    const results = await context.queryClient.ensureQueryData(
+      sessionOutcomesQueryOptions(routerHandle.handle, group, individual, evaluation),
     );
+
+    const keyset = results[0].Keyset;
 
     if (!keyset) {
       throw redirect({

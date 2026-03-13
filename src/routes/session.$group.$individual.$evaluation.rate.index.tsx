@@ -2,9 +2,9 @@ import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import ResultsRateVisualsPage from '../components/visualize-outcomes/rate/results-rate-visuals-page';
-import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import { KeySet, KeySetInstance } from '@/types/keyset';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
+import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/rate/')({
   loader: async ({ params, context }) => {
@@ -17,12 +17,11 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
       });
     }
 
-    const { keyset, results } = await GetResultsFromEvaluationFolder(
-      routerHandle.handle!,
-      group,
-      individual,
-      evaluation,
+    const results = await context.queryClient.ensureQueryData(
+      sessionOutcomesQueryOptions(routerHandle.handle, group, individual, evaluation),
     );
+
+    const keyset = results[0].Keyset;
 
     if (!keyset) {
       throw redirect({
