@@ -1,7 +1,7 @@
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ViewDurationResults from './view-duration-results';
 import ViewFrequencyResults from './view-frequency-results';
-import { DataCollectorRolesType } from '@/routes/session/$group/$individual/$evaluation/-components/session-designer/forms/schema/session-designer-schema';
+import { DataCollectorRolesType } from '@/components/editor-session/forms/schema/session-designer-schema';
 import { useState } from 'react';
 import { ModifiedSessionResult } from '@/types/storage';
 import { EnhancedKeySetInstance, KeySet } from '@/types/keyset';
@@ -93,6 +93,9 @@ export default function ResultsViewerContent({
           Results={filteredResults}
           ExcludeFromCTB={ExcludeFromCTB}
           UnfilteredKeyList={UnfilteredKeysFrequency}
+          Group={Group}
+          Individual={Individual}
+          Evaluation={Evaluation}
         />
       )}
 

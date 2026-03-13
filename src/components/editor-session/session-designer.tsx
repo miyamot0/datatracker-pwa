@@ -1,5 +1,4 @@
 import { FolderHandleContext } from '@/context/folder-context';
-import SessionDesignerForm from './views/session-designer-form';
 import { useQuery } from '@tanstack/react-query';
 import { conditionQueryOptions } from '@/queries/conditions/query-conditions';
 import { fetchKeyboards } from '@/queries/keysets/query-keyboards';
@@ -7,6 +6,7 @@ import { fetchSessionParams } from '@/queries/session/query-session-params';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { useContext } from 'react';
+import SessionDesignerForm from './views/session-designer-form';
 
 export function SessionDesignerPage({
   Group,

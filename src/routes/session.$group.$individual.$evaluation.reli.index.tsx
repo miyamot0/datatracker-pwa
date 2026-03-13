@@ -1,4 +1,4 @@
-import ReliabilityViewerPage from '@/routes/session/$group/$individual/$evaluation/-components/agreement/reli-viewer-page';
+import ReliabilityViewerPage from '@/components/summary-agreement/reli-viewer-page';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';

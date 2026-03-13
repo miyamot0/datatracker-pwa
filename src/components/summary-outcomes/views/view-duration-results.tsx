@@ -1,17 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SavedSessionResult } from '@/lib/dtos';
-import { Code2Icon, KeyboardIcon, TableIcon } from 'lucide-react';
+import { ChevronLeft, Code2Icon, KeyboardIcon, TableIcon } from 'lucide-react';
 import { exportHumanReadableToCSV } from '@/lib/download';
 import { EntryHolder, HumanReadableResults, HumanReadableResultsRow } from '@/types/export';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import Spreadsheet, { CellBase, Matrix } from 'react-spreadsheet';
-import BackButton from '@/components/ui/back-button';
-import createHref from '@/lib/links';
 import {
   SessionTerminationOptionsType,
   SessionTerminationOptions,
-} from '@/routes/session/$group/$individual/$evaluation/-components/session-designer/forms/schema/session-designer-schema';
+} from '@/components/editor-session/forms/schema/session-designer-schema';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -24,6 +22,7 @@ import { useState } from 'react';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
 import { EnhancedKeySetInstance } from '@/types/keyset';
 import { walkSessionDurationKey } from '../helpers/schedule_parser';
+import { Link } from '@tanstack/react-router';
 
 type Props = {
   SessionTimer: SessionTerminationOptionsType;
@@ -407,10 +406,18 @@ export default function ViewDurationResults({
             </Button>
           </ToolTipWrapper>
 
-          <BackButton
-            Label="Back to Evaluations"
-            Href={createHref({ type: 'Evaluations', group: Group!, individual: Individual! })}
-          />
+          <Link
+            to="/session/$group/$individual"
+            params={{
+              group: Group!,
+              individual: Individual!,
+            }}
+          >
+            <Button variant={'outline'} className="shadow" size={'sm'}>
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              {'Back to Evaluations'}
+            </Button>
+          </Link>
         </div>
       </CardHeader>
       <CardContent className="overflow-x-auto">

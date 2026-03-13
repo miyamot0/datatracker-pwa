@@ -1,7 +1,7 @@
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import SessionViewerPage from './session/$group/$individual/$evaluation/-components/viewer/session-viewer-page';
+import SessionViewerPage from '../components/editor-session-outcome/session-viewer-page';
 import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import { GenerateSavedFileName } from '@/lib/writer';
 import { getLocalCachedPrefs } from '@/lib/local_storage';

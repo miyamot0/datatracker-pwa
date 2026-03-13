@@ -1,4 +1,4 @@
-import DashboardHistoryPage from '@/routes/session/$group/$individual/$evaluation/-components/history/dashboard-history-page';
+import DashboardHistoryPage from '@/components/dashboard-outcomes/dashboard-history-page';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';

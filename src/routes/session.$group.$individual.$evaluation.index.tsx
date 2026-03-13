@@ -1,7 +1,7 @@
+import { SessionDesignerPage } from '@/components/editor-session/session-designer';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import { SessionDesignerPage } from './session/$group/$individual/$evaluation/-components/session-designer/session-designer';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/')({
   loader: ({ params, context }) => {

@@ -16,7 +16,7 @@ import {
   SessionDesignerSchema,
   SessionDesignerSchemaType,
   SessionTerminationOptionsDescriptions,
-} from '@/routes/session/$group/$individual/$evaluation/-components/session-designer/forms/schema/session-designer-schema';
+} from '@/components/editor-session/forms/schema/session-designer-schema';
 import { CleanUpString } from '@/lib/strings';
 import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
