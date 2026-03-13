@@ -1,4 +1,4 @@
-import { KeyManageType } from '@/components/pages/session-recorder/types/session-recorder-types';
+import { KeyManageType } from '@/routes/session/$group/$individual/$evaluation/-components/session-recorder/types/session-recorder-types';
 import {
   DataCollectorRolesType,
   SessionDesignerSchemaType,

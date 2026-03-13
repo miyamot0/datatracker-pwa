@@ -36,8 +36,6 @@ export const PaddedTimerRow = ({
     showDelta = ActiveTimer === AssignedTimer ? <span>{`+ ${formatTimeSecondsMin(SecondsDelta)}`}</span> : undefined;
   }
 
-  //const showDelta = ActiveTimer === AssignedTimer ? <span>{`+ ${formatTimeSeconds(SecondsDelta)}`}</span> : undefined;
-
   return (
     <div className="flex flex-row mx-2 text-sm mb-2">
       <p className={cn('w-[250px] transition-colors bg-transparent font-semibold')}>{label}</p>

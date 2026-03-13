@@ -41,6 +41,7 @@ import { mutationConditions } from '@/queries/conditions/mutate-conditions';
 import { useMutation } from '@tanstack/react-query';
 import { mutationSettingsParams } from '@/queries/session/mutate-session-params';
 import { queryClient } from '@/App';
+import { useNavigate } from '@tanstack/react-router';
 
 type Props = {
   Group: string;
@@ -60,9 +61,9 @@ export default function SessionDesigner({
   SessionSettings,
 }: Props) {
   const { settings, handle } = useContext(FolderHandleContext);
-  //const navigate = useNavigate({
-  //  from: `/session/$group/$individual/$evaluation/`,
-  //});
+  const navigate = useNavigate({
+    from: `/session/$group/$individual/$evaluation/`,
+  });
 
   const mutateConditions = useMutation({
     mutationFn: mutationConditions,
@@ -76,11 +77,15 @@ export default function SessionDesigner({
     onSuccess: (data) => {
       queryClient.setQueryData(['/', Group, Individual, Evaluation, 'settings'], data);
 
-      //navigate({ to: '/session/$group/$individual/$evaluation/run/$keyset' });
-
-      //navigate(`/session/${Group}/${Individual}/${Evaluation}/run/${data.KeySet}`, {
-      //  unstable_viewTransition: true,
-      //});
+      navigate({
+        to: '/session/$group/$individual/$evaluation/run/$keyset',
+        params: {
+          group: Group,
+          individual: Individual,
+          evaluation: Evaluation,
+          keyset: data.KeySet,
+        },
+      });
     },
   });
 

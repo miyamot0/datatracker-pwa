@@ -1,5 +1,5 @@
 import PageWrapper from '@/components/layout/page-wrapper';
-import { useEventListener } from '@/components/pages/session-recorder/helpers/event-listeners';
+import { useEventListener } from '@/routes/session/$group/$individual/$evaluation/-components/session-recorder/helpers/event-listeners';
 import { SavedSettings } from '@/lib/dtos';
 import { cn } from '@/lib/utils';
 import { KeySet } from '@/types/keyset';
@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import SessionRecorderInstructions from '../views/ui-instructions';
 import KeyHistoryListing from '../views/ui-key-listing';
 import SessionRecorderTallies from '../views/ui-counts';
-import createHref from '@/lib/links';
 import {
   BuildEvaluationsBreadcrumb,
   BuildGroupBreadcrumb,
@@ -18,15 +17,13 @@ import {
   BuildSessionDesignerBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
 import { displayConditionalNotification } from '@/lib/notifications';
-import { FolderHandleContext, FolderHandleContextType } from '@/context/folder-context';
-import { useNavigate } from 'react-router-dom';
+import { FolderHandleContext } from '@/context/folder-context';
 import { useMutation } from '@tanstack/react-query';
 import { mutationSettingsParams } from '@/queries/session/mutate-session-params';
-import { queryClient } from '@/context/query-client';
+import { queryClient } from '@/App';
+import { useNavigate } from '@tanstack/react-router';
 
 type Props = {
-  Context: FolderHandleContextType;
-  Handle: FileSystemDirectoryHandle;
   Group: string;
   Individual: string;
   Evaluation: string;
@@ -41,17 +38,10 @@ const TIME_UNIT = 1000;
 // Increment--Proportional to seconds change
 const INCREMENT = TIME_DELTA / TIME_UNIT;
 
-export default function SessionRecorderInterface({
-  Context,
-  Handle,
-  Group,
-  Individual,
-  Evaluation,
-  Keyset,
-  Settings,
-}: Props) {
-  const navigator_ = useNavigate();
-  const { settings: applicationSettings } = useContext(FolderHandleContext);
+export default function SessionRecorderInterface({ Group, Individual, Evaluation, Keyset, Settings }: Props) {
+  //const navigator_ = useNavigate();
+  const { settings: applicationSettings, handle } = useContext(FolderHandleContext);
+  const navigate = useNavigate({ from: '/session/$group/$individual/$evaluation/run/$keyset' });
 
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
   const [systemKeysPressed, setSystemKeysPressed] = useState<KeyManageType[]>([]);
@@ -86,10 +76,8 @@ export default function SessionRecorderInterface({
   const activeTimerRef = useRef<TimerSetting>('Stopped');
 
   useEffect(() => {
-    if (!Handle) {
-      navigator_(createHref({ type: 'Dashboard' }), {
-        unstable_viewTransition: true,
-      });
+    if (!handle) {
+      navigate({ to: '/dashboard' });
       return;
     }
 
@@ -136,16 +124,22 @@ export default function SessionRecorderInterface({
           );
 
           if (confirm_save === false) {
-            navigator_(`/session/${Group}/${Individual}/${Evaluation}`, {
-              unstable_viewTransition: true,
+            navigate({
+              to: '/session/$group/$individual/$evaluation',
+              params: {
+                group: Group,
+                individual: Individual,
+                evaluation: Evaluation,
+              },
             });
+
             return;
           }
         }
 
         // TODO: Revisit once query session outcomes is implemented
         await saveSessionOutcomesToFile(
-          Handle,
+          handle!,
           Settings,
           keysPressed,
           final_system_keys,
@@ -172,7 +166,7 @@ export default function SessionRecorderInterface({
             Group,
             Individual,
             Evaluation,
-            Context,
+            Handle: handle!,
             Settings: {
               ...Settings,
               Session: Settings.Session + 1,
@@ -181,7 +175,14 @@ export default function SessionRecorderInterface({
 
           switch (applicationSettings.PostSessionBx) {
             case 'AutoAdvance':
-              navigator_(`/session/${Group}/${Individual}/${Evaluation}`);
+              navigate({
+                to: '/session/$group/$individual/$evaluation',
+                params: {
+                  group: Group,
+                  individual: Individual,
+                  evaluation: Evaluation,
+                },
+              });
 
               break;
 
@@ -192,7 +193,14 @@ export default function SessionRecorderInterface({
                 action: {
                   label: 'Load Next Session',
                   onClick: () => {
-                    navigator_(`/session/${Group}/${Individual}/${Evaluation}`);
+                    navigate({
+                      to: '/session/$group/$individual/$evaluation',
+                      params: {
+                        group: Group,
+                        individual: Individual,
+                        evaluation: Evaluation,
+                      },
+                    });
                   },
                 },
               });
@@ -225,8 +233,8 @@ export default function SessionRecorderInterface({
     runningState,
     keysPressed,
     Settings,
-    Handle,
-    navigator_,
+    handle,
+    navigate,
     Group,
     Individual,
     Evaluation,
@@ -468,7 +476,7 @@ export default function SessionRecorderInterface({
     }
   });
 
-  if (!Handle) return null;
+  if (!handle) return null;
 
   return (
     <PageWrapper

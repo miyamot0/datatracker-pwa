@@ -1,4 +1,4 @@
-import { KeyTiming } from '@/components/pages/session-recorder/types/session-recorder-types';
+import { KeyTiming } from '@/routes/session/$group/$individual/$evaluation/-components/session-recorder/types/session-recorder-types';
 import { SavedSessionResult } from '@/lib/dtos';
 import { KeySetInstance } from '@/types/keyset';
 

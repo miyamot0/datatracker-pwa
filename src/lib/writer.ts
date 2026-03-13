@@ -1,4 +1,4 @@
-import { KeyManageType } from '../components/pages/session-recorder/types/session-recorder-types';
+import { KeyManageType } from '../routes/session/$group/$individual/$evaluation/-components/session-recorder/types/session-recorder-types';
 import { SavedSessionResult, SavedSettings } from './dtos';
 import { CleanUpString } from './strings';
 import { KeySet } from '../types/keyset';
@@ -18,13 +18,13 @@ export async function saveSessionSettingsToFile(
   Group: string,
   Individual: string,
   Evaluation: string,
-  Settings: SavedSettings
+  Settings: SavedSettings,
 ) {
   const files = await GetHandleEvaluationFolder(
     Handle,
     CleanUpString(Group),
     CleanUpString(Individual),
-    CleanUpString(Evaluation)
+    CleanUpString(Evaluation),
   );
 
   if (!files) throw new Error('No directory found for this evaluation');
@@ -84,20 +84,20 @@ export async function saveSessionOutcomesToFile(
   timerSecondsOne: number,
   timerSecondsTwo: number,
   timerSecondsThree: number,
-  endedEarly = false
+  endedEarly = false,
 ) {
   const client_evaluations_folder = await GetHandleEvaluationFolder(
     Handle,
     CleanUpString(group),
     CleanUpString(client),
-    CleanUpString(evaluation)
+    CleanUpString(evaluation),
   );
 
   const relevent_condition_folder = await client_evaluations_folder.getDirectoryHandle(
     CleanUpString(Settings.Condition),
     {
       create: true,
-    }
+    },
   );
 
   const session_output_file = await relevent_condition_folder.getFileHandle(GenerateSavedFileName(Settings), {

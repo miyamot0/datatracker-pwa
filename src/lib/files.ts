@@ -2,7 +2,7 @@ import { CleanUpString } from './strings';
 import { DEFAULT_SESSION_SETTINGS, SavedSessionResult, SavedSettings } from './dtos';
 import { toast } from 'sonner';
 import { KeySet } from '@/types/keyset';
-import { KeyManageType } from '@/components/pages/session-recorder/types/session-recorder-types';
+import { KeyManageType } from '@/routes/session/$group/$individual/$evaluation/-components/session-recorder/types/session-recorder-types';
 import { deserializeKeySet } from './keyset';
 
 // --- Handles ---

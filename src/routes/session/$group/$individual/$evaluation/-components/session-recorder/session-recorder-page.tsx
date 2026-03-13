@@ -1,7 +1,4 @@
-import { CleanUpString } from '@/lib/strings';
-import createHref from '@/lib/links';
-import { FolderHandleContextType } from '@/context/folder-context';
-import { redirect, useLoaderData } from 'react-router-dom';
+import { FolderHandleContext } from '@/context/folder-context';
 import SessionRecorderInterface from './views/session-recorder-interface';
 import { fetchConditions } from '@/queries/conditions/query-conditions';
 import { useQuery } from '@tanstack/react-query';
@@ -9,43 +6,20 @@ import { fetchKeyboards } from '@/queries/keysets/query-keyboards';
 import { fetchSessionParams } from '@/queries/session/query-session-params';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { ErrorDisplay } from '@/components/suspense/error-display';
+import { useContext } from 'react';
 
-type LoaderResult = {
+export default function SessionRecorderPage({
+  Group,
+  Individual,
+  Evaluation,
+  KeySet,
+}: {
   Group: string;
   Individual: string;
   Evaluation: string;
-  Handle: FileSystemDirectoryHandle;
-  Context: FolderHandleContextType;
   KeySet: string;
-};
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const sessionRecorderPageLoader = (ctx: FolderHandleContextType) => {
-  const { handle } = ctx;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return async ({ params }: any) => {
-    const { Group, Individual, Evaluation, KeySet } = params;
-
-    if (!Group || !Individual || !Evaluation || !handle || !KeySet) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    return {
-      Group: CleanUpString(Group),
-      Individual: CleanUpString(Individual),
-      Evaluation: CleanUpString(Evaluation),
-      Handle: handle,
-      Context: ctx,
-      KeySet,
-    } satisfies LoaderResult;
-  };
-};
-
-export default function SessionRecorderPage() {
-  const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Evaluation, Handle, KeySet, Context } = loaderResult;
+}) {
+  const { handle } = useContext(FolderHandleContext);
 
   const {
     data: dataCondition,
@@ -53,7 +27,7 @@ export default function SessionRecorderPage() {
     error: errorCondition,
   } = useQuery({
     queryKey: ['/', Group, Individual, Evaluation, 'conditions'],
-    queryFn: () => fetchConditions(Context, Group, Individual, Evaluation),
+    queryFn: () => fetchConditions(handle!, Group, Individual, Evaluation),
     subscribed: false,
   });
 
@@ -63,7 +37,7 @@ export default function SessionRecorderPage() {
     error: errorKeySets,
   } = useQuery({
     queryKey: ['/', Group, Individual, 'keyboards'],
-    queryFn: () => fetchKeyboards({ Context, Group, Individual }),
+    queryFn: () => fetchKeyboards({ Handle: handle!, Group, Individual }),
     subscribed: false,
   });
 
@@ -73,7 +47,7 @@ export default function SessionRecorderPage() {
     error: errorSessionParams,
   } = useQuery({
     queryKey: ['/', Group, Individual, Evaluation, 'settings'],
-    queryFn: () => fetchSessionParams({ Context, Group, Individual, Evaluation }),
+    queryFn: () => fetchSessionParams({ Handle: handle!, Group, Individual, Evaluation }),
     subscribed: false,
   });
 
@@ -90,8 +64,6 @@ export default function SessionRecorderPage() {
 
   return (
     <SessionRecorderInterface
-      Context={Context}
-      Handle={Handle}
       Group={Group}
       Individual={Individual}
       Evaluation={Evaluation}

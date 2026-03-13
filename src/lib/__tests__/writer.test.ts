@@ -1,6 +1,6 @@
 import { saveSessionSettingsToFile, saveSessionOutcomesToFile } from '../writer'; // Adjust the import path
 import { SavedSettings } from '../dtos';
-import { KeyManageType } from '../../components/pages/session-recorder/types/session-recorder-types';
+import { KeyManageType } from '../../routes/session/$group/$individual/$evaluation/-components/session-recorder/types/session-recorder-types';
 import { KeySet } from '../../types/keyset';
 import { CleanUpString } from '../strings';
 import { Mock } from 'vitest';
@@ -59,7 +59,7 @@ describe('File Save Functions', () => {
         mockHandle,
         CleanUpString(mockGroup),
         CleanUpString(mockIndividual),
-        CleanUpString(mockEvaluation)
+        CleanUpString(mockEvaluation),
       );
     });
 
@@ -71,7 +71,7 @@ describe('File Save Functions', () => {
           Session: 1,
           Condition: 'condition',
           Role: 'role',
-        } as unknown as SavedSettings)
+        } as unknown as SavedSettings),
       ).rejects.toThrow('No directory found for this evaluation');
     });
   });
@@ -132,14 +132,14 @@ describe('File Save Functions', () => {
         60,
         30,
         20,
-        10
+        10,
       );
 
       expect(GetHandleEvaluationFolder).toHaveBeenCalledWith(
         mockHandle,
         CleanUpString(mockGroup),
         CleanUpString(mockClient),
-        CleanUpString(mockEvaluation)
+        CleanUpString(mockEvaluation),
       );
     });
 
@@ -164,8 +164,8 @@ describe('File Save Functions', () => {
           60,
           30,
           20,
-          10
-        )
+          10,
+        ),
       ).rejects.toThrow();
     });
   });
