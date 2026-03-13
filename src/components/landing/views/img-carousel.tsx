@@ -24,7 +24,7 @@ export default function ImageCarousel() {
         <CarouselContent>
           {IMAGES_REMOTE.map((img, index) => (
             <CarouselItem key={index} className="w-full flex flex-row justify-center items-center shadow-xl">
-              <img src={img} alt="Preview of figure" loading="lazy" className="p-4 border rounded bg-white" />
+              <img src={img} alt="Preview of figure" className="p-4 border rounded bg-white" />
             </CarouselItem>
           ))}
         </CarouselContent>

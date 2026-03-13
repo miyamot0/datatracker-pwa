@@ -97,6 +97,14 @@ export default function ClientsPage({ Group }: { Group: string }) {
             callback={(rows) => {
               const individualNames = rows.map((row) => row.Individual);
 
+              const confirm_delete = window.confirm(
+                `Are you sure you want to delete ${individualNames.length} clients? This CANNOT be undone.`,
+              );
+
+              if (!confirm_delete) {
+                return;
+              }
+
               toast.promise(
                 async () =>
                   await mutateIndividuals.mutateAsync({

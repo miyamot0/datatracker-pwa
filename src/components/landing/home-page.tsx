@@ -117,7 +117,7 @@ export default function HomePage() {
         </Dialog>
 
         {display === 'desktop' && (
-          <Link to={createHref({ type: 'Dashboard' })} className="flex flex-row">
+          <Link to="/dashboard" className="flex flex-row">
             <Button className="w-full shadow-xl">
               <ChartLineIcon className="mr-2 h-4 w-4" />
               Load Application

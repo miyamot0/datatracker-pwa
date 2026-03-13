@@ -10,12 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DocumentationIndexRouteImport } from './routes/documentation.index'
-import { Route as DashboardSyncRouteImport } from './routes/dashboard.sync'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as SessionGroupIndexRouteImport } from './routes/session.$group.index'
 import { Route as DocumentationSlugIndexRouteImport } from './routes/documentation.$slug.index'
+import { Route as DashboardSyncIndexRouteImport } from './routes/dashboard.sync.index'
 import { Route as SessionGroupIndividualIndexRouteImport } from './routes/session.$group.$individual.index'
 import { Route as SessionGroupIndividualKeysetsIndexRouteImport } from './routes/session.$group.$individual.keysets.index'
 import { Route as SessionGroupIndividualImportIndexRouteImport } from './routes/session.$group.$individual.import.index'
@@ -36,11 +36,6 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -51,10 +46,10 @@ const DocumentationIndexRoute = DocumentationIndexRouteImport.update({
   path: '/documentation/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardSyncRoute = DashboardSyncRouteImport.update({
-  id: '/sync',
-  path: '/sync',
-  getParentRoute: () => DashboardRoute,
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SessionGroupIndexRoute = SessionGroupIndexRouteImport.update({
   id: '/session/$group/',
@@ -64,6 +59,11 @@ const SessionGroupIndexRoute = SessionGroupIndexRouteImport.update({
 const DocumentationSlugIndexRoute = DocumentationSlugIndexRouteImport.update({
   id: '/documentation/$slug/',
   path: '/documentation/$slug/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardSyncIndexRoute = DashboardSyncIndexRouteImport.update({
+  id: '/dashboard/sync/',
+  path: '/dashboard/sync/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SessionGroupIndividualIndexRoute =
@@ -153,10 +153,10 @@ const SessionGroupIndividualEvaluationHistoryEditFileIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteWithChildren
   '/settings': typeof SettingsRoute
-  '/dashboard/sync': typeof DashboardSyncRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/documentation/': typeof DocumentationIndexRoute
+  '/dashboard/sync/': typeof DashboardSyncIndexRoute
   '/documentation/$slug/': typeof DocumentationSlugIndexRoute
   '/session/$group/': typeof SessionGroupIndexRoute
   '/session/$group/$individual/': typeof SessionGroupIndividualIndexRoute
@@ -176,10 +176,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteWithChildren
   '/settings': typeof SettingsRoute
-  '/dashboard/sync': typeof DashboardSyncRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/documentation': typeof DocumentationIndexRoute
+  '/dashboard/sync': typeof DashboardSyncIndexRoute
   '/documentation/$slug': typeof DocumentationSlugIndexRoute
   '/session/$group': typeof SessionGroupIndexRoute
   '/session/$group/$individual': typeof SessionGroupIndividualIndexRoute
@@ -200,10 +200,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteWithChildren
   '/settings': typeof SettingsRoute
-  '/dashboard/sync': typeof DashboardSyncRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/documentation/': typeof DocumentationIndexRoute
+  '/dashboard/sync/': typeof DashboardSyncIndexRoute
   '/documentation/$slug/': typeof DocumentationSlugIndexRoute
   '/session/$group/': typeof SessionGroupIndexRoute
   '/session/$group/$individual/': typeof SessionGroupIndividualIndexRoute
@@ -225,10 +225,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/dashboard'
     | '/settings'
-    | '/dashboard/sync'
+    | '/dashboard/'
     | '/documentation/'
+    | '/dashboard/sync/'
     | '/documentation/$slug/'
     | '/session/$group/'
     | '/session/$group/$individual/'
@@ -248,10 +248,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/dashboard'
     | '/settings'
-    | '/dashboard/sync'
+    | '/dashboard'
     | '/documentation'
+    | '/dashboard/sync'
     | '/documentation/$slug'
     | '/session/$group'
     | '/session/$group/$individual'
@@ -271,10 +271,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/dashboard'
     | '/settings'
-    | '/dashboard/sync'
+    | '/dashboard/'
     | '/documentation/'
+    | '/dashboard/sync/'
     | '/documentation/$slug/'
     | '/session/$group/'
     | '/session/$group/$individual/'
@@ -295,9 +295,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRouteWithChildren
   SettingsRoute: typeof SettingsRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
   DocumentationIndexRoute: typeof DocumentationIndexRoute
+  DashboardSyncIndexRoute: typeof DashboardSyncIndexRoute
   DocumentationSlugIndexRoute: typeof DocumentationSlugIndexRoute
   SessionGroupIndexRoute: typeof SessionGroupIndexRoute
   SessionGroupIndividualIndexRoute: typeof SessionGroupIndividualIndexRoute
@@ -325,13 +326,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -346,12 +340,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocumentationIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/sync': {
-      id: '/dashboard/sync'
-      path: '/sync'
-      fullPath: '/dashboard/sync'
-      preLoaderRoute: typeof DashboardSyncRouteImport
-      parentRoute: typeof DashboardRoute
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/session/$group/': {
       id: '/session/$group/'
@@ -365,6 +359,13 @@ declare module '@tanstack/react-router' {
       path: '/documentation/$slug'
       fullPath: '/documentation/$slug/'
       preLoaderRoute: typeof DocumentationSlugIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/sync/': {
+      id: '/dashboard/sync/'
+      path: '/dashboard/sync'
+      fullPath: '/dashboard/sync/'
+      preLoaderRoute: typeof DashboardSyncIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/session/$group/$individual/': {
@@ -468,23 +469,12 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface DashboardRouteChildren {
-  DashboardSyncRoute: typeof DashboardSyncRoute
-}
-
-const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardSyncRoute: DashboardSyncRoute,
-}
-
-const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
-  DashboardRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRouteWithChildren,
   SettingsRoute: SettingsRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
   DocumentationIndexRoute: DocumentationIndexRoute,
+  DashboardSyncIndexRoute: DashboardSyncIndexRoute,
   DocumentationSlugIndexRoute: DocumentationSlugIndexRoute,
   SessionGroupIndexRoute: SessionGroupIndexRoute,
   SessionGroupIndividualIndexRoute: SessionGroupIndividualIndexRoute,
