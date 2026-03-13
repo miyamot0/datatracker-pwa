@@ -3,6 +3,7 @@ import { sessionOutcomesQueryOptions } from './query-session-outcomes';
 import { ModifiedSessionResult } from '@/types/storage';
 import { GenerateSavedFileName } from '@/lib/writer';
 import { queryClient } from '@/App';
+import { SavedSessionResult } from '@/lib/dtos';
 
 const DeleteSessions = async (
   cleanedOutcomes: ModifiedSessionResult[],
@@ -90,6 +91,7 @@ export const mutationSettingsOutcomes = async ({
   ConditionRename,
   UpdatedOutcome,
   PriorOutcome,
+  NewOutcome,
   Handle,
   Action,
 }: {
@@ -100,8 +102,9 @@ export const mutationSettingsOutcomes = async ({
   ConditionRename?: string;
   UpdatedOutcome?: ModifiedSessionResult;
   PriorOutcome?: ModifiedSessionResult;
+  NewOutcome?: SavedSessionResult;
   Handle: FileSystemDirectoryHandle;
-  Action: 'Delete' | 'EditCondition' | 'Modify';
+  Action: 'Delete' | 'EditCondition' | 'Modify' | 'Add';
 }): Promise<ModifiedSessionResult[]> => {
   const sessionOutcomes: ModifiedSessionResult[] = await queryClient.fetchQuery(
     sessionOutcomesQueryOptions(Handle, Group, Individual, Evaluation),
@@ -164,6 +167,41 @@ export const mutationSettingsOutcomes = async ({
         cleanedSessionOutcomes[indexOfOutcome] = UpdatedOutcome;
       } catch (error: unknown) {
         new Error(`Failed to update outcome: ${error}`);
+      }
+
+      break;
+    }
+    case 'Add': {
+      if (!NewOutcome) {
+        throw new Error('New outcome not found');
+      }
+
+      const Filename = `${NewOutcome.SessionSettings.Session}_${NewOutcome.SessionSettings.Condition}_${NewOutcome.SessionSettings.Role}.json`;
+
+      const savedResult = {
+        ...NewOutcome,
+        Filename,
+      } satisfies ModifiedSessionResult;
+
+      try {
+        const condition_dir = await evaluation_dir.getDirectoryHandle(
+          CleanUpString(NewOutcome.SessionSettings.Condition),
+          {
+            create: true,
+          },
+        );
+
+        const session_output_file = await condition_dir.getFileHandle(savedResult.Filename, {
+          create: true,
+        });
+
+        const writer = await session_output_file.createWritable();
+        await writer.write(JSON.stringify(savedResult));
+        await writer.close();
+
+        cleanedSessionOutcomes.unshift(savedResult);
+      } catch (error: unknown) {
+        new Error(`Failed to add outcome: ${error}`);
       }
 
       break;

@@ -1,6 +1,5 @@
 import { FolderHandleContext } from '@/context/folder-context';
 import SessionRecorderInterface from './views/session-recorder-interface';
-import { fetchConditions } from '@/queries/conditions/query-conditions';
 import { useQuery } from '@tanstack/react-query';
 import { fetchKeyboards } from '@/queries/keysets/query-keyboards';
 import { fetchSessionParams } from '@/queries/session/query-session-params';
@@ -22,16 +21,6 @@ export default function SessionRecorderPage({
   const { handle } = useContext(FolderHandleContext);
 
   const {
-    data: dataCondition,
-    isLoading: loadingCondition,
-    error: errorCondition,
-  } = useQuery({
-    queryKey: ['/', Group, Individual, Evaluation, 'conditions'],
-    queryFn: () => fetchConditions(handle!, Group, Individual, Evaluation),
-    subscribed: false,
-  });
-
-  const {
     data: dataKeySets,
     isLoading: loadingKeySets,
     error: errorKeySets,
@@ -51,15 +40,15 @@ export default function SessionRecorderPage({
     subscribed: false,
   });
 
-  if (loadingCondition || loadingKeySets || loadingSessionParams) return <LoadingDisplay />;
+  if (loadingKeySets || loadingSessionParams) return <LoadingDisplay />;
 
-  if (errorCondition || errorKeySets || errorSessionParams || !dataCondition || !dataKeySets || !dataSessionParams)
-    return <ErrorDisplay Text={'An error occurred while preparing recorder.'} />;
+  if (errorKeySets || errorSessionParams || !dataKeySets || !dataSessionParams)
+    return <ErrorDisplay Text={'An error occurred while fetching parameters.'} />;
 
   const keySetObj = dataKeySets.find((k) => k.Name == KeySet);
 
   if (!keySetObj) {
-    return <ErrorDisplay Text={'An error occurred while preparing recorder.'} />;
+    return <ErrorDisplay Text={'Respective KeySet not found.'} />;
   }
 
   return (

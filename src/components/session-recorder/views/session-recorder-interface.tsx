@@ -1,11 +1,10 @@
 import PageWrapper from '@/components/layout/page-wrapper';
 import { useEventListener } from '@/components/session-recorder/helpers/event-listeners';
-import { SavedSettings } from '@/lib/dtos';
+import { SavedSessionResult, SavedSettings } from '@/lib/dtos';
 import { cn } from '@/lib/utils';
 import { KeySet } from '@/types/keyset';
 import { useState, useRef, useEffect, useContext } from 'react';
 import { KeyManageType, KeyTiming, TimerSetting } from '../types/session-recorder-types';
-import { saveSessionOutcomesToFile } from '@/lib/files';
 import { toast } from 'sonner';
 import SessionRecorderInstructions from './ui-instructions';
 import KeyHistoryListing from './ui-key-listing';
@@ -22,6 +21,7 @@ import { useMutation } from '@tanstack/react-query';
 import { mutationSettingsParams } from '@/queries/session/mutate-session-params';
 import { queryClient } from '@/App';
 import { useNavigate } from '@tanstack/react-router';
+import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outcomes';
 
 type Props = {
   Group: string;
@@ -45,6 +45,13 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
 
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
   const [systemKeysPressed, setSystemKeysPressed] = useState<KeyManageType[]>([]);
+
+  const mutateSessionOutcomes = useMutation({
+    mutationFn: mutationSettingsOutcomes,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/', Group, Individual, Evaluation, 'outcomes'], data);
+    },
+  });
 
   const mutateSettings = useMutation({
     mutationFn: mutationSettingsParams,
@@ -137,6 +144,22 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
           }
         }
 
+        const sessionFileToSave = {
+          SessionSettings: Settings,
+          FrequencyKeyPresses: keysPressed.filter((key) => key.KeyType === 'Frequency'),
+          DurationKeyPresses: keysPressed.filter((key) => key.KeyType === 'Duration'),
+          SystemKeyPresses: final_system_keys,
+          SessionStart: startTime!.toJSON(),
+          Keyset: Keyset,
+          SessionEnd: new Date().toJSON(),
+          EndedEarly: ended_early,
+          TimerMain: secondsElapsedTotal.current,
+          TimerOne: secondsElapsedFirst.current,
+          TimerTwo: secondsElapsedSecond.current,
+          TimerThree: secondsElapsedThird.current,
+        } satisfies SavedSessionResult;
+
+        /*
         // TODO: Revisit once query session outcomes is implemented
         await saveSessionOutcomesToFile(
           handle!,
@@ -154,6 +177,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
           secondsElapsedThird.current,
           ended_early,
         );
+        */
 
         secondsElapsedTotal.current += INCREMENT;
 
@@ -161,6 +185,16 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
         wakelockRef.current = undefined;
 
         try {
+          await mutateSessionOutcomes.mutateAsync({
+            Handle: handle!,
+            Group,
+            Individual,
+            Evaluation,
+            NewOutcome: sessionFileToSave,
+            Outcomes: [],
+            Action: 'Add',
+          });
+
           await mutateSettings.mutateAsync({
             Group,
             Individual,
