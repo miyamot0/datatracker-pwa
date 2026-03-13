@@ -7,7 +7,6 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 import fs from 'node:fs/promises';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 
-
 const common_screenshot_params = {
   sizes: '1148x969',
   type: 'image/png',
@@ -177,10 +176,16 @@ export default defineConfig(({ mode }) => {
   process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 
   const MODALITY: Modality = (process.env.VITE_MODE || 'base') as Modality;
-  const plugins = PluginSetup([tanstackRouter({
-      target: 'react',
-      autoCodeSplitting: true,
-    }),react()], MODALITY);
+  const plugins = PluginSetup(
+    [
+      tanstackRouter({
+        target: 'react',
+        autoCodeSplitting: true,
+      }),
+      react(),
+    ],
+    MODALITY,
+  );
 
   return {
     plugins,

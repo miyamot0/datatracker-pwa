@@ -1,4 +1,4 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-99.38_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-97.98_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-100.00_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-99.84_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-97.98_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-100.00_Percent-green>)
 
 ![Static Badge Version](https://img.shields.io/badge/Version-0.5.0-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
@@ -116,7 +116,7 @@ cmdk (1.1.1). Copyright Paco https://github.com/pacocoursey -- MIT Licensed: [Re
  
 embla-carousel-react (8.2.1). Copyright David Jerleke -- MIT Licensed: [Repo](https://github.com/davidjerleke/embla-carousel) 
  
-lucide-react (0.429.0). Copyright Eric Fennis -- ISC Licensed: [Repo](https://github.com/lucide-icons/lucide.git) 
+lucide-react (0.577.0). Copyright Eric Fennis -- ISC Licensed: [Repo](https://github.com/lucide-icons/lucide.git) 
  
 react (18.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/facebook/react.git) 
  
@@ -142,7 +142,7 @@ tailwind-merge (2.5.2). Copyright Dany Castillo -- MIT Licensed: [Repo](https://
  
 tailwindcss-animate (1.0.7). Copyright Jamie Kyle <me@thejameskyle.com> -- MIT Licensed: [Repo](https://registry.npmjs.org/tailwindcss-animate/-/tailwindcss-animate-1.0.7.tgz) 
  
-uuid (10.0.0). Copyright n/a -- MIT Licensed: [Repo](https://github.com/uuidjs/uuid.git) 
+uuid (9.0.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/uuidjs/uuid.git) 
  
 zod (3.23.8). Copyright Colin McDonnell <colin@colinhacks.com> -- MIT Licensed: [Repo](https://github.com/colinhacks/zod.git) 
 
