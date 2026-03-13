@@ -5,6 +5,8 @@ import { FolderHandleContext } from '@/context/folder-context';
 import { useContext } from 'react';
 import {
   ApplicationSettingsTypes,
+  CACHE_OPTIONS,
+  CacheSettingTypes,
   ELEVATED_PRIVILEGES_OPTIONS,
   ElevatedPrivilegesType,
   ENFORCED_NAMING_OPTIONS,
@@ -287,6 +289,39 @@ export default function SettingsPage() {
               <SelectContent>
                 <SelectGroup>
                   {TOOL_TIP_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </SettingsFormItemWrapper>
+
+          <SettingsFormItemWrapper
+            Label="Application Caching Behavior"
+            Description="Set more aggressive caching on to help with slower devices/networks"
+          >
+            <Select
+              value={settings.CacheBehavior}
+              onValueChange={(value: CacheSettingTypes) => {
+                const newSettings = {
+                  ...settings,
+                  CacheBehavior: value,
+                } satisfies ApplicationSettingsTypes;
+
+                setSettings(newSettings);
+                saveSettings(newSettings);
+
+                displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+              }}
+            >
+              <SelectTrigger className="w-full md:max-w-[250px]">
+                <SelectValue placeholder="Select Notification Level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {CACHE_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
