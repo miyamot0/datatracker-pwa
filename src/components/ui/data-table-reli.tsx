@@ -17,7 +17,7 @@ import {
 import { useState } from 'react';
 import { Button } from './button';
 import { RefreshCcw } from 'lucide-react';
-import { SyncEntryTableRow } from '../../routes/dashboard/sync/-components/types/sync-entry-table-row';
+import { SyncEntryTableRow } from '../../routes/dashboard/-components/sync/types/sync-entry-table-row';
 
 export type RowSelectOptions = 'None';
 

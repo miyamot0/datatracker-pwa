@@ -14,21 +14,21 @@ import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as DocumentationIndexRouteImport } from './routes/documentation/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DocumentationSlugRouteImport } from './routes/documentation/$slug'
+import { Route as DashboardSyncRouteImport } from './routes/dashboard/sync'
 import { Route as SessionGroupIndexRouteImport } from './routes/session/$group/index'
-import { Route as DashboardSyncIndexRouteImport } from './routes/dashboard/sync/index'
 import { Route as SessionGroupIndividualIndexRouteImport } from './routes/session/$group/$individual/index'
 import { Route as SessionGroupIndividualKeysetsIndexRouteImport } from './routes/session/$group/$individual/keysets/index'
 import { Route as SessionGroupIndividualImportIndexRouteImport } from './routes/session/$group/$individual/import/index'
 import { Route as SessionGroupIndividualEvaluationIndexRouteImport } from './routes/session/$group/$individual/$evaluation/index'
 import { Route as SessionGroupIndividualKeysetsImportRouteImport } from './routes/session/$group/$individual/keysets/import'
 import { Route as SessionGroupIndividualKeysetsKeysetRouteImport } from './routes/session/$group/$individual/keysets/$keyset'
-import { Route as SessionGroupIndividualEvaluationViewIndexRouteImport } from './routes/session/$group/$individual/$evaluation/view/index'
-import { Route as SessionGroupIndividualEvaluationReliIndexRouteImport } from './routes/session/$group/$individual/$evaluation/reli/index'
-import { Route as SessionGroupIndividualEvaluationRateIndexRouteImport } from './routes/session/$group/$individual/$evaluation/rate/index'
-import { Route as SessionGroupIndividualEvaluationProportionIndexRouteImport } from './routes/session/$group/$individual/$evaluation/proportion/index'
-import { Route as SessionGroupIndividualEvaluationHistoryIndexRouteImport } from './routes/session/$group/$individual/$evaluation/history/index'
-import { Route as SessionGroupIndividualEvaluationHistoryIndexIndexRouteImport } from './routes/session/$group/$individual/$evaluation/history/$index/index'
-import { Route as SessionGroupIndividualEvaluationHistoryEditIndexRouteImport } from './routes/session/$group/$individual/$evaluation/history/edit/$index'
+import { Route as SessionGroupIndividualEvaluationViewRouteImport } from './routes/session/$group/$individual/$evaluation/view'
+import { Route as SessionGroupIndividualEvaluationReliRouteImport } from './routes/session/$group/$individual/$evaluation/reli'
+import { Route as SessionGroupIndividualEvaluationRateRouteImport } from './routes/session/$group/$individual/$evaluation/rate'
+import { Route as SessionGroupIndividualEvaluationProportionRouteImport } from './routes/session/$group/$individual/$evaluation/proportion'
+import { Route as SessionGroupIndividualEvaluationHistoryRouteImport } from './routes/session/$group/$individual/$evaluation/history'
+import { Route as SessionGroupIndividualEvaluationHistoryIndexRouteImport } from './routes/session/$group/$individual/$evaluation/history.$index'
+import { Route as SessionGroupIndividualEvaluationHistoryEditIndexRouteImport } from './routes/session/$group/$individual/$evaluation/history.edit.$index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -55,14 +55,14 @@ const DocumentationSlugRoute = DocumentationSlugRouteImport.update({
   path: '/documentation/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardSyncRoute = DashboardSyncRouteImport.update({
+  id: '/dashboard/sync',
+  path: '/dashboard/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SessionGroupIndexRoute = SessionGroupIndexRouteImport.update({
   id: '/session/$group/',
   path: '/session/$group/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardSyncIndexRoute = DashboardSyncIndexRouteImport.update({
-  id: '/dashboard/sync/',
-  path: '/dashboard/sync/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SessionGroupIndividualIndexRoute =
@@ -101,206 +101,204 @@ const SessionGroupIndividualKeysetsKeysetRoute =
     path: '/session/$group/$individual/keysets/$keyset',
     getParentRoute: () => rootRouteImport,
   } as any)
-const SessionGroupIndividualEvaluationViewIndexRoute =
-  SessionGroupIndividualEvaluationViewIndexRouteImport.update({
-    id: '/session/$group/$individual/$evaluation/view/',
-    path: '/session/$group/$individual/$evaluation/view/',
+const SessionGroupIndividualEvaluationViewRoute =
+  SessionGroupIndividualEvaluationViewRouteImport.update({
+    id: '/session/$group/$individual/$evaluation/view',
+    path: '/session/$group/$individual/$evaluation/view',
     getParentRoute: () => rootRouteImport,
   } as any)
-const SessionGroupIndividualEvaluationReliIndexRoute =
-  SessionGroupIndividualEvaluationReliIndexRouteImport.update({
-    id: '/session/$group/$individual/$evaluation/reli/',
-    path: '/session/$group/$individual/$evaluation/reli/',
+const SessionGroupIndividualEvaluationReliRoute =
+  SessionGroupIndividualEvaluationReliRouteImport.update({
+    id: '/session/$group/$individual/$evaluation/reli',
+    path: '/session/$group/$individual/$evaluation/reli',
     getParentRoute: () => rootRouteImport,
   } as any)
-const SessionGroupIndividualEvaluationRateIndexRoute =
-  SessionGroupIndividualEvaluationRateIndexRouteImport.update({
-    id: '/session/$group/$individual/$evaluation/rate/',
-    path: '/session/$group/$individual/$evaluation/rate/',
+const SessionGroupIndividualEvaluationRateRoute =
+  SessionGroupIndividualEvaluationRateRouteImport.update({
+    id: '/session/$group/$individual/$evaluation/rate',
+    path: '/session/$group/$individual/$evaluation/rate',
     getParentRoute: () => rootRouteImport,
   } as any)
-const SessionGroupIndividualEvaluationProportionIndexRoute =
-  SessionGroupIndividualEvaluationProportionIndexRouteImport.update({
-    id: '/session/$group/$individual/$evaluation/proportion/',
-    path: '/session/$group/$individual/$evaluation/proportion/',
+const SessionGroupIndividualEvaluationProportionRoute =
+  SessionGroupIndividualEvaluationProportionRouteImport.update({
+    id: '/session/$group/$individual/$evaluation/proportion',
+    path: '/session/$group/$individual/$evaluation/proportion',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const SessionGroupIndividualEvaluationHistoryRoute =
+  SessionGroupIndividualEvaluationHistoryRouteImport.update({
+    id: '/session/$group/$individual/$evaluation/history',
+    path: '/session/$group/$individual/$evaluation/history',
     getParentRoute: () => rootRouteImport,
   } as any)
 const SessionGroupIndividualEvaluationHistoryIndexRoute =
   SessionGroupIndividualEvaluationHistoryIndexRouteImport.update({
-    id: '/session/$group/$individual/$evaluation/history/',
-    path: '/session/$group/$individual/$evaluation/history/',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const SessionGroupIndividualEvaluationHistoryIndexIndexRoute =
-  SessionGroupIndividualEvaluationHistoryIndexIndexRouteImport.update({
-    id: '/session/$group/$individual/$evaluation/history/$index/',
-    path: '/session/$group/$individual/$evaluation/history/$index/',
-    getParentRoute: () => rootRouteImport,
+    id: '/$index',
+    path: '/$index',
+    getParentRoute: () => SessionGroupIndividualEvaluationHistoryRoute,
   } as any)
 const SessionGroupIndividualEvaluationHistoryEditIndexRoute =
   SessionGroupIndividualEvaluationHistoryEditIndexRouteImport.update({
-    id: '/session/$group/$individual/$evaluation/history/edit/$index',
-    path: '/session/$group/$individual/$evaluation/history/edit/$index',
-    getParentRoute: () => rootRouteImport,
+    id: '/edit/$index',
+    path: '/edit/$index',
+    getParentRoute: () => SessionGroupIndividualEvaluationHistoryRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard/sync': typeof DashboardSyncRoute
   '/documentation/$slug': typeof DocumentationSlugRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/documentation/': typeof DocumentationIndexRoute
   '/settings/': typeof SettingsIndexRoute
-  '/dashboard/sync/': typeof DashboardSyncIndexRoute
   '/session/$group/': typeof SessionGroupIndexRoute
   '/session/$group/$individual/': typeof SessionGroupIndividualIndexRoute
+  '/session/$group/$individual/$evaluation/history': typeof SessionGroupIndividualEvaluationHistoryRouteWithChildren
+  '/session/$group/$individual/$evaluation/proportion': typeof SessionGroupIndividualEvaluationProportionRoute
+  '/session/$group/$individual/$evaluation/rate': typeof SessionGroupIndividualEvaluationRateRoute
+  '/session/$group/$individual/$evaluation/reli': typeof SessionGroupIndividualEvaluationReliRoute
+  '/session/$group/$individual/$evaluation/view': typeof SessionGroupIndividualEvaluationViewRoute
   '/session/$group/$individual/keysets/$keyset': typeof SessionGroupIndividualKeysetsKeysetRoute
   '/session/$group/$individual/keysets/import': typeof SessionGroupIndividualKeysetsImportRoute
   '/session/$group/$individual/$evaluation/': typeof SessionGroupIndividualEvaluationIndexRoute
   '/session/$group/$individual/import/': typeof SessionGroupIndividualImportIndexRoute
   '/session/$group/$individual/keysets/': typeof SessionGroupIndividualKeysetsIndexRoute
-  '/session/$group/$individual/$evaluation/history/': typeof SessionGroupIndividualEvaluationHistoryIndexRoute
-  '/session/$group/$individual/$evaluation/proportion/': typeof SessionGroupIndividualEvaluationProportionIndexRoute
-  '/session/$group/$individual/$evaluation/rate/': typeof SessionGroupIndividualEvaluationRateIndexRoute
-  '/session/$group/$individual/$evaluation/reli/': typeof SessionGroupIndividualEvaluationReliIndexRoute
-  '/session/$group/$individual/$evaluation/view/': typeof SessionGroupIndividualEvaluationViewIndexRoute
+  '/session/$group/$individual/$evaluation/history/$index': typeof SessionGroupIndividualEvaluationHistoryIndexRoute
   '/session/$group/$individual/$evaluation/history/edit/$index': typeof SessionGroupIndividualEvaluationHistoryEditIndexRoute
-  '/session/$group/$individual/$evaluation/history/$index/': typeof SessionGroupIndividualEvaluationHistoryIndexIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard/sync': typeof DashboardSyncRoute
   '/documentation/$slug': typeof DocumentationSlugRoute
   '/dashboard': typeof DashboardIndexRoute
   '/documentation': typeof DocumentationIndexRoute
   '/settings': typeof SettingsIndexRoute
-  '/dashboard/sync': typeof DashboardSyncIndexRoute
   '/session/$group': typeof SessionGroupIndexRoute
   '/session/$group/$individual': typeof SessionGroupIndividualIndexRoute
+  '/session/$group/$individual/$evaluation/history': typeof SessionGroupIndividualEvaluationHistoryRouteWithChildren
+  '/session/$group/$individual/$evaluation/proportion': typeof SessionGroupIndividualEvaluationProportionRoute
+  '/session/$group/$individual/$evaluation/rate': typeof SessionGroupIndividualEvaluationRateRoute
+  '/session/$group/$individual/$evaluation/reli': typeof SessionGroupIndividualEvaluationReliRoute
+  '/session/$group/$individual/$evaluation/view': typeof SessionGroupIndividualEvaluationViewRoute
   '/session/$group/$individual/keysets/$keyset': typeof SessionGroupIndividualKeysetsKeysetRoute
   '/session/$group/$individual/keysets/import': typeof SessionGroupIndividualKeysetsImportRoute
   '/session/$group/$individual/$evaluation': typeof SessionGroupIndividualEvaluationIndexRoute
   '/session/$group/$individual/import': typeof SessionGroupIndividualImportIndexRoute
   '/session/$group/$individual/keysets': typeof SessionGroupIndividualKeysetsIndexRoute
-  '/session/$group/$individual/$evaluation/history': typeof SessionGroupIndividualEvaluationHistoryIndexRoute
-  '/session/$group/$individual/$evaluation/proportion': typeof SessionGroupIndividualEvaluationProportionIndexRoute
-  '/session/$group/$individual/$evaluation/rate': typeof SessionGroupIndividualEvaluationRateIndexRoute
-  '/session/$group/$individual/$evaluation/reli': typeof SessionGroupIndividualEvaluationReliIndexRoute
-  '/session/$group/$individual/$evaluation/view': typeof SessionGroupIndividualEvaluationViewIndexRoute
+  '/session/$group/$individual/$evaluation/history/$index': typeof SessionGroupIndividualEvaluationHistoryIndexRoute
   '/session/$group/$individual/$evaluation/history/edit/$index': typeof SessionGroupIndividualEvaluationHistoryEditIndexRoute
-  '/session/$group/$individual/$evaluation/history/$index': typeof SessionGroupIndividualEvaluationHistoryIndexIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard/sync': typeof DashboardSyncRoute
   '/documentation/$slug': typeof DocumentationSlugRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/documentation/': typeof DocumentationIndexRoute
   '/settings/': typeof SettingsIndexRoute
-  '/dashboard/sync/': typeof DashboardSyncIndexRoute
   '/session/$group/': typeof SessionGroupIndexRoute
   '/session/$group/$individual/': typeof SessionGroupIndividualIndexRoute
+  '/session/$group/$individual/$evaluation/history': typeof SessionGroupIndividualEvaluationHistoryRouteWithChildren
+  '/session/$group/$individual/$evaluation/proportion': typeof SessionGroupIndividualEvaluationProportionRoute
+  '/session/$group/$individual/$evaluation/rate': typeof SessionGroupIndividualEvaluationRateRoute
+  '/session/$group/$individual/$evaluation/reli': typeof SessionGroupIndividualEvaluationReliRoute
+  '/session/$group/$individual/$evaluation/view': typeof SessionGroupIndividualEvaluationViewRoute
   '/session/$group/$individual/keysets/$keyset': typeof SessionGroupIndividualKeysetsKeysetRoute
   '/session/$group/$individual/keysets/import': typeof SessionGroupIndividualKeysetsImportRoute
   '/session/$group/$individual/$evaluation/': typeof SessionGroupIndividualEvaluationIndexRoute
   '/session/$group/$individual/import/': typeof SessionGroupIndividualImportIndexRoute
   '/session/$group/$individual/keysets/': typeof SessionGroupIndividualKeysetsIndexRoute
-  '/session/$group/$individual/$evaluation/history/': typeof SessionGroupIndividualEvaluationHistoryIndexRoute
-  '/session/$group/$individual/$evaluation/proportion/': typeof SessionGroupIndividualEvaluationProportionIndexRoute
-  '/session/$group/$individual/$evaluation/rate/': typeof SessionGroupIndividualEvaluationRateIndexRoute
-  '/session/$group/$individual/$evaluation/reli/': typeof SessionGroupIndividualEvaluationReliIndexRoute
-  '/session/$group/$individual/$evaluation/view/': typeof SessionGroupIndividualEvaluationViewIndexRoute
+  '/session/$group/$individual/$evaluation/history/$index': typeof SessionGroupIndividualEvaluationHistoryIndexRoute
   '/session/$group/$individual/$evaluation/history/edit/$index': typeof SessionGroupIndividualEvaluationHistoryEditIndexRoute
-  '/session/$group/$individual/$evaluation/history/$index/': typeof SessionGroupIndividualEvaluationHistoryIndexIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dashboard/sync'
     | '/documentation/$slug'
     | '/dashboard/'
     | '/documentation/'
     | '/settings/'
-    | '/dashboard/sync/'
     | '/session/$group/'
     | '/session/$group/$individual/'
-    | '/session/$group/$individual/keysets/$keyset'
-    | '/session/$group/$individual/keysets/import'
-    | '/session/$group/$individual/$evaluation/'
-    | '/session/$group/$individual/import/'
-    | '/session/$group/$individual/keysets/'
-    | '/session/$group/$individual/$evaluation/history/'
-    | '/session/$group/$individual/$evaluation/proportion/'
-    | '/session/$group/$individual/$evaluation/rate/'
-    | '/session/$group/$individual/$evaluation/reli/'
-    | '/session/$group/$individual/$evaluation/view/'
-    | '/session/$group/$individual/$evaluation/history/edit/$index'
-    | '/session/$group/$individual/$evaluation/history/$index/'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/documentation/$slug'
-    | '/dashboard'
-    | '/documentation'
-    | '/settings'
-    | '/dashboard/sync'
-    | '/session/$group'
-    | '/session/$group/$individual'
-    | '/session/$group/$individual/keysets/$keyset'
-    | '/session/$group/$individual/keysets/import'
-    | '/session/$group/$individual/$evaluation'
-    | '/session/$group/$individual/import'
-    | '/session/$group/$individual/keysets'
     | '/session/$group/$individual/$evaluation/history'
     | '/session/$group/$individual/$evaluation/proportion'
     | '/session/$group/$individual/$evaluation/rate'
     | '/session/$group/$individual/$evaluation/reli'
     | '/session/$group/$individual/$evaluation/view'
-    | '/session/$group/$individual/$evaluation/history/edit/$index'
-    | '/session/$group/$individual/$evaluation/history/$index'
-  id:
-    | '__root__'
-    | '/'
-    | '/documentation/$slug'
-    | '/dashboard/'
-    | '/documentation/'
-    | '/settings/'
-    | '/dashboard/sync/'
-    | '/session/$group/'
-    | '/session/$group/$individual/'
     | '/session/$group/$individual/keysets/$keyset'
     | '/session/$group/$individual/keysets/import'
     | '/session/$group/$individual/$evaluation/'
     | '/session/$group/$individual/import/'
     | '/session/$group/$individual/keysets/'
-    | '/session/$group/$individual/$evaluation/history/'
-    | '/session/$group/$individual/$evaluation/proportion/'
-    | '/session/$group/$individual/$evaluation/rate/'
-    | '/session/$group/$individual/$evaluation/reli/'
-    | '/session/$group/$individual/$evaluation/view/'
+    | '/session/$group/$individual/$evaluation/history/$index'
     | '/session/$group/$individual/$evaluation/history/edit/$index'
-    | '/session/$group/$individual/$evaluation/history/$index/'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/dashboard/sync'
+    | '/documentation/$slug'
+    | '/dashboard'
+    | '/documentation'
+    | '/settings'
+    | '/session/$group'
+    | '/session/$group/$individual'
+    | '/session/$group/$individual/$evaluation/history'
+    | '/session/$group/$individual/$evaluation/proportion'
+    | '/session/$group/$individual/$evaluation/rate'
+    | '/session/$group/$individual/$evaluation/reli'
+    | '/session/$group/$individual/$evaluation/view'
+    | '/session/$group/$individual/keysets/$keyset'
+    | '/session/$group/$individual/keysets/import'
+    | '/session/$group/$individual/$evaluation'
+    | '/session/$group/$individual/import'
+    | '/session/$group/$individual/keysets'
+    | '/session/$group/$individual/$evaluation/history/$index'
+    | '/session/$group/$individual/$evaluation/history/edit/$index'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard/sync'
+    | '/documentation/$slug'
+    | '/dashboard/'
+    | '/documentation/'
+    | '/settings/'
+    | '/session/$group/'
+    | '/session/$group/$individual/'
+    | '/session/$group/$individual/$evaluation/history'
+    | '/session/$group/$individual/$evaluation/proportion'
+    | '/session/$group/$individual/$evaluation/rate'
+    | '/session/$group/$individual/$evaluation/reli'
+    | '/session/$group/$individual/$evaluation/view'
+    | '/session/$group/$individual/keysets/$keyset'
+    | '/session/$group/$individual/keysets/import'
+    | '/session/$group/$individual/$evaluation/'
+    | '/session/$group/$individual/import/'
+    | '/session/$group/$individual/keysets/'
+    | '/session/$group/$individual/$evaluation/history/$index'
+    | '/session/$group/$individual/$evaluation/history/edit/$index'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardSyncRoute: typeof DashboardSyncRoute
   DocumentationSlugRoute: typeof DocumentationSlugRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   DocumentationIndexRoute: typeof DocumentationIndexRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
-  DashboardSyncIndexRoute: typeof DashboardSyncIndexRoute
   SessionGroupIndexRoute: typeof SessionGroupIndexRoute
   SessionGroupIndividualIndexRoute: typeof SessionGroupIndividualIndexRoute
+  SessionGroupIndividualEvaluationHistoryRoute: typeof SessionGroupIndividualEvaluationHistoryRouteWithChildren
+  SessionGroupIndividualEvaluationProportionRoute: typeof SessionGroupIndividualEvaluationProportionRoute
+  SessionGroupIndividualEvaluationRateRoute: typeof SessionGroupIndividualEvaluationRateRoute
+  SessionGroupIndividualEvaluationReliRoute: typeof SessionGroupIndividualEvaluationReliRoute
+  SessionGroupIndividualEvaluationViewRoute: typeof SessionGroupIndividualEvaluationViewRoute
   SessionGroupIndividualKeysetsKeysetRoute: typeof SessionGroupIndividualKeysetsKeysetRoute
   SessionGroupIndividualKeysetsImportRoute: typeof SessionGroupIndividualKeysetsImportRoute
   SessionGroupIndividualEvaluationIndexRoute: typeof SessionGroupIndividualEvaluationIndexRoute
   SessionGroupIndividualImportIndexRoute: typeof SessionGroupIndividualImportIndexRoute
   SessionGroupIndividualKeysetsIndexRoute: typeof SessionGroupIndividualKeysetsIndexRoute
-  SessionGroupIndividualEvaluationHistoryIndexRoute: typeof SessionGroupIndividualEvaluationHistoryIndexRoute
-  SessionGroupIndividualEvaluationProportionIndexRoute: typeof SessionGroupIndividualEvaluationProportionIndexRoute
-  SessionGroupIndividualEvaluationRateIndexRoute: typeof SessionGroupIndividualEvaluationRateIndexRoute
-  SessionGroupIndividualEvaluationReliIndexRoute: typeof SessionGroupIndividualEvaluationReliIndexRoute
-  SessionGroupIndividualEvaluationViewIndexRoute: typeof SessionGroupIndividualEvaluationViewIndexRoute
-  SessionGroupIndividualEvaluationHistoryEditIndexRoute: typeof SessionGroupIndividualEvaluationHistoryEditIndexRoute
-  SessionGroupIndividualEvaluationHistoryIndexIndexRoute: typeof SessionGroupIndividualEvaluationHistoryIndexIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -340,18 +338,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocumentationSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/sync': {
+      id: '/dashboard/sync'
+      path: '/dashboard/sync'
+      fullPath: '/dashboard/sync'
+      preLoaderRoute: typeof DashboardSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/session/$group/': {
       id: '/session/$group/'
       path: '/session/$group'
       fullPath: '/session/$group/'
       preLoaderRoute: typeof SessionGroupIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard/sync/': {
-      id: '/dashboard/sync/'
-      path: '/dashboard/sync'
-      fullPath: '/dashboard/sync/'
-      preLoaderRoute: typeof DashboardSyncIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/session/$group/$individual/': {
@@ -396,67 +394,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SessionGroupIndividualKeysetsKeysetRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/session/$group/$individual/$evaluation/view/': {
-      id: '/session/$group/$individual/$evaluation/view/'
+    '/session/$group/$individual/$evaluation/view': {
+      id: '/session/$group/$individual/$evaluation/view'
       path: '/session/$group/$individual/$evaluation/view'
-      fullPath: '/session/$group/$individual/$evaluation/view/'
-      preLoaderRoute: typeof SessionGroupIndividualEvaluationViewIndexRouteImport
+      fullPath: '/session/$group/$individual/$evaluation/view'
+      preLoaderRoute: typeof SessionGroupIndividualEvaluationViewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/session/$group/$individual/$evaluation/reli/': {
-      id: '/session/$group/$individual/$evaluation/reli/'
+    '/session/$group/$individual/$evaluation/reli': {
+      id: '/session/$group/$individual/$evaluation/reli'
       path: '/session/$group/$individual/$evaluation/reli'
-      fullPath: '/session/$group/$individual/$evaluation/reli/'
-      preLoaderRoute: typeof SessionGroupIndividualEvaluationReliIndexRouteImport
+      fullPath: '/session/$group/$individual/$evaluation/reli'
+      preLoaderRoute: typeof SessionGroupIndividualEvaluationReliRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/session/$group/$individual/$evaluation/rate/': {
-      id: '/session/$group/$individual/$evaluation/rate/'
+    '/session/$group/$individual/$evaluation/rate': {
+      id: '/session/$group/$individual/$evaluation/rate'
       path: '/session/$group/$individual/$evaluation/rate'
-      fullPath: '/session/$group/$individual/$evaluation/rate/'
-      preLoaderRoute: typeof SessionGroupIndividualEvaluationRateIndexRouteImport
+      fullPath: '/session/$group/$individual/$evaluation/rate'
+      preLoaderRoute: typeof SessionGroupIndividualEvaluationRateRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/session/$group/$individual/$evaluation/proportion/': {
-      id: '/session/$group/$individual/$evaluation/proportion/'
+    '/session/$group/$individual/$evaluation/proportion': {
+      id: '/session/$group/$individual/$evaluation/proportion'
       path: '/session/$group/$individual/$evaluation/proportion'
-      fullPath: '/session/$group/$individual/$evaluation/proportion/'
-      preLoaderRoute: typeof SessionGroupIndividualEvaluationProportionIndexRouteImport
+      fullPath: '/session/$group/$individual/$evaluation/proportion'
+      preLoaderRoute: typeof SessionGroupIndividualEvaluationProportionRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/session/$group/$individual/$evaluation/history/': {
-      id: '/session/$group/$individual/$evaluation/history/'
+    '/session/$group/$individual/$evaluation/history': {
+      id: '/session/$group/$individual/$evaluation/history'
       path: '/session/$group/$individual/$evaluation/history'
-      fullPath: '/session/$group/$individual/$evaluation/history/'
-      preLoaderRoute: typeof SessionGroupIndividualEvaluationHistoryIndexRouteImport
+      fullPath: '/session/$group/$individual/$evaluation/history'
+      preLoaderRoute: typeof SessionGroupIndividualEvaluationHistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/session/$group/$individual/$evaluation/history/$index/': {
-      id: '/session/$group/$individual/$evaluation/history/$index/'
-      path: '/session/$group/$individual/$evaluation/history/$index'
-      fullPath: '/session/$group/$individual/$evaluation/history/$index/'
-      preLoaderRoute: typeof SessionGroupIndividualEvaluationHistoryIndexIndexRouteImport
-      parentRoute: typeof rootRouteImport
+    '/session/$group/$individual/$evaluation/history/$index': {
+      id: '/session/$group/$individual/$evaluation/history/$index'
+      path: '/$index'
+      fullPath: '/session/$group/$individual/$evaluation/history/$index'
+      preLoaderRoute: typeof SessionGroupIndividualEvaluationHistoryIndexRouteImport
+      parentRoute: typeof SessionGroupIndividualEvaluationHistoryRoute
     }
     '/session/$group/$individual/$evaluation/history/edit/$index': {
       id: '/session/$group/$individual/$evaluation/history/edit/$index'
-      path: '/session/$group/$individual/$evaluation/history/edit/$index'
+      path: '/edit/$index'
       fullPath: '/session/$group/$individual/$evaluation/history/edit/$index'
       preLoaderRoute: typeof SessionGroupIndividualEvaluationHistoryEditIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SessionGroupIndividualEvaluationHistoryRoute
     }
   }
 }
 
+interface SessionGroupIndividualEvaluationHistoryRouteChildren {
+  SessionGroupIndividualEvaluationHistoryIndexRoute: typeof SessionGroupIndividualEvaluationHistoryIndexRoute
+  SessionGroupIndividualEvaluationHistoryEditIndexRoute: typeof SessionGroupIndividualEvaluationHistoryEditIndexRoute
+}
+
+const SessionGroupIndividualEvaluationHistoryRouteChildren: SessionGroupIndividualEvaluationHistoryRouteChildren =
+  {
+    SessionGroupIndividualEvaluationHistoryIndexRoute:
+      SessionGroupIndividualEvaluationHistoryIndexRoute,
+    SessionGroupIndividualEvaluationHistoryEditIndexRoute:
+      SessionGroupIndividualEvaluationHistoryEditIndexRoute,
+  }
+
+const SessionGroupIndividualEvaluationHistoryRouteWithChildren =
+  SessionGroupIndividualEvaluationHistoryRoute._addFileChildren(
+    SessionGroupIndividualEvaluationHistoryRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardSyncRoute: DashboardSyncRoute,
   DocumentationSlugRoute: DocumentationSlugRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   DocumentationIndexRoute: DocumentationIndexRoute,
   SettingsIndexRoute: SettingsIndexRoute,
-  DashboardSyncIndexRoute: DashboardSyncIndexRoute,
   SessionGroupIndexRoute: SessionGroupIndexRoute,
   SessionGroupIndividualIndexRoute: SessionGroupIndividualIndexRoute,
+  SessionGroupIndividualEvaluationHistoryRoute:
+    SessionGroupIndividualEvaluationHistoryRouteWithChildren,
+  SessionGroupIndividualEvaluationProportionRoute:
+    SessionGroupIndividualEvaluationProportionRoute,
+  SessionGroupIndividualEvaluationRateRoute:
+    SessionGroupIndividualEvaluationRateRoute,
+  SessionGroupIndividualEvaluationReliRoute:
+    SessionGroupIndividualEvaluationReliRoute,
+  SessionGroupIndividualEvaluationViewRoute:
+    SessionGroupIndividualEvaluationViewRoute,
   SessionGroupIndividualKeysetsKeysetRoute:
     SessionGroupIndividualKeysetsKeysetRoute,
   SessionGroupIndividualKeysetsImportRoute:
@@ -467,20 +493,6 @@ const rootRouteChildren: RootRouteChildren = {
     SessionGroupIndividualImportIndexRoute,
   SessionGroupIndividualKeysetsIndexRoute:
     SessionGroupIndividualKeysetsIndexRoute,
-  SessionGroupIndividualEvaluationHistoryIndexRoute:
-    SessionGroupIndividualEvaluationHistoryIndexRoute,
-  SessionGroupIndividualEvaluationProportionIndexRoute:
-    SessionGroupIndividualEvaluationProportionIndexRoute,
-  SessionGroupIndividualEvaluationRateIndexRoute:
-    SessionGroupIndividualEvaluationRateIndexRoute,
-  SessionGroupIndividualEvaluationReliIndexRoute:
-    SessionGroupIndividualEvaluationReliIndexRoute,
-  SessionGroupIndividualEvaluationViewIndexRoute:
-    SessionGroupIndividualEvaluationViewIndexRoute,
-  SessionGroupIndividualEvaluationHistoryEditIndexRoute:
-    SessionGroupIndividualEvaluationHistoryEditIndexRoute,
-  SessionGroupIndividualEvaluationHistoryIndexIndexRoute:
-    SessionGroupIndividualEvaluationHistoryIndexIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

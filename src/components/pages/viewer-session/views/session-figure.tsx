@@ -14,7 +14,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { ExpandedSavedSessionResult } from '../session-viewer-page';
-import { ExpandedKeySetInstance } from '../../viewer-visuals/figures/rate-figure';
+import { ExpandedKeySetInstance } from '../../../../routes/session/$group/$individual/$evaluation/-components/visuals/figures/rate-figure';
 
 type Props = {
   Session?: ExpandedSavedSessionResult;
@@ -33,7 +33,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
 
       const { Condition } = main_payload;
       const relevant_payloads = payload.filter(
-        (entry) => entry.payload.Condition === Condition && !entry.name.includes('-Points_')
+        (entry) => entry.payload.Condition === Condition && !entry.name.includes('-Points_'),
       );
       const relevant_payloads_unique = relevant_payloads
         .filter((entry, index, self) => {
@@ -153,7 +153,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
                   />
                 </React.Fragment>
               );
-            }
+            },
           )}
 
           <XAxis
@@ -222,7 +222,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
                 value: item.KeyDescription,
 
                 color: FIGURE_PATH_COLORS[index % FIGURE_PATH_COLORS.length],
-              })
+              }),
             )}
             align="center"
           />

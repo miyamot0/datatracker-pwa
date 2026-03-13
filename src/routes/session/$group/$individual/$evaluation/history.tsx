@@ -1,9 +1,9 @@
-import DashboardHistoryPage from '@/routes/session/$group/$individual/$evaluation/history/-components/dashboard-history-page';
+import DashboardHistoryPage from '@/routes/session/$group/$individual/$evaluation/-components/history/dashboard-history-page';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/')({
+export const Route = createFileRoute('/session/$group/$individual/$evaluation/history')({
   loader: ({ params, context }) => {
     const { group, individual, evaluation } = params;
     const { routerHandle } = context;

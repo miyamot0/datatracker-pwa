@@ -4,13 +4,13 @@ import { FolderHandleContext } from '@/context/folder-context';
 import { useContext, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileSyncingStatus } from '@/types/sync';
-import SyncToRemoteTable from './tables/sync-to-remote-table';
-import SyncFromRemoteTable from './tables/sync-from-remote-table';
+import SyncToRemoteTable from '../../-components/sync/tables/sync-to-remote-table';
+import SyncFromRemoteTable from '../../-components/sync/tables/sync-from-remote-table';
 import { RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { displayConditionalNotification } from '@/lib/notifications';
 import BackButton from '@/components/ui/back-button';
-import { WrappedButton } from './views/wrapped-btn';
+import { WrappedButton } from '../../-components/sync/views/wrapped-btn';
 
 export default function ViewSyncPage() {
   const Context = useContext(FolderHandleContext);

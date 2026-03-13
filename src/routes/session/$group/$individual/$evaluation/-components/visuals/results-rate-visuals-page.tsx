@@ -5,11 +5,9 @@ import {
   BuildIndividualsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
 import { SavedSessionResult } from '@/lib/dtos';
-import { GetResultsFromEvaluationFolder } from '@/lib/files';
 import { CleanUpString } from '@/lib/strings';
-import { KeySet, KeySetInstance } from '@/types/keyset';
+import { KeySet } from '@/types/keyset';
 import { useState } from 'react';
-import { FilterByPrimaryRole } from './helpers/filtering';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SessionTerminationOptionsType } from '@/components/pages/editor-session/forms/schema/session-designer-schema';
 import {
@@ -23,16 +21,24 @@ import {
 import { Button } from '@/components/ui/button';
 import { KeyboardIcon, PointerIcon, ScatterChartIcon } from 'lucide-react';
 import RateFigureVisualization from './figures/rate-figure';
-import { getLocalCachedPrefs, setLocalCachedPrefs } from '@/lib/local_storage';
+import { setLocalCachedPrefs } from '@/lib/local_storage';
 import createHref from '@/lib/links';
-import { Link, redirect, useLoaderData } from 'react-router-dom';
-import { FolderHandleContextType } from '@/context/folder-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
-import { toast } from 'sonner';
 import { FIGURE_TEXT_OPTIONS, FigureVisualSizing } from '@/types/accessibility';
+import { Link } from '@tanstack/react-router';
+import { FilterByPrimaryRole } from './helpers/filtering';
 
-type LoaderResult = {
+export default function ResultsRateVisualsPage({
+  Group,
+  Individual,
+  Evaluation,
+  ShowKeys,
+  DynamicKeySet,
+  Results,
+  Schedule,
+  ExcludeKeysFromCTB,
+}: {
   Group: string;
   Individual: string;
   Evaluation: string;
@@ -48,112 +54,7 @@ type LoaderResult = {
     KeyDescription: string;
     Visible: boolean;
   }[];
-};
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const resultsViewerRate = (ctx: FolderHandleContextType) => {
-  const { handle } = ctx;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return async ({ params }: any) => {
-    const { Group, Individual, Evaluation } = params;
-
-    if (!Group || !Individual || !Evaluation || !handle) {
-      const response = redirect(createHref({ type: 'Dashboard' }));
-      throw response;
-    }
-
-    const { keyset, results } = await GetResultsFromEvaluationFolder(handle, Group, Individual, Evaluation);
-
-    if (!keyset) {
-      toast.error('Error: Could not recover KeySet in this folder.', {
-        duration: 4000,
-      });
-
-      const response = redirect(createHref({ type: 'Evaluations', individual: Individual, group: Group }));
-      throw response;
-    }
-
-    const all_keysets = results.map((result) => result.Keyset);
-    const all_fkeys = all_keysets.map((keyset) => keyset.FrequencyKeys).flat();
-    const all_dkeys = all_keysets.map((keyset) => keyset.DurationKeys).flat();
-
-    const targeted_fkeys: KeySetInstance[] = [];
-    all_fkeys.forEach((key) => {
-      if (!targeted_fkeys.some((k) => k.KeyCode === key.KeyCode)) {
-        targeted_fkeys.push(key);
-      }
-    });
-
-    const targeted_dkeys: KeySetInstance[] = [];
-    all_dkeys.forEach((key) => {
-      if (!targeted_dkeys.some((k) => k.KeyCode === key.KeyCode)) {
-        targeted_dkeys.push(key);
-      }
-    });
-
-    const dynamic_keyset = {
-      ...keyset,
-      FrequencyKeys: targeted_fkeys,
-      DurationKeys: targeted_dkeys,
-    } as unknown as KeySet;
-
-    const keys = dynamic_keyset.FrequencyKeys.map((key) => ({
-      KeyDescription: key.KeyDescription,
-      Visible: true,
-    }));
-
-    const stored_prefs = getLocalCachedPrefs(Group, Individual, Evaluation, 'Rate');
-
-    const ctb_entry = {
-      KeyDescription: 'CTB',
-      Visible: true,
-    };
-
-    const show_keys_base = [...keys, ctb_entry].map((key) => {
-      const should_disable = stored_prefs.KeyDescription.includes(key.KeyDescription);
-
-      if (should_disable) {
-        return {
-          ...key,
-          Visible: false,
-        };
-      }
-
-      return key;
-    });
-
-    const exclude_from_ctb = keys.map((key) => {
-      const should_disable = stored_prefs.CTBElements.includes(key.KeyDescription);
-
-      if (should_disable) {
-        return {
-          ...key,
-          Visible: false,
-        };
-      }
-
-      return key;
-    });
-
-    return {
-      Group: CleanUpString(Group),
-      Individual: CleanUpString(Individual),
-      Evaluation: CleanUpString(Evaluation),
-      Handle: handle,
-      Results: results,
-      DynamicKeySet: dynamic_keyset,
-      ShowKeys: show_keys_base,
-      ExcludeKeysFromCTB: exclude_from_ctb,
-      Schedule: stored_prefs.Schedule ?? 'End on Timer #1',
-    } satisfies LoaderResult;
-  };
-};
-
-export default function ResultsRateVisualsPage() {
-  const loaderResult = useLoaderData() as LoaderResult;
-  const { Group, Individual, Evaluation, ShowKeys, DynamicKeySet, Results, Schedule, ExcludeKeysFromCTB } =
-    loaderResult;
+}) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
   const [schedule, setSchedule] = useState<SessionTerminationOptionsType>(Schedule);
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
@@ -179,13 +80,12 @@ export default function ResultsRateVisualsPage() {
           </div>
           <div className="flex flex-row gap-2">
             <Link
-              unstable_viewTransition
-              to={createHref({
-                type: 'Evaluation Visualizer-Proportion',
+              to={'/session/$group/$individual/$evaluation/proportion'}
+              params={{
                 group: Group,
                 individual: Individual,
                 evaluation: Evaluation,
-              })}
+              }}
             >
               <Button variant={'outline'} className="shadow" size={'sm'}>
                 <ScatterChartIcon className="mr-2 h-4 w-4" />

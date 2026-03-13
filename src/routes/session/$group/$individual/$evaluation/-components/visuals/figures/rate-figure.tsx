@@ -19,9 +19,9 @@ import { generateChartPreparation, generateTicks, GetUniqueConditions } from '..
 import { SavedSessionResult } from '@/lib/dtos';
 import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { FIGURE_TEXT_OPTIONS, FigureVisualSizing } from '@/types/accessibility';
+import { useNavigate } from '@tanstack/react-router';
 
 export type ExpandedKeySetInstance = {
   KeyDescription: string;
@@ -50,7 +50,9 @@ export default function RateFigureVisualization({
   FigureTextSize,
 }: Props) {
   const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
-  const navigator = useNavigate();
+  const navigate = useNavigate({
+    from: `/session/$group/$individual/$evaluation/rate`,
+  });
 
   let maxY = 0;
 
@@ -228,10 +230,16 @@ export default function RateFigureVisualization({
                     animationDuration={100}
                     onDoubleClick={(props) => {
                       const stringIndex = `${props.session}_${props.Condition}_Primary`;
-                      const linkGenerated = `/session/${Group!}/${Individual!}/${Evaluation!}/history/${stringIndex}`;
+                      //const linkGenerated = `/session/${Group!}/${Individual!}/${Evaluation!}/history/${stringIndex}`;
 
-                      navigator(linkGenerated, {
-                        unstable_viewTransition: true,
+                      navigate({
+                        to: '/session/$group/$individual/$evaluation/history/$index',
+                        params: {
+                          group: Group,
+                          individual: Individual,
+                          evaluation: Evaluation,
+                          index: stringIndex,
+                        },
                       });
                     }}
                     dataKey={`${key.KeyDescription}`}

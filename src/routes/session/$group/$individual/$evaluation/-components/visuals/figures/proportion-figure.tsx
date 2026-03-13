@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import {
   ResponsiveContainer,
@@ -15,14 +16,14 @@ import { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { SavedSessionResult } from '@/lib/dtos';
 import { SessionTerminationOptionsType } from '@/components/pages/editor-session/forms/schema/session-designer-schema';
-import { ExpandedKeySetInstance } from './rate-figure';
 import { generateChartPreparation, generateTicks, GetUniqueConditions } from '../helpers/filtering';
 import { getShape } from '@/lib/shapes';
 import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 import { FIGURE_TEXT_OPTIONS, FigureVisualSizing } from '@/types/accessibility';
 import { cn } from '@/lib/utils';
+import { ExpandedKeySetInstance } from './rate-figure';
+import { useNavigate } from '@tanstack/react-router';
 
 type Props = {
   Group: string;
@@ -98,7 +99,9 @@ export default function ProportionFigureVisualization({
   FigureTextSize,
 }: Props) {
   const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
-  const navigator = useNavigate();
+  const navigate = useNavigate({
+    from: `/session/$group/$individual/$evaluation/proportion`,
+  });
 
   const { Data, MinX, MaxX } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Duration');
 
@@ -242,10 +245,16 @@ export default function ProportionFigureVisualization({
                     shape={shape}
                     onDoubleClick={(props) => {
                       const stringIndex = `${props.session}_${props.Condition}_Primary`;
-                      const linkGenerated = `/session/${Group!}/${Individual!}/${Evaluation!}/history/${stringIndex}`;
+                      //const linkGenerated = `/session/${Group!}/${Individual!}/${Evaluation!}/history/${stringIndex}`;
 
-                      navigator(linkGenerated, {
-                        unstable_viewTransition: true,
+                      navigate({
+                        to: '/session/$group/$individual/$evaluation/history/$index',
+                        params: {
+                          group: Group,
+                          individual: Individual,
+                          evaluation: Evaluation,
+                          index: stringIndex,
+                        },
                       });
                     }}
                     stroke="black"

@@ -1,8 +1,8 @@
 import PageWrapper from '@/components/layout/page-wrapper';
-import UnauthorizedDisplay from './displays/unauthorized-display';
+import UnauthorizedDisplay from './dash/displays/unauthorized-display';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useContext } from 'react';
-import AuthorizedDisplayPage from './views/authorized-display';
+import AuthorizedDisplayPage from './dash/views/authorized-display';
 
 export default function DashboardPage() {
   const { handle } = useContext(FolderHandleContext);
