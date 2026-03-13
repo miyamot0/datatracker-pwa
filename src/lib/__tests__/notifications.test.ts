@@ -20,6 +20,7 @@ describe('displayConditionalNotification', () => {
     IsReturningUser: true,
     KeyDisplay: 'standard',
     DisplaySize: 'standard',
+    CacheBehavior: 'normal',
   };
 
   beforeEach(() => {

@@ -1,7 +1,6 @@
 import { ChevronLeft } from 'lucide-react';
 import { Button } from './button';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { Link, useRouter } from '@tanstack/react-router';
 
 type Props = {
   Label?: string;
@@ -9,12 +8,10 @@ type Props = {
 };
 
 export default function BackButton({ Label, Href }: Props) {
-  const navigate = useNavigate();
+  const { history } = useRouter();
 
   const handleClick = () => {
-    if (window.history.state && window.history.state.idx > 0) {
-      navigate(-1);
-    }
+    history.go(-1);
   };
 
   if (!Href) {
@@ -27,7 +24,7 @@ export default function BackButton({ Label, Href }: Props) {
   }
 
   return (
-    <Link to={Href} unstable_viewTransition>
+    <Link to={Href}>
       <Button variant={'outline'} className="shadow" size={'sm'}>
         <ChevronLeft className="mr-2 h-4 w-4" />
         {Label ?? 'Back'}

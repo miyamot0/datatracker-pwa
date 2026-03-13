@@ -1,9 +1,9 @@
-import { KeyManageType } from '@/components/pages/session-recorder/types/session-recorder-types';
+import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
 import {
   DataCollectorRolesType,
   SessionDesignerSchemaType,
   SessionTerminationOptionsType,
-} from '@/forms/schema/session-designer-schema';
+} from '@/components/editor-session/forms/schema/session-designer-schema';
 import { KeySet } from '@/types/keyset';
 
 /**

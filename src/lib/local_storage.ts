@@ -1,4 +1,4 @@
-import { SessionTerminationOptionsType } from '@/forms/schema/session-designer-schema';
+import { SessionTerminationOptionsType } from '@/components/editor-session/forms/schema/session-designer-schema';
 
 export type ReturnLocalStorageCache = {
   KeyDescription: string[];
@@ -16,7 +16,7 @@ export function getLocalCachedPrefs(
   Group: string,
   Individual: string,
   Evaluation: string,
-  Type: 'Rate' | 'Duration' | string
+  Type: 'Rate' | 'Duration' | string,
 ) {
   const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), Type].join('_');
 
@@ -32,7 +32,7 @@ export function setLocalCachedPrefs(
   Individual: string,
   Evaluation: string,
   Type: 'Rate' | 'Duration' | string,
-  Cache: ReturnLocalStorageCache
+  Cache: ReturnLocalStorageCache,
 ) {
   const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), Type].join('_');
 

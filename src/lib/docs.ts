@@ -1,6 +1,8 @@
+import { ParsedFrontMatterType } from '@/types/mdx';
+
 const all_md_files = import.meta.glob('/src/assets/content/*.md', { query: '?raw', eager: true, import: 'default' });
 
-export const DocumentationObjects = Object.entries(all_md_files).map(([key, value], index) => {
+export const DocumentationObjects: ParsedFrontMatterType[] = Object.entries(all_md_files).map(([key, value], index) => {
   const filename = key.split('/').pop();
   const content = (value as string).split('---');
 
@@ -19,5 +21,5 @@ export const DocumentationObjects = Object.entries(all_md_files).map(([key, valu
   return {
     matter,
     value: content[2],
-  };
+  } satisfies ParsedFrontMatterType;
 });

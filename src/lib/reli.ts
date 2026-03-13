@@ -1,4 +1,4 @@
-import { KeyManageType } from '@/components/pages/session-recorder/types/session-recorder-types';
+import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
 import { BinValueType, ProbedKey, ReliabilityPairType, ScoredKey } from '@/types/reli';
 import { SavedSessionResult } from './dtos';
 
@@ -214,7 +214,7 @@ export function addBinToKeyData(keyData: KeyManageType, binSize = 10) {
  */
 export function getCorrespondingSessionPairs(
   Primary: SavedSessionResult[],
-  Reliability: SavedSessionResult[]
+  Reliability: SavedSessionResult[],
 ): ReliabilityPairType[] {
   const primary_with_reli = Primary.map((result) => {
     const reli = Reliability.find((reli) => reli.SessionSettings.Session === result.SessionSettings.Session);
@@ -241,10 +241,10 @@ export function calculateReliabilityFrequency(pair: ReliabilityPairType, keys_to
 
     // Note: You can't trust users to name accurately or copy keys accurately. Go by lower case and description
     const primary_relevant_key = primary.FrequencyKeyPresses.filter(
-      (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase()
+      (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase(),
     ).map((k: KeyManageType) => addBinToKeyData(k));
     const reliability_relevant_key = reli.FrequencyKeyPresses.filter(
-      (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase()
+      (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase(),
     ).map((k: KeyManageType) => addBinToKeyData(k));
 
     const key_bins_p = generateEmptyBinArray(binCounts);
@@ -297,11 +297,11 @@ export function calculateReliabilityDuration(pair: ReliabilityPairType, keys_to_
 
     // Note: Same as before, you can't trust users to name accurately or copy keys accurately. Go by lower case and description
     const primary_relevant_key = primary.DurationKeyPresses.filter(
-      (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase()
+      (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase(),
     ).map((k: KeyManageType) => addBinToKeyData(k));
 
     const reliability_relevant_key = reli.DurationKeyPresses.filter(
-      (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase()
+      (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase(),
     ).map((k: KeyManageType) => addBinToKeyData(k));
 
     const key_bins_p = generateEmptyBinArray(binCounts);
@@ -408,7 +408,7 @@ export function generateBinsProportion(primary: SavedSessionResult, keys_to_code
     const binCounts = Math.round(primary.TimerMain / 10);
 
     const primary_relevant_key = primary.DurationKeyPresses.filter((k) => k.KeyDescription === key.KeyDescription).map(
-      (k: KeyManageType) => addBinToKeyData(k)
+      (k: KeyManageType) => addBinToKeyData(k),
     );
 
     const key_bins_p = generateEmptyBinArray(binCounts);

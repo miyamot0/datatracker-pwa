@@ -17,14 +17,14 @@ import {
 import { useState } from 'react';
 import { Button } from './button';
 import { RefreshCcw } from 'lucide-react';
-import { SyncEntryTableRow } from '../pages/viewer-sync-queue/types/sync-entry-table-row';
+import { SyncEntryTableRow } from '../dashboard-sync/types/sync-entry-table-row';
 
-export type RowSelectOptions = 'None';
+//export type RowSelectOptions = 'None';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  rowSelectOptions?: RowSelectOptions;
+  //rowSelectOptions?: RowSelectOptions;
   optionalButtons?: React.ReactNode;
   callback: (row: SyncEntryTableRow[]) => void;
   direction: 'Local' | 'Remote';
@@ -35,7 +35,7 @@ export function ReliabilityDataTable<TData, TValue>({
   data,
   optionalButtons,
   callback,
-  rowSelectOptions = 'None',
+  //rowSelectOptions = 'None',
   direction,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -137,7 +137,7 @@ export function ReliabilityDataTable<TData, TValue>({
           )}
         </TableBody>
       </Table>
-      <DataTablePagination table={table} rowSelectOptions={rowSelectOptions} />
+      <DataTablePagination table={table} rowSelectOptions={'None'} />
     </div>
   );
 }

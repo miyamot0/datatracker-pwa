@@ -1,4 +1,14 @@
 /**
+ * Types for cache settings
+ */
+export type CacheSettingTypes = 'normal' | 'aggressive';
+
+export const CACHE_OPTIONS: { value: CacheSettingTypes; label: string }[] = [
+  { value: 'normal', label: 'Normal Caching' },
+  { value: 'aggressive', label: 'Aggressive Caching' },
+];
+
+/**
  * Types for theme options
  */
 export type ThemeTypes = 'light' | 'dark' | 'system';
@@ -109,6 +119,7 @@ export type ApplicationSettingsTypes = {
   IsReturningUser: boolean;
   KeyDisplay: KeyDisplayTypes;
   DisplaySize: ScreenSizingTypes;
+  CacheBehavior: CacheSettingTypes;
 };
 
 export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
@@ -120,4 +131,5 @@ export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
   IsReturningUser: true,
   KeyDisplay: 'standard',
   DisplaySize: 'standard',
+  CacheBehavior: 'normal',
 };
