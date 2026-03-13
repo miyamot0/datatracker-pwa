@@ -176,7 +176,7 @@ export const mutationSettingsOutcomes = async ({
         throw new Error('New outcome not found');
       }
 
-      const Filename = `${NewOutcome.SessionSettings.Session}_${NewOutcome.SessionSettings.Condition}_${NewOutcome.SessionSettings.Role}.json`;
+      const Filename = GenerateSavedFileName(NewOutcome.SessionSettings);
 
       const savedResult = {
         ...NewOutcome,

@@ -159,26 +159,6 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
           TimerThree: secondsElapsedThird.current,
         } satisfies SavedSessionResult;
 
-        /*
-        // TODO: Revisit once query session outcomes is implemented
-        await saveSessionOutcomesToFile(
-          handle!,
-          Settings,
-          keysPressed,
-          final_system_keys,
-          Keyset,
-          Group,
-          Individual,
-          Evaluation,
-          startTime,
-          secondsElapsedTotal.current,
-          secondsElapsedFirst.current,
-          secondsElapsedSecond.current,
-          secondsElapsedThird.current,
-          ended_early,
-        );
-        */
-
         secondsElapsedTotal.current += INCREMENT;
 
         if (wakelockRef.current) wakelockRef.current.release();

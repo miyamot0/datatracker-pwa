@@ -2,7 +2,6 @@ import { CleanUpString } from './strings';
 import { DEFAULT_SESSION_SETTINGS, SavedSessionResult, SavedSettings } from './dtos';
 import { toast } from 'sonner';
 import { KeySet } from '@/types/keyset';
-import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
 import { deserializeKeySet } from './keyset';
 
 // --- Handles ---
@@ -282,80 +281,6 @@ export async function saveSessionSettingsToFile(
 
   const writer = await settings_file.createWritable();
   await writer.write(JSON.stringify(newer_settings));
-  return await writer.close();
-}
-
-/**
- * Save the session outcomes to a file
- *
- * @param Handle The handle to the file system
- * @param Settings The settings to save
- * @param KeysPressed The keys pressed during the session
- * @param SystemKeys The system keys pressed during the session
- * @param KeySet The keyset used during the session
- * @param group The group name
- * @param client The client name
- * @param evaluation The evaluation name
- * @param sessionStart The start time of the session
- * @param timerSecondsMain The main timer duration
- * @param timerSecondsOne The first timer duration
- * @param timerSecondsTwo The second timer duration
- * @param timerSecondsThree The third timer duration
- * @param endedEarly Whether the session ended early
- */
-export async function saveSessionOutcomesToFile(
-  Handle: FileSystemDirectoryHandle,
-  Settings: SavedSettings,
-  KeysPressed: KeyManageType[],
-  SystemKeys: KeyManageType[],
-  KeySet: KeySet,
-  group: string,
-  client: string,
-  evaluation: string,
-  sessionStart: Date,
-  timerSecondsMain: number,
-  timerSecondsOne: number,
-  timerSecondsTwo: number,
-  timerSecondsThree: number,
-  endedEarly = false,
-) {
-  const client_evaluations_folder = await GetHandleEvaluationFolder(
-    Handle,
-    CleanUpString(group),
-    CleanUpString(client),
-    CleanUpString(evaluation),
-  );
-
-  const relevant_condition_folder = await client_evaluations_folder.getDirectoryHandle(
-    CleanUpString(Settings.Condition),
-    {
-      create: true,
-    },
-  );
-
-  const session_output_file = await relevant_condition_folder.getFileHandle(
-    `${Settings.Session}_${Settings.Condition}_${Settings.Role}.json`,
-    { create: true },
-  );
-
-  const saved_session_data = {
-    SessionSettings: Settings,
-    FrequencyKeyPresses: KeysPressed.filter((key) => key.KeyType === 'Frequency'),
-    DurationKeyPresses: KeysPressed.filter((key) => key.KeyType === 'Duration'),
-    SystemKeyPresses: SystemKeys,
-    SessionStart: sessionStart.toJSON(),
-    Keyset: KeySet,
-    SessionEnd: new Date().toJSON(),
-    EndedEarly: endedEarly,
-    TimerMain: timerSecondsMain,
-    TimerOne: timerSecondsOne,
-    TimerTwo: timerSecondsTwo,
-    TimerThree: timerSecondsThree,
-  } satisfies SavedSessionResult;
-
-  const writer = await session_output_file.createWritable();
-  await writer.write(JSON.stringify(saved_session_data));
-
   return await writer.close();
 }
 
