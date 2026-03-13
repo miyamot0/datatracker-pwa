@@ -14,8 +14,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { ExpandedSavedSessionResult } from '../session-viewer-page';
-import { ExpandedKeySetInstance } from '../../visuals/figures/rate-figure';
-import { KeyManageType } from '../../session-recorder/types/session-recorder-types';
+import { ExpandedKeySetInstance } from '../../../../../../../../components/visualize-outcomes/rate/rate-figure';
+import { KeyManageType } from '../../../../../../../../components/session-recorder/types/session-recorder-types';
 import { KeySetInstance } from '@/types/keyset';
 
 type Props = {

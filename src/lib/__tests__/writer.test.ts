@@ -1,6 +1,6 @@
 import { saveSessionSettingsToFile, saveSessionOutcomesToFile } from '../writer'; // Adjust the import path
 import { SavedSettings } from '../dtos';
-import { KeyManageType } from '../../routes/session/$group/$individual/$evaluation/-components/session-recorder/types/session-recorder-types';
+import { KeyManageType } from '../../components/session-recorder/types/session-recorder-types';
 import { KeySet } from '../../types/keyset';
 import { CleanUpString } from '../strings';
 import { Mock } from 'vitest';

@@ -26,7 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import SessionFigure from './views/session-figure';
 import SessionKeyList from './views/session-key-list';
-import { KeyManageType } from '@/routes/session/$group/$individual/$evaluation/-components/session-recorder/types/session-recorder-types';
+import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
 import { FolderHandleContext } from '@/context/folder-context';
 
 export type ExpandedSavedSessionResult = SavedSessionResult & {

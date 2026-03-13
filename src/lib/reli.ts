@@ -1,4 +1,4 @@
-import { KeyManageType } from '@/routes/session/$group/$individual/$evaluation/-components/session-recorder/types/session-recorder-types';
+import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
 import { BinValueType, ProbedKey, ReliabilityPairType, ScoredKey } from '@/types/reli';
 import { SavedSessionResult } from './dtos';
 

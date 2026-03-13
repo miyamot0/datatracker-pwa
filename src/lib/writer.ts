@@ -1,4 +1,4 @@
-import { KeyManageType } from '../routes/session/$group/$individual/$evaluation/-components/session-recorder/types/session-recorder-types';
+import { KeyManageType } from '../components/session-recorder/types/session-recorder-types';
 import { SavedSessionResult, SavedSettings } from './dtos';
 import { CleanUpString } from './strings';
 import { KeySet } from '../types/keyset';

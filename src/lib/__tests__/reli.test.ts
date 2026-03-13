@@ -14,7 +14,7 @@ import {
 } from '../reli';
 import { ProbedKey, BinValueType, ReliabilityPairType } from '../../types/reli';
 import { SavedSessionResult, SavedSettings } from '../dtos';
-import { KeyManageType } from '../../routes/session/$group/$individual/$evaluation/-components/session-recorder/types/session-recorder-types';
+import { KeyManageType } from '../../components/session-recorder/types/session-recorder-types';
 import { KeySet } from '@/types/keyset';
 
 // Sample data for testing
