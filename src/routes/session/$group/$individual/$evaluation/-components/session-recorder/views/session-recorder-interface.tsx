@@ -161,7 +161,6 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
         wakelockRef.current = undefined;
 
         try {
-          // TODO: Confirm bx
           await mutateSettings.mutateAsync({
             Group,
             Individual,
@@ -242,6 +241,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
     startTime,
     systemKeysPressed,
     Keyset,
+    mutateSettings,
   ]);
 
   function registerListener(timer: 'Primary' | 'Secondary' | 'Tertiary') {

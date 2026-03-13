@@ -171,7 +171,13 @@ export default function DashboardHistoryPage({
             columns={columns}
             data={data}
             callback={async (rows) => {
-              // TODO: Confirm deletion with user
+              const confirm_delete = window.confirm(
+                `Are you sure you want to delete ${rows.length} sessions? This CANNOT be undone.`,
+              );
+
+              if (!confirm_delete) {
+                return;
+              }
 
               toast.promise(
                 async () =>
@@ -201,7 +207,9 @@ export default function DashboardHistoryPage({
                 return;
               }
 
-              // TODO: Limit to sane characters and length (i.e., no dupes or short entries)
+              if (new_condition.trim().length < 3) {
+                return;
+              }
 
               toast.promise(
                 async () =>
