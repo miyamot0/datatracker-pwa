@@ -1,14 +1,15 @@
 import { SessionDesignerPage } from '@/components/editor-session/session-designer';
 import createHref from '@/lib/links';
+import { routeGuard } from '@/lib/routing';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/')({
-  loader: ({ params, context }) => {
+  beforeLoad: routeGuard,
+  loader: ({ params }) => {
     const { group, individual, evaluation } = params;
-    const { routerHandle } = context;
 
-    if (!group || !individual || !evaluation || !routerHandle.handle) {
+    if (!group || !individual || !evaluation) {
       throw redirect({
         href: createHref({ type: 'Dashboard' }),
       });

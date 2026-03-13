@@ -1,15 +1,19 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import AuthorizationInstructions from '../views/authorization-instructions';
-import { FolderHandleContext } from '@/context/folder-context';
-import { useContext } from 'react';
 import { displayConditionalNotification } from '@/lib/notifications';
 import BackButton from '@/components/ui/back-button';
 import { useRouter } from '@tanstack/react-router';
+import { useContext } from 'react';
+import { FolderHandleContext } from '@/context/folder-context';
+
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export default function UnauthorizedDisplay() {
   const router = useRouter();
-  const { setHandle, settings } = useContext(FolderHandleContext);
+  const { settings, setHandle } = useContext(FolderHandleContext);
 
   return (
     <Card className="w-full max-w-screen-lg">
@@ -50,18 +54,23 @@ export default function UnauthorizedDisplay() {
               }
 
               if (directory_picker) {
+                //setHandle(directory_picker);
+                //router.options.context.routerHandle.setHandle(directory_picker);
                 setHandle(directory_picker);
-                router.options.context.routerHandle.setHandle(directory_picker);
-                router.invalidate();
 
                 displayConditionalNotification(
                   settings,
                   'Access Authorized',
                   'You can you interact with files in the relevant folder.',
                 );
+
+                // Hack: do not like this
+                await sleep(100);
+                await router.invalidate({ sync: true, forcePending: true });
               }
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (_error) {
+              console.log(_error);
               displayConditionalNotification(
                 settings,
                 'Error Authorizing Directory',

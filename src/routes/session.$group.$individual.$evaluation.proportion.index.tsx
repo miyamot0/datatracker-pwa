@@ -5,20 +5,22 @@ import { KeySet, KeySetInstance } from '@/types/keyset';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import ResultsProportionVisualsPage from '../components/visualize-outcomes/proportion/results-proportion-visuals-page';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
+import { routeGuard } from '@/lib/routing';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/proportion/')({
+  beforeLoad: routeGuard,
   loader: async ({ params, context }) => {
     const { group, individual, evaluation } = params;
-    const { routerHandle } = context;
+    const { handle } = context.folderHandleContext;
 
-    if (!group || !individual || !evaluation || !routerHandle.handle) {
+    if (!group || !individual || !evaluation || !handle) {
       throw redirect({
         href: createHref({ type: 'Dashboard' }),
       });
     }
 
     const results = await context.queryClient.ensureQueryData(
-      sessionOutcomesQueryOptions(routerHandle.handle, group, individual, evaluation),
+      sessionOutcomesQueryOptions(handle, group, individual, evaluation),
     );
 
     const keyset = results[0].Keyset;
@@ -77,7 +79,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/pr
       Group: CleanUpString(group),
       Individual: CleanUpString(individual),
       Evaluation: CleanUpString(evaluation),
-      Handle: routerHandle.handle,
+      Handle: handle,
       Results: results,
       DynamicKeySet: dynamic_keyset,
       ShowKeys: show_keys_base,

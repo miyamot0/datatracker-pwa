@@ -2,13 +2,14 @@ import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import SessionManagerPage from '../components/editor-session-outcome/session-manager-page';
+import { routeGuard } from '@/lib/routing';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/edit/$file/')({
-  loader: async ({ params, context }) => {
+  beforeLoad: routeGuard,
+  loader: async ({ params }) => {
     const { group, individual, evaluation, file } = params;
-    const { routerHandle } = context;
 
-    if (!group || !individual || !evaluation || !file || !routerHandle.handle) {
+    if (!group || !individual || !evaluation || !file) {
       throw redirect({
         href: createHref({ type: 'Dashboard' }),
       });

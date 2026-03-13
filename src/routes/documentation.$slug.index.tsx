@@ -6,7 +6,7 @@ import { KeywordColors } from '@/types/colors';
 import { FrontMatterUniversalType } from '@/types/mdx';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/documentation/$slug')({
+export const Route = createFileRoute('/documentation/$slug/')({
   loader: ({ params }) => {
     const { slug } = params;
 

@@ -10,12 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as DocumentationRouteImport } from './routes/documentation'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DocumentationSlugRouteImport } from './routes/documentation.$slug'
+import { Route as DocumentationIndexRouteImport } from './routes/documentation.index'
 import { Route as DashboardSyncRouteImport } from './routes/dashboard.sync'
 import { Route as SessionGroupIndexRouteImport } from './routes/session.$group.index'
+import { Route as DocumentationSlugIndexRouteImport } from './routes/documentation.$slug.index'
 import { Route as SessionGroupIndividualIndexRouteImport } from './routes/session.$group.$individual.index'
 import { Route as SessionGroupIndividualKeysetsIndexRouteImport } from './routes/session.$group.$individual.keysets.index'
 import { Route as SessionGroupIndividualImportIndexRouteImport } from './routes/session.$group.$individual.import.index'
@@ -36,11 +36,6 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DocumentationRoute = DocumentationRouteImport.update({
-  id: '/documentation',
-  path: '/documentation',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -51,10 +46,10 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DocumentationSlugRoute = DocumentationSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => DocumentationRoute,
+const DocumentationIndexRoute = DocumentationIndexRouteImport.update({
+  id: '/documentation/',
+  path: '/documentation/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardSyncRoute = DashboardSyncRouteImport.update({
   id: '/sync',
@@ -64,6 +59,11 @@ const DashboardSyncRoute = DashboardSyncRouteImport.update({
 const SessionGroupIndexRoute = SessionGroupIndexRouteImport.update({
   id: '/session/$group/',
   path: '/session/$group/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocumentationSlugIndexRoute = DocumentationSlugIndexRouteImport.update({
+  id: '/documentation/$slug/',
+  path: '/documentation/$slug/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SessionGroupIndividualIndexRoute =
@@ -154,10 +154,10 @@ const SessionGroupIndividualEvaluationHistoryEditFileIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/documentation': typeof DocumentationRouteWithChildren
   '/settings': typeof SettingsRoute
   '/dashboard/sync': typeof DashboardSyncRoute
-  '/documentation/$slug': typeof DocumentationSlugRoute
+  '/documentation/': typeof DocumentationIndexRoute
+  '/documentation/$slug/': typeof DocumentationSlugIndexRoute
   '/session/$group/': typeof SessionGroupIndexRoute
   '/session/$group/$individual/': typeof SessionGroupIndividualIndexRoute
   '/session/$group/$individual/$evaluation/': typeof SessionGroupIndividualEvaluationIndexRoute
@@ -177,10 +177,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/documentation': typeof DocumentationRouteWithChildren
   '/settings': typeof SettingsRoute
   '/dashboard/sync': typeof DashboardSyncRoute
-  '/documentation/$slug': typeof DocumentationSlugRoute
+  '/documentation': typeof DocumentationIndexRoute
+  '/documentation/$slug': typeof DocumentationSlugIndexRoute
   '/session/$group': typeof SessionGroupIndexRoute
   '/session/$group/$individual': typeof SessionGroupIndividualIndexRoute
   '/session/$group/$individual/$evaluation': typeof SessionGroupIndividualEvaluationIndexRoute
@@ -201,10 +201,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
-  '/documentation': typeof DocumentationRouteWithChildren
   '/settings': typeof SettingsRoute
   '/dashboard/sync': typeof DashboardSyncRoute
-  '/documentation/$slug': typeof DocumentationSlugRoute
+  '/documentation/': typeof DocumentationIndexRoute
+  '/documentation/$slug/': typeof DocumentationSlugIndexRoute
   '/session/$group/': typeof SessionGroupIndexRoute
   '/session/$group/$individual/': typeof SessionGroupIndividualIndexRoute
   '/session/$group/$individual/$evaluation/': typeof SessionGroupIndividualEvaluationIndexRoute
@@ -226,10 +226,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
-    | '/documentation'
     | '/settings'
     | '/dashboard/sync'
-    | '/documentation/$slug'
+    | '/documentation/'
+    | '/documentation/$slug/'
     | '/session/$group/'
     | '/session/$group/$individual/'
     | '/session/$group/$individual/$evaluation/'
@@ -249,9 +249,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
-    | '/documentation'
     | '/settings'
     | '/dashboard/sync'
+    | '/documentation'
     | '/documentation/$slug'
     | '/session/$group'
     | '/session/$group/$individual'
@@ -272,10 +272,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/dashboard'
-    | '/documentation'
     | '/settings'
     | '/dashboard/sync'
-    | '/documentation/$slug'
+    | '/documentation/'
+    | '/documentation/$slug/'
     | '/session/$group/'
     | '/session/$group/$individual/'
     | '/session/$group/$individual/$evaluation/'
@@ -296,8 +296,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRouteWithChildren
-  DocumentationRoute: typeof DocumentationRouteWithChildren
   SettingsRoute: typeof SettingsRoute
+  DocumentationIndexRoute: typeof DocumentationIndexRoute
+  DocumentationSlugIndexRoute: typeof DocumentationSlugIndexRoute
   SessionGroupIndexRoute: typeof SessionGroupIndexRoute
   SessionGroupIndividualIndexRoute: typeof SessionGroupIndividualIndexRoute
   SessionGroupIndividualEvaluationIndexRoute: typeof SessionGroupIndividualEvaluationIndexRoute
@@ -324,13 +325,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/documentation': {
-      id: '/documentation'
-      path: '/documentation'
-      fullPath: '/documentation'
-      preLoaderRoute: typeof DocumentationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -345,12 +339,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/documentation/$slug': {
-      id: '/documentation/$slug'
-      path: '/$slug'
-      fullPath: '/documentation/$slug'
-      preLoaderRoute: typeof DocumentationSlugRouteImport
-      parentRoute: typeof DocumentationRoute
+    '/documentation/': {
+      id: '/documentation/'
+      path: '/documentation'
+      fullPath: '/documentation/'
+      preLoaderRoute: typeof DocumentationIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/dashboard/sync': {
       id: '/dashboard/sync'
@@ -364,6 +358,13 @@ declare module '@tanstack/react-router' {
       path: '/session/$group'
       fullPath: '/session/$group/'
       preLoaderRoute: typeof SessionGroupIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/documentation/$slug/': {
+      id: '/documentation/$slug/'
+      path: '/documentation/$slug'
+      fullPath: '/documentation/$slug/'
+      preLoaderRoute: typeof DocumentationSlugIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/session/$group/$individual/': {
@@ -479,23 +480,12 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
   DashboardRouteChildren,
 )
 
-interface DocumentationRouteChildren {
-  DocumentationSlugRoute: typeof DocumentationSlugRoute
-}
-
-const DocumentationRouteChildren: DocumentationRouteChildren = {
-  DocumentationSlugRoute: DocumentationSlugRoute,
-}
-
-const DocumentationRouteWithChildren = DocumentationRoute._addFileChildren(
-  DocumentationRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRouteWithChildren,
-  DocumentationRoute: DocumentationRouteWithChildren,
   SettingsRoute: SettingsRoute,
+  DocumentationIndexRoute: DocumentationIndexRoute,
+  DocumentationSlugIndexRoute: DocumentationSlugIndexRoute,
   SessionGroupIndexRoute: SessionGroupIndexRoute,
   SessionGroupIndividualIndexRoute: SessionGroupIndividualIndexRoute,
   SessionGroupIndividualEvaluationIndexRoute:

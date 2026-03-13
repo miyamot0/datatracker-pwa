@@ -5,7 +5,7 @@ import { FrontMatterUniversalType } from '@/types/mdx';
 import { createFileRoute } from '@tanstack/react-router';
 import DocumentationListingPage from '../components/documentation/documentation-listing-page';
 
-export const Route = createFileRoute('/documentation')({
+export const Route = createFileRoute('/documentation/')({
   loader: () => {
     const FrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(
       (entry) => entry.matter as FrontMatterUniversalType,

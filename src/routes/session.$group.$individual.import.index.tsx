@@ -1,14 +1,15 @@
 import ViewerEvaluationsPage from '@/components/dashboard-evaluations-import/viewer-evaluations-page';
 import createHref from '@/lib/links';
+import { routeGuard } from '@/lib/routing';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/session/$group/$individual/import/')({
-  loader: ({ params, context }) => {
+  beforeLoad: routeGuard,
+  loader: ({ params }) => {
     const { group, individual } = params;
-    const { routerHandle } = context;
 
-    if (!group || !individual || !routerHandle.handle) {
+    if (!group || !individual) {
       throw redirect({
         href: createHref({ type: 'Dashboard' }),
       });

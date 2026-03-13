@@ -2,10 +2,13 @@ import { createFileRoute, redirect } from '@tanstack/react-router';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import ClientsPage from '../components/dashboard-participants/clients-page';
+import { routeGuard } from '@/lib/routing';
 
 export const Route = createFileRoute('/session/$group/')({
-  loader: ({ params, context }) => {
-    if (!params.group || !context.routerHandle.handle) {
+  beforeLoad: routeGuard,
+  loader: ({ params }) => {
+    if (!params.group) {
+      console.log('err');
       throw redirect({
         href: createHref({ type: 'Dashboard' }),
       });

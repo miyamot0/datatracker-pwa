@@ -2,13 +2,14 @@ import { createFileRoute, redirect } from '@tanstack/react-router';
 import KeySetsPage from '../components/dashboard-keysets/keysets-page';
 import { CleanUpString } from '@/lib/strings';
 import createHref from '@/lib/links';
+import { routeGuard } from '@/lib/routing';
 
 export const Route = createFileRoute('/session/$group/$individual/keysets/')({
-  loader: ({ params, context }) => {
+  beforeLoad: routeGuard,
+  loader: ({ params }) => {
     const { group, individual } = params;
-    const { routerHandle } = context;
 
-    if (!group || !individual || !routerHandle) {
+    if (!group || !individual) {
       throw redirect({
         href: createHref({ type: 'Dashboard' }),
       });
