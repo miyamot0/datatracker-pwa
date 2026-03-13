@@ -30,8 +30,9 @@ export default function ViewerEvaluationsPage({ Group, Individual }: { Group: st
 
   const mutateEvaluationsMeta = useMutation({
     mutationFn: mutationEvaluationsAll,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.setQueryData(['/', 'metaEvaluations'], data);
+      await queryClient.invalidateQueries({ queryKey: ['/', Group, Individual] });
     },
   });
 

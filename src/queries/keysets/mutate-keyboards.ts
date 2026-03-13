@@ -51,7 +51,7 @@ export const mutationKeyboards = async ({
         await writer.write(serializeKeySet(key_set));
         await writer.close();
 
-        newKeysetsList.push(key_set);
+        newKeysetsList = [...newKeysetsList, key_set];
       }
       break;
     case 'Delete':
@@ -94,7 +94,7 @@ export const mutationKeyboards = async ({
       await writer.write(serializeKeySet(key_set));
       await writer.close();
 
-      newKeysetsList.push(key_set);
+      newKeysetsList = [...newKeysetsList, key_set];
 
       break;
     }

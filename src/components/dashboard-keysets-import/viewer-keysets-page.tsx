@@ -47,8 +47,9 @@ export default function ViewerKeysetPage({ Group, Individual }: { Group: string;
 
   const mutateKeyboardsGlobal = useMutation({
     mutationFn: mutateKeyboardsAll,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.setQueryData(['/', Group, 'metaKeyboards'], data);
+      await queryClient.invalidateQueries({ queryKey: ['/', Group, Individual, 'keyboards'] });
     },
   });
 
