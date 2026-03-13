@@ -36,7 +36,6 @@ export default function DashboardHistoryPage({
   Evaluation: string;
 }) {
   const { settings, handle } = useContext(FolderHandleContext);
-
   const { data, isLoading, error } = useQuery(sessionOutcomesQueryOptions(handle!, Group, Individual, Evaluation));
 
   const mutateSessionOutcomes = useMutation({

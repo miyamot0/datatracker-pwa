@@ -6,28 +6,18 @@ import {
   BuildIndividualsBreadcrumb,
   BuildSessionHistoryBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SavedSessionResult } from '@/lib/dtos';
-import { useContext, useState } from 'react';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { KeyboardIcon } from 'lucide-react';
-import createHref from '@/lib/links';
-import { setLocalCachedPrefs } from '@/lib/local_storage';
-import BackButton from '@/components/ui/back-button';
-import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
-import SessionFigure from './views/session-figure';
-import SessionKeyList from './views/session-key-list';
+import { useContext } from 'react';
+import { getLocalCachedPrefs } from '@/lib/local_storage';
 import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
 import { FolderHandleContext } from '@/context/folder-context';
+import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
+import { ErrorDisplay } from '../suspense/error-display';
+import { LoadingDisplay } from '../suspense/loading-display';
+import { useQuery } from '@tanstack/react-query';
+import { GenerateSavedFileName } from '@/lib/writer';
+import { redirect } from '@tanstack/react-router';
+import SessionViewerContent from './views/session-viewer-content';
 
 export type ExpandedSavedSessionResult = SavedSessionResult & {
   Filename: string;
@@ -40,177 +30,139 @@ export default function SessionViewerPage({
   Group,
   Individual,
   Evaluation,
-  PlotObject,
-  ExpandedSession,
-  ShowKeys,
+  FileString,
 }: {
   Group: string;
   Individual: string;
   Evaluation: string;
-  PlotObject: any[];
-  ExpandedSession: ExpandedSavedSessionResult;
-  ShowKeys: {
-    KeyDescription: string;
-    Visible: boolean;
-  }[];
+  FileString: string;
 }) {
-  const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
-  const { settings } = useContext(FolderHandleContext);
+  const { handle } = useContext(FolderHandleContext);
+  const { data, isLoading, error } = useQuery(sessionOutcomesQueryOptions(handle!, Group, Individual, Evaluation));
 
-  return (
-    <PageWrapper
-      breadcrumbs={[
-        BuildGroupBreadcrumb(),
-        BuildIndividualsBreadcrumb(Group),
-        BuildEvaluationsBreadcrumb(Group, Individual),
-        BuildSessionHistoryBreadcrumb(Group, Individual, Evaluation),
-      ]}
-      label={'Session Viewer'}
-      className="select-none"
-    >
-      <Card className="w-full">
-        <CardHeader className="flex flex-row justify-between">
-          <div className="flex flex-col gap-1.5 grow">
-            <CardTitle>Session Inspector</CardTitle>
-            <CardDescription>Information Regarding Keys Illustrated Below</CardDescription>
-          </div>
+  if (isLoading) return <LoadingDisplay />;
 
-          <div className="flex flex-row gap-2">
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-fit" size={'sm'}>
-                  <KeyboardIcon className="mr-2 w-4 h-4" />
-                  Edit Keys Displayed
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {filteredKeys.map((key, index) => (
-                  <DropdownMenuCheckboxItem
-                    key={`key-${index}`}
-                    checked={key.Visible}
-                    onCheckedChange={(checked) => {
-                      const updatedKeys = filteredKeys.map((k) => {
-                        if (k.KeyDescription === key.KeyDescription) {
-                          return {
-                            ...k,
-                            Visible: checked,
-                          };
-                        }
+  if (error || data == undefined) return <ErrorDisplay Text={'An error occurred while fetching session outcomes.'} />;
 
-                        return k;
-                      });
+  const relevant_session = data.find((s) => s.Filename.includes(FileString));
 
-                      setFilteredKeys(updatedKeys);
+  if (relevant_session) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const plot_object: any[] = [];
 
-                      const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+    const keys = relevant_session.Keyset.FrequencyKeys.map((k) => k.KeyDescription);
 
-                      setLocalCachedPrefs(Group, Individual, Evaluation, `${Group} ${Individual} ${Evaluation}`, {
-                        KeyDescription: hidden_keys,
-                        CTBElements: [],
-                        Schedule: 'End on Timer #1',
-                      });
-                    }}
-                  >
-                    {key.KeyDescription}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const start_object: any = {
+      second: 0,
+    };
 
-            <BackButton
-              Label="Back to Session History"
-              Href={createHref({
-                type: 'Evaluation Session Viewer',
-                group: Group,
-                individual: Individual,
-                evaluation: Evaluation,
-              })}
-            />
-          </div>
-        </CardHeader>
+    // Start point
+    keys.forEach((k) => {
+      start_object[k] = 0;
+    });
+    plot_object.push(start_object);
 
-        <CardContent className="w-full flex flex-col gap-2">
-          {ExpandedSession && (
-            <div className="grid grid-cols-2 mb-6 gap-2">
-              <div>
-                <span className="font-bold">Session #: </span> {ExpandedSession.SessionSettings.Session}
-              </div>
+    // For holding the reference object
+    const reference_object = { ...start_object };
 
-              <div>
-                <span className="font-bold">Session Date: </span>{' '}
-                {new Date(ExpandedSession.SessionStart).toLocaleDateString()}
-              </div>
+    relevant_session.FrequencyKeyPresses.forEach((k) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const prev: any = {
+        second: Math.floor(k.TimeIntoSession),
+      };
+      prev[k.KeyDescription] = reference_object[k.KeyDescription];
 
-              <div>
-                <span className="font-bold">Session Condition: </span> {ExpandedSession.SessionSettings.Condition}
-              </div>
+      plot_object.push(prev);
 
-              <div>
-                <span className="font-bold">Session Ended Early?: </span>{' '}
-                {ExpandedSession.EndedEarly === true ? 'Yes' : 'No'}
-              </div>
+      reference_object[k.KeyDescription] = reference_object[k.KeyDescription] + 1;
 
-              <div>
-                <span className="font-bold">Data Collector: </span> {ExpandedSession.SessionSettings.Initials}
-              </div>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const curr: any = {
+        second: Math.floor(k.TimeIntoSession),
+      };
+      curr[k.KeyDescription] = reference_object[k.KeyDescription];
 
-              <div>
-                <span className="font-bold">Data Collector Role: </span> {ExpandedSession.SessionSettings.Role}
-              </div>
+      plot_object.push(curr);
+    });
 
-              <div>
-                <span className="font-bold">Therapist: </span> {ExpandedSession.SessionSettings.Therapist}
-              </div>
+    const final_object = {
+      ...reference_object,
+      second: Math.floor(relevant_session.TimerMain),
+    };
 
-              <div>
-                <span className="font-bold">Keyset: </span> {ExpandedSession.SessionSettings.KeySet}
-              </div>
+    plot_object.push(final_object);
 
-              <div>
-                <span className="font-bold">Session Duration: </span> {ExpandedSession.SessionSettings.DurationS}
-              </div>
+    const max_ys = [] as number[];
 
-              <div>
-                <span className="font-bold">Termination Rules: </span> {ExpandedSession.SessionSettings.TimerOption}
-              </div>
+    plot_object.forEach((point) => {
+      const keys = Object.keys(point).filter((k) => k !== 'second');
 
-              <div>
-                <span className="font-bold">Timer Duration (Main): </span> {ExpandedSession.TimerMain.toFixed(2)}
-              </div>
+      keys.forEach((key) => {
+        max_ys.push(point[key]);
+      });
+    });
 
-              <div>
-                <span className="font-bold">Timer Duration (#1): </span> {ExpandedSession.TimerOne.toFixed(2)}
-              </div>
+    const max_y = Math.max(...max_ys);
 
-              <div>
-                <span className="font-bold">Timer Duration (#2): </span> {ExpandedSession.TimerTwo.toFixed(2)}
-              </div>
+    const y_ticks = Array(max_y + 1)
+      .fill(0)
+      .map((_, index) => index);
 
-              <div>
-                <span className="font-bold">Timer Duration (#3): </span> {ExpandedSession.TimerThree.toFixed(2)}
-              </div>
-            </div>
-          )}
+    const saved_keys = [
+      ...relevant_session.FrequencyKeyPresses,
+      ...relevant_session.DurationKeyPresses,
+      ...relevant_session.SystemKeyPresses,
+    ].sort((a, b) => a.TimeIntoSession - b.TimeIntoSession);
 
-          <SessionFigure Session={ExpandedSession} PlotData={PlotObject} KeysHidden={filteredKeys} />
+    const expandedSessionData = {
+      ...relevant_session,
+      Filename: GenerateSavedFileName(relevant_session.SessionSettings),
+      MaxY: max_y + 1,
+      YTicks: y_ticks,
+      PlottedKeys: saved_keys,
+    };
 
-          <Separator className="my-4" />
+    const stored_prefs = getLocalCachedPrefs(Group, Individual, Evaluation, `${Group} ${Individual} ${Evaluation}`);
 
-          <SessionKeyList Settings={settings} Session={ExpandedSession} />
+    const show_keys_base = relevant_session.Keyset.FrequencyKeys.map((key) => {
+      const should_disable = stored_prefs.KeyDescription.includes(key.KeyDescription);
 
-          <Separator className="my-4" />
+      if (should_disable) {
+        return {
+          KeyDescription: key.KeyDescription,
+          Visible: false,
+        };
+      }
 
-          <div className="w-full">
-            <div className="flex justify-between items-center mb-2">
-              <h1>Comments:</h1>
-              <div></div>
-            </div>
-            <Textarea minLength={3} value={ExpandedSession.Comments} readOnly />
-          </div>
-        </CardContent>
-      </Card>
-    </PageWrapper>
-  );
+      return {
+        KeyDescription: key.KeyDescription,
+        Visible: true,
+      };
+    });
+
+    return (
+      <PageWrapper
+        breadcrumbs={[
+          BuildGroupBreadcrumb(),
+          BuildIndividualsBreadcrumb(Group),
+          BuildEvaluationsBreadcrumb(Group, Individual),
+          BuildSessionHistoryBreadcrumb(Group, Individual, Evaluation),
+        ]}
+        label={'Session Viewer'}
+        className="select-none"
+      >
+        <SessionViewerContent
+          Group={Group}
+          Individual={Individual}
+          Evaluation={Evaluation}
+          ShowKeys={show_keys_base}
+          ExpandedSession={expandedSessionData}
+          PlotObject={plot_object}
+        />
+      </PageWrapper>
+    );
+  }
+
+  throw redirect({ href: '/desktop' });
 }

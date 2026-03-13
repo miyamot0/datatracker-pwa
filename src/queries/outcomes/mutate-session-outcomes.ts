@@ -88,6 +88,8 @@ export const mutationSettingsOutcomes = async ({
   Evaluation,
   Outcomes,
   ConditionRename,
+  UpdatedOutcome,
+  PriorOutcome,
   Handle,
   Action,
 }: {
@@ -96,8 +98,10 @@ export const mutationSettingsOutcomes = async ({
   Evaluation: string;
   Outcomes: ModifiedSessionResult[];
   ConditionRename?: string;
+  UpdatedOutcome?: ModifiedSessionResult;
+  PriorOutcome?: ModifiedSessionResult;
   Handle: FileSystemDirectoryHandle;
-  Action: 'Delete' | 'EditCondition';
+  Action: 'Delete' | 'EditCondition' | 'Modify';
 }): Promise<ModifiedSessionResult[]> => {
   const sessionOutcomes: ModifiedSessionResult[] = await queryClient.fetchQuery(
     sessionOutcomesQueryOptions(Handle, Group, Individual, Evaluation),
@@ -128,6 +132,40 @@ export const mutationSettingsOutcomes = async ({
         ConditionRename,
         evaluation_dir,
       );
+      break;
+    }
+    case 'Modify': {
+      if (!UpdatedOutcome || !PriorOutcome) {
+        throw new Error('Updated outcome not found');
+      }
+
+      const indexOfOutcome = sessionOutcomes.indexOf(PriorOutcome);
+
+      if (indexOfOutcome == -1) {
+        throw new Error('Original outcome not found');
+      }
+
+      try {
+        const condition_dir = await evaluation_dir.getDirectoryHandle(
+          CleanUpString(UpdatedOutcome.SessionSettings.Condition),
+          {
+            create: true,
+          },
+        );
+
+        const session_output_file = await condition_dir.getFileHandle(PriorOutcome.Filename, {
+          create: false,
+        });
+
+        const writer = await session_output_file.createWritable();
+        await writer.write(JSON.stringify(UpdatedOutcome));
+        await writer.close();
+
+        cleanedSessionOutcomes[indexOfOutcome] = UpdatedOutcome;
+      } catch (error: unknown) {
+        new Error(`Failed to update outcome: ${error}`);
+      }
+
       break;
     }
   }
