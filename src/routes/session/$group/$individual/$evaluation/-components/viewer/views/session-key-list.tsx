@@ -1,9 +1,9 @@
-import { ExpandedSavedSessionResult } from '../../../../routes/session/$group/$individual/$evaluation/-components/viewer/session-viewer-page';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table-common';
 import { ApplicationSettingsTypes } from '@/types/settings';
 import { KeyManageType } from '../../session-recorder/types/session-recorder-types';
+import { ExpandedSavedSessionResult } from '../session-viewer-page';
 
 type Props = {
   Session: ExpandedSavedSessionResult | undefined;
@@ -62,7 +62,7 @@ export default function SessionKeyList({ Session, Settings }: Props) {
         columns={columns}
         limitCols
         hiddenCols={{ 'Time Into Session (min)': true }}
-        data={Session.PlottedKeys.sort((a, b) => a.TimeIntoSession - b.TimeIntoSession)}
+        data={Session.PlottedKeys.sort((a: KeyManageType, b: KeyManageType) => a.TimeIntoSession - b.TimeIntoSession)}
       />
     </>
   );

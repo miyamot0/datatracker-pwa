@@ -106,6 +106,8 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
  
 @tanstack/react-query (5.90.21). Copyright tannerlinsley -- MIT Licensed: [Repo](https://github.com/TanStack/query.git) 
  
+@tanstack/react-router (1.166.7). Copyright Tanner Linsley -- MIT Licensed: [Repo](https://github.com/TanStack/router.git) 
+ 
 @tanstack/react-table (8.21.3). Copyright Tanner Linsley -- MIT Licensed: [Repo](https://github.com/TanStack/table.git) 
  
 class-variance-authority (0.7.0). Copyright Joe Bell (https://joebell.co.uk) -- Apache-2.0 Licensed: [Repo](https://github.com/joe-bell/cva.git) 

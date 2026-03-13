@@ -13,8 +13,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { ExpandedSavedSessionResult } from '../../../../routes/session/$group/$individual/$evaluation/-components/viewer/session-viewer-page';
-import { ExpandedKeySetInstance } from '../../../../routes/session/$group/$individual/$evaluation/-components/visuals/figures/rate-figure';
+import { ExpandedSavedSessionResult } from '../session-viewer-page';
+import { ExpandedKeySetInstance } from '../../visuals/figures/rate-figure';
+import { KeyManageType } from '../../session-recorder/types/session-recorder-types';
+import { KeySetInstance } from '@/types/keyset';
 
 type Props = {
   Session?: ExpandedSavedSessionResult;
@@ -89,48 +91,52 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
             <tspan className="text-2xl font-bold">Within-session Visualization of Session Data</tspan>
           </text>
 
-          {Session.SystemKeyPresses.filter((k) => k.KeyScheduleRecording === 'Secondary').map((press, index_of_ref) => {
-            return (
-              <ReferenceLine
-                key={`ref-secondary-${index_of_ref}`}
-                x={press.TimeIntoSession}
-                stroke="red"
-                label={
-                  index_of_ref % 2 === 0 ? (
-                    <Label
-                      value={'Timer #2'}
-                      position={{ x: press.TimeIntoSession, y: 0 }}
-                      fill="black"
-                      style={{ textAnchor: 'middle' }}
-                    />
-                  ) : undefined
-                }
-              />
-            );
-          })}
+          {Session.SystemKeyPresses.filter((k) => k.KeyScheduleRecording === 'Secondary').map(
+            (press: KeyManageType, index_of_ref: number) => {
+              return (
+                <ReferenceLine
+                  key={`ref-secondary-${index_of_ref}`}
+                  x={press.TimeIntoSession}
+                  stroke="red"
+                  label={
+                    index_of_ref % 2 === 0 ? (
+                      <Label
+                        value={'Timer #2'}
+                        position={{ x: press.TimeIntoSession, y: 0 }}
+                        fill="black"
+                        style={{ textAnchor: 'middle' }}
+                      />
+                    ) : undefined
+                  }
+                />
+              );
+            },
+          )}
 
-          {Session.SystemKeyPresses.filter((k) => k.KeyScheduleRecording === 'Tertiary').map((press, index_of_ref) => {
-            return (
-              <ReferenceLine
-                key={`ref-tertiary-${index_of_ref}`}
-                x={press.TimeIntoSession}
-                stroke="blue"
-                label={
-                  index_of_ref % 2 === 0 ? (
-                    <Label
-                      value={'Timer #3'}
-                      position={{ x: press.TimeIntoSession, y: 0 }}
-                      fill="black"
-                      style={{ textAnchor: 'middle' }}
-                    />
-                  ) : undefined
-                }
-              />
-            );
-          })}
+          {Session.SystemKeyPresses.filter((k) => k.KeyScheduleRecording === 'Tertiary').map(
+            (press: KeyManageType, index_of_ref: number) => {
+              return (
+                <ReferenceLine
+                  key={`ref-tertiary-${index_of_ref}`}
+                  x={press.TimeIntoSession}
+                  stroke="blue"
+                  label={
+                    index_of_ref % 2 === 0 ? (
+                      <Label
+                        value={'Timer #3'}
+                        position={{ x: press.TimeIntoSession, y: 0 }}
+                        fill="black"
+                        style={{ textAnchor: 'middle' }}
+                      />
+                    ) : undefined
+                  }
+                />
+              );
+            },
+          )}
 
           {Session.Keyset.FrequencyKeys.filter((k) => keys_to_skip.includes(k.KeyDescription) === false).map(
-            (key, index) => {
+            (key: KeySetInstance, index: number) => {
               return (
                 <React.Fragment key={index}>
                   <Line
@@ -216,7 +222,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
           />
           <Legend
             payload={Session.Keyset.FrequencyKeys.filter((k) => keys_to_skip.includes(k.KeyDescription) === false).map(
-              (item, index) => ({
+              (item: KeySetInstance, index: number) => ({
                 id: item.KeyDescription,
                 type: getShape(index),
                 value: item.KeyDescription,

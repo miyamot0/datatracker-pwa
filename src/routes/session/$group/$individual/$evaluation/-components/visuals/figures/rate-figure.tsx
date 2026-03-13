@@ -233,12 +233,12 @@ export default function RateFigureVisualization({
                       //const linkGenerated = `/session/${Group!}/${Individual!}/${Evaluation!}/history/${stringIndex}`;
 
                       navigate({
-                        to: '/session/$group/$individual/$evaluation/history/$index',
+                        to: '/session/$group/$individual/$evaluation/history/view/$file',
                         params: {
                           group: Group,
                           individual: Individual,
                           evaluation: Evaluation,
-                          index: stringIndex,
+                          file: stringIndex,
                         },
                       });
                     }}
