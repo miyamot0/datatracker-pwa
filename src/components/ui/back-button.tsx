@@ -8,12 +8,10 @@ type Props = {
 };
 
 export default function BackButton({ Label, Href }: Props) {
-  const router = useRouter();
+  const { history } = useRouter();
 
   const handleClick = () => {
-    if (window.history.state && window.history.state.idx > 0) {
-      router.history.go(-1);
-    }
+    history.go(-1);
   };
 
   if (!Href) {
