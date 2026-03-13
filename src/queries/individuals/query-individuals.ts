@@ -5,7 +5,7 @@ export const clientQueryOptions = (Handle: FileSystemDirectoryHandle, Group: str
   queryFn: () => fetchIndividuals({ Handle, Group }),
 });
 
-export const fetchIndividuals = async ({ Handle, Group }: { Handle: FileSystemDirectoryHandle; Group: string }) => {
+const fetchIndividuals = async ({ Handle, Group }: { Handle: FileSystemDirectoryHandle; Group: string }) => {
   const temp_individuals = [] as string[];
 
   try {

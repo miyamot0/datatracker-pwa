@@ -3,7 +3,7 @@ export const groupQueryOptions = (Handle: FileSystemDirectoryHandle) => ({
   queryFn: () => fetchGroups(Handle),
 });
 
-export const fetchGroups = async (Handle: FileSystemDirectoryHandle) => {
+const fetchGroups = async (Handle: FileSystemDirectoryHandle) => {
   try {
     const entries = await Handle.values();
     const temp_group_folders = [] as string[];

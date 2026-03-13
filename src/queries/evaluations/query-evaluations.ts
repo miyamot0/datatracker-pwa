@@ -5,7 +5,7 @@ export const evaluationQueryOptions = (Handle: FileSystemDirectoryHandle, Group:
   queryFn: () => fetchEvaluations({ Handle, Group, Individual }),
 });
 
-export const fetchEvaluations = async ({
+const fetchEvaluations = async ({
   Handle,
   Group,
   Individual,

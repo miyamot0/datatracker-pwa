@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { SavedSessionResult } from '@/lib/dtos';
 import { useContext, useState } from 'react';
 import {
   DropdownMenu,
@@ -19,15 +18,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import SessionFigure from './session-figure';
 import SessionKeyList from './session-key-list';
-import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
 import { FolderHandleContext } from '@/context/folder-context';
-
-export type ExpandedSavedSessionResult = SavedSessionResult & {
-  Filename: string;
-  MaxY: number;
-  YTicks: number[];
-  PlottedKeys: KeyManageType[];
-};
+import { ExpandedSavedSessionResult } from '../session-viewer-page';
 
 export default function SessionViewerContent({
   Group,

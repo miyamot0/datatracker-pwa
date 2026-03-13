@@ -5,7 +5,7 @@ export const evaluationsAllQueryOptions = (Handle: FileSystemDirectoryHandle) =>
   queryFn: () => fetchEvaluationsAll({ Handle }),
 });
 
-export const fetchEvaluationsAll = async ({ Handle }: { Handle: FileSystemDirectoryHandle }) => {
+const fetchEvaluationsAll = async ({ Handle }: { Handle: FileSystemDirectoryHandle }) => {
   try {
     const temp_evaluation_folders = [] as EvaluationRecord[];
 

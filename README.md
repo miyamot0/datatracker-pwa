@@ -76,8 +76,6 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
  
 @mdx-js/mdx (3.0.1). Copyright John Otander <johnotander@gmail.com> (https://johno.com) -- MIT Licensed: [Repo](https://github.com/mdx-js/mdx.git) 
  
-@next/third-parties (14.2.13). Copyright n/a -- MIT Licensed: [Repo](https://github.com/vercel/next.js.git) 
- 
 @radix-ui/react-checkbox (1.3.2). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
 @radix-ui/react-dialog (1.1.15). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
@@ -117,10 +115,6 @@ clsx (2.1.1). Copyright Luke Edwards luke.edwards05@gmail.com https://lukeed.com
 cmdk (1.1.1). Copyright Paco https://github.com/pacocoursey -- MIT Licensed: [Repo](https://github.com/pacocoursey/cmdk.git) 
  
 embla-carousel-react (8.2.1). Copyright David Jerleke -- MIT Licensed: [Repo](https://github.com/davidjerleke/embla-carousel) 
- 
-esbuild (0.25.9). Copyright n/a -- MIT Licensed: [Repo](https://github.com/evanw/esbuild.git) 
- 
-form-data (4.0.4). Copyright Felix Geisendörfer <felix@debuggable.com> (http://debuggable.com/) -- MIT Licensed: [Repo](git://github.com/form-data/form-data.git) 
  
 lucide-react (0.429.0). Copyright Eric Fennis -- ISC Licensed: [Repo](https://github.com/lucide-icons/lucide.git) 
  
