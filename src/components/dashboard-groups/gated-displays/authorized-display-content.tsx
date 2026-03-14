@@ -1,7 +1,6 @@
 import BackButton from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import createHref from '@/lib/links';
 import { DatabaseIcon, FolderInput, FolderPlus } from 'lucide-react';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { ColumnDef } from '@tanstack/react-table';
@@ -66,7 +65,7 @@ export default function AuthorizedDisplayContent({ Groups }: Props) {
         </div>
 
         <div className="flex flex-col md:flex-row gap-2">
-          <BackButton Label="Back to Home" Href={createHref({ type: 'Home' })} />
+          <BackButton />
         </div>
       </CardHeader>
 

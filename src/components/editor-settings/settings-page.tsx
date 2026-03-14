@@ -41,7 +41,7 @@ export default function SettingsPage() {
             <CardTitle>Application Settings</CardTitle>
             <CardDescription>Manage and Update Settings for Data Tracker</CardDescription>
           </div>
-          <BackButton Label="Back" />
+          <BackButton  />
         </CardHeader>
 
         <CardContent className="min-h-96 flex flex-col justify-start gap-6">

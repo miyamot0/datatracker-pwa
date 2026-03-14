@@ -21,7 +21,6 @@ import {
 import { Edit3Icon, ScatterChartIcon } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
-import createHref from '@/lib/links';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
 import { FIGURE_TEXT_OPTIONS, FigureVisualSizing } from '@/types/accessibility';
@@ -82,10 +81,7 @@ export default function ResultsProportionVisualsPage({
                 See Rate
               </Button>
             </Link>
-            <BackButton
-              Label="Back to Evaluations"
-              Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
-            />
+            <BackButton />
           </div>
         </CardHeader>
 

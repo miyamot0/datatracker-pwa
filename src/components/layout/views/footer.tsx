@@ -5,7 +5,7 @@ export default function LayoutFooter() {
   const MODALITY = import.meta.env.VITE_MODE === 'base' ? '' : ': Island Mode';
 
   return (
-    <footer className="text-center text-sm text-gray-500 my-8 flex flex-col gap-4 select-none">
+    <footer className="text-center text-sm text-gray-500 mt-4 mb-0 flex flex-col gap-2 select-none">
       <p>
         <a
           href={`https://github.com/miyamot0/datatracker-pwa`}
@@ -42,8 +42,7 @@ export default function LayoutFooter() {
         </a>
         .
       </p>
-      <p>{`Build Version ${BUILD_VERSION} (${BUILD_DATE}${MODALITY})`}</p>
-      <div className="flex flex-row items-center justify-center gap-2">
+      <div className="flex flex-row items-center justify-center gap-2 my-3">
         <a aria-label="Link to Twitter/X page" href={'https://x.com/gilroy_shawn'} target="_blank">
           <Button
             name="Twitter button"
@@ -77,6 +76,7 @@ export default function LayoutFooter() {
           </Button>
         </a>
       </div>
+      <p>{`Build Version ${BUILD_VERSION} (${BUILD_DATE}${MODALITY})`}</p>
     </footer>
   );
 }

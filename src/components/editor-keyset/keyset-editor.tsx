@@ -10,7 +10,6 @@ import {
   BuildKeysetBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
 import { CleanUpString } from '@/lib/strings';
-import createHref from '@/lib/links';
 import BackButton from '@/components/ui/back-button';
 import { FolderHandleContext } from '@/context/folder-context';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
@@ -127,7 +126,7 @@ export default function KeySetEditor({
             <div className="flex flex-row gap-2">
               <FrequencyDialogKeyCreator KeySet={relevantKeySet} Callback={addKeyCallback} />
 
-              <BackButton Label="Back" Href={createHref({ type: 'Keysets', group: Group, individual: Individual })} />
+              <BackButton />
             </div>
           </CardHeader>
           <CardContent className="flex-1">
@@ -215,7 +214,7 @@ export default function KeySetEditor({
             <div className="flex flex-row gap-2">
               <DurationDialogKeyCreator KeySet={relevantKeySet} Callback={addKeyCallback} />
 
-              <BackButton Label="Back" Href={createHref({ type: 'Keysets', group: Group, individual: Individual })} />
+              <BackButton  />
             </div>
           </CardHeader>
           <CardContent className="flex-1">

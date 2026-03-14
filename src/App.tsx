@@ -18,6 +18,26 @@ const hashHistory = createHashHistory();
 const router = createRouter({
   routeTree,
   history: hashHistory,
+  defaultViewTransition: {
+    types: ({ fromLocation, toLocation }) => {
+      let direction = 'none';
+
+      if (fromLocation) {
+        const fromIndex = fromLocation.state.__TSR_index;
+        const toIndex = toLocation.state.__TSR_index;
+        if (fromIndex !== toIndex) {
+          direction = fromIndex > toIndex ? 'right' : 'left';
+        }
+      }
+
+      // Prevent animation when navigating to the same route
+      if (fromLocation?.state.__TSR_index === toLocation?.state.__TSR_index) {
+        direction = 'none';
+      }
+
+      return [`slide-${direction}`];
+    },
+  },
   context: {
     queryClient: undefined!,
     routerHandle: undefined!,

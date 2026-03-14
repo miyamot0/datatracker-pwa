@@ -23,7 +23,7 @@ export default function UnauthorizedDisplay() {
           <CardDescription>You need to authorize the program to work with the desired local folder</CardDescription>
         </div>
 
-        <BackButton Label="Back" />
+        <BackButton />
       </CardHeader>
 
       <CardContent className="flex flex-col gap-1.5">

@@ -12,7 +12,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
 import { FolderHandleContext } from '@/context/folder-context';
-import createHref from '@/lib/links';
 import { mutateKeyboardsAll } from '@/queries/keysets/mutate-keyboards-all';
 import { keyboardsAllQueryOptions } from '@/queries/keysets/query-keyboards-all';
 import { KeySet, KeySetInstance } from '@/types/keyset';
@@ -114,10 +113,7 @@ export default function ViewerKeysetPage({ Group, Individual }: { Group: string;
             <CardTitle>Keyset Import</CardTitle>
             <CardDescription>Import a keyset file to use in your evaluations.</CardDescription>
           </div>
-          <BackButton
-            Label="Back to KeySets"
-            Href={createHref({ type: 'Keysets', group: Group, individual: Individual })}
-          />
+          <BackButton />
         </CardHeader>
 
         <CardContent className="flex flex-col gap-1.5">

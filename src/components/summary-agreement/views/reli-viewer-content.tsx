@@ -1,5 +1,4 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import createHref from '@/lib/links';
 import Spreadsheet from 'react-spreadsheet';
 import { calculateReliabilityDuration, calculateReliabilityFrequency } from '@/lib/reli';
 import BackButton from '@/components/ui/back-button';
@@ -18,7 +17,7 @@ type KeyedReli = {
   Value: number;
 };
 
-export default function ReliabilityViewerContent({ Group, Individual, Paired, Keyset }: Props) {
+export default function ReliabilityViewerContent({ Paired, Keyset }: Props) {
   const sessions_scored_frequency = Paired.map((pair) => calculateReliabilityFrequency(pair, Keyset.FrequencyKeys));
   const sessions_scored_duration = Paired.map((pair) => calculateReliabilityDuration(pair, Keyset.DurationKeys));
 
@@ -298,10 +297,7 @@ export default function ReliabilityViewerContent({ Group, Individual, Paired, Ke
             <CardTitle>Reliability Estimates: Frequency</CardTitle>
             <CardDescription>Estimates of various indices are presented below in 10s bins</CardDescription>
           </div>
-          <BackButton
-            Label="Back to Evaluations"
-            Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
-          />
+          <BackButton />
         </CardHeader>
 
         <CardContent className="overflow-x-auto">
@@ -321,10 +317,7 @@ export default function ReliabilityViewerContent({ Group, Individual, Paired, Ke
             <CardTitle>Reliability Estimates: Duration</CardTitle>
             <CardDescription>Estimates of various indices are presented below in 10s bins</CardDescription>
           </div>
-          <BackButton
-            Label="Back to Evaluations"
-            Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
-          />
+          <BackButton />
         </CardHeader>
 
         <CardContent className="overflow-x-auto">

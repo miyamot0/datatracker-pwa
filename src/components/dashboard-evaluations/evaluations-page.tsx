@@ -26,7 +26,6 @@ import { ColumnDef, Row } from '@tanstack/react-table';
 import {
   ChartColumnIcon,
   ChevronDown,
-  ChevronLeft,
   Copy,
   Disc3,
   Edit2,
@@ -39,6 +38,7 @@ import {
 } from 'lucide-react';
 import { useContext } from 'react';
 import { toast } from 'sonner';
+import BackButton from '../ui/back-button';
 
 type EvaluationTableRow = {
   Evaluation: string;
@@ -266,12 +266,7 @@ export default function EvaluationsPage({ Group, Individual }: { Group: string; 
             <CardDescription>Select Evaluation to Build Session</CardDescription>
           </div>
           <div className="flex flex-row gap-2">
-            <Link to="/session/$group" params={{ group: Group }}>
-              <Button variant={'outline'} className="shadow" size={'sm'}>
-                <ChevronLeft className="mr-2 h-4 w-4" />
-                Back to Individuals
-              </Button>
-            </Link>
+            <BackButton />
           </div>
         </CardHeader>
 

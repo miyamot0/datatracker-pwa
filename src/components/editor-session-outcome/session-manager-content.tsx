@@ -1,4 +1,3 @@
-import createHref from '@/lib/links';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useContext, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -136,15 +135,7 @@ export default function SessionManagerContent({
             </Button>
           </ToolTipWrapper>
 
-          <BackButton
-            Label="Back to Session History"
-            Href={createHref({
-              type: 'Evaluation Session Viewer',
-              group: Group,
-              individual: Individual,
-              evaluation: Evaluation,
-            })}
-          />
+          <BackButton />
         </div>
       </CardHeader>
       <CardContent>
