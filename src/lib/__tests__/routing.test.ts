@@ -16,7 +16,6 @@ describe('Routing', () => {
     } as unknown as FolderHandleContextType;
 
     const mockContext = {
-      routerHandle: {},
       queryClient: {},
       folderHandleContext: mockFolderHandleContext,
     } as unknown as CustomizedRouterContext;
@@ -42,7 +41,6 @@ describe('Routing', () => {
     } as unknown as FolderHandleContextType;
 
     const mockContext = {
-      routerHandle: {},
       queryClient: {},
       folderHandleContext: mockFolderHandleContext,
     } as unknown as CustomizedRouterContext;

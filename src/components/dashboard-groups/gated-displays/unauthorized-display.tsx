@@ -54,7 +54,6 @@ export default function UnauthorizedDisplay() {
               }
 
               if (directory_picker) {
-                //setHandle(directory_picker);
                 //router.options.context.routerHandle.setHandle(directory_picker);
                 setHandle(directory_picker);
 

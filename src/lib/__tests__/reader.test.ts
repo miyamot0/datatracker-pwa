@@ -1,12 +1,10 @@
 import { Mock } from 'vitest';
-import { SavedSessionResult } from '../dtos';
 import { deserializeKeySet } from '../keyset';
 import { readKeyboardParameters } from '../reader';
 
 // Mocks
 const mockGetFile = vi.fn();
 const mockText = vi.fn();
-const mockDeserializeKeySet = vi.fn();
 
 vi.mock('../keyset', () => ({
   deserializeKeySet: vi.fn(),
