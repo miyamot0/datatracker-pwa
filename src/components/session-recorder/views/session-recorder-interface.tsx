@@ -240,11 +240,11 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
                         types: () => {
                           const animTypes = TRANSITION_CLASSES[applicationSettings.TransitionBehavior];
 
-                          if (animTypes.length < 2) {
+                          if (animTypes.length < 1) {
                             return false;
                           }
 
-                          return [animTypes[1]];
+                          return [animTypes[animTypes.length - 1]];
                         },
                       },
                     });

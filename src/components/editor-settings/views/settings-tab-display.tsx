@@ -7,10 +7,14 @@ import {
   ApplicationSettingsTypes,
   KEY_DISPLAY_OPTIONS,
   KeyDisplayTypes,
+  NOTIFICATION_SETTINGS_OPTIONS,
+  NotificationSettingsTypes,
   ScreenSizingOptions,
   ScreenSizingTypes,
   THEME_OPTIONS,
   ThemeTypes,
+  TOOL_TIP_OPTIONS,
+  ToolTipOptionTypes,
 } from '@/types/settings';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useTheme } from '@/components/ui/theme-provider';
@@ -28,7 +32,7 @@ export function SettingsTabDisplay() {
     <TabsContent value={SettingsDisplayEnum.Layout}>
       <SettingsTabContainer>
         <SettingsFormItemWrapper
-          Label="Options for Theme/Displays"
+          Label="Application Theme"
           Description="Toggle light/dark/system themes based on preference (e.g., dark mode)"
         >
           <Select
@@ -55,8 +59,8 @@ export function SettingsTabDisplay() {
         </SettingsFormItemWrapper>
 
         <SettingsFormItemWrapper
-          Label="Options for Key Displays"
-          Description="Toggle standard or dense key layouts (i.e., many keys loaded)"
+          Label="Presentation of KeySet Options"
+          Description="Toggle standard or dense key layouts (i.e., display more keys on screen)"
         >
           <Select
             value={settings.KeyDisplay}
@@ -88,8 +92,8 @@ export function SettingsTabDisplay() {
         </SettingsFormItemWrapper>
 
         <SettingsFormItemWrapper
-          Label="Options for Screen Displays"
-          Description="Toggle standard or extra wide layouts (i.e., for larger monitors)"
+          Label="Application Layout Size"
+          Description="Toggle standard or extra wide layouts for larger displays"
         >
           <Select
             value={settings.DisplaySize}
@@ -121,8 +125,8 @@ export function SettingsTabDisplay() {
         </SettingsFormItemWrapper>
 
         <SettingsFormItemWrapper
-          Label="Transition Animations"
-          Description="Toggle transition animations for different views (e.g., navigating to different pages)"
+          Label="Page Transition Animations"
+          Description="Select animations when transitioning between different pages"
         >
           <Select
             value={settings.TransitionBehavior}
@@ -146,6 +150,67 @@ export function SettingsTabDisplay() {
             <SelectContent>
               <SelectGroup>
                 {TRANSITION_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </SettingsFormItemWrapper>
+
+        <SettingsFormItemWrapper Label="Notification Levels" Description="Set whether the types notifications desired">
+          <Select
+            value={settings.NotificationSettings}
+            onValueChange={(value: NotificationSettingsTypes) => {
+              const newSettings = {
+                ...settings,
+                NotificationSettings: value,
+              } satisfies ApplicationSettingsTypes;
+              setSettings(newSettings);
+              saveSettings(newSettings);
+
+              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+            }}
+          >
+            <SelectTrigger className="w-full md:max-w-[250px]">
+              <SelectValue placeholder="Select Notification Level" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {NOTIFICATION_SETTINGS_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </SettingsFormItemWrapper>
+
+        <SettingsFormItemWrapper
+          Label="Tooltip Levels"
+          Description="Set whether should provide tooltip guidance (Note: useful for new users)"
+        >
+          <Select
+            value={settings.EnableToolTip === true ? 'All' : 'None'}
+            onValueChange={(value: ToolTipOptionTypes) => {
+              const newSettings = {
+                ...settings,
+                EnableToolTip: value === 'All',
+              } satisfies ApplicationSettingsTypes;
+              setSettings(newSettings);
+              saveSettings(newSettings);
+
+              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+            }}
+          >
+            <SelectTrigger className="w-full md:max-w-[250px]">
+              <SelectValue placeholder="Select Notification Level" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {TOOL_TIP_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>

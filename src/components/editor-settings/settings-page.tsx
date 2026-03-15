@@ -4,7 +4,6 @@ import BackButton from '@/components/ui/back-button';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { SettingsTabDisplay } from './views/settings-tab-display';
 import { SettingsDisplayEnum } from './types/settings-tab-enums';
-import { SettingsTabOperations } from './views/settings-tab-operations';
 import { SettingsTabAdvanced } from './views/settings-tab-advanced';
 
 export default function SettingsPage() {
@@ -23,13 +22,11 @@ export default function SettingsPage() {
           <Tabs defaultValue={SettingsDisplayEnum.Layout}>
             <div className="w-full flex flex-row justify-center">
               <TabsList className="mb-4">
-                <TabsTrigger value={SettingsDisplayEnum.Layout}>Display Options</TabsTrigger>
-                <TabsTrigger value={SettingsDisplayEnum.Operation}>Program Operation</TabsTrigger>
-                <TabsTrigger value={SettingsDisplayEnum.Advanced}>Advanced</TabsTrigger>
+                <TabsTrigger value={SettingsDisplayEnum.Layout}>{SettingsDisplayEnum.Layout}</TabsTrigger>
+                <TabsTrigger value={SettingsDisplayEnum.Advanced}>{SettingsDisplayEnum.Advanced}</TabsTrigger>
               </TabsList>
             </div>
             <SettingsTabDisplay />
-            <SettingsTabOperations />
             <SettingsTabAdvanced />
           </Tabs>
         </CardContent>

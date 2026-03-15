@@ -1,13 +1,14 @@
 import { ParsedLocation } from '@tanstack/react-router';
 
-export type TransitionOptions = 'none' | 'slide';
+export type TransitionOptions = 'none' | 'slide' | 'fade';
 
 export const TRANSITION_OPTIONS: {
   value: TransitionOptions;
   label: string;
 }[] = [
-  { value: 'none', label: 'No Animations' },
-  { value: 'slide', label: 'Slide Animation' },
+  { value: 'none', label: 'No Page Animation' },
+  { value: 'slide', label: 'Left/Right Slide' },
+  { value: 'fade', label: 'Fade In/Out' },
 ];
 
 export type Transitions = 'none' | 'slide-left' | 'slide-right';
@@ -15,6 +16,7 @@ export type Transitions = 'none' | 'slide-left' | 'slide-right';
 export const TRANSITION_CLASSES: Record<TransitionOptions, string[]> = {
   none: [],
   slide: ['slide-left', 'slide-right'],
+  fade: ['content-fade'],
 };
 
 export interface ViewTransitionOptions {
@@ -64,5 +66,9 @@ export function viewTransitionCall(transitionBehavior: TransitionOptions): boole
         },
       };
     }
+    case 'fade':
+      return {
+        types: ['content-fade'],
+      };
   }
 }

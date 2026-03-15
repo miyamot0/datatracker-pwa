@@ -14,9 +14,9 @@ export const CACHE_OPTIONS: { value: CacheSettingTypes; label: string }[] = [
 export type ThemeTypes = 'light' | 'dark' | 'system';
 
 export const THEME_OPTIONS: { value: ThemeTypes; label: string }[] = [
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'system', label: 'System' },
+  { value: 'light', label: 'Light Theme' },
+  { value: 'dark', label: 'Dark Theme' },
+  { value: 'system', label: 'Use System Theme' },
 ];
 
 /**
@@ -25,8 +25,8 @@ export const THEME_OPTIONS: { value: ThemeTypes; label: string }[] = [
 export type KeyDisplayTypes = 'standard' | 'dense';
 
 export const KEY_DISPLAY_OPTIONS: { value: KeyDisplayTypes; label: string }[] = [
-  { value: 'standard', label: 'Standard' },
-  { value: 'dense', label: 'Dense' },
+  { value: 'standard', label: 'Standard Key Display' },
+  { value: 'dense', label: 'Dense Key Display' },
 ];
 
 /**
@@ -36,9 +36,9 @@ export const KEY_DISPLAY_OPTIONS: { value: KeyDisplayTypes; label: string }[] = 
 export type ScreenSizingTypes = 'standard' | 'wide' | 'extra-wide';
 
 export const ScreenSizingOptions: { value: ScreenSizingTypes; label: string }[] = [
-  { value: 'standard', label: 'Standard' },
-  { value: 'wide', label: 'Wide' },
-  { value: 'extra-wide', label: 'Extra Wide' },
+  { value: 'standard', label: 'Standard Layout' },
+  { value: 'wide', label: 'Wide Layout' },
+  { value: 'extra-wide', label: 'Extra Wide Layout' },
 ];
 
 /**
@@ -50,7 +50,7 @@ export const POST_SESSION_BX_OPTIONS: {
   value: PostSessionBxTypes;
   label: string;
 }[] = [
-  { value: 'AwaitInput', label: 'Await Input' },
+  { value: 'AwaitInput', label: 'Await User Input' },
   { value: 'AutoAdvance', label: 'Auto Advance' },
 ];
 
@@ -63,9 +63,9 @@ export const NOTIFICATION_SETTINGS_OPTIONS: {
   value: NotificationSettingsTypes;
   label: string;
 }[] = [
-  { value: 'ShowAll', label: 'Show All' },
+  { value: 'ShowAll', label: 'Show All Notifications' },
   { value: 'ShowErrorsOnly', label: 'Show Errors Only' },
-  { value: 'ShowNone', label: 'Show None' },
+  { value: 'ShowNone', label: 'Show No Notifications' },
 ];
 
 /**
@@ -111,7 +111,7 @@ export const TOOL_TIP_OPTIONS: {
  * Types for transition settings
  */
 
-export type TransitionSettingTypes = 'none' | 'slide';
+export type TransitionSettingTypes = 'none' | 'slide' | 'fade';
 
 export const TRANSITION_SETTING_OPTIONS: {
   value: TransitionSettingTypes;
@@ -119,6 +119,7 @@ export const TRANSITION_SETTING_OPTIONS: {
 }[] = [
   { value: 'none', label: 'Disable Transitions' },
   { value: 'slide', label: 'Slide Transitions' },
+  { value: 'fade', label: 'Fade Transitions' },
 ];
 
 /**
@@ -147,5 +148,5 @@ export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
   KeyDisplay: 'standard',
   DisplaySize: 'standard',
   CacheBehavior: 'normal',
-  TransitionBehavior: 'slide',
+  TransitionBehavior: 'fade',
 };

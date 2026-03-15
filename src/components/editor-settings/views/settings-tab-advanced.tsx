@@ -7,6 +7,8 @@ import {
   ElevatedPrivilegesType,
   ENFORCED_NAMING_OPTIONS,
   EnforceDataFolderType,
+  POST_SESSION_BX_OPTIONS,
+  PostSessionBxTypes,
 } from '@/types/settings';
 import { displayConditionalNotification } from '@/lib/notifications';
 import SettingsFormItemWrapper from '../views/settings-form-item-wrapper';
@@ -22,6 +24,71 @@ export function SettingsTabAdvanced() {
   return (
     <TabsContent value={SettingsDisplayEnum.Advanced}>
       <SettingsTabContainer>
+        <SettingsFormItemWrapper
+          Label="Caching Behavior"
+          Description="Aggressive caching minimizes file calls (i.e., helps with slower devices/networks)"
+        >
+          <Select
+            value={settings.CacheBehavior}
+            onValueChange={(value: CacheSettingTypes) => {
+              const newSettings = {
+                ...settings,
+                CacheBehavior: value,
+              } satisfies ApplicationSettingsTypes;
+
+              setSettings(newSettings);
+              saveSettings(newSettings);
+
+              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+            }}
+          >
+            <SelectTrigger className="w-full md:max-w-[250px]">
+              <SelectValue placeholder="Select Cache Behavior" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {CACHE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </SettingsFormItemWrapper>
+
+        <SettingsFormItemWrapper
+          Label="After-Session Behavior"
+          Description="Set preferences for how the program should respond after completing a session"
+        >
+          <Select
+            value={settings.PostSessionBx}
+            onValueChange={(value: PostSessionBxTypes) => {
+              const newSettings = {
+                ...settings,
+                PostSessionBx: value,
+              } satisfies ApplicationSettingsTypes;
+              setSettings(newSettings);
+              saveSettings(newSettings);
+
+              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+            }}
+          >
+            <SelectTrigger className="w-full md:max-w-[250px]">
+              <SelectValue placeholder="Select Advancement Option" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {POST_SESSION_BX_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </SettingsFormItemWrapper>
+
         <SettingsFormItemWrapper
           Label="Provide Elevated Privileges"
           Description="Override typical behavior and allow the copying/deleting/renaming of data (Warning: Risk of permanent data loss)"
@@ -77,39 +144,6 @@ export function SettingsTabAdvanced() {
             <SelectContent>
               <SelectGroup>
                 {ENFORCED_NAMING_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </SettingsFormItemWrapper>
-
-        <SettingsFormItemWrapper
-          Label="Application Caching Behavior"
-          Description="Set more aggressive caching on to help with slower devices/networks"
-        >
-          <Select
-            value={settings.CacheBehavior}
-            onValueChange={(value: CacheSettingTypes) => {
-              const newSettings = {
-                ...settings,
-                CacheBehavior: value,
-              } satisfies ApplicationSettingsTypes;
-
-              setSettings(newSettings);
-              saveSettings(newSettings);
-
-              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
-            }}
-          >
-            <SelectTrigger className="w-full md:max-w-[250px]">
-              <SelectValue placeholder="Select Cache Behavior" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {CACHE_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
