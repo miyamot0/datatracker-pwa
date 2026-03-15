@@ -5,6 +5,14 @@ import { GenerateSavedFileName } from '@/lib/writer';
 import { queryClient } from '@/App';
 import { SavedSessionResult } from '@/lib/dtos';
 
+/**
+ * Mutates the session outcomes based on the specified action (Delete, EditCondition, Modify, Add) for a given group, individual, and evaluation. It interacts with the file system to delete, copy and rename, modify, or add session outcome files accordingly and returns the updated list of ModifiedSessionResult objects.
+ *
+ * @param cleanedOutcomes - The list of session outcomes that have been cleaned and are ready for mutation.
+ * @param Outcomes - The list of session outcomes that are to be acted upon based on the specified action.
+ * @param evaluation_dir - The file system directory handle for accessing the evaluation storage.
+ * @returns A promise that resolves to the updated list of ModifiedSessionResult objects after the mutation is complete.
+ */
 const DeleteSessions = async (
   cleanedOutcomes: ModifiedSessionResult[],
   Outcomes: ModifiedSessionResult[],
@@ -27,6 +35,15 @@ const DeleteSessions = async (
   return modifiedArray;
 };
 
+/**
+ * Copies and renames session outcome files based on the specified new condition for a given list of outcomes. It interacts with the file system to create a new condition folder, move the relevant session outcome files to the new folder with updated filenames, and returns the updated list of ModifiedSessionResult objects reflecting the changes.
+ *
+ * @param cleanedOutcomes - The list of session outcomes that have been cleaned and are ready for mutation.
+ * @param Outcomes - The list of session outcomes that are to be acted upon based on the specified action.
+ * @param NewCondition - The new condition name to which the session outcomes should be moved.
+ * @param evaluation_dir - The file system directory handle for accessing the evaluation storage.
+ * @returns A promise that resolves to the updated list of ModifiedSessionResult objects after the mutation is complete.
+ */
 const CopyAndRenameSessions = async (
   cleanedOutcomes: ModifiedSessionResult[],
   Outcomes: ModifiedSessionResult[],
@@ -83,6 +100,21 @@ const CopyAndRenameSessions = async (
   return updatedOutcomes;
 };
 
+/**
+ * Mutates the session outcomes based on the specified action (Delete, EditCondition, Modify, Add) for a given group, individual, and evaluation. It interacts with the file system to delete, copy and rename, modify, or add session outcome files accordingly and returns the updated list of ModifiedSessionResult objects.
+ *
+ * @param Group - The group identifier for which the session outcomes are being mutated.
+ * @param Individual - The individual identifier for which the session outcomes are being mutated.
+ * @param Evaluation - The evaluation identifier for which the session outcomes are being mutated.
+ * @param Outcomes - The list of session outcomes that are to be acted upon based on the specified action.
+ * @param ConditionRename - (Optional) The new condition name to which the session outcomes should be moved when the action is 'EditCondition'.
+ * @param UpdatedOutcome - (Optional) The updated ModifiedSessionResult object to be used when the action is 'Modify'.
+ * @param PriorOutcome - (Optional) The prior ModifiedSessionResult object to be used when the action is 'Modify'.
+ * @param NewOutcome - (Optional) The new SavedSessionResult object to be used when the action is 'Add'.
+ * @param Handle - The file system directory handle for accessing the storage.
+ * @param Action - The type of mutation action to be performed on the session outcomes (Delete, EditCondition, Modify, Add).
+ * @returns A promise that resolves to the updated list of ModifiedSessionResult objects after the mutation is complete.
+ */
 export const mutationSettingsOutcomes = async ({
   Group,
   Individual,

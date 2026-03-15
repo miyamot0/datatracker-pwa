@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { KeySet } from '@/types/keyset';
 import { queryClient } from '@/App';
 
+// TODO: This needs to be moved
 export type EvaluationRecord = {
   Group: string;
   Individual: string;
@@ -12,6 +13,18 @@ export type EvaluationRecord = {
   Conditions: string[];
 };
 
+/**
+ * Mutates the list of keyboards based on the specified action (Add, Delete, Duplicate, Rename, Update) for a given group and individual. It interacts with the file system to create, delete, duplicate, or update keyboard files accordingly and returns the updated list of KeySet objects.
+ *
+ * @param Group - The group identifier for which the keyboards are being mutated.
+ * @param Individual - The individual identifier for which the keyboards are being mutated.
+ * @param Keysets - An array of keyboard names that are to be acted upon based on the specified action.
+ * @param Rename - (Optional) The new name for the keyboard when the action is 'Duplicate' or 'Rename'.
+ * @param NewKeySet - (Optional) The new KeySet object to be used when the action is 'Update'.
+ * @param Handle - The file system directory handle for accessing the storage.
+ * @param Action - The type of mutation action to be performed on the keyboards (Add, Delete, Duplicate, Rename, Update).
+ * @returns A promise that resolves to the updated list of KeySet objects after the mutation is complete.
+ */
 export const mutationKeyboards = async ({
   Group,
   Individual,
