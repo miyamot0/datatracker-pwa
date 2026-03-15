@@ -68,7 +68,6 @@ export default function UnauthorizedDisplay() {
               }
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (_error) {
-              console.log(_error);
               displayConditionalNotification(
                 settings,
                 'Error Authorizing Directory',

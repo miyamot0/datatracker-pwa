@@ -8,7 +8,6 @@ export const Route = createFileRoute('/session/$group/')({
   beforeLoad: routeGuard,
   loader: ({ params }) => {
     if (!params.group) {
-      console.log('err');
       throw redirect({
         href: createHref({ type: 'Dashboard' }),
       });

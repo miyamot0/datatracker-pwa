@@ -233,7 +233,6 @@ export function getCorrespondingSessionPairs(
  */
 export function calculateReliabilityFrequency(pair: ReliabilityPairType, keys_to_code_f: ProbedKey[]) {
   const { primary, reli } = pair;
-
   const keys: ScoredKey[] = [];
 
   keys_to_code_f.forEach((key) => {
@@ -243,17 +242,24 @@ export function calculateReliabilityFrequency(pair: ReliabilityPairType, keys_to
     const primary_relevant_key = primary.FrequencyKeyPresses.filter(
       (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase(),
     ).map((k: KeyManageType) => addBinToKeyData(k));
+
     const reliability_relevant_key = reli.FrequencyKeyPresses.filter(
       (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase(),
     ).map((k: KeyManageType) => addBinToKeyData(k));
 
     const key_bins_p = generateEmptyBinArray(binCounts);
+    const key_bins_r = generateEmptyBinArray(binCounts);
+
     primary_relevant_key.forEach((k) => {
       key_bins_p[k.Bin].Value++;
     });
 
-    const key_bins_r = generateEmptyBinArray(binCounts);
     reliability_relevant_key.forEach((k) => {
+      if (k.Bin >= key_bins_r.length) {
+        throw new Error(
+          `Bin number ${k.Bin} is out of range for key ${k.KeyName} in session ${primary.SessionSettings.Session}. Please check the key data and binning logic.`,
+        );
+      }
       key_bins_r[k.Bin].Value++;
     });
 
