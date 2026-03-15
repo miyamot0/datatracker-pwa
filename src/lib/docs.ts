@@ -1,7 +1,15 @@
 import { ParsedFrontMatterType } from '@/types/mdx';
 
+/**
+ * Generate an array of documentation objects by parsing the front matter and content of markdown files in the specified directory
+ */
 const all_md_files = import.meta.glob('/src/assets/content/*.md', { query: '?raw', eager: true, import: 'default' });
 
+/**
+ * Generate an array of documentation objects by parsing the front matter and content of markdown files in the specified directory
+ *
+ * @returns an array of documentation objects with parsed front matter and content
+ */
 export const DocumentationObjects: ParsedFrontMatterType[] = Object.entries(all_md_files).map(([key, value], index) => {
   const filename = key.split('/').pop();
   const content = (value as string).split('---');
