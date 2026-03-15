@@ -21,6 +21,7 @@ describe('displayConditionalNotification', () => {
     KeyDisplay: 'standard',
     DisplaySize: 'standard',
     CacheBehavior: 'normal',
+    TransitionBehavior: 'none',
   };
 
   beforeEach(() => {

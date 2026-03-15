@@ -112,6 +112,30 @@ describe('createHref', () => {
     expect(href).toBe('/session/group1/individual1/evaluation1/history/123');
   });
 
+  it('should return correct URL for Evaluation Session Manager route -- View', () => {
+    const route = {
+      type: 'Evaluation Session Manager-View',
+      group: 'group1',
+      individual: 'individual1',
+      evaluation: 'evaluation1',
+      index: '123',
+    } as RouteInformationType;
+    const href = createHref(route);
+    expect(href).toBe('/session/group1/individual1/evaluation1/history/view/123');
+  });
+
+  it('should return correct URL for Evaluation Session Manager route -- Edit', () => {
+    const route = {
+      type: 'Evaluation Session Manager-Edit',
+      group: 'group1',
+      individual: 'individual1',
+      evaluation: 'evaluation1',
+      index: '123',
+    } as RouteInformationType;
+    const href = createHref(route);
+    expect(href).toBe('/session/group1/individual1/evaluation1/history/edit/123');
+  });
+
   it('should return correct URL for Evaluation Visualizer-Rate route', () => {
     const route = {
       type: 'Evaluation Visualizer-Rate',
@@ -155,7 +179,7 @@ describe('createHref', () => {
     expect(href).toBe('/session/group1/individual1/keysets');
   });
 
-  it('should return correct URL for Keysets route', () => {
+  it('should return correct URL for File Sync route', () => {
     const route = {
       type: 'Sync Page',
     } as RouteInformationType;

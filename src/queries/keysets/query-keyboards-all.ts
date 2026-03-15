@@ -2,11 +2,27 @@ import { readKeyboardParameters } from '@/lib/reader';
 import { CleanUpString } from '@/lib/strings';
 import { KeySetExtended } from '@/types/keyset';
 
+/**
+ * Queries all keyboards by accessing the file system and retrieving the relevant information about groups, individuals, and their associated keyboards. It returns an array of KeySetExtended objects that contain the details of each keyboard found within the file system structure, or an empty array if no keyboards are found or if there is an error during the file system operations.
+ *
+ * @param Handle - The file system directory handle for accessing the storage.
+ * @param Group - The group identifier for which the keyboards are being queried.
+ * @param Individual - The individual identifier for which the keyboards are being queried.
+ * @returns A promise that resolves to an array of KeySetExtended objects containing the details of each keyboard found, or an empty array if no keyboards are found or if there is an error during the file system operations.
+ */
 export const keyboardsAllQueryOptions = (Handle: FileSystemDirectoryHandle, Group: string, Individual: string) => ({
   queryKey: ['/', Group, 'metaKeyboards'],
   queryFn: () => fetchKeyboardsAll({ Handle, Group, Individual }),
 });
 
+/**
+ * Fetches all keyboards by accessing the file system and retrieving the relevant information about groups, individuals, and their associated keyboards. It returns an array of KeySetExtended objects that contain the details of each keyboard found within the file system structure, or an empty array if no keyboards are found or if there is an error during the file system operations.
+ *
+ * @param Handle - The file system directory handle for accessing the storage.
+ * @param Group - The group identifier for which the keyboards are being fetched.
+ * @param Individual - The individual identifier for which the keyboards are being fetched.
+ * @returns A promise that resolves to an array of KeySetExtended objects containing the details of each keyboard found, or an empty array if no keyboards are found or if there is an error during the file system operations.
+ */
 export const fetchKeyboardsAll = async ({
   Handle,
   Group,

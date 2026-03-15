@@ -11,6 +11,8 @@ export interface FolderHandleContextType {
   setSettings: Dispatch<SetStateAction<ApplicationSettingsTypes>>;
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   saveSettings: (_settings: ApplicationSettingsTypes) => void;
+  isInitialized: boolean;
+  setIsInitialized: Dispatch<SetStateAction<boolean>>;
 }
 
 // Context for folder handle
@@ -21,17 +23,20 @@ export const FolderHandleContext = createContext({
   setSettings: undefined as unknown as Dispatch<SetStateAction<ApplicationSettingsTypes>>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   saveSettings: (_: ApplicationSettingsTypes) => {},
+  isInitialized: undefined as unknown as boolean,
+  setIsInitialized: undefined as unknown as Dispatch<SetStateAction<boolean>>,
 });
 
 /**
  * Folder context provider
  *
- * @param children
- * @returns
+ * @param children React children components that will have access to the folder context
+ * @returns A context provider component that wraps its children with the FolderHandleContext, providing access to the folder handle, settings, and related functions. It also includes a Toaster for displaying notifications and a TooltipProvider for tooltips.
  */
 export function FolderContextProvider({ children }: { children: ReactNode }) {
   const [handle, setHandle] = useState<FileSystemDirectoryHandle | undefined>();
   const [settings, setSettings] = useState<ApplicationSettingsTypes>(DEFAULT_APPLICATION_SETTINGS);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const staleTimeAggressive = 1000 * 60 * 15; // 15 minutes
   const gcTimeAggressive = 1000 * 60 * 30; // 30 minutes
@@ -39,6 +44,11 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
   const staleTimeDefault = 0; // 0 minutes
   const gcTimeDefault = 1000 * 60 * 5; // 5 minutes
 
+  /**
+   * Save application settings
+   *
+   * @param _settings The application settings to be saved. This function saves the provided settings to local storage and updates the query client's default options based on the cache behavior specified in the settings. If the cache behavior is set to 'aggressive', it sets longer stale time and garbage collection time for queries; otherwise, it sets them to default values. It also includes commented-out code for setting view transition behavior based on the settings, which can be implemented as needed.
+   */
   const saveSettings = (_settings: ApplicationSettingsTypes) => {
     localStorage.setItem('data_tracker_settings', JSON.stringify(_settings));
 
@@ -57,6 +67,12 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
         },
       });
     }
+
+    /*
+    if (router?.options) {
+      router.options.defaultViewTransition = viewTransitionCall(_settings.TransitionBehavior);
+    }
+    */
   };
 
   useEffect(() => {
@@ -70,7 +86,7 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
         const remappedSettings = {
           ...DEFAULT_APPLICATION_SETTINGS,
           ...parsedSettings,
-        };
+        } satisfies ApplicationSettingsTypes;
 
         setSettings(remappedSettings);
 
@@ -101,6 +117,8 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
           settings,
           setSettings,
           saveSettings,
+          isInitialized,
+          setIsInitialized,
         }}
       >
         {children}

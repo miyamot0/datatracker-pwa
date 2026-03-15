@@ -35,6 +35,7 @@ export default function ReliabilityViewerPage({
 
   if (error || !data) return <ErrorDisplay Text={error?.message} />;
 
+  // If there are no outcomes, show the blank state
   if (data.length == 0) {
     return (
       <ReliabilityBlank
@@ -45,6 +46,7 @@ export default function ReliabilityViewerPage({
     );
   }
 
+  // Pull most recent keyset
   const KeySet = data.slice(-1)[0].Keyset;
 
   const resultsPrimary = data
@@ -57,6 +59,7 @@ export default function ReliabilityViewerPage({
 
   const pairedSessionData = getCorrespondingSessionPairs(resultsPrimary, resultsReli);
 
+  // If there are no paired sessions, show the blank state
   if (pairedSessionData.length < 1) {
     return (
       <ReliabilityBlank

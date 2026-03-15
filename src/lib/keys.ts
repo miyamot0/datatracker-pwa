@@ -12,7 +12,7 @@ export const DEFAULT_ENTRY = {
  *
  * @param KeySet The current key set
  * @param code The key code
- * @returns
+ * @returns true if the key code is already assigned in either FrequencyKeys or DurationKeys, false otherwise
  */
 export function is_key_already_assigned(KeySet: KeySet, code: number) {
   return (

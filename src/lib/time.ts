@@ -2,7 +2,7 @@
  * Formats a number of seconds into a string in the format HH:MM:SS
  *
  * @param seconds number of seconds
- * @returns
+ * @returns a string representing the formatted time in HH:MM:SS format
  */
 export function formatTimeSeconds(seconds: number) {
   const hours = Math.floor(seconds / 3600);
@@ -17,6 +17,12 @@ export function formatTimeSeconds(seconds: number) {
   return `${str_hours}:${str_minutes}:${str_seconds}`;
 }
 
+/**
+ * Formats a number of seconds into a string in the format MM:SS
+ *
+ * @param seconds number of seconds
+ * @returns a string representing the formatted time in MM:SS format
+ */
 export function formatTimeSecondsMin(seconds: number) {
   const minutes = Math.floor((seconds % 3600) / 60);
   const remaining_seconds = seconds % 60;
@@ -29,10 +35,10 @@ export function formatTimeSecondsMin(seconds: number) {
 }
 
 /**
- * Formats a date object into a string in the format MM/DD/YYYY
+ * Formats a date object into a string in the format HH:MM:SS
  *
  * @param date date object
- * @returns
+ * @returns a string representing the formatted time in HH:MM:SS format
  */
 export function formatTimeOfDay(date: Date) {
   return date.toLocaleString([], {

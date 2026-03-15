@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { KeyboardIcon } from 'lucide-react';
-import createHref from '@/lib/links';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
 import BackButton from '@/components/ui/back-button';
 import { Textarea } from '@/components/ui/textarea';
@@ -95,13 +94,6 @@ export default function SessionViewerContent({
           </DropdownMenu>
 
           <BackButton
-            Label="Back to Session History"
-            Href={createHref({
-              type: 'Evaluation Session Viewer',
-              group: Group,
-              individual: Individual,
-              evaluation: Evaluation,
-            })}
           />
         </div>
       </CardHeader>

@@ -98,7 +98,7 @@ export default function ViewSyncPage() {
 
         {!remote_handle && buttonSetRemote}
 
-        <BackButton Label="Back" />
+        <BackButton />
       </WrappedButton>
     );
   }, [remote_handle, buttonChangeDirection, buttonSetRemote]);

@@ -12,7 +12,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
 import { FolderHandleContext } from '@/context/folder-context';
-import createHref from '@/lib/links';
 import { mutationEvaluationsAll } from '@/queries/evaluations/mutate-evaluations-all';
 import { evaluationsAllQueryOptions } from '@/queries/evaluations/query-evaluations-all';
 import { EvaluationRecord } from '@/queries/keysets/mutate-keyboards';
@@ -84,10 +83,7 @@ export default function ViewerEvaluationsPage({ Group, Individual }: { Group: st
             <CardTitle>Prior Evaluation Import</CardTitle>
             <CardDescription>Import Existing Evaluations/Conditions</CardDescription>
           </div>
-          <BackButton
-            Label="Back to Evaluations"
-            Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
-          />
+          <BackButton />
         </CardHeader>
 
         <CardContent className="flex flex-col gap-1.5">

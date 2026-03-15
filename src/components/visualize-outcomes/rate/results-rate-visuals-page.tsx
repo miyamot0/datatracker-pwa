@@ -22,7 +22,6 @@ import { Button } from '@/components/ui/button';
 import { KeyboardIcon, PointerIcon, ScatterChartIcon } from 'lucide-react';
 import RateFigureVisualization from './rate-figure';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
-import createHref from '@/lib/links';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
 import { FIGURE_TEXT_OPTIONS, FigureVisualSizing } from '@/types/accessibility';
@@ -93,10 +92,7 @@ export default function ResultsRateVisualsPage({
               </Button>
             </Link>
 
-            <BackButton
-              Label="Back to Evaluations"
-              Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
-            />
+            <BackButton />
           </div>
         </CardHeader>
 

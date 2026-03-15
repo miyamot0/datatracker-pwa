@@ -22,6 +22,7 @@ import { mutationSettingsParams } from '@/queries/session/mutate-session-params'
 import { queryClient } from '@/App';
 import { useNavigate } from '@tanstack/react-router';
 import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outcomes';
+import { TRANSITION_CLASSES } from '@/types/transitions';
 
 type Props = {
   Group: string;
@@ -138,6 +139,17 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
                 individual: Individual,
                 evaluation: Evaluation,
               },
+              viewTransition: {
+                types: () => {
+                  const animTypes = TRANSITION_CLASSES[applicationSettings.TransitionBehavior];
+
+                  if (animTypes.length < 2) {
+                    return false;
+                  }
+
+                  return [animTypes[1]];
+                },
+              },
             });
 
             return;
@@ -195,6 +207,17 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
                   individual: Individual,
                   evaluation: Evaluation,
                 },
+                viewTransition: {
+                  types: () => {
+                    const animTypes = TRANSITION_CLASSES[applicationSettings.TransitionBehavior];
+
+                    if (animTypes.length < 2) {
+                      return false;
+                    }
+
+                    return [animTypes[1]];
+                  },
+                },
               });
 
               break;
@@ -212,6 +235,17 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
                         group: Group,
                         individual: Individual,
                         evaluation: Evaluation,
+                      },
+                      viewTransition: {
+                        types: () => {
+                          const animTypes = TRANSITION_CLASSES[applicationSettings.TransitionBehavior];
+
+                          if (animTypes.length < 1) {
+                            return false;
+                          }
+
+                          return [animTypes[animTypes.length - 1]];
+                        },
                       },
                     });
                   },

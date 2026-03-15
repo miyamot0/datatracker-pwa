@@ -23,7 +23,7 @@ export default function UnauthorizedDisplay() {
           <CardDescription>You need to authorize the program to work with the desired local folder</CardDescription>
         </div>
 
-        <BackButton Label="Back" />
+        <BackButton />
       </CardHeader>
 
       <CardContent className="flex flex-col gap-1.5">
@@ -54,8 +54,6 @@ export default function UnauthorizedDisplay() {
               }
 
               if (directory_picker) {
-                //setHandle(directory_picker);
-                //router.options.context.routerHandle.setHandle(directory_picker);
                 setHandle(directory_picker);
 
                 displayConditionalNotification(
@@ -70,7 +68,6 @@ export default function UnauthorizedDisplay() {
               }
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (_error) {
-              console.log(_error);
               displayConditionalNotification(
                 settings,
                 'Error Authorizing Directory',

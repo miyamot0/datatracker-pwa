@@ -20,6 +20,9 @@ export type SavedSettings = {
   DurationS: number;
 };
 
+/**
+ * This is the default session settings object used when no settings are provided
+ */
 export const DEFAULT_SESSION_SETTINGS: SavedSettings = {
   Condition: '',
   TimerOption: 'End on Timer #1',
@@ -55,7 +58,7 @@ export type SavedSessionResult = {
  * Convert the session designer schema to the saved settings type
  *
  * @param data session designer schema
- * @returns saved settings
+ * @returns saved settings object
  */
 export const toSavedSettings = (data: SessionDesignerSchemaType) => {
   return {

@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
  * Create a new key set
  *
  * @param Name The name of the key set
- * @returns
+ * @returns a new key set object with the provided name and default values for other properties
  */
 export function createNewKeySet(Name: string): KeySet {
   return {
@@ -22,7 +22,7 @@ export function createNewKeySet(Name: string): KeySet {
  * Serialize a KeySet
  *
  * @param keyset The key set to serialize
- * @returns
+ * @returns the serialized key set as a JSON string
  */
 export function serializeKeySet(keyset: KeySet): string {
   const keyset_serialized: KeySetSerialize = {
@@ -41,7 +41,7 @@ export function serializeKeySet(keyset: KeySet): string {
  * Deserialize a KeySet
  *
  * @param json The serialized key set
- * @returns
+ * @returns deserialized key set object
  */
 export function deserializeKeySet(json: string): KeySet {
   const keyset_json = JSON.parse(json) as KeySetSerialize;

@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils';
 import { KeywordColors } from '@/types/colors';
 import { BookIcon, ChevronRight } from 'lucide-react';
 import BackButton from '@/components/ui/back-button';
-import createHref from '@/lib/links';
 import { Link } from '@tanstack/react-router';
 
 export default function DocumentationListingPage({
@@ -25,7 +24,7 @@ export default function DocumentationListingPage({
             <CardTitle>Program Documentation</CardTitle>
             <CardDescription>Guidelines and Instructions for using DataTracker</CardDescription>
           </div>
-          <BackButton Label="Back to Home" Href={createHref({ type: 'Home' })} />
+          <BackButton />
         </CardHeader>
 
         <CardContent className="flex flex-col divide-y divide-solid dark:divide-white">

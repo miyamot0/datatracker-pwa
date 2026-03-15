@@ -6,7 +6,6 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import createHref from '@/lib/links';
 import { cn } from '@/lib/utils';
 import { Edit2Icon, SearchIcon } from 'lucide-react';
 import { GenerateSavedFileName } from '@/lib/writer';
@@ -153,10 +152,7 @@ export default function DashboardHistoryPage({
             <CardTitle>Session History ({Evaluation})</CardTitle>
             <CardDescription>Select Individual Sessions to View More</CardDescription>
           </div>
-          <BackButton
-            Label="Back to Evaluations"
-            Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
-          />
+          <BackButton />
         </CardHeader>
 
         <CardContent className="flex flex-col gap-2">

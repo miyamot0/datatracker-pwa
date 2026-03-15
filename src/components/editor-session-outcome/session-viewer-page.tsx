@@ -44,7 +44,7 @@ export default function SessionViewerPage({
 
   if (error || data == undefined) return <ErrorDisplay Text={'An error occurred while fetching session outcomes.'} />;
 
-  const relevant_session = data.find((s) => s.Filename.includes(FileString));
+  const relevant_session = data.find((s) => s.Filename.startsWith(FileString));
 
   if (relevant_session) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -162,7 +162,9 @@ export default function SessionViewerPage({
         />
       </PageWrapper>
     );
+  } else {
+    throw redirect({
+      href: '/dashboard',
+    });
   }
-
-  throw redirect({ href: '/desktop' });
 }

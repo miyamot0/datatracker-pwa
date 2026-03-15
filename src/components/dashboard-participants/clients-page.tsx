@@ -77,7 +77,7 @@ export default function ClientsPage({ Group }: { Group: string }) {
             <CardDescription>Select clients to develop and evaluate outcomes</CardDescription>
           </div>
           <div className="flex flex-col md:flex-row gap-2">
-            <BackButton Label="Back to Groups" Href={createHref({ type: 'Dashboard' })} />
+            <BackButton />
           </div>
         </CardHeader>
 

@@ -35,7 +35,6 @@ import {
 import { displayConditionalNotification } from '@/lib/notifications';
 import { FolderPlus } from 'lucide-react';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import createHref from '@/lib/links';
 import BackButton from '@/components/ui/back-button';
 import { mutationConditions } from '@/queries/conditions/mutate-conditions';
 import { useMutation } from '@tanstack/react-query';
@@ -202,14 +201,7 @@ export default function SessionDesigner({
                 </Button>
               </ToolTipWrapper>
 
-              <BackButton
-                Label="Back to Evaluations"
-                Href={createHref({
-                  type: 'Evaluations',
-                  group: Group,
-                  individual: Individual,
-                })}
-              />
+              <BackButton />
             </div>
           </CardHeader>
 

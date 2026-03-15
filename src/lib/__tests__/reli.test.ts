@@ -165,8 +165,6 @@ describe('Reliability Calculations', () => {
       reli: mockReliabilitySession_trim as SavedSessionResult,
     };
     const result = calculateReliabilityDuration(pair, mockReliabilitySession.DurationKeyPresses);
-    //console.log(result);
-    //expect(result.length).toBe(2);
     expect(result[0].EIA).toBeCloseTo(100, 2);
   });
 });

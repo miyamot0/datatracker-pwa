@@ -3,6 +3,9 @@
  */
 export type CacheSettingTypes = 'normal' | 'aggressive';
 
+/**
+ * This constant defines the available options for cache settings in the application. Each option consists of a `value`, which is one of the allowed `CacheSettingTypes` values, and a `label`, which is a human-readable string that can be displayed in the user interface (e.g., in a dropdown menu) to allow users to select their preferred caching behavior. This structure facilitates both type safety and user-friendly interaction when configuring cache settings in the application.
+ */
 export const CACHE_OPTIONS: { value: CacheSettingTypes; label: string }[] = [
   { value: 'normal', label: 'Normal Caching' },
   { value: 'aggressive', label: 'Aggressive Caching' },
@@ -13,10 +16,13 @@ export const CACHE_OPTIONS: { value: CacheSettingTypes; label: string }[] = [
  */
 export type ThemeTypes = 'light' | 'dark' | 'system';
 
+/**
+ * This constant defines the available options for theme settings in the application. Each option consists of a `value`, which is one of the allowed `ThemeTypes` values, and a `label`, which is a human-readable string that can be displayed in the user interface (e.g., in a dropdown menu) to allow users to select their preferred theme. This structure facilitates both type safety and user-friendly interaction when configuring theme settings in the application.
+ */
 export const THEME_OPTIONS: { value: ThemeTypes; label: string }[] = [
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'system', label: 'System' },
+  { value: 'light', label: 'Light Theme' },
+  { value: 'dark', label: 'Dark Theme' },
+  { value: 'system', label: 'Use System Theme' },
 ];
 
 /**
@@ -24,9 +30,12 @@ export const THEME_OPTIONS: { value: ThemeTypes; label: string }[] = [
  */
 export type KeyDisplayTypes = 'standard' | 'dense';
 
+/**
+ * This constant defines the available options for key display settings in the application. Each option consists of a `value`, which is one of the allowed `KeyDisplayTypes` values, and a `label`, which is a human-readable string that can be displayed in the user interface (e.g., in a dropdown menu) to allow users to select their preferred key display style. This structure facilitates both type safety and user-friendly interaction when configuring key display settings in the application.
+ */
 export const KEY_DISPLAY_OPTIONS: { value: KeyDisplayTypes; label: string }[] = [
-  { value: 'standard', label: 'Standard' },
-  { value: 'dense', label: 'Dense' },
+  { value: 'standard', label: 'Standard Key Display' },
+  { value: 'dense', label: 'Dense Key Display' },
 ];
 
 /**
@@ -35,10 +44,13 @@ export const KEY_DISPLAY_OPTIONS: { value: KeyDisplayTypes; label: string }[] = 
 
 export type ScreenSizingTypes = 'standard' | 'wide' | 'extra-wide';
 
+/**
+ * This constant defines the available options for screen sizing settings in the application. Each option consists of a `value`, which is one of the allowed `ScreenSizingTypes` values, and a `label`, which is a human-readable string that can be displayed in the user interface (e.g., in a dropdown menu) to allow users to select their preferred screen layout. This structure facilitates both type safety and user-friendly interaction when configuring screen sizing settings in the application.
+ */
 export const ScreenSizingOptions: { value: ScreenSizingTypes; label: string }[] = [
-  { value: 'standard', label: 'Standard' },
-  { value: 'wide', label: 'Wide' },
-  { value: 'extra-wide', label: 'Extra Wide' },
+  { value: 'standard', label: 'Standard Layout' },
+  { value: 'wide', label: 'Wide Layout' },
+  { value: 'extra-wide', label: 'Extra Wide Layout' },
 ];
 
 /**
@@ -46,11 +58,14 @@ export const ScreenSizingOptions: { value: ScreenSizingTypes; label: string }[] 
  */
 export type PostSessionBxTypes = 'AwaitInput' | 'AutoAdvance';
 
+/**
+ * This constant defines the available options for post-session behavior settings in the application. Each option consists of a `value`, which is one of the allowed `PostSessionBxTypes` values, and a `label`, which is a human-readable string that can be displayed in the user interface (e.g., in a dropdown menu) to allow users to select their preferred behavior after recording a session. This structure facilitates both type safety and user-friendly interaction when configuring post-session behavior settings in the application.
+ */
 export const POST_SESSION_BX_OPTIONS: {
   value: PostSessionBxTypes;
   label: string;
 }[] = [
-  { value: 'AwaitInput', label: 'Await Input' },
+  { value: 'AwaitInput', label: 'Await User Input' },
   { value: 'AutoAdvance', label: 'Auto Advance' },
 ];
 
@@ -59,13 +74,16 @@ export const POST_SESSION_BX_OPTIONS: {
  */
 export type NotificationSettingsTypes = 'ShowAll' | 'ShowErrorsOnly' | 'ShowNone';
 
+/**
+ * This constant defines the available options for notification settings in the application. Each option consists of a `value`, which is one of the allowed `NotificationSettingsTypes` values, and a `label`, which is a human-readable string that can be displayed in the user interface (e.g., in a dropdown menu) to allow users to select their preferred level of notifications. This structure facilitates both type safety and user-friendly interaction when configuring notification settings in the application.
+ */
 export const NOTIFICATION_SETTINGS_OPTIONS: {
   value: NotificationSettingsTypes;
   label: string;
 }[] = [
-  { value: 'ShowAll', label: 'Show All' },
+  { value: 'ShowAll', label: 'Show All Notifications' },
   { value: 'ShowErrorsOnly', label: 'Show Errors Only' },
-  { value: 'ShowNone', label: 'Show None' },
+  { value: 'ShowNone', label: 'Show No Notifications' },
 ];
 
 /**
@@ -73,6 +91,9 @@ export const NOTIFICATION_SETTINGS_OPTIONS: {
  */
 export type ElevatedPrivilegesType = 'true' | 'false';
 
+/**
+ * This constant defines the available options for elevated privileges settings in the application. Each option consists of a `value`, which is one of the allowed `ElevatedPrivilegesType` values, and a `label`, which is a human-readable string that can be displayed in the user interface (e.g., in a dropdown menu) to allow users to select whether to allow or disable elevated privileges. This structure facilitates both type safety and user-friendly interaction when configuring elevated privileges settings in the application.
+ */
 export const ELEVATED_PRIVILEGES_OPTIONS: {
   value: ElevatedPrivilegesType;
   label: string;
@@ -86,6 +107,9 @@ export const ELEVATED_PRIVILEGES_OPTIONS: {
  */
 export type EnforceDataFolderType = 'true' | 'false';
 
+/**
+ * This constant defines the available options for enforcing data folder naming conventions in the application. Each option consists of a `value`, which is one of the allowed `EnforceDataFolderType` values, and a `label`, which is a human-readable string that can be displayed in the user interface (e.g., in a dropdown menu) to allow users to select whether to require a specific folder name (e.g., 'DataTracker') or to disable this requirement. This structure facilitates both type safety and user-friendly interaction when configuring folder naming settings in the application.
+ */
 export const ENFORCED_NAMING_OPTIONS: {
   value: EnforceDataFolderType;
   label: string;
@@ -99,12 +123,32 @@ export const ENFORCED_NAMING_OPTIONS: {
  */
 export type ToolTipOptionTypes = 'All' | 'None';
 
+/**
+ * This constant defines the available options for tooltip display settings in the application. Each option consists of a `value`, which is one of the allowed `ToolTipOptionTypes` values, and a `label`, which is a human-readable string that can be displayed in the user interface (e.g., in a dropdown menu) to allow users to select whether to show all tooltips or to disable them entirely. This structure facilitates both type safety and user-friendly interaction when configuring tooltip display settings in the application.
+ */
 export const TOOL_TIP_OPTIONS: {
   value: ToolTipOptionTypes;
   label: string;
 }[] = [
   { value: 'All', label: 'Show All Tooltips' },
   { value: 'None', label: 'Disable Tooltips' },
+];
+
+/**
+ * Types for transition settings
+ */
+export type TransitionSettingTypes = 'none' | 'slide' | 'fade';
+
+/**
+ * This constant defines the available options for transition settings in the application. Each option consists of a `value`, which is one of the allowed `TransitionSettingTypes` values, and a `label`, which is a human-readable string that can be displayed in the user interface (e.g., in a dropdown menu) to allow users to select their preferred transition style for view changes within the application. This structure facilitates both type safety and user-friendly interaction when configuring transition settings in the application.
+ */
+export const TRANSITION_SETTING_OPTIONS: {
+  value: TransitionSettingTypes;
+  label: string;
+}[] = [
+  { value: 'none', label: 'Disable Transitions' },
+  { value: 'slide', label: 'Slide Transitions' },
+  { value: 'fade', label: 'Fade Transitions' },
 ];
 
 /**
@@ -120,8 +164,12 @@ export type ApplicationSettingsTypes = {
   KeyDisplay: KeyDisplayTypes;
   DisplaySize: ScreenSizingTypes;
   CacheBehavior: CacheSettingTypes;
+  TransitionBehavior: TransitionSettingTypes;
 };
 
+/**
+ * Default application settings
+ */
 export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
   PostSessionBx: 'AwaitInput',
   NotificationSettings: 'ShowAll',
@@ -132,4 +180,5 @@ export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
   KeyDisplay: 'standard',
   DisplaySize: 'standard',
   CacheBehavior: 'normal',
+  TransitionBehavior: 'fade',
 };

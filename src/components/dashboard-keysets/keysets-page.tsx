@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Copy, Edit2, ImportIcon, Plus } from 'lucide-react';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import createHref from '@/lib/links';
 import BackButton from '@/components/ui/back-button';
 import { ColumnDef } from '@tanstack/react-table';
 import { KeySet } from '@/types/keyset';
@@ -161,10 +160,7 @@ export default function KeySetsPage({ Group, Individual }: { Group: string; Indi
             <CardDescription>Create or Edit Current Keysets</CardDescription>
           </div>
           <div className="flex flex-row gap-2">
-            <BackButton
-              Label="Back to Evaluations"
-              Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
-            />
+            <BackButton />
           </div>
         </CardHeader>
 

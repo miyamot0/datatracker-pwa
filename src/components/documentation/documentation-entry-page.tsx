@@ -8,9 +8,11 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import BackButton from '@/components/ui/back-button';
-import createHref from '@/lib/links';
 import { Link } from '@tanstack/react-router';
 import { MdViewer } from './views/md-viewer';
+import { useContext } from 'react';
+import { FolderHandleContext } from '@/context/folder-context';
+import { TRANSITION_CLASSES } from '@/types/transitions';
 
 export default function DocumentationEntryPage({
   KeywordArray,
@@ -24,12 +26,19 @@ export default function DocumentationEntryPage({
   NextEntry?: ParsedFrontMatterType;
   Entry: ParsedFrontMatterType;
 }) {
+  const { settings } = useContext(FolderHandleContext);
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
     });
   };
+
+  const animTypes = TRANSITION_CLASSES[settings.TransitionBehavior];
+
+  const animLeft = animTypes.length > 0 ? [animTypes[animTypes.length - 1]] : [];
+  const animRight = animTypes.length > 0 ? [animTypes[0]] : [];
 
   return (
     <PageWrapper breadcrumbs={[BuildDocumentationBreadcrumb()]} label={Entry.matter.title} className="select-none">
@@ -54,7 +63,7 @@ export default function DocumentationEntryPage({
               })}
             </div>
           </div>
-          <BackButton Label="Back to Documentation List" Href={createHref({ type: 'Documentation' })} />
+          <BackButton />
         </CardHeader>
         <CardContent className="prose dark:prose-invert !max-w-none">
           <MdViewer source={Entry.value} />
@@ -67,6 +76,7 @@ export default function DocumentationEntryPage({
             className={cn('flex flex-row', {
               'pointer-events-none disabled': !PreviousEntry,
             })}
+            viewTransition={{ types: animLeft }}
           >
             <Button disabled={!PreviousEntry} className="w-full shadow-xl">
               <ChevronLeft className="w-4 h-4 mr-2" />
@@ -81,6 +91,7 @@ export default function DocumentationEntryPage({
             className={cn('flex flex-row', {
               'pointer-events-none disabled': !NextEntry,
             })}
+            viewTransition={{ types: animRight }}
           >
             <Button disabled={!NextEntry} className="w-full shadow-xl">
               Read Next

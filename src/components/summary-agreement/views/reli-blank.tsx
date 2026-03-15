@@ -6,7 +6,6 @@ import {
   BuildIndividualsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 
 type Props = {
@@ -33,8 +32,6 @@ export default function ReliabilityBlank({ Group, Individual, Evaluation }: Prop
               <CardDescription>Error in Calculating Reliability</CardDescription>
             </div>
             <BackButton
-              Label="Back to Evaluations"
-              Href={createHref({ type: 'Evaluations', group: Group, individual: Individual })}
             />
           </CardHeader>
 

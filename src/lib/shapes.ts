@@ -1,5 +1,11 @@
 import { SymbolType } from 'recharts/types/util/types';
 
+/**
+ * Determine the shape for a data point based on its index, cycling through a predefined set of shapes every 7 indices
+ *
+ * @param index The index of the data point for which to determine the shape
+ * @returns a symbol type for the data point based on its index, cycling through a predefined set of shapes every 7 indices
+ */
 export function getShape(index: number) {
   const index_shape = index % 7;
 

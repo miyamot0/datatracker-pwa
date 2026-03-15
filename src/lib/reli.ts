@@ -22,7 +22,7 @@ export function generateEmptyBinArray(n_bins: number) {
  *
  * @param Primary primary bin array
  * @param Reliability reliability bin array
- * @returns
+ * @returns the exact index of agreement as a percentage
  */
 export function generateEIABinMatch(Primary: BinValueType[], Reliability: BinValueType[]) {
   let ExactCountMatch = 0;
@@ -45,7 +45,7 @@ export function generateEIABinMatch(Primary: BinValueType[], Reliability: BinVal
  *
  * @param Primary primary bin array
  * @param Reliability reliability bin array
- * @returns
+ * @returns the average proportion of agreement as a percentage
  */
 export function generatePIABinMatch(Primary: BinValueType[], Reliability: BinValueType[]) {
   let running_proportions = 0.0;
@@ -70,7 +70,7 @@ export function generatePIABinMatch(Primary: BinValueType[], Reliability: BinVal
  *
  * @param Primary primary bin array
  * @param Reliability reliability bin array
- * @returns
+ * @returns the presence/absence agreement as a percentage
  */
 export function generateTIABinMatch(Primary: BinValueType[], Reliability: BinValueType[]) {
   let agreements = 0;
@@ -96,7 +96,7 @@ export function generateTIABinMatch(Primary: BinValueType[], Reliability: BinVal
  *
  * @param Primary primary bin array
  * @param Reliability reliability bin array
- * @returns
+ * @returns the presence/absence agreement for non-empty bins as a percentage
  */
 export function generateOIABinMatch(Primary: BinValueType[], Reliability: BinValueType[]) {
   let observed_matches = 0;
@@ -128,7 +128,7 @@ export function generateOIABinMatch(Primary: BinValueType[], Reliability: BinVal
  *
  * @param Primary primary bin array
  * @param Reliability reliability bin array
- * @returns
+ * @returns the presence/absence agreement for non-empty bins as a percentage
  */
 export function generateNIABinMatch(Primary: BinValueType[], Reliability: BinValueType[]) {
   let observed_matches = 0;
@@ -156,7 +156,7 @@ export function generateNIABinMatch(Primary: BinValueType[], Reliability: BinVal
  *
  * @param Primary primary bin array
  * @param Reliability reliability bin array
- * @returns
+ * @returns the presence/absence agreement by minute as a percentage
  */
 export function generatePMABinMatch(Primary: BinValueType[], Reliability: BinValueType[]) {
   let minute = 0;
@@ -196,7 +196,7 @@ export function generatePMABinMatch(Primary: BinValueType[], Reliability: BinVal
  *
  * @param keyData Key data
  * @param binSize Bin size in seconds
- * @returns
+ * @returns the key data with the added bin
  */
 export function addBinToKeyData(keyData: KeyManageType, binSize = 10) {
   return {
@@ -210,7 +210,7 @@ export function addBinToKeyData(keyData: KeyManageType, binSize = 10) {
  *
  * @param Primary Primary sessions
  * @param Reliability Reliability sessions
- * @returns
+ * @returns an array of reliability pairs with primary and reliability session results
  */
 export function getCorrespondingSessionPairs(
   Primary: SavedSessionResult[],
@@ -229,11 +229,10 @@ export function getCorrespondingSessionPairs(
  *
  * @param pair Reliability pair
  * @param keys_to_code_f Keys to code
- * @returns
+ * @returns an array of scored keys with reliability metrics for frequency keys
  */
 export function calculateReliabilityFrequency(pair: ReliabilityPairType, keys_to_code_f: ProbedKey[]) {
   const { primary, reli } = pair;
-
   const keys: ScoredKey[] = [];
 
   keys_to_code_f.forEach((key) => {
@@ -243,17 +242,24 @@ export function calculateReliabilityFrequency(pair: ReliabilityPairType, keys_to
     const primary_relevant_key = primary.FrequencyKeyPresses.filter(
       (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase(),
     ).map((k: KeyManageType) => addBinToKeyData(k));
+
     const reliability_relevant_key = reli.FrequencyKeyPresses.filter(
       (k) => k.KeyName.toLowerCase() === key.KeyName.toLowerCase(),
     ).map((k: KeyManageType) => addBinToKeyData(k));
 
     const key_bins_p = generateEmptyBinArray(binCounts);
+    const key_bins_r = generateEmptyBinArray(binCounts);
+
     primary_relevant_key.forEach((k) => {
       key_bins_p[k.Bin].Value++;
     });
 
-    const key_bins_r = generateEmptyBinArray(binCounts);
     reliability_relevant_key.forEach((k) => {
+      if (k.Bin >= key_bins_r.length) {
+        throw new Error(
+          `Bin number ${k.Bin} is out of range for key ${k.KeyName} in session ${primary.SessionSettings.Session}. Please check the key data and binning logic.`,
+        );
+      }
       key_bins_r[k.Bin].Value++;
     });
 
@@ -285,7 +291,7 @@ export function calculateReliabilityFrequency(pair: ReliabilityPairType, keys_to
  *
  * @param pair Reliability pair
  * @param keys_to_code_d Keys to code
- * @returns
+ * @returns an array of scored keys with reliability metrics for duration keys
  */
 export function calculateReliabilityDuration(pair: ReliabilityPairType, keys_to_code_d: ProbedKey[]) {
   const { primary, reli } = pair;
@@ -401,7 +407,7 @@ export function calculateReliabilityDuration(pair: ReliabilityPairType, keys_to_
  *
  * @param pair Reliability pair
  * @param keys_to_code_d Keys to code
- * @returns
+ * @returns an array of scored keys with reliability metrics for duration keys
  */
 export function generateBinsProportion(primary: SavedSessionResult, keys_to_code_d: ProbedKey[]) {
   return keys_to_code_d.map((key) => {
