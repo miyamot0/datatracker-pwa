@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SavedSessionResult } from '@/lib/dtos';
-import { ChevronLeft, Code2Icon, KeyboardIcon, PointerIcon, TableIcon } from 'lucide-react';
+import { Code2Icon, KeyboardIcon, PointerIcon, TableIcon } from 'lucide-react';
 import { exportHumanReadableToCSV } from '@/lib/download';
 import { EntryHolder, HumanReadableResults, HumanReadableResultsRow } from '@/types/export';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
@@ -22,7 +22,7 @@ import { useState } from 'react';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
 import { EnhancedKeySetInstance } from '@/types/keyset';
 import { walkSessionFrequencyKey } from '../helpers/schedule_parser';
-import { Link } from '@tanstack/react-router';
+import BackButton from '@/components/ui/back-button';
 
 type Props = {
   SessionTimer: SessionTerminationOptionsType;
@@ -419,18 +419,7 @@ export default function ViewFrequencyResults({
             </Button>
           </ToolTipWrapper>
 
-          <Link
-            to="/session/$group/$individual"
-            params={{
-              group: Group!,
-              individual: Individual!,
-            }}
-          >
-            <Button variant={'outline'} className="shadow" size={'sm'}>
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              {'Back to Evaluations'}
-            </Button>
-          </Link>
+          <BackButton />
         </div>
       </CardHeader>
       <CardContent className="overflow-x-auto">

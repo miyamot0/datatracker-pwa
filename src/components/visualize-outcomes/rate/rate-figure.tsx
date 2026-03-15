@@ -183,6 +183,7 @@ export default function RateFigureVisualization({
   return (
     <div className="flex flex-col gap-4 w-full">
       <ResponsiveContainer
+        
         width="100%"
         height={500}
         className={cn('text-base text-primary bg-white', {
