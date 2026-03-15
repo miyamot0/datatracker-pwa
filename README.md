@@ -1,4 +1,4 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-98.48_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-98.00_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-100.00_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-100.00_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-98.68_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-100.00_Percent-green>)
 
 ![Static Badge Version](https://img.shields.io/badge/Version-0.5.1-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
@@ -99,6 +99,8 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
 @radix-ui/react-slot (1.2.4). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
 @radix-ui/react-switch (1.1.0). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
+ 
+@radix-ui/react-tabs (1.1.13). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
 @radix-ui/react-tooltip (1.1.2). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
