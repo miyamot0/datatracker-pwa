@@ -138,6 +138,11 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
                 individual: Individual,
                 evaluation: Evaluation,
               },
+              viewTransition: {
+                types: () => {
+                  return ['slide-right'];
+                },
+              },
             });
 
             return;
@@ -195,6 +200,11 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
                   individual: Individual,
                   evaluation: Evaluation,
                 },
+                viewTransition: {
+                  types: () => {
+                    return ['slide-right'];
+                  },
+                },
               });
 
               break;
@@ -212,6 +222,11 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
                         group: Group,
                         individual: Individual,
                         evaluation: Evaluation,
+                      },
+                      viewTransition: {
+                        types: () => {
+                          return ['slide-right'];
+                        },
                       },
                     });
                   },
