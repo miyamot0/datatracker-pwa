@@ -1,6 +1,16 @@
 import { DEFAULT_SESSION_SETTINGS, SavedSettings } from '@/lib/dtos';
 import { CleanUpString } from '@/lib/strings';
 
+/**
+ * Queries the session parameters for a specific group, individual, and evaluation by accessing the file system and retrieving the 'settings.json' file within the appropriate evaluation directory. It returns a SavedSettings object that contains the details of the session parameters found, or default session settings if no settings are found or if there is an error during the file system operations.
+ *
+ * @param Handle - The file system directory handle for accessing the storage.
+ * @param Group - The group identifier for which the session parameters are being queried.
+ * @param Individual - The individual identifier for which the session parameters are being queried.
+ * @param Evaluation - The evaluation identifier for which the session parameters are being queried.
+ * @returns A promise that resolves to a SavedSettings object containing the details of the session parameters found, or default session settings if no settings are found or if there is an error during the file system operations.
+ * @throws An error if there is an issue with file system operations.
+ */
 export const fetchSessionParams = async ({
   Handle,
   Group,

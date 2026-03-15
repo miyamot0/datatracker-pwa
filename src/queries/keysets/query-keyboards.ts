@@ -2,11 +2,27 @@ import { deserializeKeySet } from '@/lib/keyset';
 import { CleanUpString } from '@/lib/strings';
 import { KeySet } from '@/types/keyset';
 
+/**
+ * Queries the keyboards for a specific group and individual by accessing the file system and retrieving the relevant information about the keyboards stored within the individual's folder. It returns an array of KeySet objects that contain the details of each keyboard found, or an empty array if no keyboards are found or if there is an error during the file system operations.
+ *
+ * @param Handle - The file system directory handle for accessing the storage.
+ * @param Group - The group identifier for which the keyboards are being queried.
+ * @param Individual - The individual identifier for which the keyboards are being queried.
+ * @returns A promise that resolves to an array of KeySet objects containing the details of each keyboard found, or an empty array if no keyboards are found or if there is an error during the file system operations.
+ */
 export const keyboardQueryOptions = (Handle: FileSystemDirectoryHandle, Group: string, Individual: string) => ({
   queryKey: ['/', Group, Individual, 'keyboards'],
   queryFn: () => fetchKeyboards({ Handle, Group, Individual }),
 });
 
+/**
+ * Fetches the keyboards for a specific group and individual by accessing the file system and retrieving the relevant information about the keyboards stored within the individual's folder. It returns an array of KeySet objects that contain the details of each keyboard found, or an empty array if no keyboards are found or if there is an error during the file system operations.
+ *
+ * @param Handle - The file system directory handle for accessing the storage.
+ * @param Group - The group identifier for which the keyboards are being fetched.
+ * @param Individual - The individual identifier for which the keyboards are being fetched.
+ * @returns A promise that resolves to an array of KeySet objects containing the details of each keyboard found, or an empty array if no keyboards are found or if there is an error during the file system operations.
+ */
 export const fetchKeyboards = async ({
   Handle,
   Group,
