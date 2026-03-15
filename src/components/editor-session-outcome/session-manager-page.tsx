@@ -1,4 +1,3 @@
-import createHref from '@/lib/links';
 import PageWrapper from '@/components/layout/page-wrapper';
 import {
   BuildEvaluationsBreadcrumb,
@@ -33,7 +32,7 @@ export default function SessionManagerPage({
 
   if (error || data == undefined) return <ErrorDisplay Text={'An error occurred while fetching session outcomes.'} />;
 
-  const relevant_session = data.find((s) => s.Filename.includes(FileString));
+  const relevant_session = data.find((s) => s.Filename.startsWith(FileString));
 
   if (relevant_session) {
     const saved_keys = [
@@ -64,7 +63,7 @@ export default function SessionManagerPage({
     );
   } else {
     throw redirect({
-      href: createHref({ type: 'Dashboard' }),
+      href: '/dashboard',
     });
   }
 }
