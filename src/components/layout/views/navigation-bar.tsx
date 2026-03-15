@@ -14,6 +14,7 @@ import { MenuIcon, RefreshCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from '@tanstack/react-router';
 import { FolderHandleContext } from '@/context/folder-context';
+import { TRANSITION_CLASSES } from '@/types/transitions';
 
 export type BreadCrumbListing = {
   label: string;
@@ -26,7 +27,12 @@ type Props = {
 };
 
 export default function NavigationBar({ breadcrumbs, label }: Props) {
-  const { handle } = useContext(FolderHandleContext);
+  const { handle, settings } = useContext(FolderHandleContext);
+
+  const animTypes = TRANSITION_CLASSES[settings.TransitionBehavior];
+
+  const animLeft = animTypes.length > 0 ? [animTypes[animTypes.length - 1]] : [];
+  const animRight = animTypes.length > 0 ? [animTypes[0]] : [];
 
   return (
     <div className={cn('flex flex-row justify-between w-full py-4 items-center select-none')}>
@@ -34,7 +40,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to={createHref({ type: 'Home' })} className={cn('underline')}>
+              <Link to={createHref({ type: 'Home' })} className={cn('underline')} viewTransition={{ types: animLeft }}>
                 Home
               </Link>
             </BreadcrumbLink>
@@ -46,7 +52,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link to={breadcrumb.href} className={cn('underline')}>
+                    <Link to={breadcrumb.href} className={cn('underline')} viewTransition={{ types: animLeft }}>
                       {breadcrumb.label}
                     </Link>
                   </BreadcrumbLink>
@@ -73,6 +79,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
           className={cn('flex flex-row gap-2 items-center', {
             'disabled cursor-default pointer-events-none opacity-50': !handle,
           })}
+          viewTransition={{ types: animRight }}
         >
           <Button
             name="Sync button"
@@ -85,7 +92,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
           </Button>
         </Link>
 
-        <Link to={'/settings'} className="flex flex-row gap-2 items-center">
+        <Link to={'/settings'} className="flex flex-row gap-2 items-center" viewTransition={{ types: animRight }}>
           <Button
             name="Settings button"
             aria-label="Settings Button"
