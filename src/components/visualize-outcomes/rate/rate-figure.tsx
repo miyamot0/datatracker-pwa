@@ -39,6 +39,11 @@ type Props = {
   FigureTextSize: FigureVisualSizing;
 };
 
+const noAnimationProps = {
+  isAnimationActive: false,
+  animationDuration: 0,
+};
+
 export default function RateFigureVisualization({
   Group,
   Individual,
@@ -181,18 +186,20 @@ export default function RateFigureVisualization({
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex flex-col gap-4 w-full nuke-view-transition">
       <ResponsiveContainer
-        
+        {...noAnimationProps}
         width="100%"
         height={500}
-        className={cn('text-base text-primary bg-white', {
+        className={cn('text-base text-primary bg-white nuke-view-transition', {
           'text-xl': FigureTextSize == FIGURE_TEXT_OPTIONS[1].value,
           'text-2xl': FigureTextSize == FIGURE_TEXT_OPTIONS[2].value,
         })}
         ref={divRef}
       >
         <ComposedChart
+          className="nuke-view-transition"
+          {...noAnimationProps}
           width={600}
           height={300}
           title=""
@@ -216,7 +223,7 @@ export default function RateFigureVisualization({
               return (
                 <React.Fragment key={`${index_main}-${index}`}>
                   <Line
-                    animationDuration={100}
+                    {...noAnimationProps}
                     connectNulls={true}
                     name={`${key.KeyDescription}-Points_`}
                     data={condition.data}
@@ -228,7 +235,7 @@ export default function RateFigureVisualization({
                   />
                   <Scatter
                     data={condition.data}
-                    animationDuration={100}
+                    {...noAnimationProps}
                     onDoubleClick={(props) => {
                       const stringIndex = `${props.session}_${props.Condition}_Primary`;
                       //const linkGenerated = `/session/${Group!}/${Individual!}/${Evaluation!}/history/${stringIndex}`;
@@ -254,9 +261,10 @@ export default function RateFigureVisualization({
             return lines;
           })}
 
-          <ZAxis type="number" range={[markerSize]} />
+          <ZAxis {...noAnimationProps} type="number" range={[markerSize]} />
 
           <XAxis
+            {...noAnimationProps}
             dataKey="session"
             domain={[MinX, MaxX]}
             height={50}
@@ -275,6 +283,7 @@ export default function RateFigureVisualization({
             }}
           >
             <Label
+              {...noAnimationProps}
               style={{
                 textAnchor: 'middle',
                 fill: 'black',
@@ -286,6 +295,7 @@ export default function RateFigureVisualization({
             />
           </XAxis>
           <YAxis
+            {...noAnimationProps}
             min={0}
             //max={Math.floor(axY / session_minutes) + 1}
             padding={{ bottom: 10 }}
@@ -295,6 +305,7 @@ export default function RateFigureVisualization({
             }}
           >
             <Label
+              {...noAnimationProps}
               style={{
                 textAnchor: 'middle',
                 fill: 'black',
@@ -306,13 +317,14 @@ export default function RateFigureVisualization({
             />
           </YAxis>
           <Tooltip
+            {...noAnimationProps}
             animationDuration={100}
             content={
               //@ts-expect-error - recharts is not typed correctly
-              <CustomTooltip />
+              <CustomTooltip {...noAnimationProps} />
             }
           />
-          <Legend payload={legend_1} align="center" />
+          <Legend {...noAnimationProps} payload={legend_1} align="center" />
         </ComposedChart>
       </ResponsiveContainer>
       <Button

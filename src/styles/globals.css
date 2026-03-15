@@ -182,3 +182,7 @@ html:active-view-transition-type(content-fade) {
     opacity: 1;
   }
 }
+
+span[id*='recharts_measurement_span'] {
+  display: none !important;
+}
