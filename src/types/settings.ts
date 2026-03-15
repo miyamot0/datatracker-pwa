@@ -108,6 +108,20 @@ export const TOOL_TIP_OPTIONS: {
 ];
 
 /**
+ * Types for transition settings
+ */
+
+export type TransitionSettingTypes = 'none' | 'slide';
+
+export const TRANSITION_SETTING_OPTIONS: {
+  value: TransitionSettingTypes;
+  label: string;
+}[] = [
+  { value: 'none', label: 'Disable Transitions' },
+  { value: 'slide', label: 'Slide Transitions' },
+];
+
+/**
  * Type for application settings
  */
 export type ApplicationSettingsTypes = {
@@ -120,6 +134,7 @@ export type ApplicationSettingsTypes = {
   KeyDisplay: KeyDisplayTypes;
   DisplaySize: ScreenSizingTypes;
   CacheBehavior: CacheSettingTypes;
+  TransitionBehavior: TransitionSettingTypes;
 };
 
 export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
@@ -132,4 +147,5 @@ export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
   KeyDisplay: 'standard',
   DisplaySize: 'standard',
   CacheBehavior: 'normal',
+  TransitionBehavior: 'slide',
 };

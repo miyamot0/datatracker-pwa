@@ -3,14 +3,25 @@ import { SettingsDisplayEnum } from '../types/settings-tab-enums';
 import SettingsFormItemWrapper from './settings-form-item-wrapper';
 import { SettingsTabContainer } from './settings-tab-container';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ApplicationSettingsTypes, KEY_DISPLAY_OPTIONS, KeyDisplayTypes, ScreenSizingOptions, ScreenSizingTypes, THEME_OPTIONS, ThemeTypes } from '@/types/settings';
+import {
+  ApplicationSettingsTypes,
+  KEY_DISPLAY_OPTIONS,
+  KeyDisplayTypes,
+  ScreenSizingOptions,
+  ScreenSizingTypes,
+  THEME_OPTIONS,
+  ThemeTypes,
+} from '@/types/settings';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useTheme } from '@/components/ui/theme-provider';
 import { useContext } from 'react';
 import { displayConditionalNotification } from '@/lib/notifications';
+import { TRANSITION_OPTIONS, TransitionOptions, viewTransitionCall } from '@/types/transitions';
+import { useRouter } from '@tanstack/react-router';
 
 export function SettingsTabDisplay() {
   const { settings, setSettings, saveSettings } = useContext(FolderHandleContext);
+  const router = useRouter();
   const { setTheme, theme } = useTheme();
 
   return (
@@ -42,6 +53,7 @@ export function SettingsTabDisplay() {
             </SelectContent>
           </Select>
         </SettingsFormItemWrapper>
+
         <SettingsFormItemWrapper
           Label="Options for Key Displays"
           Description="Toggle standard or dense key layouts (i.e., many keys loaded)"
@@ -74,6 +86,7 @@ export function SettingsTabDisplay() {
             </SelectContent>
           </Select>
         </SettingsFormItemWrapper>
+
         <SettingsFormItemWrapper
           Label="Options for Screen Displays"
           Description="Toggle standard or extra wide layouts (i.e., for larger monitors)"
@@ -98,6 +111,41 @@ export function SettingsTabDisplay() {
             <SelectContent>
               <SelectGroup>
                 {ScreenSizingOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </SettingsFormItemWrapper>
+
+        <SettingsFormItemWrapper
+          Label="Transition Animations"
+          Description="Toggle transition animations for different views (e.g., navigating to different pages)"
+        >
+          <Select
+            value={settings.TransitionBehavior}
+            onValueChange={(value: TransitionOptions) => {
+              const newSettings = {
+                ...settings,
+                TransitionBehavior: value,
+              } satisfies ApplicationSettingsTypes;
+
+              setSettings(newSettings);
+              saveSettings(newSettings);
+
+              router.options.defaultViewTransition = viewTransitionCall(newSettings.TransitionBehavior);
+
+              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+            }}
+          >
+            <SelectTrigger className="w-full md:max-w-[250px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {TRANSITION_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>

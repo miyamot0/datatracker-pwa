@@ -11,6 +11,8 @@ export interface FolderHandleContextType {
   setSettings: Dispatch<SetStateAction<ApplicationSettingsTypes>>;
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   saveSettings: (_settings: ApplicationSettingsTypes) => void;
+  isInitialized: boolean;
+  setIsInitialized: Dispatch<SetStateAction<boolean>>;
 }
 
 // Context for folder handle
@@ -21,6 +23,8 @@ export const FolderHandleContext = createContext({
   setSettings: undefined as unknown as Dispatch<SetStateAction<ApplicationSettingsTypes>>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   saveSettings: (_: ApplicationSettingsTypes) => {},
+  isInitialized: undefined as unknown as boolean,
+  setIsInitialized: undefined as unknown as Dispatch<SetStateAction<boolean>>,
 });
 
 /**
@@ -30,8 +34,10 @@ export const FolderHandleContext = createContext({
  * @returns
  */
 export function FolderContextProvider({ children }: { children: ReactNode }) {
+  //const router = useRouter();
   const [handle, setHandle] = useState<FileSystemDirectoryHandle | undefined>();
   const [settings, setSettings] = useState<ApplicationSettingsTypes>(DEFAULT_APPLICATION_SETTINGS);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const staleTimeAggressive = 1000 * 60 * 15; // 15 minutes
   const gcTimeAggressive = 1000 * 60 * 30; // 30 minutes
@@ -57,6 +63,12 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
         },
       });
     }
+
+    /*
+    if (router?.options) {
+      router.options.defaultViewTransition = viewTransitionCall(_settings.TransitionBehavior);
+    }
+    */
   };
 
   useEffect(() => {
@@ -70,7 +82,7 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
         const remappedSettings = {
           ...DEFAULT_APPLICATION_SETTINGS,
           ...parsedSettings,
-        };
+        } satisfies ApplicationSettingsTypes;
 
         setSettings(remappedSettings);
 
@@ -101,6 +113,8 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
           settings,
           setSettings,
           saveSettings,
+          isInitialized,
+          setIsInitialized,
         }}
       >
         {children}
