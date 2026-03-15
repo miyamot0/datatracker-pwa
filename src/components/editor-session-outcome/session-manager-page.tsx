@@ -63,7 +63,7 @@ export default function SessionManagerPage({
     );
   } else {
     throw redirect({
-      href: '/dashboard',
+      to: '/dashboard',
     });
   }
 }

@@ -164,7 +164,7 @@ export default function SessionViewerPage({
     );
   } else {
     throw redirect({
-      href: '/dashboard',
+      to: '/dashboard',
     });
   }
 }
