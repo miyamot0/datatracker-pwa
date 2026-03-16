@@ -10,10 +10,11 @@ type Props = {
   breadcrumbs?: BreadCrumbListing[];
   label?: string;
   className?: string;
+  HideNavbar?: boolean;
   HideFooter?: boolean;
 };
 
-export default function PageWrapper({ children, className, breadcrumbs, label, HideFooter }: Props) {
+export default function PageWrapper({ children, className, breadcrumbs, label, HideNavbar, HideFooter }: Props) {
   const { settings } = useContext(FolderHandleContext);
 
   const hideFooter = HideFooter === true || settings.ApplicationFooterDisplay === 'Disabled';
@@ -25,7 +26,7 @@ export default function PageWrapper({ children, className, breadcrumbs, label, H
         'max-w-[106rem]': settings.DisplaySize === 'extra-wide',
       })}
     >
-      <NavigationBar breadcrumbs={breadcrumbs} label={label} />
+      {!HideNavbar && <NavigationBar breadcrumbs={breadcrumbs} label={label} />}
 
       {children}
 

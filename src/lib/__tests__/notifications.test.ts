@@ -22,7 +22,9 @@ describe('displayConditionalNotification', () => {
     DisplaySize: 'standard',
     CacheBehavior: 'normal',
     TransitionBehavior: 'none',
-    RecorderPolling: 'normal'
+    RecorderPolling: 'normal',
+    ApplicationFooterDisplay: 'Standard',
+    SessionDisplay: 'Standard',
   };
 
   beforeEach(() => {

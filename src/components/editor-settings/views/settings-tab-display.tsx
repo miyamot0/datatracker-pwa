@@ -13,6 +13,8 @@ import {
   NotificationSettingsTypes,
   ScreenSizingOptions,
   ScreenSizingTypes,
+  SESSION_DISPLAY_OPTIONS,
+  SessionDisplayOptions,
   THEME_OPTIONS,
   ThemeTypes,
   TOOL_TIP_OPTIONS,
@@ -245,6 +247,38 @@ export function SettingsTabDisplay() {
             <SelectContent>
               <SelectGroup>
                 {APPLICATION_FOOTER_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </SettingsFormItemWrapper>
+
+        <SettingsFormItemWrapper
+          Label="Session Display"
+          Description="Set the display style for the session."
+        >
+          <Select
+            value={settings.SessionDisplay}
+            onValueChange={(value: SessionDisplayOptions) => {
+              const newSettings = {
+                ...settings,
+                SessionDisplay: value,
+              } satisfies ApplicationSettingsTypes;
+              setSettings(newSettings);
+              saveSettings(newSettings);
+
+              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+            }}
+          >
+            <SelectTrigger className="w-full md:max-w-[250px]">
+              <SelectValue placeholder="Select Session Display" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {SESSION_DISPLAY_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>

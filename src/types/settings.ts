@@ -1,4 +1,20 @@
 /**
+ * Types for session display options
+ */
+export type SessionDisplayOptions = 'Standard' | 'FullScreen';
+
+/**
+ * Options for session display
+ */
+export const SESSION_DISPLAY_OPTIONS: {
+  value: SessionDisplayOptions;
+  label: string;
+}[] = [
+  { value: 'Standard', label: 'Standard Display' },
+  { value: 'FullScreen', label: 'Full Screen Display' },
+];
+
+/**
  * Types for application footer display options
  */
 export type ApplicationFooterDisplay = 'Standard' | 'NonSession' | 'Disabled';
@@ -212,6 +228,7 @@ export type ApplicationSettingsTypes = {
   TransitionBehavior: TransitionSettingTypes;
   RecorderPolling: SessionRecorderPolling;
   ApplicationFooterDisplay: ApplicationFooterDisplay;
+  SessionDisplay: SessionDisplayOptions;
 };
 
 /**
@@ -230,4 +247,5 @@ export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
   TransitionBehavior: 'fade',
   RecorderPolling: 'normal',
   ApplicationFooterDisplay: 'Standard',
+  SessionDisplay: 'Standard',
 };

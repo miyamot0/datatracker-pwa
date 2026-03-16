@@ -430,6 +430,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
       ]}
       className="select-none"
       HideFooter={applicationSettings.ApplicationFooterDisplay === 'NonSession'}
+      HideNavbar={applicationSettings.SessionDisplay === 'FullScreen'}
     >
       <div className="flex flex-col w-full gap-4">
         <div className="w-full flex flex-row justify-between select-none">
