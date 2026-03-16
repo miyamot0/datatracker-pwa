@@ -480,7 +480,6 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
         BuildEvaluationsBreadcrumb(Group, Individual),
         BuildSessionDesignerBreadcrumb(Group, Individual, Evaluation),
       ]}
-      label={`Record ${Evaluation} Session`}
       className="select-none"
     >
       <div className="flex flex-col w-full gap-4">
