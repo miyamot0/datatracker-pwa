@@ -1,41 +1,23 @@
 import { SessionTerminationOptionsType } from '@/components/editor-session/forms/schema/session-designer-schema';
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from './dtos';
 import { walkSessionDurationKey, walkSessionFrequencyKey } from '@/components/summary-outcomes/helpers/schedule_parser';
 
-export function FilterByPrimaryRole(results: SavedSessionResult[]) {
+export function filterSessionsByPrimaryRole(results: SavedSessionResult[]) {
   return results
     .filter((result) => result.SessionSettings.Role === 'Primary')
     .sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session);
 }
 
-export function GetUniqueConditions(results: SavedSessionResult[]) {
+export function getUniqueSessionConditions(results: SavedSessionResult[]) {
   return Array.from(new Set(results.map((result) => result.SessionSettings.Condition)));
 }
 
-function convertScheduleSetting(schedule: SessionTerminationOptionsType) {
-  switch (schedule) {
-    case 'End on Timer #1':
-      return 'Primary';
-    case 'End on Timer #2':
-      return 'Secondary';
-    case 'End on Timer #3':
-      return 'Tertiary';
-    default:
-      throw Error('Invalid Schedule Option');
-  }
-}
-
-function pullSessionTime(session: SavedSessionResult, schedule: SessionTerminationOptionsType) {
-  switch (schedule) {
-    case 'End on Timer #1':
-      return session.TimerOne;
-    case 'End on Timer #2':
-      return session.TimerTwo;
-    case 'End on Timer #3':
-      return session.TimerThree;
-    default:
-      throw Error('Invalid Schedule Option');
-  }
+export function generateTicks(maxTick: number, minTick: number) {
+  return Array(maxTick + 1)
+    .fill(0)
+    .map((_, i) => {
+      return i + minTick;
+    });
 }
 
 export function generateChartPreparation(
@@ -53,6 +35,34 @@ export function generateChartPreparation(
 
     if (maxX < result.SessionSettings.Session) {
       maxX = result.SessionSettings.Session;
+    }
+
+    function convertScheduleSetting(schedule: SessionTerminationOptionsType) {
+      switch (schedule) {
+        case 'End on Timer #1':
+          return 'Primary';
+        case 'End on Timer #2':
+          return 'Secondary';
+        case 'End on Timer #3':
+          return 'Tertiary';
+        default:
+          throw Error('Invalid Schedule Option');
+      }
+    }
+
+    function pullSessionTime(session: SavedSessionResult, schedule: SessionTerminationOptionsType) {
+      switch (schedule) {
+        case 'End on Timer #1':
+          return session.TimerOne;
+        case 'End on Timer #2':
+          return session.TimerTwo;
+        case 'End on Timer #3':
+          return session.TimerThree;
+        case 'End on Primary Timer':
+          return session.TimerMain;
+        default:
+          throw Error('Invalid Schedule Option');
+      }
     }
 
     const scores =
@@ -81,12 +91,4 @@ export function generateChartPreparation(
     MinX: minX,
     MaxX: maxX,
   };
-}
-
-export function generateTicks(XSpan: number, MinX: number) {
-  return Array(XSpan + 1)
-    .fill(0)
-    .map((_, i) => {
-      return i + MinX;
-    });
 }

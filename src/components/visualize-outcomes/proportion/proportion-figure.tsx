@@ -16,7 +16,6 @@ import { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { SavedSessionResult } from '@/lib/dtos';
 import { SessionTerminationOptionsType } from '@/components/editor-session/forms/schema/session-designer-schema';
-import { generateChartPreparation, generateTicks, GetUniqueConditions } from '../helpers/filtering';
 import { getShape } from '@/lib/shapes';
 import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
@@ -25,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from '@tanstack/react-router';
 import { ExpandedKeySetInstance } from '@/types/keyset';
 import { splitAtPoints } from '@/lib/arrays';
+import { getUniqueSessionConditions, generateTicks, generateChartPreparation } from '@/lib/graphing';
 
 type Props = {
   Group: string;
@@ -123,7 +123,7 @@ export default function ProportionFigureVisualization({
     return temp_obj;
   });
 
-  const data_set_parsed_by_condition = GetUniqueConditions(FilteredSessions).map((condition) => {
+  const data_set_parsed_by_condition = getUniqueSessionConditions(FilteredSessions).map((condition) => {
     return {
       name: condition,
       data: preparedData.filter((data) => data.Condition === condition),

@@ -15,7 +15,6 @@ import {
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { getShape } from '@/lib/shapes';
 import { SessionTerminationOptionsType } from '@/components/editor-session/forms/schema/session-designer-schema';
-import { generateChartPreparation, generateTicks, GetUniqueConditions } from '../helpers/filtering';
 import { SavedSessionResult } from '@/lib/dtos';
 import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
@@ -24,6 +23,7 @@ import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibil
 import { useNavigate } from '@tanstack/react-router';
 import { ExpandedKeySetInstance } from '@/types/keyset';
 import { splitAtPoints } from '@/lib/arrays';
+import { generateChartPreparation, generateTicks, getUniqueSessionConditions } from '@/lib/graphing';
 
 type Props = {
   Group: string;
@@ -94,7 +94,7 @@ export default function RateFigureVisualization({
     return temp_obj;
   });
 
-  const data_set_parsed_by_condition = GetUniqueConditions(FilteredSessions).map((condition) => {
+  const data_set_parsed_by_condition = getUniqueSessionConditions(FilteredSessions).map((condition) => {
     return {
       name: condition,
       data: preparedData.filter((data) => data.Condition === condition),

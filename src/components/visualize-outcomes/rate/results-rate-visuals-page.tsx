@@ -26,8 +26,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import BackButton from '@/components/ui/back-button';
 import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import { Link } from '@tanstack/react-router';
-import { FilterByPrimaryRole } from '../helpers/filtering';
 import { Switch } from '@/components/ui/switch';
+import { filterSessionsByPrimaryRole } from '@/lib/graphing';
 
 export default function ResultsRateVisualsPage({
   Group,
@@ -61,7 +61,7 @@ export default function ResultsRateVisualsPage({
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
   const [ctbSumKeys, setCTBSumKeys] = useState(ExcludeKeysFromCTB);
 
-  const results_filtered = FilterByPrimaryRole(Results);
+  const results_filtered = filterSessionsByPrimaryRole(Results);
 
   return (
     <PageWrapper

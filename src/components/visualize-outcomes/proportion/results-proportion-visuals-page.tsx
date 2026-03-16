@@ -26,8 +26,8 @@ import BackButton from '@/components/ui/back-button';
 import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import ProportionFigureVisualization from '@/components/visualize-outcomes/proportion/proportion-figure';
 import { Link } from '@tanstack/react-router';
-import { FilterByPrimaryRole } from '../helpers/filtering';
 import { Switch } from '@/components/ui/switch';
+import { filterSessionsByPrimaryRole } from '@/lib/graphing';
 
 export default function ResultsProportionVisualsPage({
   Group,
@@ -51,7 +51,7 @@ export default function ResultsProportionVisualsPage({
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
   const [schedule, setSchedule] = useState<SessionTerminationOptionsType>(Schedule);
 
-  const results_filtered = FilterByPrimaryRole(Results);
+  const results_filtered = filterSessionsByPrimaryRole(Results);
 
   return (
     <PageWrapper
