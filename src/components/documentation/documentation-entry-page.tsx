@@ -13,6 +13,7 @@ import { MdViewer } from './views/md-viewer';
 import { useContext } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
 import { TRANSITION_CLASSES } from '@/types/transitions';
+import { scrollPageToTop } from '@/lib/window';
 
 export default function DocumentationEntryPage({
   KeywordArray,
@@ -27,13 +28,6 @@ export default function DocumentationEntryPage({
   Entry: ParsedFrontMatterType;
 }) {
   const { settings } = useContext(FolderHandleContext);
-
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
-  };
 
   const animTypes = TRANSITION_CLASSES[settings.TransitionBehavior];
 
@@ -72,7 +66,7 @@ export default function DocumentationEntryPage({
           <Link
             to={`/documentation/$slug`}
             params={{ slug: PreviousEntry?.matter.filename.replaceAll('.md', '') ?? '/documentation' }}
-            onClick={scrollToTop}
+            onClick={scrollPageToTop}
             className={cn('flex flex-row', {
               'pointer-events-none disabled': !PreviousEntry,
             })}
@@ -87,7 +81,7 @@ export default function DocumentationEntryPage({
           <Link
             to={`/documentation/$slug`}
             params={{ slug: NextEntry?.matter.filename.replaceAll('.md', '') ?? '/documentation' }}
-            onClick={scrollToTop}
+            onClick={scrollPageToTop}
             className={cn('flex flex-row', {
               'pointer-events-none disabled': !NextEntry,
             })}
