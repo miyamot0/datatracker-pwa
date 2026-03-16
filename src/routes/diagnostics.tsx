@@ -1,4 +1,5 @@
 import PageWrapper from '@/components/layout/page-wrapper';
+import BackButton from '@/components/ui/back-button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { checkCrossOriginIsolation } from '@/lib/shared-buffer';
 import { createFileRoute } from '@tanstack/react-router';
@@ -13,9 +14,12 @@ function RouteComponent() {
   return (
     <PageWrapper className="flex flex-col gap-6 select-none">
       <Card className="w-full max-w-screen-lg">
-        <CardHeader>
-          <CardTitle>Diagnostic and Performance Information</CardTitle>
-          <CardDescription>Information here presented for debugging purposes</CardDescription>
+        <CardHeader className="flex flex-row justify-between align-top">
+          <div className="flex flex-col gap-1.5">
+            <CardTitle>Diagnostic and Performance Information</CardTitle>
+            <CardDescription>Information here presented for debugging purposes</CardDescription>
+          </div>
+          <BackButton />
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div>Shared Array Buffer support: {check.isSupported ? 'Available' : 'Unavailable'}</div>
