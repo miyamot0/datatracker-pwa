@@ -27,6 +27,7 @@ import BackButton from '@/components/ui/back-button';
 import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import { Link } from '@tanstack/react-router';
 import { FilterByPrimaryRole } from '../helpers/filtering';
+import { Switch } from '@/components/ui/switch';
 
 export default function ResultsRateVisualsPage({
   Group,
@@ -55,6 +56,7 @@ export default function ResultsRateVisualsPage({
   }[];
 }) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
+  const [connectAllPoints, setConnectAllPoints] = useState(false);
   const [schedule, setSchedule] = useState<SessionTerminationOptionsType>(Schedule);
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
   const [ctbSumKeys, setCTBSumKeys] = useState(ExcludeKeysFromCTB);
@@ -77,6 +79,7 @@ export default function ResultsRateVisualsPage({
             <CardTitle>Visualization of Behavioral Rates</CardTitle>
             <CardDescription>Options for Visualizing Data Provided Below</CardDescription>
           </div>
+
           <div className="flex flex-row gap-2">
             <Link
               to={'/session/$group/$individual/$evaluation/proportion'}
@@ -96,8 +99,8 @@ export default function ResultsRateVisualsPage({
           </div>
         </CardHeader>
 
-        <CardContent className="flex flex-col gap-2">
-          <div className="w-full flex flex-row justify-between mb-4">
+        <CardContent className="flex flex-col gap-4">
+          <div className="w-full flex flex-row justify-between">
             <div className="flex flex-row gap-4">
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
@@ -198,29 +201,6 @@ export default function ResultsRateVisualsPage({
             </div>
 
             <div className="flex flex-row gap-2">
-              <div className="flex flex-row items-center gap-2 w-fit my-0 py-0">
-                <p>Magnification:</p>
-                <Select
-                  value={figureTextSize}
-                  onValueChange={(value: FigureVisualSizing) => {
-                    setFigureTextSize(value);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Text Size" className="" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {FIGURE_TEXT_OPTIONS.map((opt) => (
-                        <SelectItem value={opt.value} key={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-
               <div className="flex flex-row items-center gap-2 w-fit">
                 <p>Timer to Reference:</p>
                 <Select
@@ -260,6 +240,36 @@ export default function ResultsRateVisualsPage({
             </div>
           </div>
 
+          <div className="flex flex-row items-center gap-2 justify-between">
+            <div className="flex flex-row items-center gap-2 w-fit my-0 py-0">
+              <p className="whitespace-nowrap">Element Magnification:</p>
+              <Select
+                value={figureTextSize}
+                onValueChange={(value: FigureVisualSizing) => {
+                  setFigureTextSize(value);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Text Size" className="" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {FIGURE_TEXT_OPTIONS.map((opt) => (
+                      <SelectItem value={opt.value} key={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-row items-center gap-2 w-fit my-0 py-0">
+              <p className="whitespace-nowrap">Connect All Spans:</p>
+              <Switch checked={connectAllPoints} onCheckedChange={(checked) => setConnectAllPoints(checked)} />
+            </div>
+          </div>
+
           <p>
             This page provides a visual of the available data regarding <i>rate</i>. For convenience, series of data can
             be enabled or disabled for viewing. Similarly, an omnibus measure of behavior can be calculated by selecting
@@ -277,6 +287,7 @@ export default function ResultsRateVisualsPage({
               Individual={Individual}
               Evaluation={Evaluation}
               FigureTextSize={figureTextSize}
+              ConnectSpans={connectAllPoints}
             />
           )}
         </CardContent>

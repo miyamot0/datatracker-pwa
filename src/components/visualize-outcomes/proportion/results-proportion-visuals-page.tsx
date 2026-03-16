@@ -27,6 +27,7 @@ import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibil
 import ProportionFigureVisualization from '@/components/visualize-outcomes/proportion/proportion-figure';
 import { Link } from '@tanstack/react-router';
 import { FilterByPrimaryRole } from '../helpers/filtering';
+import { Switch } from '@/components/ui/switch';
 
 export default function ResultsProportionVisualsPage({
   Group,
@@ -46,6 +47,7 @@ export default function ResultsProportionVisualsPage({
   ShowKeys: { KeyDescription: string; Visible: boolean }[];
 }) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
+  const [connectAllPoints, setConnectAllPoints] = useState(false);
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
   const [schedule, setSchedule] = useState<SessionTerminationOptionsType>(Schedule);
 
@@ -85,8 +87,8 @@ export default function ResultsProportionVisualsPage({
           </div>
         </CardHeader>
 
-        <CardContent className="flex flex-col gap-2">
-          <div className="w-full flex flex-row justify-between mb-4">
+        <CardContent className="flex flex-col gap-4">
+          <div className="w-full flex flex-row justify-between">
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-fit">
@@ -131,29 +133,6 @@ export default function ResultsProportionVisualsPage({
             </DropdownMenu>
 
             <div className="flex flex-row items-center gap-2 w-fit">
-              <div className="flex flex-row items-center gap-2 w-fit my-0 py-0">
-                <p>Magnification:</p>
-                <Select
-                  value={figureTextSize}
-                  onValueChange={(value: FigureVisualSizing) => {
-                    setFigureTextSize(value);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Text Size" className="" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {FIGURE_TEXT_OPTIONS.map((opt) => (
-                        <SelectItem value={opt.value} key={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-
               <p>Select Timer to Reference:</p>
               <Select
                 value={schedule}
@@ -189,6 +168,36 @@ export default function ResultsProportionVisualsPage({
             </div>
           </div>
 
+          <div className="flex flex-row items-center gap-2 justify-between">
+            <div className="flex flex-row items-center gap-2 w-fit my-0 py-0">
+              <p className="whitespace-nowrap">Element Magnification:</p>
+              <Select
+                value={figureTextSize}
+                onValueChange={(value: FigureVisualSizing) => {
+                  setFigureTextSize(value);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Text Size" className="" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {FIGURE_TEXT_OPTIONS.map((opt) => (
+                      <SelectItem value={opt.value} key={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-row items-center gap-2 w-fit my-0 py-0">
+              <p className="whitespace-nowrap">Connect All Spans:</p>
+              <Switch checked={connectAllPoints} onCheckedChange={(checked) => setConnectAllPoints(checked)} />
+            </div>
+          </div>
+
           <p>
             This page provides a visual of the available data regarding <i>proportion of session time</i>. For
             convenience, series of data can be enabled or disabled for viewing. Options set here will persist for future
@@ -204,6 +213,7 @@ export default function ResultsProportionVisualsPage({
               ScheduleOption={schedule}
               KeySetFull={filteredKeys}
               FigureTextSize={figureTextSize}
+              ConnectSpans={connectAllPoints}
             />
           )}
         </CardContent>

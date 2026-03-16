@@ -37,12 +37,28 @@ type Props = {
   CTBKeys: ExpandedKeySetInstance[];
   KeySetFull: ExpandedKeySetInstance[];
   FigureTextSize: FigureVisualSizing;
+  ConnectSpans: boolean;
 };
 
 const noAnimationProps = {
   isAnimationActive: false,
   animationDuration: 0,
 };
+
+export function splitAtPoints<T>(arr: T[], points: number[]): T[][] {
+  const result: T[][] = [];
+  let start = 0;
+
+  // Sort points and add end of array to ensure all segments are caught
+  const cutPoints = [...points, arr.length].sort((a, b) => a - b);
+
+  for (const point of cutPoints) {
+    result.push(arr.slice(start, point));
+    start = point;
+  }
+
+  return result;
+}
 
 export default function RateFigureVisualization({
   Group,
@@ -53,6 +69,7 @@ export default function RateFigureVisualization({
   CTBKeys,
   KeySetFull,
   FigureTextSize,
+  ConnectSpans,
 }: Props) {
   const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
   const navigate = useNavigate({
@@ -220,40 +237,102 @@ export default function RateFigureVisualization({
             const lines = KeySetFull.filter((key) => key.Visible === true).map((key, index) => {
               const shape = getShape(index);
 
+              const splitPoints = [] as number[];
+
+              for (let i = 1; i < condition.data.length; i++) {
+                const current = condition.data[i].session;
+                const prev = condition.data[i - 1].session;
+
+                const checkedData = FilteredSessions.filter(
+                  (session) =>
+                    session.SessionSettings.Session > prev &&
+                    session.SessionSettings.Session < current &&
+                    session.SessionSettings.Condition !== condition.name,
+                );
+
+                if (checkedData.length > 0) {
+                  splitPoints.push(i);
+                }
+              }
+
+              if (splitPoints.length === 0 || ConnectSpans === true) {
+                return (
+                  <React.Fragment key={`${index_main}-${index}`}>
+                    <Line
+                      {...noAnimationProps}
+                      connectNulls={false}
+                      name={`${key.KeyDescription}-Points_`}
+                      data={condition.data}
+                      type="linear"
+                      points={undefined}
+                      legendType="none"
+                      dataKey={`${key.KeyDescription}`}
+                      stroke={FIGURE_PATH_COLORS[index_dynamic]}
+                    />
+                    <Scatter
+                      data={condition.data}
+                      {...noAnimationProps}
+                      onDoubleClick={(props) => {
+                        const stringIndex = `${props.session}_${props.Condition}_Primary`;
+                        //const linkGenerated = `/session/${Group!}/${Individual!}/${Evaluation!}/history/${stringIndex}`;
+
+                        navigate({
+                          to: '/session/$group/$individual/$evaluation/history/view/$file',
+                          params: {
+                            group: Group,
+                            individual: Individual,
+                            evaluation: Evaluation,
+                            file: stringIndex,
+                          },
+                        });
+                      }}
+                      dataKey={`${key.KeyDescription}`}
+                      fill={FIGURE_PATH_COLORS[index_dynamic]}
+                      shape={shape}
+                    />
+                  </React.Fragment>
+                );
+              }
+
+              const splitData = splitAtPoints(condition.data, splitPoints);
+
               return (
                 <React.Fragment key={`${index_main}-${index}`}>
-                  <Line
-                    {...noAnimationProps}
-                    connectNulls={true}
-                    name={`${key.KeyDescription}-Points_`}
-                    data={condition.data}
-                    type="linear"
-                    points={undefined}
-                    legendType="none"
-                    dataKey={`${key.KeyDescription}`}
-                    stroke={FIGURE_PATH_COLORS[index_dynamic]}
-                  />
-                  <Scatter
-                    data={condition.data}
-                    {...noAnimationProps}
-                    onDoubleClick={(props) => {
-                      const stringIndex = `${props.session}_${props.Condition}_Primary`;
-                      //const linkGenerated = `/session/${Group!}/${Individual!}/${Evaluation!}/history/${stringIndex}`;
+                  {splitData.map((segment, segment_index) => (
+                    <React.Fragment key={`${index_main}-${index}-${segment_index}`}>
+                      <Line
+                        {...noAnimationProps}
+                        connectNulls={false}
+                        name={`${key.KeyDescription}-Points_`}
+                        data={segment}
+                        type="linear"
+                        points={undefined}
+                        legendType="none"
+                        dataKey={`${key.KeyDescription}`}
+                        stroke={FIGURE_PATH_COLORS[index_dynamic]}
+                      />
+                      <Scatter
+                        data={segment}
+                        {...noAnimationProps}
+                        onDoubleClick={(props) => {
+                          const stringIndex = `${props.session}_${props.Condition}_Primary`;
 
-                      navigate({
-                        to: '/session/$group/$individual/$evaluation/history/view/$file',
-                        params: {
-                          group: Group,
-                          individual: Individual,
-                          evaluation: Evaluation,
-                          file: stringIndex,
-                        },
-                      });
-                    }}
-                    dataKey={`${key.KeyDescription}`}
-                    fill={FIGURE_PATH_COLORS[index_dynamic]}
-                    shape={shape}
-                  />
+                          navigate({
+                            to: '/session/$group/$individual/$evaluation/history/view/$file',
+                            params: {
+                              group: Group,
+                              individual: Individual,
+                              evaluation: Evaluation,
+                              file: stringIndex,
+                            },
+                          });
+                        }}
+                        dataKey={`${key.KeyDescription}`}
+                        fill={FIGURE_PATH_COLORS[index_dynamic]}
+                        shape={shape}
+                      />
+                    </React.Fragment>
+                  ))}
                 </React.Fragment>
               );
             });
