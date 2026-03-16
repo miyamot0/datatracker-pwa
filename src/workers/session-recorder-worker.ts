@@ -6,20 +6,43 @@ const TIME_DELTA = 50; /** Polling interval in milliseconds */
 const TIME_UNIT = 1000; /** Number of milliseconds in one second */
 const INCREMENT = TIME_DELTA / TIME_UNIT; /** Increment value for timers, i.e., 20 hz */
 
+// UI update throttling - send UI updates less frequently than data collection (interesting option to toggle?)
+const UI_UPDATE_INTERVAL = 50; // Update UI every 100ms (10Hz) instead of 50ms
+let uiUpdateCounter = 0;
+
+// High-precision timing
+const getHighResTime = (): number => {
+  return performance.now();
+};
+
+const formatTimestamp = (perfTime: number): string => {
+  // Convert performance.now() time to ISO string equivalent
+  return new Date(Date.now() - (performance.now() - perfTime)).toJSON();
+};
+
 /**
  * Typing for worker messaging (Main --> Worker)
  */
 export interface WorkerMessage {
-  type: 'INIT' | 'START_SESSION' | 'STOP_SESSION' | 'SWITCH_TIMER' | 'PROCESS_KEY' | 'DELETE_LAST_KEY';
+  type:
+    | 'INIT'
+    | 'START_SESSION'
+    | 'STOP_SESSION'
+    | 'SWITCH_TIMER'
+    | 'PROCESS_KEY'
+    | 'DELETE_LAST_KEY'
+    | 'SETUP_CHANNEL';
   payload?: any;
+  ports?: MessagePort[];
 }
 
 /**
  * Typing for worker messaging (Worker --> Main)
  */
 export interface WorkerResponse {
-  type: 'TIMER_UPDATE' | 'KEY_PROCESSED' | 'SESSION_ENDED' | 'SYSTEM_EVENT' | 'KEY_DELETED';
+  type: 'TIMER_UPDATE' | 'KEY_PROCESSED' | 'SESSION_ENDED' | 'SYSTEM_EVENT' | 'KEY_DELETED' | 'HIGH_FREQ_UPDATE';
   payload?: any;
+  timestamp?: number;
 }
 
 /**
@@ -38,9 +61,19 @@ class SessionRecorderWorker {
   private secondsElapsedActive = 0;
 
   private activeTimer: TimerSetting = 'Stopped';
-  private startTime: Date | null = null;
+  private startTime: number | null = null; // Now using performance.now()
   private timerInterval: NodeJS.Timeout | null = null;
   private isRunning = false;
+
+  // MessageChannel for high-frequency updates
+  private messageChannel: MessagePort | null = null;
+
+  /**
+   * Sets up MessageChannel for high-frequency communication
+   */
+  setupChannel(port: MessagePort) {
+    this.messageChannel = port;
+  }
 
   /**
    *  Initializes the session recorder worker with the provided settings and keyset. This method sets up the necessary state for the worker to function correctly, including storing the settings and keyset, and resetting any existing state to ensure a clean start for the session recording. The `init` method is typically called when the worker receives an 'INIT' message from the main thread, allowing it to prepare for handling session recording tasks based on the provided configuration.
@@ -80,17 +113,19 @@ class SessionRecorderWorker {
   startSession() {
     if (!this.settings || this.isRunning) return;
 
-    this.startTime = new Date();
+    this.startTime = getHighResTime();
     this.isRunning = true;
     this.activeTimer = 'Primary';
     this.secondsElapsedActive = 0;
 
-    // Create initial system events for the start of the session and the primary timer. These events are structured as `KeyManageType` objects, containing details such as the key name, code, description, time pressed, associated timer, type (system), time into the session, and a schedule indicator to denote the start of the session and primary timer.
+    const sessionStartTimestamp = getHighResTime();
+
+    // Create initial system events for the start of the session and the primary timer with high-precision timestamps
     const sessionStartEvent: KeyManageType = {
       KeyName: 'Enter',
       KeyCode: 13,
       KeyDescription: 'Start of Session',
-      TimePressed: new Date(),
+      TimePressed: new Date(Date.now() - (performance.now() - sessionStartTimestamp)),
       KeyScheduleRecording: this.activeTimer as KeyTiming,
       KeyType: 'System',
       TimeIntoSession: this.secondsElapsedTotal,
@@ -117,6 +152,7 @@ class SessionRecorderWorker {
         activeTimer: this.activeTimer,
         isRunning: true,
       },
+      timestamp: sessionStartTimestamp,
     });
 
     // Start the timer for the session.
@@ -124,7 +160,7 @@ class SessionRecorderWorker {
   }
 
   /**
-   * Start the timer for the session.
+   * Start the timer for the session with optimized update frequency.
    */
   private startTimer() {
     if (this.timerInterval) return;
@@ -160,18 +196,36 @@ class SessionRecorderWorker {
           break;
       }
 
-      // Send timer update to main thread
-      this.postMessage({
-        type: 'TIMER_UPDATE',
-        payload: {
+      // Throttled UI updates - only send UI updates every UI_UPDATE_INTERVAL
+      uiUpdateCounter += TIME_DELTA;
+      if (uiUpdateCounter >= UI_UPDATE_INTERVAL) {
+        uiUpdateCounter = 0;
+
+        const updatePayload = {
           total: this.secondsElapsedTotal,
           first: this.secondsElapsedFirst,
           second: this.secondsElapsedSecond,
           third: this.secondsElapsedThird,
           active: this.secondsElapsedActive,
           activeTimer: this.activeTimer,
-        },
-      });
+        };
+
+        // Send via MessageChannel if available for better performance
+        if (this.messageChannel) {
+          this.messageChannel.postMessage({
+            type: 'HIGH_FREQ_UPDATE',
+            payload: updatePayload,
+            timestamp: getHighResTime(),
+          });
+        } else {
+          // Fallback to regular postMessage
+          this.postMessage({
+            type: 'TIMER_UPDATE',
+            payload: updatePayload,
+            timestamp: getHighResTime(),
+          });
+        }
+      }
     }, TIME_DELTA);
   }
 
@@ -257,6 +311,7 @@ class SessionRecorderWorker {
     if (!isFreq && !isDur) return;
 
     let keyEvent: KeyManageType | null = null;
+    const keyTimestamp = getHighResTime();
 
     // Create entry if relevant Frequency key found
     if (isFreq) {
@@ -267,7 +322,7 @@ class SessionRecorderWorker {
         KeyName: freqKey.KeyName,
         KeyCode: freqKey.KeyCode,
         KeyDescription: freqKey.KeyDescription,
-        TimePressed: new Date(),
+        TimePressed: new Date(Date.now() - (performance.now() - keyTimestamp)),
         KeyScheduleRecording: this.activeTimer as KeyTiming,
         KeyType: 'Frequency',
         TimeIntoSession: this.secondsElapsedTotal,
@@ -283,7 +338,7 @@ class SessionRecorderWorker {
         KeyName: durKey.KeyName,
         KeyCode: durKey.KeyCode,
         KeyDescription: durKey.KeyDescription,
-        TimePressed: new Date(),
+        TimePressed: new Date(Date.now() - (performance.now() - keyTimestamp)),
         KeyScheduleRecording: this.activeTimer as KeyTiming,
         KeyType: 'Duration',
         TimeIntoSession: this.secondsElapsedTotal,
@@ -384,7 +439,7 @@ class SessionRecorderWorker {
           second: this.secondsElapsedSecond,
           third: this.secondsElapsedThird,
         },
-        startTime: this.startTime?.toJSON(),
+        startTime: this.startTime ? formatTimestamp(this.startTime) : null,
       },
     });
 
@@ -406,9 +461,14 @@ const worker = new SessionRecorderWorker();
 
 // Handle messages from main thread
 self.onmessage = (event: MessageEvent<WorkerMessage>) => {
-  const { type, payload } = event.data;
+  const { type, payload, ports } = event.data;
 
   switch (type) {
+    case 'SETUP_CHANNEL':
+      if (ports && ports[0]) {
+        worker.setupChannel(ports[0]);
+      }
+      break;
     case 'INIT':
       worker.init(payload.settings, payload.keyset);
       break;

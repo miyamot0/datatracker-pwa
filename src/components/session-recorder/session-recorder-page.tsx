@@ -58,6 +58,7 @@ export default function SessionRecorderPage({
       Evaluation={Evaluation}
       Settings={dataSessionParams}
       Keyset={keySetObj}
+      Handle={handle!}
     />
   );
 }

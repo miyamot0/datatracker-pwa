@@ -32,15 +32,19 @@ type Props = {
   Evaluation: string;
   Keyset: KeySet;
   Settings: SavedSettings;
+  Handle: FileSystemDirectoryHandle;
 };
 
-export default function SessionRecorderInterface({ Group, Individual, Evaluation, Keyset, Settings }: Props) {
+export default function SessionRecorderInterface({ Group, Individual, Evaluation, Keyset, Settings, Handle }: Props) {
   //const navigator_ = useNavigate();
-  const { settings: applicationSettings, handle } = useContext(FolderHandleContext);
+  const { settings: applicationSettings } = useContext(FolderHandleContext);
   const navigate = useNavigate({ from: '/session/$group/$individual/$evaluation/run/$keyset' });
 
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
   const workerRef = useRef<Worker | null>(null);
+  const messageChannelRef = useRef<MessageChannel | null>(null);
+  const animationFrameRef = useRef<number>();
+  const lastUpdateTimeRef = useRef<number>(0);
 
   const mutateSessionOutcomes = useMutation({
     mutationFn: mutationSettingsOutcomes,
@@ -62,6 +66,9 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
   const secondsElapsedSecond = useRef<number>(0);
   const secondsElapsedThird = useRef<number>(0);
   const secondsElapsedActive = useRef<number>(0);
+  
+  // Pending state for smooth updates
+  const pendingTimerUpdate = useRef<any>(null);
 
   const wakelockRef = useRef<WakeLockSentinel>();
   const endingProcessedRef = useRef<boolean>(false);
@@ -73,10 +80,47 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
   const activeTimerRef = useRef<TimerSetting>('Stopped');
   const [, forceUpdate] = useState({});
 
+  // Optimized UI update function using requestAnimationFrame
+  const scheduleUIUpdate = () => {
+    if (animationFrameRef.current) return;
+    
+    animationFrameRef.current = requestAnimationFrame((currentTime) => {
+      animationFrameRef.current = undefined;
+      
+      // Throttle to ~60fps maximum
+      if (currentTime - lastUpdateTimeRef.current >= 16.67) {
+        if (pendingTimerUpdate.current) {
+          const update = pendingTimerUpdate.current;
+          secondsElapsedTotal.current = update.total;
+          secondsElapsedFirst.current = update.first;
+          secondsElapsedSecond.current = update.second;
+          secondsElapsedThird.current = update.third;
+          secondsElapsedActive.current = update.active;
+          activeTimerRef.current = update.activeTimer;
+          
+          pendingTimerUpdate.current = null;
+          forceUpdate({});
+          lastUpdateTimeRef.current = currentTime;
+        }
+      } else {
+        // Re-schedule if we're updating too frequently
+        scheduleUIUpdate();
+      }
+    });
+  };
+
   // Initialize worker and handle cleanup
   useEffect(() => {
     // Create worker instance
     workerRef.current = new SessionRecorderWorker();
+    
+    // Set up MessageChannel for high-frequency updates
+    messageChannelRef.current = new MessageChannel();
+    const setupMessage: WorkerMessage = {
+      type: 'SETUP_CHANNEL',
+      ports: [messageChannelRef.current.port2]
+    };
+    workerRef.current.postMessage(setupMessage, [messageChannelRef.current.port2]);
 
     // Initialize worker with settings and keyset
     const initMessage: WorkerMessage = {
@@ -85,19 +129,25 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
     };
     workerRef.current.postMessage(initMessage);
 
+    // Handle high-frequency updates via MessageChannel
+    messageChannelRef.current.port1.onmessage = (event: MessageEvent<WorkerResponse>) => {
+      const { type, payload } = event.data;
+      
+      if (type === 'HIGH_FREQ_UPDATE') {
+        pendingTimerUpdate.current = payload;
+        scheduleUIUpdate();
+      }
+    };
+
     // Handle worker messages
     workerRef.current.onmessage = (event: MessageEvent<WorkerResponse>) => {
       const { type, payload } = event.data;
 
       switch (type) {
         case 'TIMER_UPDATE':
-          secondsElapsedTotal.current = payload.total;
-          secondsElapsedFirst.current = payload.first;
-          secondsElapsedSecond.current = payload.second;
-          secondsElapsedThird.current = payload.third;
-          secondsElapsedActive.current = payload.active;
-          activeTimerRef.current = payload.activeTimer;
-          forceUpdate({});
+          // Fallback for when MessageChannel isn't available
+          pendingTimerUpdate.current = payload;
+          scheduleUIUpdate();
           break;
 
         case 'KEY_PROCESSED':
@@ -128,6 +178,13 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
 
     // Cleanup worker on unmount
     return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (messageChannelRef.current) {
+        messageChannelRef.current.port1.close();
+        messageChannelRef.current = null;
+      }
       if (workerRef.current) {
         workerRef.current.terminate();
         workerRef.current = null;
@@ -138,14 +195,6 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
       }
     };
   }, [Settings, Keyset]);
-
-  // Handle navigation guard
-  useEffect(() => {
-    if (!handle) {
-      navigate({ to: '/dashboard' });
-      return;
-    }
-  }, [handle, navigate]);
 
   const handleSessionEnded = async (payload: any) => {
     const {
@@ -221,7 +270,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
 
       try {
         await mutateSessionOutcomes.mutateAsync({
-          Handle: handle!,
+          Handle,
           Group,
           Individual,
           Evaluation,
@@ -234,7 +283,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
           Group,
           Individual,
           Evaluation,
-          Handle: handle!,
+          Handle,
           Settings: {
             ...Settings,
             Session: Settings.Session + 1,
@@ -410,8 +459,6 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
     };
     workerRef.current.postMessage(message);
   });
-
-  if (!handle) return null;
 
   return (
     <PageWrapper
