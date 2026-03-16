@@ -39,6 +39,11 @@ type Props = {
   MaxX: number;
 };
 
+const noAnimationProps = {
+  isAnimationActive: false,
+  animationDuration: 0,
+};
+
 const boutNaming = (tag: string) => {
   return `${tag}-Bouts`;
 };
@@ -154,6 +159,7 @@ export default function ProportionFigureVisualization({
 
       return (
         <div
+          {...noAnimationProps}
           className={cn('bg-primary-foreground p-4 border rounded', {
             'text-xl': FigureTextSize == FIGURE_TEXT_OPTIONS[1].value,
             'text-2xl': FigureTextSize == FIGURE_TEXT_OPTIONS[2].value,
@@ -162,7 +168,7 @@ export default function ProportionFigureVisualization({
           <p className="font-bold">{`Session #${main_payload.session} (${Condition})`}</p>
           <p className="font-semibold mb-2">{`Session Time: ${(main_payload.SessionTime / 60).toPrecision(2)} min`}</p>
 
-          <OutputDisplay payloads={relevant_payloads_unique} />
+          <OutputDisplay {...noAnimationProps} payloads={relevant_payloads_unique} />
         </div>
       );
     }
@@ -197,8 +203,15 @@ export default function ProportionFigureVisualization({
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <ResponsiveContainer width="100%" height={500} className={'text-base text-primary bg-white'} ref={divRef}>
+      <ResponsiveContainer
+        width="100%"
+        height={500}
+        className={'text-base text-primary bg-white'}
+        ref={divRef}
+        {...noAnimationProps}
+      >
         <ComposedChart
+          {...noAnimationProps}
           width={600}
           height={300}
           title=""
@@ -245,6 +258,7 @@ export default function ProportionFigureVisualization({
                 return (
                   <React.Fragment key={`${index_main}-${index}`}>
                     <Line
+                      {...noAnimationProps}
                       connectNulls={true}
                       name={`${key.KeyDescription}-Points_`}
                       data={condition.data}
@@ -256,6 +270,7 @@ export default function ProportionFigureVisualization({
                       stroke={FIGURE_PATH_COLORS[index_dynamic]}
                     />
                     <Scatter
+                      {...noAnimationProps}
                       data={condition.data}
                       dataKey={`${key.KeyDescription}`}
                       fill={FIGURE_PATH_COLORS[index_dynamic]}
@@ -293,6 +308,7 @@ export default function ProportionFigureVisualization({
                         type="linear"
                         //dot={dot_func}
                         points={undefined}
+                        {...noAnimationProps}
                         legendType="none"
                         dataKey={`${key.KeyDescription}`}
                         stroke={FIGURE_PATH_COLORS[index_dynamic]}
@@ -302,6 +318,7 @@ export default function ProportionFigureVisualization({
                         dataKey={`${key.KeyDescription}`}
                         fill={FIGURE_PATH_COLORS[index_dynamic]}
                         shape={shape}
+                        {...noAnimationProps}
                         onDoubleClick={(props) => {
                           const stringIndex = `${props.session}_${props.Condition}_Primary`;
                           //const linkGenerated = `/session/${Group!}/${Individual!}/${Evaluation!}/history/${stringIndex}`;
@@ -379,8 +396,9 @@ export default function ProportionFigureVisualization({
               value={'Percentage of Session Time'}
             />
           </YAxis>
-          <ZAxis range={[50]} />
+          <ZAxis range={[50]} {...noAnimationProps} />
           <Tooltip
+            {...noAnimationProps}
             content={
               //@ts-expect-error - recharts is not typed correctly
               <CustomTooltip />

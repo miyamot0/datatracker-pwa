@@ -27,13 +27,11 @@ import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibil
 import ProportionFigureVisualization from '@/components/visualize-outcomes/proportion/proportion-figure';
 import { Link } from '@tanstack/react-router';
 import { Switch } from '@/components/ui/switch';
-import { filterSessionsByPrimaryRole } from '@/lib/graphing';
 
 export default function ResultsProportionVisualsPage({
   Group,
   Individual,
   Evaluation,
-  Results,
   DynamicKeySet,
   Schedule,
   ShowKeys,
