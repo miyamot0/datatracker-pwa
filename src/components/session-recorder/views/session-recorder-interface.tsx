@@ -22,9 +22,8 @@ import { FolderHandleContext } from '@/context/folder-context';
 import { useMutation } from '@tanstack/react-query';
 import { mutationSettingsParams } from '@/queries/session/mutate-session-params';
 import { queryClient } from '@/App';
-import { useNavigate } from '@tanstack/react-router';
+import { useRouter } from '@tanstack/react-router';
 import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outcomes';
-import { TRANSITION_CLASSES } from '@/types/transitions';
 
 type Props = {
   Group: string;
@@ -37,7 +36,8 @@ type Props = {
 
 export default function SessionRecorderInterface({ Group, Individual, Evaluation, Keyset, Settings, Handle }: Props) {
   const { settings: applicationSettings } = useContext(FolderHandleContext);
-  const navigate = useNavigate({ from: '/session/$group/$individual/$evaluation/run/$keyset' });
+  const { history } = useRouter();
+  //const navigate = useNavigate({ from: '/session/$group/$individual/$evaluation/run/$keyset' });
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
 
   const workerRef = useRef<Worker | null>(null);
@@ -225,6 +225,8 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
         );
 
         if (confirm_save === false) {
+          history.go(-1);
+          /*
           navigate({
             to: '/session/$group/$individual/$evaluation',
             params: {
@@ -244,6 +246,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
               },
             },
           });
+          */
 
           return;
         }
@@ -291,6 +294,8 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
 
         switch (applicationSettings.PostSessionBx) {
           case 'AutoAdvance':
+            history.go(-1);
+            /*
             navigate({
               to: '/session/$group/$individual/$evaluation',
               params: {
@@ -310,6 +315,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
                 },
               },
             });
+            */
 
             break;
 
@@ -320,6 +326,8 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
               action: {
                 label: 'Load Next Session',
                 onClick: () => {
+                  history.go(-1);
+                  /*
                   navigate({
                     to: '/session/$group/$individual/$evaluation',
                     params: {
@@ -339,6 +347,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
                       },
                     },
                   });
+                  */
                 },
               },
             });
@@ -381,6 +390,10 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
     }
 
     if (runningState === 'Not Started') {
+      if (ev.key === 'Escape') {
+        history.go(-1);
+      }
+
       if (ev.key === 'Enter') {
         if (!workerRef.current) return;
 
