@@ -1,4 +1,6 @@
 export enum SettingsDisplayEnum {
-  Layout = 'Application Display Options',
-  Advanced = 'Advanced Program Options',
+  Display = 'Theme and Layout',
+  Notifications = 'Notifications',
+  File = 'Performance',
+  Admin = 'Administrative',
 }

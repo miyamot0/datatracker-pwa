@@ -9,16 +9,12 @@ import {
   ApplicationSettingsTypes,
   KEY_DISPLAY_OPTIONS,
   KeyDisplayTypes,
-  NOTIFICATION_SETTINGS_OPTIONS,
-  NotificationSettingsTypes,
   ScreenSizingOptions,
   ScreenSizingTypes,
   SESSION_DISPLAY_OPTIONS,
   SessionDisplayOptions,
   THEME_OPTIONS,
   ThemeTypes,
-  TOOL_TIP_OPTIONS,
-  ToolTipOptionTypes,
 } from '@/types/settings';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useTheme } from '@/components/ui/theme-provider';
@@ -33,11 +29,11 @@ export function SettingsTabDisplay() {
   const { setTheme, theme } = useTheme();
 
   return (
-    <TabsContent value={SettingsDisplayEnum.Layout}>
+    <TabsContent value={SettingsDisplayEnum.Display}>
       <SettingsTabContainer>
         <SettingsFormItemWrapper
-          Label="Application Theme"
-          Description="Toggle light/dark/system themes based on preference (e.g., dark mode)"
+          Label="Visual Theme"
+          Description="Select light/dark/system themes (e.g., dark mode for low light environments)"
         >
           <Select
             value={theme ?? 'system'}
@@ -61,76 +57,9 @@ export function SettingsTabDisplay() {
             </SelectContent>
           </Select>
         </SettingsFormItemWrapper>
-
         <SettingsFormItemWrapper
-          Label="Presentation of KeySet Options"
-          Description="Toggle standard or dense key layouts (i.e., display more keys on screen)"
-        >
-          <Select
-            value={settings.KeyDisplay}
-            onValueChange={(value: KeyDisplayTypes) => {
-              const newSettings = {
-                ...settings,
-                KeyDisplay: value,
-              } satisfies ApplicationSettingsTypes;
-
-              setSettings(newSettings);
-              saveSettings(newSettings);
-
-              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
-            }}
-          >
-            <SelectTrigger className="w-full md:max-w-[250px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {KEY_DISPLAY_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </SettingsFormItemWrapper>
-
-        <SettingsFormItemWrapper
-          Label="Application Layout Size"
-          Description="Toggle standard or extra wide layouts for larger displays"
-        >
-          <Select
-            value={settings.DisplaySize}
-            onValueChange={(value: ScreenSizingTypes) => {
-              const newSettings = {
-                ...settings,
-                DisplaySize: value,
-              } satisfies ApplicationSettingsTypes;
-
-              setSettings(newSettings);
-              saveSettings(newSettings);
-
-              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
-            }}
-          >
-            <SelectTrigger className="w-full md:max-w-[250px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {ScreenSizingOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </SettingsFormItemWrapper>
-
-        <SettingsFormItemWrapper
-          Label="Page Transition Animations"
-          Description="Select animations when transitioning between different pages"
+          Label="Transitions/Animations"
+          Description="Select or disable animations when traversing the application"
         >
           <Select
             value={settings.TransitionBehavior}
@@ -162,47 +91,18 @@ export function SettingsTabDisplay() {
             </SelectContent>
           </Select>
         </SettingsFormItemWrapper>
-
-        <SettingsFormItemWrapper Label="Notification Levels" Description="Set whether the types notifications desired">
-          <Select
-            value={settings.NotificationSettings}
-            onValueChange={(value: NotificationSettingsTypes) => {
-              const newSettings = {
-                ...settings,
-                NotificationSettings: value,
-              } satisfies ApplicationSettingsTypes;
-              setSettings(newSettings);
-              saveSettings(newSettings);
-
-              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
-            }}
-          >
-            <SelectTrigger className="w-full md:max-w-[250px]">
-              <SelectValue placeholder="Select Notification Level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {NOTIFICATION_SETTINGS_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </SettingsFormItemWrapper>
-
         <SettingsFormItemWrapper
-          Label="Tooltip Levels"
-          Description="Set whether app should provide tooltip guidance (Note: useful for new users)"
+          Label="Application Layout"
+          Description="Set preferred widths for application (e.g., compact layout for smaller screens)"
         >
           <Select
-            value={settings.EnableToolTip === true ? 'All' : 'None'}
-            onValueChange={(value: ToolTipOptionTypes) => {
+            value={settings.DisplaySize}
+            onValueChange={(value: ScreenSizingTypes) => {
               const newSettings = {
                 ...settings,
-                EnableToolTip: value === 'All',
+                DisplaySize: value,
               } satisfies ApplicationSettingsTypes;
+
               setSettings(newSettings);
               saveSettings(newSettings);
 
@@ -210,11 +110,11 @@ export function SettingsTabDisplay() {
             }}
           >
             <SelectTrigger className="w-full md:max-w-[250px]">
-              <SelectValue placeholder="Select Tooltip Level" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {TOOL_TIP_OPTIONS.map((option) => (
+                {ScreenSizingOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
@@ -223,18 +123,18 @@ export function SettingsTabDisplay() {
             </SelectContent>
           </Select>
         </SettingsFormItemWrapper>
-
         <SettingsFormItemWrapper
-          Label="Application Footer Display"
-          Description="Set the display style for the application footer."
+          Label="Density of KeySet"
+          Description="Select whether to display more or fewer keys in the display"
         >
           <Select
-            value={settings.ApplicationFooterDisplay}
-            onValueChange={(value: ApplicationFooterDisplay) => {
+            value={settings.KeyDisplay}
+            onValueChange={(value: KeyDisplayTypes) => {
               const newSettings = {
                 ...settings,
-                ApplicationFooterDisplay: value,
+                KeyDisplay: value,
               } satisfies ApplicationSettingsTypes;
+
               setSettings(newSettings);
               saveSettings(newSettings);
 
@@ -242,11 +142,11 @@ export function SettingsTabDisplay() {
             }}
           >
             <SelectTrigger className="w-full md:max-w-[250px]">
-              <SelectValue placeholder="Select Footer Display" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {APPLICATION_FOOTER_OPTIONS.map((option) => (
+                {KEY_DISPLAY_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
@@ -255,10 +155,9 @@ export function SettingsTabDisplay() {
             </SelectContent>
           </Select>
         </SettingsFormItemWrapper>
-
         <SettingsFormItemWrapper
-          Label="Session Display"
-          Description="Set the display style for the session."
+          Label="Fullscreen Session Recording"
+          Description="Set whether session recording should take advantage of the full screen"
         >
           <Select
             value={settings.SessionDisplay}
@@ -279,6 +178,37 @@ export function SettingsTabDisplay() {
             <SelectContent>
               <SelectGroup>
                 {SESSION_DISPLAY_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </SettingsFormItemWrapper>
+        <SettingsFormItemWrapper
+          Label="Footer Display"
+          Description="Enable or conditionally disable footer in the application"
+        >
+          <Select
+            value={settings.ApplicationFooterDisplay}
+            onValueChange={(value: ApplicationFooterDisplay) => {
+              const newSettings = {
+                ...settings,
+                ApplicationFooterDisplay: value,
+              } satisfies ApplicationSettingsTypes;
+              setSettings(newSettings);
+              saveSettings(newSettings);
+
+              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+            }}
+          >
+            <SelectTrigger className="w-full md:max-w-[250px]">
+              <SelectValue placeholder="Select Footer Display" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {APPLICATION_FOOTER_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
