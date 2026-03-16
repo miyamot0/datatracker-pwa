@@ -1,5 +1,6 @@
 import { GithubIcon, HomeIcon, TwitterIcon } from 'lucide-react';
 import { Button } from '../../ui/button';
+import { Link } from '@tanstack/react-router';
 
 export default function LayoutFooter() {
   const MODALITY = import.meta.env.VITE_MODE === 'base' ? '' : ': Island Mode';
@@ -76,7 +77,9 @@ export default function LayoutFooter() {
           </Button>
         </a>
       </div>
-      <p>{`Build Version ${BUILD_VERSION} (${BUILD_DATE}${MODALITY})`}</p>
+      <Link to="/diagnostics" className="cursor-default">
+        <p>{`Build Version ${BUILD_VERSION} (${BUILD_DATE}${MODALITY})`}</p>
+      </Link>
     </footer>
   );
 }
