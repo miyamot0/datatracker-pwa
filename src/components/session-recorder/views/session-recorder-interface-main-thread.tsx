@@ -39,7 +39,17 @@ const TIME_UNIT = 1000;
 // Increment--Proportional to seconds change
 const INCREMENT = TIME_DELTA / TIME_UNIT;
 
-export default function SessionRecorderInterfaceStable({ Group, Individual, Evaluation, Keyset, Settings }: Props) {
+/**
+ * SessionRecorderInterfaceMainThread component is responsible for managing the session recording process on the main thread
+ * @param Group - The group identifier for the session
+ * @param Individual - The individual identifier for the session
+ * @param Evaluation - The evaluation identifier for the session
+ * @param Keyset - The keyset configuration for the session, including frequency and duration keys
+ * @param Settings - The session settings, including role, timer options, and other configurations
+ * @returns - The rendered session recorder interface, which includes instructions, key history listing, and tallies of key presses, while managing the recording state and handling user interactions for starting, stopping, and saving session data.
+ * @deprecated
+ */
+export default function SessionRecorderInterfaceMainThread({ Group, Individual, Evaluation, Keyset, Settings }: Props) {
   //const navigator_ = useNavigate();
   const { settings: applicationSettings, handle } = useContext(FolderHandleContext);
   const navigate = useNavigate({ from: '/session/$group/$individual/$evaluation/run/$keyset' });

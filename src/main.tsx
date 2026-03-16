@@ -1,11 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
-//import { registerSW } from 'virtual:pwa-register';
 import '@/styles/globals.css';
 import '@/styles/github.min.css';
 import '@/styles/github-dark.min.css';
+import { initializeSharedArrayBufferSupport } from '@/lib/shared-buffer.ts';
 
+//import { registerSW } from 'virtual:pwa-register';
 /*
 const updateSW = registerSW({
   onNeedRefresh() {
@@ -15,6 +16,9 @@ const updateSW = registerSW({
   },
 });
 */
+
+// Initialize SharedArrayBuffer support check
+initializeSharedArrayBufferSupport();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

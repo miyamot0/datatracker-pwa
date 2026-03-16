@@ -36,11 +36,10 @@ type Props = {
 };
 
 export default function SessionRecorderInterface({ Group, Individual, Evaluation, Keyset, Settings, Handle }: Props) {
-  //const navigator_ = useNavigate();
   const { settings: applicationSettings } = useContext(FolderHandleContext);
   const navigate = useNavigate({ from: '/session/$group/$individual/$evaluation/run/$keyset' });
-
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
+
   const workerRef = useRef<Worker | null>(null);
   const messageChannelRef = useRef<MessageChannel | null>(null);
   const animationFrameRef = useRef<number>();
@@ -66,7 +65,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
   const secondsElapsedSecond = useRef<number>(0);
   const secondsElapsedThird = useRef<number>(0);
   const secondsElapsedActive = useRef<number>(0);
-  
+
   // Pending state for smooth updates
   const pendingTimerUpdate = useRef<any>(null);
 
@@ -83,10 +82,10 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
   // Optimized UI update function using requestAnimationFrame
   const scheduleUIUpdate = () => {
     if (animationFrameRef.current) return;
-    
+
     animationFrameRef.current = requestAnimationFrame((currentTime) => {
       animationFrameRef.current = undefined;
-      
+
       // Throttle to ~60fps maximum
       if (currentTime - lastUpdateTimeRef.current >= 16.67) {
         if (pendingTimerUpdate.current) {
@@ -97,7 +96,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
           secondsElapsedThird.current = update.third;
           secondsElapsedActive.current = update.active;
           activeTimerRef.current = update.activeTimer;
-          
+
           pendingTimerUpdate.current = null;
           forceUpdate({});
           lastUpdateTimeRef.current = currentTime;
@@ -113,12 +112,12 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
   useEffect(() => {
     // Create worker instance
     workerRef.current = new SessionRecorderWorker();
-    
+
     // Set up MessageChannel for high-frequency updates
     messageChannelRef.current = new MessageChannel();
     const setupMessage: WorkerMessage = {
       type: 'SETUP_CHANNEL',
-      ports: [messageChannelRef.current.port2]
+      ports: [messageChannelRef.current.port2],
     };
     workerRef.current.postMessage(setupMessage, [messageChannelRef.current.port2]);
 
@@ -132,7 +131,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
     // Handle high-frequency updates via MessageChannel
     messageChannelRef.current.port1.onmessage = (event: MessageEvent<WorkerResponse>) => {
       const { type, payload } = event.data;
-      
+
       if (type === 'HIGH_FREQ_UPDATE') {
         pendingTimerUpdate.current = payload;
         scheduleUIUpdate();

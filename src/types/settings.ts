@@ -1,3 +1,14 @@
+export type SessionRecorderPolling = 'normal' | 'precise' | 'extreme';
+
+export const SESSION_RECORDER_POLLING_OPTIONS: {
+  value: SessionRecorderPolling;
+  label: string;
+}[] = [
+  { value: 'normal', label: 'Normal (100ms)' },
+  { value: 'precise', label: 'Precise (50ms)' },
+  { value: 'extreme', label: 'Extreme (10ms)' },
+];
+
 /**
  * Types for cache settings
  */
