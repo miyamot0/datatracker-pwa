@@ -114,7 +114,7 @@ describe('shared-buffer.ts', () => {
 
       expect(result.issues).toContain('Safari has strict requirements for cross-origin isolation');
       expect(result.recommendations).toContain(
-        'Ensure all subresources have Cross-Origin-Resource-Policy: cross-origin',
+        'Ensure all sub resources have Cross-Origin-Resource-Policy: cross-origin',
       );
     });
 

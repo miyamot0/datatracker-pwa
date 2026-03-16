@@ -13,9 +13,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { KeySetInstance } from '@/types/keyset';
+import { ExpandedKeySetInstance, KeySetInstance } from '@/types/keyset';
 import { ExpandedSavedSessionResult } from '../session-viewer-page';
-import { ExpandedKeySetInstance } from '@/components/visualize-outcomes/rate/rate-figure';
 import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
 
 type Props = {
