@@ -5,12 +5,12 @@ import {
   ElevatedPrivilegesType,
   ENFORCED_NAMING_OPTIONS,
   EnforceDataFolderType,
+  SettingsDisplayEnum,
 } from '@/types/settings';
 import { displayConditionalNotification } from '@/lib/notifications';
 import SettingsFormItemWrapper from './settings-form-item-wrapper';
 import { TabsContent } from '../../ui/tabs';
 import { SettingsTabContainer } from './settings-tab-container';
-import { SettingsDisplayEnum } from '../types/settings-tab-enums';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useContext } from 'react';
 

@@ -3,10 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import BackButton from '@/components/ui/back-button';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { SettingsTabDisplay } from './views/settings-tab-display';
-import { SettingsDisplayEnum } from './types/settings-tab-enums';
 import { SettingsTabIO } from './views/settings-tab-io';
 import { SettingsTabNotifications } from './views/settings-tab-notifications';
 import { SettingsTabAdministrative } from './views/settings-tab-admin';
+import { SettingsDisplayEnum } from '@/types/settings';
 
 export default function SettingsPage() {
   return (

@@ -213,6 +213,16 @@ export const TRANSITION_SETTING_OPTIONS: {
 ];
 
 /**
+ * Enum for settings display categories in the application.
+ */
+export enum SettingsDisplayEnum {
+  Display = 'Theme and Layout',
+  Notifications = 'Notifications',
+  File = 'Performance',
+  Admin = 'Administrative',
+}
+
+/**
  * Type for application settings
  */
 export type ApplicationSettingsTypes = {

@@ -1,5 +1,4 @@
 import { TabsContent } from '@/components/ui/tabs';
-import { SettingsDisplayEnum } from '../types/settings-tab-enums';
 import SettingsFormItemWrapper from './settings-form-item-wrapper';
 import { SettingsTabContainer } from './settings-tab-container';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,6 +14,7 @@ import {
   SessionDisplayOptions,
   THEME_OPTIONS,
   ThemeTypes,
+  SettingsDisplayEnum,
 } from '@/types/settings';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useTheme } from '@/components/ui/theme-provider';
