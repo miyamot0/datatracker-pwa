@@ -33,7 +33,7 @@ import {
   BuildIndividualsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
 import { displayConditionalNotification } from '@/lib/notifications';
-import { FolderPlus } from 'lucide-react';
+import { FolderMinus, FolderPlus } from 'lucide-react';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import BackButton from '@/components/ui/back-button';
 import { mutationConditions } from '@/queries/conditions/mutate-conditions';
@@ -41,6 +41,7 @@ import { useMutation } from '@tanstack/react-query';
 import { mutationSettingsParams } from '@/queries/session/mutate-session-params';
 import { queryClient } from '@/App';
 import { useNavigate } from '@tanstack/react-router';
+import { toast } from 'sonner';
 
 type Props = {
   Group: string;
@@ -64,10 +65,26 @@ export default function SessionDesigner({
     from: `/session/$group/$individual/$evaluation/`,
   });
 
+  const form = useForm<SessionDesignerSchemaType>({
+    resolver: zodResolver(SessionDesignerSchema),
+    values: {
+      SessionTherapistID: '',
+      SessionKeySet: '',
+      SessionDurationS: 600,
+      SessionTerminationOption: 'End on Timer #1',
+      SessionNumber: 1,
+      SessionCondition: '',
+      DataCollectorID: '',
+      DataCollectorRole: 'Primary',
+    },
+    mode: 'onChange',
+  });
+
   const mutateConditions = useMutation({
     mutationFn: mutationConditions,
     onSuccess: (data) => {
       queryClient.setQueryData(['/', Group, Individual, Evaluation, 'conditions'], data);
+      form.resetField('SessionCondition', {});
     },
   });
 
@@ -88,20 +105,6 @@ export default function SessionDesigner({
     },
   });
 
-  const form = useForm<SessionDesignerSchemaType>({
-    resolver: zodResolver(SessionDesignerSchema),
-    values: {
-      SessionTherapistID: '',
-      SessionKeySet: '',
-      SessionDurationS: 600,
-      SessionTerminationOption: 'End on Timer #1',
-      SessionNumber: 1,
-      SessionCondition: '',
-      DataCollectorID: '',
-      DataCollectorRole: 'Primary',
-    },
-    mode: 'onChange',
-  });
   const [keySet, setKeySet] = useState<KeySet | undefined>(undefined);
 
   useEffect(() => {
@@ -155,7 +158,11 @@ export default function SessionDesigner({
               <CardTitle>Session Designer</CardTitle>
               <CardDescription>Specify your conditions for the session on this page</CardDescription>
             </div>
-            <div className="flex flex-row gap-2">
+            <BackButton />
+          </CardHeader>
+
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex flex-row justify-between gap-2 my-0 py-0">
               <ToolTipWrapper Label="Add a new Condition for this Evaluation">
                 <Button
                   variant={'outline'}
@@ -179,35 +186,75 @@ export default function SessionDesigner({
                     }
 
                     if (input.trim().length > 0) {
-                      await mutateConditions.mutateAsync({
-                        Group,
-                        Individual,
-                        Evaluation,
-                        Condition: input.trim(),
-                        Handle: handle!,
-                        Action: 'Add',
-                      });
-
-                      displayConditionalNotification(
-                        settings,
-                        'Condition Added',
-                        `The condition '${input}' has been added`,
+                      toast.promise(
+                        async () =>
+                          await mutateConditions.mutateAsync({
+                            Group,
+                            Individual,
+                            Evaluation,
+                            Condition: input.trim(),
+                            Handle: handle!,
+                            Action: 'Add',
+                          }),
+                        {
+                          loading: 'Adding condition...',
+                          success: () => {
+                            return 'Condition has been added successfully!';
+                          },
+                          error: (e: Error) => {
+                            return `An error occurred while adding the condition: ${e.message}`;
+                          },
+                        },
                       );
                     }
                   }}
                 >
                   <FolderPlus className="mr-2 h-4 w-4" />
-                  Add Condition
+                  Add New Condition
                 </Button>
               </ToolTipWrapper>
 
-              <BackButton />
-            </div>
-          </CardHeader>
+              <ToolTipWrapper Label="Clear the empty conditions for this evaluation?">
+                <Button
+                  variant={'outline'}
+                  className="shadow"
+                  size={'sm'}
+                  onClick={async () => {
+                    const confirm_delete = window.confirm(
+                      `Are you sure you wish to delete empty evaluation conditions? This CANNOT be undone.`,
+                    );
 
-          <CardContent className="flex flex-col gap-4">
+                    if (!confirm_delete) return;
+
+                    toast.promise(
+                      async () =>
+                        await mutateConditions.mutateAsync({
+                          Group,
+                          Individual,
+                          Evaluation,
+                          Condition: '',
+                          Handle: handle!,
+                          Action: 'Clear',
+                        }),
+                      {
+                        loading: 'Clearing empty conditions...',
+                        success: () => {
+                          return 'Empty conditions have been cleared successfully!';
+                        },
+                        error: (e: Error) => {
+                          return `An error occurred while clearing empty conditions: ${e.message}`;
+                        },
+                      },
+                    );
+                  }}
+                >
+                  <FolderMinus className="mr-2 h-4 w-4" />
+                  Clear Empty Condition(s)
+                </Button>
+              </ToolTipWrapper>
+            </div>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                   control={form.control}
                   name="SessionCondition"

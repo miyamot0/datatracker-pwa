@@ -26,7 +26,7 @@ export const mutationConditions = async ({
   Evaluation: string;
   Condition: string;
   Handle: FileSystemDirectoryHandle;
-  Action: 'Add';
+  Action: 'Add' | 'Clear';
 }): Promise<string[]> => {
   const conditions: string[] = await queryClient.fetchQuery({
     queryKey: ['/', Group, Individual, Evaluation, 'conditions'],
@@ -37,7 +37,7 @@ export const mutationConditions = async ({
     throw new Error('Conditions not found');
   }
 
-  const newConditionsList = conditions;
+  let newConditionsList = conditions;
 
   const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
   const individual_dir = await group_dir.getDirectoryHandle(CleanUpString(Individual));
@@ -47,6 +47,27 @@ export const mutationConditions = async ({
     case 'Add':
       await evaluation_dir.getDirectoryHandle(Condition, { create: true });
       newConditionsList.push(Condition);
+
+      break;
+    case 'Clear':
+      const entries = await evaluation_dir.values();
+
+      for await (const entry of entries) {
+        if (entry.kind === 'directory') {
+          const conditionDir = await evaluation_dir.getDirectoryHandle(entry.name);
+          const entriesInCondition = await conditionDir.values();
+
+          let fileCount = 0;
+          for await (const _ of entriesInCondition) {
+            fileCount = fileCount + 1;
+          }
+
+          if (fileCount === 0) {
+            evaluation_dir.removeEntry(entry.name, { recursive: true });
+            newConditionsList = newConditionsList.filter((cond) => cond !== entry.name);
+          }
+        }
+      }
 
       break;
   }
