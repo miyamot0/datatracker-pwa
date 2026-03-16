@@ -15,18 +15,14 @@ import {
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { getShape } from '@/lib/shapes';
 import { SessionTerminationOptionsType } from '@/components/editor-session/forms/schema/session-designer-schema';
-import { generateChartPreparation, generateTicks, GetUniqueConditions } from '../helpers/filtering';
+import { generateChartPreparation, generateTicks, GetUniqueConditions, splitAtPoints } from '../helpers/filtering';
 import { SavedSessionResult } from '@/lib/dtos';
 import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import { useNavigate } from '@tanstack/react-router';
-
-export type ExpandedKeySetInstance = {
-  KeyDescription: string;
-  Visible: boolean;
-};
+import { ExpandedKeySetInstance } from '@/types/keyset';
 
 type Props = {
   Group: string;
@@ -44,21 +40,6 @@ const noAnimationProps = {
   isAnimationActive: false,
   animationDuration: 0,
 };
-
-export function splitAtPoints<T>(arr: T[], points: number[]): T[][] {
-  const result: T[][] = [];
-  let start = 0;
-
-  // Sort points and add end of array to ensure all segments are caught
-  const cutPoints = [...points, arr.length].sort((a, b) => a - b);
-
-  for (const point of cutPoints) {
-    result.push(arr.slice(start, point));
-    start = point;
-  }
-
-  return result;
-}
 
 export default function RateFigureVisualization({
   Group,
