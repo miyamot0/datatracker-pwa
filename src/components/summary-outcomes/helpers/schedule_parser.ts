@@ -5,83 +5,75 @@ import { KeySetInstance } from '@/types/keyset';
 export function walkSessionFrequencyKey(SessionSettings: SavedSessionResult, Schedule: KeyTiming, Key: KeySetInstance) {
   const { SystemKeyPresses, FrequencyKeyPresses } = SessionSettings;
 
-  const relevant_schedule_changes = SystemKeyPresses.filter((k) => k.KeyName === Schedule);
+  const relevantScheduleChanges = SystemKeyPresses.filter((k) => k.KeyName === Schedule);
+  const isEven = relevantScheduleChanges.length % 2 === 0;
 
-  const is_even = relevant_schedule_changes.length % 2 === 0;
+  if (!isEven) throw new Error('Schedule changes must be even');
 
-  if (!is_even) throw new Error('Schedule changes must be even');
+  let workingCount = 0;
 
-  let working_count = 0;
-
-  for (let i = 0; i < relevant_schedule_changes.length - 1; i += 2) {
-    const t1 = relevant_schedule_changes[i].TimePressed;
-    const t2 = relevant_schedule_changes[i + 1].TimePressed;
-
-    const keys_within_sched_change = FrequencyKeyPresses.filter(
+  for (let i = 0; i < relevantScheduleChanges.length - 1; i += 2) {
+    const t1 = relevantScheduleChanges[i].TimePressed;
+    const t2 = relevantScheduleChanges[i + 1].TimePressed;
+    const keysWithinScheduleChange = FrequencyKeyPresses.filter(
       (k) => k.KeyName === Key.KeyName && k.TimePressed > t1 && k.TimePressed <= t2,
     );
+    const nEventsLogged = keysWithinScheduleChange.length;
 
-    const n_events_logged = keys_within_sched_change.length;
-
-    working_count += n_events_logged;
+    workingCount += nEventsLogged;
   }
 
   return {
     KeyName: Key.KeyName,
     KeyDescription: Key.KeyDescription,
     Schedule: Schedule,
-    Value: working_count,
+    Value: workingCount,
     Bouts: -1,
   };
 }
 
 export function walkSessionDurationKey(SessionSettings: SavedSessionResult, Schedule: KeyTiming, Key: KeySetInstance) {
   const { SystemKeyPresses, DurationKeyPresses } = SessionSettings;
+  const relevantScheduleChanges = SystemKeyPresses.filter((k) => k.KeyName === Schedule);
+  const isEven = relevantScheduleChanges.length % 2 === 0;
+  const bouts = relevantScheduleChanges.length / 2;
 
-  const relevant_schedule_changes = SystemKeyPresses.filter((k) => k.KeyName === Schedule);
+  if (!isEven) throw new Error('Schedule changes must be even');
 
-  const is_even = relevant_schedule_changes.length % 2 === 0;
+  let workingDuration = 0;
 
-  const bouts = relevant_schedule_changes.length / 2;
-
-  if (!is_even) throw new Error('Schedule changes must be even');
-
-  let working_duration = 0;
-
-  for (let i = 0; i < relevant_schedule_changes.length - 1; i += 2) {
-    const t1 = relevant_schedule_changes[i].TimePressed;
-    const t2 = relevant_schedule_changes[i + 1].TimePressed;
-
-    const keys_within_sched_change = DurationKeyPresses.filter(
+  for (let i = 0; i < relevantScheduleChanges.length - 1; i += 2) {
+    const t1 = relevantScheduleChanges[i].TimePressed;
+    const t2 = relevantScheduleChanges[i + 1].TimePressed;
+    const keysWithinScheduleChange = DurationKeyPresses.filter(
       (k) => k.KeyName === Key.KeyName && k.TimePressed > t1 && k.TimePressed <= t2,
     );
+    const nEventsLogged = keysWithinScheduleChange.length;
 
-    const n_events_logged = keys_within_sched_change.length;
-
-    if (n_events_logged === 0) {
-      working_duration += 0;
-    } else if (n_events_logged === 1) {
-      working_duration += (new Date(t2).getTime() - new Date(keys_within_sched_change[0].TimePressed).getTime()) / 1000;
-    } else if (n_events_logged === 2) {
-      working_duration +=
-        (new Date(keys_within_sched_change[1].TimePressed).getTime() -
-          new Date(keys_within_sched_change[0].TimePressed).getTime()) /
+    if (nEventsLogged === 0) {
+      workingDuration += 0;
+    } else if (nEventsLogged === 1) {
+      workingDuration += (new Date(t2).getTime() - new Date(keysWithinScheduleChange[0].TimePressed).getTime()) / 1000;
+    } else if (nEventsLogged === 2) {
+      workingDuration +=
+        (new Date(keysWithinScheduleChange[1].TimePressed).getTime() -
+          new Date(keysWithinScheduleChange[0].TimePressed).getTime()) /
         1000;
     } else {
       //let increment = 0;
-      const offset = n_events_logged % 2 === 0 ? 0 : -1;
+      const offset = nEventsLogged % 2 === 0 ? 0 : -1;
 
-      for (let k = 0; k < n_events_logged + offset; k += 2) {
-        const t1 = new Date(keys_within_sched_change[k].TimePressed);
-        const t2 = new Date(keys_within_sched_change[k + 1].TimePressed);
+      for (let k = 0; k < nEventsLogged + offset; k += 2) {
+        const t1 = new Date(keysWithinScheduleChange[k].TimePressed);
+        const t2 = new Date(keysWithinScheduleChange[k + 1].TimePressed);
 
-        working_duration += (t2.getTime() - t1.getTime()) / 1000;
+        workingDuration += (t2.getTime() - t1.getTime()) / 1000;
       }
 
       if (offset === -1) {
-        const last_key = keys_within_sched_change.slice(-1)[0];
+        const last_key = keysWithinScheduleChange.slice(-1)[0];
 
-        working_duration += (new Date(t2).getTime() - new Date(last_key.TimePressed).getTime()) / 1000;
+        workingDuration += (new Date(t2).getTime() - new Date(last_key.TimePressed).getTime()) / 1000;
       }
     }
   }
@@ -90,7 +82,7 @@ export function walkSessionDurationKey(SessionSettings: SavedSessionResult, Sche
     KeyName: Key.KeyName,
     KeyDescription: Key.KeyDescription,
     Schedule: Schedule,
-    Value: working_duration,
+    Value: workingDuration,
     Bouts: bouts,
   };
 }
