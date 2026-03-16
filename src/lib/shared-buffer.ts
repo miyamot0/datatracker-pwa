@@ -40,7 +40,7 @@ export const checkCrossOriginIsolation = (): CrossOriginIsolationCheck => {
 
   if (userAgent.includes('Safari') && !isIsolated) {
     issues.push('Safari has strict requirements for cross-origin isolation');
-    recommendations.push('Ensure all subresources have Cross-Origin-Resource-Policy: cross-origin');
+    recommendations.push('Ensure all sub resources have Cross-Origin-Resource-Policy: cross-origin');
   }
 
   return {

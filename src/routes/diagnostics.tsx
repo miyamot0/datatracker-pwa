@@ -1,18 +1,33 @@
 import PageWrapper from '@/components/layout/page-wrapper';
 import BackButton from '@/components/ui/back-button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { checkCrossOriginIsolation } from '@/lib/shared-buffer';
+import { cn } from '@/lib/utils';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/diagnostics')({
   component: RouteComponent,
 });
 
+function AdaptiveBadge({ isSupported }: { isSupported: boolean }) {
+  return (
+    <Badge
+      className={cn('bg-green-500 text-white hover:bg-green-500 cursor-default select-none whitespace-nowrap', {
+        'bg-red-500 hover:bg-red-500': !isSupported,
+      })}
+    >
+      {isSupported ? 'Enabled' : 'Disabled'}
+    </Badge>
+  );
+}
+
 function RouteComponent() {
   const check = checkCrossOriginIsolation();
 
   return (
-    <PageWrapper className="flex flex-col gap-6 select-none">
+    <PageWrapper label="Diagnostics" className="flex flex-col gap-6 select-none">
       <Card className="w-full max-w-screen-lg">
         <CardHeader className="flex flex-row justify-between align-top">
           <div className="flex flex-col gap-1.5">
@@ -22,11 +37,24 @@ function RouteComponent() {
           <BackButton />
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <div>Shared Array Buffer support: {check.isSupported ? 'Available' : 'Unavailable'}</div>
-          <div>Cross-Origin Isolation: {check.isIsolated ? 'Enabled' : 'Disabled'}</div>
-          <div>User Agent: {check.userAgent}</div>
+          <div className="flex flex-row justify-between">
+            <p>Shared Array Buffer support:</p> <AdaptiveBadge isSupported={check.isSupported} />
+          </div>
+          <div className="flex flex-row justify-between">
+            <p>Cross-Origin Isolation:</p> <AdaptiveBadge isSupported={check.isIsolated} />
+          </div>
 
-          <div>Issues: {check.issues.length}</div>
+          <Separator className="my-1" />
+
+          <div className="flex flex-row justify-between">
+            <p>User Agent:</p> <span>{check.userAgent}</span>
+          </div>
+
+          <Separator className="my-1" />
+
+          <div className="flex flex-row justify-between">
+            <p>Issues:</p> <span>{check.issues.length}</span>
+          </div>
           {check.issues.length > 0 && (
             <>
               <ul className="list-disc list-inside">
@@ -37,7 +65,9 @@ function RouteComponent() {
             </>
           )}
 
-          <div>Recommendations: {check.recommendations.length}</div>
+          <div className="flex flex-row justify-between">
+            <p>Recommendations:</p> <span>{check.recommendations.length}</span>
+          </div>
           {check.recommendations.length > 0 && (
             <>
               <ul className="list-disc list-inside">
