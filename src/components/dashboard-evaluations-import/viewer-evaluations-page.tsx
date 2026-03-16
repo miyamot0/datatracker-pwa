@@ -14,7 +14,7 @@ import { DataTable } from '@/components/ui/data-table-common';
 import { FolderHandleContext } from '@/context/folder-context';
 import { mutationEvaluationsAll } from '@/queries/evaluations/mutate-evaluations-all';
 import { evaluationsAllQueryOptions } from '@/queries/evaluations/query-evaluations-all';
-import { EvaluationRecord } from '@/queries/keysets/mutate-keyboards';
+import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { ImportIcon } from 'lucide-react';

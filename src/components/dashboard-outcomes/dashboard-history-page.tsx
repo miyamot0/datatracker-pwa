@@ -227,34 +227,6 @@ export default function DashboardHistoryPage({
                   },
                 },
               );
-
-              // TODO: Clear out blanks
-              /*
-              const clearBlanks = async () => {
-                const client_evaluations_folder = await GetHandleEvaluationFolder(
-                  Handle,
-                  CleanUpString(Group),
-                  CleanUpString(Individual),
-                  CleanUpString(Evaluation)
-                );
-
-                for await (const filename of await client_evaluations_folder.values()) {
-                  if (filename.kind === 'directory') {
-                    const condition_folder = await client_evaluations_folder.getDirectoryHandle(filename.name);
-
-                    let file_count = 0;
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    for await (const _ of await condition_folder.values()) {
-                      file_count = file_count = 1;
-                    }
-
-                    if (file_count < 1 && filename.name.trim() !== new_condition.trim()) {
-                      await client_evaluations_folder.removeEntry(filename.name, { recursive: true });
-                    }
-                  }
-                }
-              };
-              */
             }}
           />
         </CardContent>

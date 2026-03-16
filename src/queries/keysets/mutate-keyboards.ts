@@ -5,14 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { KeySet } from '@/types/keyset';
 import { queryClient } from '@/App';
 
-// TODO: This needs to be moved
-export type EvaluationRecord = {
-  Group: string;
-  Individual: string;
-  Evaluation: string;
-  Conditions: string[];
-};
-
 /**
  * Mutates the list of keyboards based on the specified action (Add, Delete, Duplicate, Rename, Update) for a given group and individual. It interacts with the file system to create, delete, duplicate, or update keyboard files accordingly and returns the updated list of KeySet objects.
  *
