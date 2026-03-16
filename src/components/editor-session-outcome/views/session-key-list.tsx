@@ -3,7 +3,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table-common';
 import { ApplicationSettingsTypes } from '@/types/settings';
 import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
-import { ExpandedSavedSessionResult } from '../session-viewer-page';
+import { ExpandedSavedSessionResult } from '@/lib/dtos';
 
 type Props = {
   Session: ExpandedSavedSessionResult | undefined;

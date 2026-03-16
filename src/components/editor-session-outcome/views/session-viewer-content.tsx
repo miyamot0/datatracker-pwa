@@ -18,7 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import SessionFigure from './session-figure';
 import SessionKeyList from './session-key-list';
 import { FolderHandleContext } from '@/context/folder-context';
-import { ExpandedSavedSessionResult } from '../session-viewer-page';
+import { ExpandedSavedSessionResult } from '@/lib/dtos';
 
 export default function SessionViewerContent({
   Group,
@@ -93,8 +93,7 @@ export default function SessionViewerContent({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <BackButton
-          />
+          <BackButton />
         </div>
       </CardHeader>
 

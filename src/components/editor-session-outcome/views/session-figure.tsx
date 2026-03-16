@@ -14,8 +14,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { ExpandedKeySetInstance, KeySetInstance } from '@/types/keyset';
-import { ExpandedSavedSessionResult } from '../session-viewer-page';
 import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
+import { ExpandedSavedSessionResult } from '@/lib/dtos';
 
 type Props = {
   Session?: ExpandedSavedSessionResult;

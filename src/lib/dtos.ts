@@ -55,6 +55,16 @@ export type SavedSessionResult = {
 };
 
 /**
+ * This is the type definition for the ExpandedSavedSessionResult type, which extends the SavedSessionResult type with additional properties used for plotting session outcomes
+ */
+export type ExpandedSavedSessionResult = SavedSessionResult & {
+  Filename: string;
+  MaxY: number;
+  YTicks: number[];
+  PlottedKeys: KeyManageType[];
+};
+
+/**
  * Convert the session designer schema to the saved settings type
  *
  * @param data session designer schema

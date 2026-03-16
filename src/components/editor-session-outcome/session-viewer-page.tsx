@@ -6,10 +6,8 @@ import {
   BuildIndividualsBreadcrumb,
   BuildSessionHistoryBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { SavedSessionResult } from '@/lib/dtos';
 import { useContext } from 'react';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
-import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
 import { FolderHandleContext } from '@/context/folder-context';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { ErrorDisplay } from '../suspense/error-display';
@@ -18,13 +16,6 @@ import { useQuery } from '@tanstack/react-query';
 import { GenerateSavedFileName } from '@/lib/writer';
 import { redirect } from '@tanstack/react-router';
 import SessionViewerContent from './views/session-viewer-content';
-
-export type ExpandedSavedSessionResult = SavedSessionResult & {
-  Filename: string;
-  MaxY: number;
-  YTicks: number[];
-  PlottedKeys: KeyManageType[];
-};
 
 export default function SessionViewerPage({
   Group,
