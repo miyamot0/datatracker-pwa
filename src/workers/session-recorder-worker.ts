@@ -33,7 +33,15 @@ export interface WorkerMessage {
     | 'PROCESS_KEY'
     | 'DELETE_LAST_KEY'
     | 'SETUP_CHANNEL';
-  payload?: any;
+  payload?: {
+    settings?: SavedSettings;
+    keyset?: KeySet;
+    uiPollingInterval?: SessionRecorderPolling;
+    reason?: 'Completed' | 'Cancelled';
+    timer?: 'Primary' | 'Secondary' | 'Tertiary';
+    keyName?: string;
+    keyCode?: number;
+  };
   ports?: MessagePort[];
 }
 
@@ -42,7 +50,38 @@ export interface WorkerMessage {
  */
 export interface WorkerResponse {
   type: 'TIMER_UPDATE' | 'KEY_PROCESSED' | 'SESSION_ENDED' | 'SYSTEM_EVENT' | 'KEY_DELETED' | 'HIGH_FREQ_UPDATE';
-  payload?: any;
+  payload?: {
+    // Timer update payload
+    total?: number;
+    first?: number;
+    second?: number;
+    third?: number;
+    active?: number;
+    activeTimer?: TimerSetting;
+    
+    // Key processed payload
+    key?: KeyManageType;
+    totalKeys?: number;
+    
+    // Key deleted payload
+    deletedKey?: KeyManageType;
+    
+    // System event payload
+    events?: KeyManageType[];
+    isRunning?: boolean;
+    
+    // Session ended payload
+    reason?: 'Completed' | 'Cancelled';
+    keysPressed?: KeyManageType[];
+    systemKeysPressed?: KeyManageType[];
+    timers?: {
+      total: number;
+      first: number;
+      second: number;
+      third: number;
+    };
+    startTime?: string | null;
+  };
   timestamp?: number;
 }
 
@@ -474,19 +513,27 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
       }
       break;
     case 'INIT':
-      worker.init(payload.settings, payload.keyset, payload.uiPollingInterval);
+      if (payload?.settings && payload?.keyset && payload?.uiPollingInterval) {
+        worker.init(payload.settings, payload.keyset, payload.uiPollingInterval);
+      }
       break;
     case 'START_SESSION':
       worker.startSession();
       break;
     case 'STOP_SESSION':
-      worker.stopSession(payload.reason);
+      if (payload?.reason) {
+        worker.stopSession(payload.reason);
+      }
       break;
     case 'SWITCH_TIMER':
-      worker.switchTimer(payload.timer);
+      if (payload?.timer) {
+        worker.switchTimer(payload.timer);
+      }
       break;
     case 'PROCESS_KEY':
-      worker.processKey(payload.keyName, payload.keyCode);
+      if (payload?.keyName !== undefined && payload?.keyCode !== undefined) {
+        worker.processKey(payload.keyName, payload.keyCode);
+      }
       break;
     case 'DELETE_LAST_KEY':
       worker.deleteLastKey();

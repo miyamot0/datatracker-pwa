@@ -25,6 +25,40 @@ import { queryClient } from '@/App';
 import { useRouter } from '@tanstack/react-router';
 import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outcomes';
 
+// Payload type definitions
+type TimerUpdatePayload = {
+  total: number;
+  first: number;
+  second: number;
+  third: number;
+  active: number;
+  activeTimer: TimerSetting;
+};
+
+type KeyProcessedPayload = {
+  key: KeyManageType;
+  totalKeys: number;
+};
+
+type SystemEventPayload = {
+  events?: KeyManageType[];
+  activeTimer?: TimerSetting;
+  isRunning?: boolean;
+};
+
+type SessionEndedPayload = {
+  reason: 'Completed' | 'Cancelled';
+  keysPressed: KeyManageType[];
+  systemKeysPressed: KeyManageType[];
+  timers: {
+    total: number;
+    first: number;
+    second: number;
+    third: number;
+  };
+  startTime: string | null;
+};
+
 type Props = {
   Group: string;
   Individual: string;
@@ -66,7 +100,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
   const secondsElapsedActive = useRef<number>(0);
 
   // Pending state for smooth updates
-  const pendingTimerUpdate = useRef<any>(null);
+  const pendingTimerUpdate = useRef<TimerUpdatePayload | null>(null);
 
   const wakelockRef = useRef<WakeLockSentinel>();
   const endingProcessedRef = useRef<boolean>(false);
@@ -131,8 +165,8 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
     messageChannelRef.current.port1.onmessage = (event: MessageEvent<WorkerResponse>) => {
       const { type, payload } = event.data;
 
-      if (type === 'HIGH_FREQ_UPDATE') {
-        pendingTimerUpdate.current = payload;
+      if (type === 'HIGH_FREQ_UPDATE' && payload) {
+        pendingTimerUpdate.current = payload as TimerUpdatePayload;
         scheduleUIUpdate();
       }
     };
@@ -144,32 +178,38 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
       switch (type) {
         case 'TIMER_UPDATE':
           // Fallback for when MessageChannel isn't available
-          pendingTimerUpdate.current = payload;
-          scheduleUIUpdate();
+          if (payload) {
+            pendingTimerUpdate.current = payload as TimerUpdatePayload;
+            scheduleUIUpdate();
+          }
           break;
 
         case 'KEY_PROCESSED':
-          setKeysPressed((prev) => [...prev, payload.key]);
+          setKeysPressed((prev) => [...prev, (payload as KeyProcessedPayload).key]);
           break;
 
         case 'KEY_DELETED':
           setKeysPressed((prev) => prev.slice(0, -1));
           break;
 
-        case 'SYSTEM_EVENT':
-          if (payload.events) {
+        case 'SYSTEM_EVENT': {
+          const systemPayload = payload as SystemEventPayload;
+          if (systemPayload.events) {
             // System events are handled by worker, we just need to update timer state
           }
-          if (payload.activeTimer) {
-            activeTimerRef.current = payload.activeTimer;
+          if (systemPayload.activeTimer) {
+            activeTimerRef.current = systemPayload.activeTimer;
           }
-          if (payload.isRunning !== undefined) {
-            setRunningState(payload.isRunning ? 'Started' : 'Not Started');
+          if (systemPayload.isRunning !== undefined) {
+            setRunningState(systemPayload.isRunning ? 'Started' : 'Not Started');
           }
           break;
+        }
 
         case 'SESSION_ENDED':
-          handleSessionEnded(payload);
+          if (payload) {
+            handleSessionEnded(payload as SessionEndedPayload);
+          }
           break;
       }
     };
@@ -194,7 +234,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
     };
   }, [Settings, Keyset]);
 
-  const handleSessionEnded = async (payload: any) => {
+  const handleSessionEnded = async (payload: SessionEndedPayload) => {
     const {
       reason,
       keysPressed: finalKeys,
