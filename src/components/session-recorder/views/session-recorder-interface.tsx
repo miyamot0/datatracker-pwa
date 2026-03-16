@@ -7,7 +7,7 @@ import { useState, useRef, useEffect, useContext } from 'react';
 import { KeyManageType, TimerSetting } from '../types/session-recorder-types';
 import { toast } from 'sonner';
 import SessionRecorderWorker from '@/workers/session-recorder-worker.ts?worker';
-import type { WorkerMessage, WorkerResponse } from '@/workers/session-recorder-worker';
+import type { WorkerMessage, WorkerResponse } from '@/workers/timing/session-recorder-worker';
 import SessionRecorderInstructions from './ui-instructions';
 import KeyHistoryListing from './ui-key-listing';
 import SessionRecorderTallies from './ui-counts';
@@ -24,40 +24,12 @@ import { mutationSettingsParams } from '@/queries/session/mutate-session-params'
 import { queryClient } from '@/App';
 import { useRouter } from '@tanstack/react-router';
 import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outcomes';
-
-// Payload type definitions
-type TimerUpdatePayload = {
-  total: number;
-  first: number;
-  second: number;
-  third: number;
-  active: number;
-  activeTimer: TimerSetting;
-};
-
-type KeyProcessedPayload = {
-  key: KeyManageType;
-  totalKeys: number;
-};
-
-type SystemEventPayload = {
-  events?: KeyManageType[];
-  activeTimer?: TimerSetting;
-  isRunning?: boolean;
-};
-
-type SessionEndedPayload = {
-  reason: 'Completed' | 'Cancelled';
-  keysPressed: KeyManageType[];
-  systemKeysPressed: KeyManageType[];
-  timers: {
-    total: number;
-    first: number;
-    second: number;
-    third: number;
-  };
-  startTime: string | null;
-};
+import {
+  KeyProcessedPayload,
+  SessionEndedPayload,
+  SystemEventPayload,
+  TimerUpdatePayload,
+} from '@/workers/timing/types/session-recorder-worker-payloads';
 
 type Props = {
   Group: string;
@@ -265,27 +237,6 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
 
         if (confirm_save === false) {
           history.go(-1);
-          /*
-          navigate({
-            to: '/session/$group/$individual/$evaluation',
-            params: {
-              group: Group,
-              individual: Individual,
-              evaluation: Evaluation,
-            },
-            viewTransition: {
-              types: () => {
-                const animTypes = TRANSITION_CLASSES[applicationSettings.TransitionBehavior];
-
-                if (animTypes.length < 2) {
-                  return false;
-                }
-
-                return [animTypes[1]];
-              },
-            },
-          });
-          */
 
           return;
         }
@@ -334,27 +285,6 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
         switch (applicationSettings.PostSessionBx) {
           case 'AutoAdvance':
             history.go(-1);
-            /*
-            navigate({
-              to: '/session/$group/$individual/$evaluation',
-              params: {
-                group: Group,
-                individual: Individual,
-                evaluation: Evaluation,
-              },
-              viewTransition: {
-                types: () => {
-                  const animTypes = TRANSITION_CLASSES[applicationSettings.TransitionBehavior];
-
-                  if (animTypes.length < 2) {
-                    return false;
-                  }
-
-                  return [animTypes[1]];
-                },
-              },
-            });
-            */
 
             break;
 
@@ -366,27 +296,6 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
                 label: 'Load Next Session',
                 onClick: () => {
                   history.go(-1);
-                  /*
-                  navigate({
-                    to: '/session/$group/$individual/$evaluation',
-                    params: {
-                      group: Group,
-                      individual: Individual,
-                      evaluation: Evaluation,
-                    },
-                    viewTransition: {
-                      types: () => {
-                        const animTypes = TRANSITION_CLASSES[applicationSettings.TransitionBehavior];
-
-                        if (animTypes.length < 1) {
-                          return false;
-                        }
-
-                        return [animTypes[animTypes.length - 1]];
-                      },
-                    },
-                  });
-                  */
                 },
               },
             });

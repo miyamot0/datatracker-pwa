@@ -1,6 +1,6 @@
 import { KeySet } from '@/types/keyset';
 import { SavedSettings } from '@/lib/dtos';
-import { KeyManageType, KeyTiming, TimerSetting } from '../components/session-recorder/types/session-recorder-types';
+import { KeyManageType, KeyTiming, TimerSetting } from '../../components/session-recorder/types/session-recorder-types';
 import { SessionPollingIntervals, SessionRecorderPolling } from '@/types/settings';
 
 const TIME_DELTA = 10; /** Polling interval in milliseconds */
@@ -58,18 +58,18 @@ export interface WorkerResponse {
     third?: number;
     active?: number;
     activeTimer?: TimerSetting;
-    
+
     // Key processed payload
     key?: KeyManageType;
     totalKeys?: number;
-    
+
     // Key deleted payload
     deletedKey?: KeyManageType;
-    
+
     // System event payload
     events?: KeyManageType[];
     isRunning?: boolean;
-    
+
     // Session ended payload
     reason?: 'Completed' | 'Cancelled';
     keysPressed?: KeyManageType[];
