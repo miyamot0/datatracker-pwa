@@ -3,16 +3,20 @@ import NavigationBar, { BreadCrumbListing } from './views/navigation-bar';
 import { useContext } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
 import LayoutFooter from './views/footer';
+import ScrollReset from './views/scroll-reset';
 
 type Props = {
   children: React.ReactNode;
   breadcrumbs?: BreadCrumbListing[];
   label?: string;
   className?: string;
+  HideFooter?: boolean;
 };
 
-export default function PageWrapper({ children, className, breadcrumbs, label }: Props) {
+export default function PageWrapper({ children, className, breadcrumbs, label, HideFooter }: Props) {
   const { settings } = useContext(FolderHandleContext);
+
+  const hideFooter = HideFooter === true || settings.ApplicationFooterDisplay === 'Disabled';
 
   return (
     <main
@@ -25,7 +29,8 @@ export default function PageWrapper({ children, className, breadcrumbs, label }:
 
       {children}
 
-      <LayoutFooter />
+      {!hideFooter && <LayoutFooter />}
+      <ScrollReset />
     </main>
   );
 }

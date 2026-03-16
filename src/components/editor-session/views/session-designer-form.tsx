@@ -42,7 +42,6 @@ import { mutationSettingsParams } from '@/queries/session/mutate-session-params'
 import { queryClient } from '@/App';
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
-import { scrollPageToTop } from '@/lib/window';
 
 type Props = {
   Group: string;
@@ -93,8 +92,6 @@ export default function SessionDesigner({
     mutationFn: mutationSettingsParams,
     onSuccess: (data) => {
       queryClient.setQueryData(['/', Group, Individual, Evaluation, 'settings'], data);
-
-      scrollPageToTop();
 
       navigate({
         to: '/session/$group/$individual/$evaluation/run/$keyset',

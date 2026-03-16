@@ -6,7 +6,7 @@ import { KeySet } from '@/types/keyset';
 import { useState, useRef, useEffect, useContext } from 'react';
 import { KeyManageType, TimerSetting } from '../types/session-recorder-types';
 import { toast } from 'sonner';
-import SessionRecorderWorker from '@/workers/session-recorder-worker.ts?worker';
+import SessionRecorderWorker from '@/workers/timing/session-recorder-worker.ts?worker';
 import SessionRecorderInstructions from './ui-instructions';
 import KeyHistoryListing from './ui-key-listing';
 import SessionRecorderTallies from './ui-counts';
@@ -429,6 +429,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
         BuildSessionDesignerBreadcrumb(Group, Individual, Evaluation),
       ]}
       className="select-none"
+      HideFooter={applicationSettings.ApplicationFooterDisplay === 'NonSession'}
     >
       <div className="flex flex-col w-full gap-4">
         <div className="w-full flex flex-row justify-between select-none">

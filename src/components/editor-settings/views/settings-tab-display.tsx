@@ -4,6 +4,8 @@ import SettingsFormItemWrapper from './settings-form-item-wrapper';
 import { SettingsTabContainer } from './settings-tab-container';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
+  APPLICATION_FOOTER_OPTIONS,
+  ApplicationFooterDisplay,
   ApplicationSettingsTypes,
   KEY_DISPLAY_OPTIONS,
   KeyDisplayTypes,
@@ -190,7 +192,7 @@ export function SettingsTabDisplay() {
 
         <SettingsFormItemWrapper
           Label="Tooltip Levels"
-          Description="Set whether should provide tooltip guidance (Note: useful for new users)"
+          Description="Set whether app should provide tooltip guidance (Note: useful for new users)"
         >
           <Select
             value={settings.EnableToolTip === true ? 'All' : 'None'}
@@ -206,11 +208,43 @@ export function SettingsTabDisplay() {
             }}
           >
             <SelectTrigger className="w-full md:max-w-[250px]">
-              <SelectValue placeholder="Select Notification Level" />
+              <SelectValue placeholder="Select Tooltip Level" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
                 {TOOL_TIP_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </SettingsFormItemWrapper>
+
+        <SettingsFormItemWrapper
+          Label="Application Footer Display"
+          Description="Set the display style for the application footer."
+        >
+          <Select
+            value={settings.ApplicationFooterDisplay}
+            onValueChange={(value: ApplicationFooterDisplay) => {
+              const newSettings = {
+                ...settings,
+                ApplicationFooterDisplay: value,
+              } satisfies ApplicationSettingsTypes;
+              setSettings(newSettings);
+              saveSettings(newSettings);
+
+              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+            }}
+          >
+            <SelectTrigger className="w-full md:max-w-[250px]">
+              <SelectValue placeholder="Select Footer Display" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {APPLICATION_FOOTER_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>

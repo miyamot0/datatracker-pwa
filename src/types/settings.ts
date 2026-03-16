@@ -1,5 +1,28 @@
+/**
+ * Types for application footer display options
+ */
+export type ApplicationFooterDisplay = 'Standard' | 'NonSession' | 'Disabled';
+
+/**
+ * Options for application footer display
+ */
+export const APPLICATION_FOOTER_OPTIONS: {
+  value: ApplicationFooterDisplay;
+  label: string;
+}[] = [
+  { value: 'Standard', label: 'Show Footer' },
+  { value: 'NonSession', label: 'Hide Footer during Recording' },
+  { value: 'Disabled', label: 'Disable Footer Entirely' },
+];
+
+/**
+ * Types for session recorder polling intervals
+ */
 export type SessionRecorderPolling = 'course' | 'normal' | 'precise' | 'extreme';
 
+/**
+ * This constant defines the available options for session recorder polling intervals in the application. Each option consists of a `value`, which is one of the allowed `SessionRecorderPolling` values, and a `label`, which is a human-readable string that can be displayed in the user interface (e.g., in a dropdown menu) to allow users to select their preferred polling interval for the session recorder.
+ */
 export const SESSION_RECORDER_POLLING_OPTIONS: {
   value: SessionRecorderPolling;
   label: string;
@@ -10,6 +33,9 @@ export const SESSION_RECORDER_POLLING_OPTIONS: {
   { value: 'extreme', label: 'Extreme (10ms)' },
 ];
 
+/**
+ * Values for specific polling intervals in UI
+ */
 export const SessionPollingIntervals: Record<SessionRecorderPolling, number> = {
   course: 100,
   normal: 50,
@@ -185,6 +211,7 @@ export type ApplicationSettingsTypes = {
   CacheBehavior: CacheSettingTypes;
   TransitionBehavior: TransitionSettingTypes;
   RecorderPolling: SessionRecorderPolling;
+  ApplicationFooterDisplay: ApplicationFooterDisplay;
 };
 
 /**
@@ -202,4 +229,5 @@ export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
   CacheBehavior: 'normal',
   TransitionBehavior: 'fade',
   RecorderPolling: 'normal',
+  ApplicationFooterDisplay: 'Standard',
 };
