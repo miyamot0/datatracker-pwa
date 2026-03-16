@@ -1,13 +1,21 @@
-export type SessionRecorderPolling = 'normal' | 'precise' | 'extreme';
+export type SessionRecorderPolling = 'course' | 'normal' | 'precise' | 'extreme';
 
 export const SESSION_RECORDER_POLLING_OPTIONS: {
   value: SessionRecorderPolling;
   label: string;
 }[] = [
-  { value: 'normal', label: 'Normal (100ms)' },
-  { value: 'precise', label: 'Precise (50ms)' },
+  { value: 'course', label: 'Course (100ms)' },
+  { value: 'normal', label: 'Normal (50ms)' },
+  { value: 'precise', label: 'Precise (25ms)' },
   { value: 'extreme', label: 'Extreme (10ms)' },
 ];
+
+export const SessionPollingIntervals: Record<SessionRecorderPolling, number> = {
+  course: 100,
+  normal: 50,
+  precise: 25,
+  extreme: 10,
+};
 
 /**
  * Types for cache settings
@@ -176,6 +184,7 @@ export type ApplicationSettingsTypes = {
   DisplaySize: ScreenSizingTypes;
   CacheBehavior: CacheSettingTypes;
   TransitionBehavior: TransitionSettingTypes;
+  RecorderPolling: SessionRecorderPolling;
 };
 
 /**
@@ -192,4 +201,5 @@ export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
   DisplaySize: 'standard',
   CacheBehavior: 'normal',
   TransitionBehavior: 'fade',
+  RecorderPolling: 'normal',
 };

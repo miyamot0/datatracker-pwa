@@ -9,6 +9,8 @@ import {
   EnforceDataFolderType,
   POST_SESSION_BX_OPTIONS,
   PostSessionBxTypes,
+  SESSION_RECORDER_POLLING_OPTIONS,
+  SessionRecorderPolling,
 } from '@/types/settings';
 import { displayConditionalNotification } from '@/lib/notifications';
 import SettingsFormItemWrapper from '../views/settings-form-item-wrapper';
@@ -144,6 +146,38 @@ export function SettingsTabAdvanced() {
             <SelectContent>
               <SelectGroup>
                 {ENFORCED_NAMING_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </SettingsFormItemWrapper>
+
+        <SettingsFormItemWrapper
+          Label="Session UI Rendering"
+          Description="Set the polling interval for the session recorder's UI updates (Note: recording fidelity is consistent regardless)"
+        >
+          <Select
+            value={settings.RecorderPolling}
+            onValueChange={(value: SessionRecorderPolling) => {
+              const newSettings = {
+                ...settings,
+                RecorderPolling: value,
+              } satisfies ApplicationSettingsTypes;
+              setSettings(newSettings);
+              saveSettings(newSettings);
+
+              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+            }}
+          >
+            <SelectTrigger className="w-full md:max-w-[250px]">
+              <SelectValue placeholder="Select Session Timing Precision" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {SESSION_RECORDER_POLLING_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>

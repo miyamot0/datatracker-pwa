@@ -124,7 +124,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
     // Initialize worker with settings and keyset
     const initMessage: WorkerMessage = {
       type: 'INIT',
-      payload: { settings: Settings, keyset: Keyset },
+      payload: { settings: Settings, keyset: Keyset, uiPollingInterval: applicationSettings.RecorderPolling },
     };
     workerRef.current.postMessage(initMessage);
 

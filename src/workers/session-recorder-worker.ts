@@ -1,13 +1,14 @@
 import { KeySet } from '@/types/keyset';
 import { SavedSettings } from '@/lib/dtos';
 import { KeyManageType, KeyTiming, TimerSetting } from '../components/session-recorder/types/session-recorder-types';
+import { SessionPollingIntervals, SessionRecorderPolling } from '@/types/settings';
 
-const TIME_DELTA = 50; /** Polling interval in milliseconds */
+const TIME_DELTA = 10; /** Polling interval in milliseconds */
 const TIME_UNIT = 1000; /** Number of milliseconds in one second */
 const INCREMENT = TIME_DELTA / TIME_UNIT; /** Increment value for timers, i.e., 20 hz */
 
 // UI update throttling - send UI updates less frequently than data collection (interesting option to toggle?)
-const UI_UPDATE_INTERVAL = 50; // Update UI every 100ms (10Hz) instead of 50ms
+let UI_UPDATE_INTERVAL = 100; // Update UI interval in milliseconds (e.g., 100 ms for 10 updates per second)
 let uiUpdateCounter = 0;
 
 // High-precision timing
@@ -80,9 +81,12 @@ class SessionRecorderWorker {
    * @param settings
    * @param keyset
    */
-  init(settings: SavedSettings, keyset: KeySet) {
+  init(settings: SavedSettings, keyset: KeySet, uiPollingInterval: SessionRecorderPolling) {
     this.settings = settings;
     this.keyset = keyset;
+
+    UI_UPDATE_INTERVAL = SessionPollingIntervals[uiPollingInterval];
+
     this.resetState();
   }
 
@@ -470,7 +474,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
       }
       break;
     case 'INIT':
-      worker.init(payload.settings, payload.keyset);
+      worker.init(payload.settings, payload.keyset, payload.uiPollingInterval);
       break;
     case 'START_SESSION':
       worker.startSession();
