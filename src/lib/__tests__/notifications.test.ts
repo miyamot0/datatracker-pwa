@@ -22,6 +22,7 @@ describe('displayConditionalNotification', () => {
     DisplaySize: 'standard',
     CacheBehavior: 'normal',
     TransitionBehavior: 'none',
+    RecorderPolling: 'normal'
   };
 
   beforeEach(() => {

@@ -37,7 +37,6 @@ type Props = {
 export default function SessionRecorderInterface({ Group, Individual, Evaluation, Keyset, Settings, Handle }: Props) {
   const { settings: applicationSettings } = useContext(FolderHandleContext);
   const { history } = useRouter();
-  //const navigate = useNavigate({ from: '/session/$group/$individual/$evaluation/run/$keyset' });
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
 
   const workerRef = useRef<Worker | null>(null);
@@ -504,7 +503,6 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
                   'bg-green-400 text-white': Settings.TimerOption === 'End on Timer #1',
                   'bg-orange-400 text-white': Settings.TimerOption === 'End on Timer #2',
                   'bg-red-400 text-white': Settings.TimerOption === 'End on Timer #3',
-                  //'bg-blue-400 text-white': Settings.TimerOption === 'End on Timer #1 and #2 Total',
                 },
               )}
             >

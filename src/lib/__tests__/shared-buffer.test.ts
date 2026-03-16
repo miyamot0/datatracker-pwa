@@ -4,7 +4,6 @@ import {
   displaySharedArrayBufferDiagnostics,
   initializeSharedArrayBufferSupport,
   getSharedArrayBufferConfig,
-  type CrossOriginIsolationCheck,
 } from '../shared-buffer.ts';
 
 // Mock console methods
@@ -15,7 +14,7 @@ const mockConsole = {
   groupEnd: vi.fn(),
 };
 
-// Mock global objects
+/* Mock global objects
 const mockGlobals = {
   SharedArrayBuffer: undefined as any,
   Atomics: undefined as any,
@@ -24,12 +23,13 @@ const mockGlobals = {
   window: { isSecureContext: true } as any,
   importMeta: { env: { DEV: false } } as any,
 };
+*/
 
 describe('shared-buffer.ts', () => {
   beforeEach(() => {
     // Reset all mocks
     vi.clearAllMocks();
-    
+
     // Mock console methods
     vi.spyOn(console, 'log').mockImplementation(mockConsole.log);
     vi.spyOn(console, 'warn').mockImplementation(mockConsole.warn);
@@ -42,7 +42,7 @@ describe('shared-buffer.ts', () => {
     (global as any).self = { crossOriginIsolated: false };
     (global as any).navigator = { userAgent: 'Test Browser' };
     (global as any).window = { isSecureContext: true };
-    
+
     // Mock import.meta.env
     vi.stubGlobal('import.meta', { env: { DEV: false } });
   });
@@ -92,7 +92,9 @@ describe('shared-buffer.ts', () => {
     });
 
     it('should detect Firefox HTTPS requirement', () => {
-      (global as any).navigator = { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0' };
+      (global as any).navigator = {
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0',
+      };
       (global as any).window = { isSecureContext: false };
 
       const result = checkCrossOriginIsolation();
@@ -102,13 +104,18 @@ describe('shared-buffer.ts', () => {
     });
 
     it('should detect Safari cross-origin isolation issues', () => {
-      (global as any).navigator = { userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15' };
+      (global as any).navigator = {
+        userAgent:
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15',
+      };
       (global as any).self = { crossOriginIsolated: false };
 
       const result = checkCrossOriginIsolation();
 
       expect(result.issues).toContain('Safari has strict requirements for cross-origin isolation');
-      expect(result.recommendations).toContain('Ensure all subresources have Cross-Origin-Resource-Policy: cross-origin');
+      expect(result.recommendations).toContain(
+        'Ensure all subresources have Cross-Origin-Resource-Policy: cross-origin',
+      );
     });
 
     it('should capture user agent information', () => {
@@ -139,7 +146,9 @@ describe('shared-buffer.ts', () => {
 
       displaySharedArrayBufferDiagnostics();
 
-      expect(mockConsole.log).toHaveBeenCalledWith('SharedArrayBuffer fully supported - high-performance features enabled');
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        'SharedArrayBuffer fully supported - high-performance features enabled',
+      );
       expect(mockConsole.group).not.toHaveBeenCalled();
     });
 
@@ -177,7 +186,9 @@ describe('shared-buffer.ts', () => {
       displaySharedArrayBufferDiagnostics();
 
       expect(mockConsole.group).toHaveBeenCalledWith('Recommendations:');
-      expect(mockConsole.log).toHaveBeenCalledWith('• Try using a modern browser (Chrome 68+, Firefox 79+, Safari 15.2+)');
+      expect(mockConsole.log).toHaveBeenCalledWith(
+        '• Try using a modern browser (Chrome 68+, Firefox 79+, Safari 15.2+)',
+      );
       expect(mockConsole.log).toHaveBeenCalledWith('• Ensure COOP and COEP headers are properly set on the server');
     });
   });
