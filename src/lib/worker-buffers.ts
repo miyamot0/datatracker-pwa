@@ -84,7 +84,7 @@ export class PerformanceMonitor {
  */
 export const createHighPrecisionTimer = (callback: () => void, interval: number): (() => void) => {
   let isRunning = true;
-  let startTime = performance.now();
+  const startTime = performance.now();
   let nextTick = startTime + interval;
 
   const tick = () => {

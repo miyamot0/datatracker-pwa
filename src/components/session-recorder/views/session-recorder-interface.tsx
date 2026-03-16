@@ -74,7 +74,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
   const [runningState, setRunningState] = useState<'Not Started' | 'Started' | 'Completed' | 'Cancelled'>(
     'Not Started',
   );
-  const [_startTime, setStartTime] = useState<Date | null>(null);
+  const [, setStartTime] = useState<Date | null>(null);
   const activeTimerRef = useRef<TimerSetting>('Stopped');
   const [, forceUpdate] = useState({});
 

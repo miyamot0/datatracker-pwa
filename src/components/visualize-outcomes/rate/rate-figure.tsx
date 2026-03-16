@@ -20,7 +20,7 @@ import { SavedSessionResult } from '@/lib/dtos';
 import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { FIGURE_TEXT_OPTIONS, FigureVisualSizing } from '@/types/accessibility';
+import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import { useNavigate } from '@tanstack/react-router';
 
 export type ExpandedKeySetInstance = {

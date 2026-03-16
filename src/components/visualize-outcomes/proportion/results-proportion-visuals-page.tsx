@@ -23,7 +23,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { setLocalCachedPrefs } from '@/lib/local_storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
-import { FIGURE_TEXT_OPTIONS, FigureVisualSizing } from '@/types/accessibility';
+import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import ProportionFigureVisualization from '@/components/visualize-outcomes/proportion/proportion-figure';
 import { Link } from '@tanstack/react-router';
 import { FilterByPrimaryRole } from '../helpers/filtering';

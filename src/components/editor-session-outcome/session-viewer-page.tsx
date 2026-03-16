@@ -47,12 +47,10 @@ export default function SessionViewerPage({
   const relevant_session = data.find((s) => s.Filename.startsWith(FileString));
 
   if (relevant_session) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const plot_object: any[] = [];
 
     const keys = relevant_session.Keyset.FrequencyKeys.map((k) => k.KeyDescription);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const start_object: any = {
       second: 0,
     };
@@ -67,7 +65,6 @@ export default function SessionViewerPage({
     const reference_object = { ...start_object };
 
     relevant_session.FrequencyKeyPresses.forEach((k) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const prev: any = {
         second: Math.floor(k.TimeIntoSession),
       };
@@ -77,7 +74,6 @@ export default function SessionViewerPage({
 
       reference_object[k.KeyDescription] = reference_object[k.KeyDescription] + 1;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const curr: any = {
         second: Math.floor(k.TimeIntoSession),
       };
