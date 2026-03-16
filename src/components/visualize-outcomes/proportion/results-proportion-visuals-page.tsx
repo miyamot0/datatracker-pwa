@@ -37,6 +37,9 @@ export default function ResultsProportionVisualsPage({
   DynamicKeySet,
   Schedule,
   ShowKeys,
+  ResultsFiltered,
+  MinX,
+  MaxX,
 }: {
   Group: string;
   Individual: string;
@@ -45,13 +48,14 @@ export default function ResultsProportionVisualsPage({
   DynamicKeySet: KeySet;
   Schedule: SessionTerminationOptionsType;
   ShowKeys: { KeyDescription: string; Visible: boolean }[];
+  ResultsFiltered: SavedSessionResult[];
+  MinX: number;
+  MaxX: number;
 }) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
   const [connectAllPoints, setConnectAllPoints] = useState(false);
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
   const [schedule, setSchedule] = useState<SessionTerminationOptionsType>(Schedule);
-
-  const results_filtered = filterSessionsByPrimaryRole(Results);
 
   return (
     <PageWrapper
@@ -209,7 +213,9 @@ export default function ResultsProportionVisualsPage({
               Group={Group}
               Individual={Individual}
               Evaluation={Evaluation}
-              FilteredSessions={results_filtered}
+              FilteredSessions={ResultsFiltered}
+              MinX={MinX}
+              MaxX={MaxX}
               ScheduleOption={schedule}
               KeySetFull={filteredKeys}
               FigureTextSize={figureTextSize}

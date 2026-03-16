@@ -27,7 +27,6 @@ import BackButton from '@/components/ui/back-button';
 import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import { Link } from '@tanstack/react-router';
 import { Switch } from '@/components/ui/switch';
-import { filterSessionsByPrimaryRole } from '@/lib/graphing';
 
 export default function ResultsRateVisualsPage({
   Group,
@@ -35,15 +34,18 @@ export default function ResultsRateVisualsPage({
   Evaluation,
   ShowKeys,
   DynamicKeySet,
-  Results,
+  ResultsFiltered,
   Schedule,
   ExcludeKeysFromCTB,
+  MinX,
+  MaxX,
 }: {
   Group: string;
   Individual: string;
   Evaluation: string;
   Handle: FileSystemHandle;
   Results: SavedSessionResult[];
+  ResultsFiltered: SavedSessionResult[];
   DynamicKeySet: KeySet;
   Schedule: SessionTerminationOptionsType;
   ShowKeys: {
@@ -54,14 +56,14 @@ export default function ResultsRateVisualsPage({
     KeyDescription: string;
     Visible: boolean;
   }[];
+  MinX: number;
+  MaxX: number;
 }) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
   const [connectAllPoints, setConnectAllPoints] = useState(false);
   const [schedule, setSchedule] = useState<SessionTerminationOptionsType>(Schedule);
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
   const [ctbSumKeys, setCTBSumKeys] = useState(ExcludeKeysFromCTB);
-
-  const results_filtered = filterSessionsByPrimaryRole(Results);
 
   return (
     <PageWrapper
@@ -279,7 +281,7 @@ export default function ResultsRateVisualsPage({
 
           {DynamicKeySet && (
             <RateFigureVisualization
-              FilteredSessions={results_filtered}
+              FilteredSessions={ResultsFiltered}
               ScheduleOption={schedule}
               CTBKeys={ctbSumKeys}
               KeySetFull={filteredKeys}
@@ -288,6 +290,8 @@ export default function ResultsRateVisualsPage({
               Evaluation={Evaluation}
               FigureTextSize={figureTextSize}
               ConnectSpans={connectAllPoints}
+              MinX={MinX}
+              MaxX={MaxX}
             />
           )}
         </CardContent>

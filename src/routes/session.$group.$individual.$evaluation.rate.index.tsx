@@ -6,6 +6,7 @@ import { KeySet, KeySetInstance } from '@/types/keyset';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { routeGuard } from '@/lib/routing';
+import { filterSessionsByPrimaryRole } from '@/lib/graphing';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/rate/')({
   beforeLoad: routeGuard,
@@ -31,46 +32,46 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
       });
     }
 
-    const all_keysets = results.map((result) => result.Keyset);
-    const all_fkeys = all_keysets.map((keyset) => keyset.FrequencyKeys).flat();
-    const all_dkeys = all_keysets.map((keyset) => keyset.DurationKeys).flat();
+    const allKeysets = results.map((result) => result.Keyset);
+    const allFKeys = allKeysets.map((keyset) => keyset.FrequencyKeys).flat();
+    const allDKeys = allKeysets.map((keyset) => keyset.DurationKeys).flat();
 
-    const targeted_fkeys: KeySetInstance[] = [];
-    all_fkeys.forEach((key) => {
-      if (!targeted_fkeys.some((k) => k.KeyCode === key.KeyCode)) {
-        targeted_fkeys.push(key);
+    const targetedFKeys: KeySetInstance[] = [];
+    allFKeys.forEach((key) => {
+      if (!targetedFKeys.some((k) => k.KeyCode === key.KeyCode)) {
+        targetedFKeys.push(key);
       }
     });
 
-    const targeted_dkeys: KeySetInstance[] = [];
-    all_dkeys.forEach((key) => {
-      if (!targeted_dkeys.some((k) => k.KeyCode === key.KeyCode)) {
-        targeted_dkeys.push(key);
+    const targetedDKeys: KeySetInstance[] = [];
+    allDKeys.forEach((key) => {
+      if (!targetedDKeys.some((k) => k.KeyCode === key.KeyCode)) {
+        targetedDKeys.push(key);
       }
     });
 
-    const dynamic_keyset = {
+    const dynamicKeyset = {
       ...keyset,
-      FrequencyKeys: targeted_fkeys,
-      DurationKeys: targeted_dkeys,
+      FrequencyKeys: targetedFKeys,
+      DurationKeys: targetedDKeys,
     } as unknown as KeySet;
 
-    const keys = dynamic_keyset.FrequencyKeys.map((key) => ({
+    const keys = dynamicKeyset.FrequencyKeys.map((key) => ({
       KeyDescription: key.KeyDescription,
       Visible: true,
     }));
 
-    const stored_prefs = getLocalCachedPrefs(group, individual, evaluation, 'Rate');
+    const storedPreferences = getLocalCachedPrefs(group, individual, evaluation, 'Rate');
 
-    const ctb_entry = {
+    const ctbEntry = {
       KeyDescription: 'CTB',
       Visible: true,
     };
 
-    const show_keys_base = [...keys, ctb_entry].map((key) => {
-      const should_disable = stored_prefs.KeyDescription.includes(key.KeyDescription);
+    const showKeysBase = [...keys, ctbEntry].map((key) => {
+      const shouldDisable = storedPreferences.KeyDescription.includes(key.KeyDescription);
 
-      if (should_disable) {
+      if (shouldDisable) {
         return {
           ...key,
           Visible: false,
@@ -80,10 +81,10 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
       return key;
     });
 
-    const exclude_from_ctb = keys.map((key) => {
-      const should_disable = stored_prefs.CTBElements.includes(key.KeyDescription);
+    const excludeFromCTB = keys.map((key) => {
+      const shouldDisable = storedPreferences.CTBElements.includes(key.KeyDescription);
 
-      if (should_disable) {
+      if (shouldDisable) {
         return {
           ...key,
           Visible: false,
@@ -92,6 +93,16 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
 
       return key;
     });
+
+    const resultsFiltered = filterSessionsByPrimaryRole(results);
+
+    let minX = 0;
+    let maxX = 0;
+
+    if (resultsFiltered.length > 0) {
+      minX = Math.min(...resultsFiltered.map((r) => r.SessionSettings.Session));
+      maxX = Math.max(...resultsFiltered.map((r) => r.SessionSettings.Session));
+    }
 
     return {
       Group: CleanUpString(group),
@@ -99,18 +110,33 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
       Evaluation: CleanUpString(evaluation),
       Handle: handle,
       Results: results,
-      DynamicKeySet: dynamic_keyset,
-      ShowKeys: show_keys_base,
-      ExcludeKeysFromCTB: exclude_from_ctb,
-      Schedule: stored_prefs.Schedule ?? 'End on Timer #1',
+      ResultsFiltered: resultsFiltered,
+      MinX: minX,
+      MaxX: maxX,
+      DynamicKeySet: dynamicKeyset,
+      ShowKeys: showKeysBase,
+      ExcludeKeysFromCTB: excludeFromCTB,
+      Schedule: storedPreferences.Schedule ?? 'End on Timer #1',
     };
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { Group, Individual, Evaluation, Handle, Results, DynamicKeySet, Schedule, ShowKeys, ExcludeKeysFromCTB } =
-    Route.useLoaderData();
+  const {
+    Group,
+    Individual,
+    Evaluation,
+    Handle,
+    Results,
+    ResultsFiltered,
+    DynamicKeySet,
+    Schedule,
+    ShowKeys,
+    ExcludeKeysFromCTB,
+    MinX,
+    MaxX,
+  } = Route.useLoaderData();
 
   return (
     <ResultsRateVisualsPage
@@ -119,10 +145,13 @@ function RouteComponent() {
       Evaluation={Evaluation}
       Handle={Handle}
       Results={Results}
+      ResultsFiltered={ResultsFiltered}
       DynamicKeySet={DynamicKeySet}
       Schedule={Schedule}
       ShowKeys={ShowKeys}
       ExcludeKeysFromCTB={ExcludeKeysFromCTB}
+      MinX={MinX}
+      MaxX={MaxX}
     />
   );
 }

@@ -35,6 +35,8 @@ type Props = {
   KeySetFull: ExpandedKeySetInstance[];
   FigureTextSize: FigureVisualSizing;
   ConnectSpans: boolean;
+  MinX: number;
+  MaxX: number;
 };
 
 const noAnimationProps = {
@@ -52,6 +54,8 @@ export default function RateFigureVisualization({
   KeySetFull,
   FigureTextSize,
   ConnectSpans,
+  MinX,
+  MaxX,
 }: Props) {
   const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
   const navigate = useNavigate({
@@ -60,7 +64,7 @@ export default function RateFigureVisualization({
 
   let maxY = 0;
 
-  const { Data, MinX, MaxX } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Frequency');
+  const { Data } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Frequency');
 
   const preparedData = Data.map((data) => {
     // eslint-disable-next-line prefer-const

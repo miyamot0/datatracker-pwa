@@ -35,6 +35,8 @@ type Props = {
   KeySetFull: ExpandedKeySetInstance[];
   FigureTextSize: FigureVisualSizing;
   ConnectSpans: boolean;
+  MinX: number;
+  MaxX: number;
 };
 
 const boutNaming = (tag: string) => {
@@ -100,13 +102,15 @@ export default function ProportionFigureVisualization({
   KeySetFull,
   FigureTextSize,
   ConnectSpans,
+  MinX,
+  MaxX,
 }: Props) {
   const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
   const navigate = useNavigate({
     from: `/session/$group/$individual/$evaluation/proportion/`,
   });
 
-  const { Data, MinX, MaxX } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Duration');
+  const { Data } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Duration');
 
   const preparedData = Data.map((data) => {
     const temp_obj = {} as any;
