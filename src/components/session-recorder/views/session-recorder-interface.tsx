@@ -7,7 +7,6 @@ import { useState, useRef, useEffect, useContext } from 'react';
 import { KeyManageType, TimerSetting } from '../types/session-recorder-types';
 import { toast } from 'sonner';
 import SessionRecorderWorker from '@/workers/session-recorder-worker.ts?worker';
-import type { WorkerMessage, WorkerResponse } from '@/workers/timing/session-recorder-worker';
 import SessionRecorderInstructions from './ui-instructions';
 import KeyHistoryListing from './ui-key-listing';
 import SessionRecorderTallies from './ui-counts';
@@ -30,6 +29,7 @@ import {
   SystemEventPayload,
   TimerUpdatePayload,
 } from '@/workers/timing/types/session-recorder-worker-payloads';
+import { WorkerMessage, WorkerResponse } from '@/workers/timing/types/session-recorder-worker-messaging';
 
 type Props = {
   Group: string;
