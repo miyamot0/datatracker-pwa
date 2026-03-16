@@ -115,7 +115,7 @@ export default function ProportionFigureVisualization({
     from: `/session/$group/$individual/$evaluation/proportion/`,
   });
 
-  const { Data } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Duration');
+  const Data = generateChartPreparation(FilteredSessions, ScheduleOption, 'Duration');
 
   const preparedData = Data.map((data) => {
     const temp_obj = {} as any;

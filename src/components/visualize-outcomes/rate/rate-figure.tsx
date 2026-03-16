@@ -64,7 +64,7 @@ export default function RateFigureVisualization({
 
   let maxY = 0;
 
-  const { Data } = generateChartPreparation(FilteredSessions, ScheduleOption, 'Frequency');
+  const Data = generateChartPreparation(FilteredSessions, ScheduleOption, 'Frequency');
 
   const preparedData = Data.map((data) => {
     // eslint-disable-next-line prefer-const

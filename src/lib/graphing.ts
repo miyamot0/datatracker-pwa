@@ -25,18 +25,7 @@ export function generateChartPreparation(
   ScheduleOption: SessionTerminationOptionsType,
   Perspective: 'Frequency' | 'Duration',
 ) {
-  let minX = 1;
-  let maxX = 0;
-
   const generateData = FilteredSessions.map((result) => {
-    if (minX > result.SessionSettings.Session) {
-      minX = result.SessionSettings.Session;
-    }
-
-    if (maxX < result.SessionSettings.Session) {
-      maxX = result.SessionSettings.Session;
-    }
-
     function convertScheduleSetting(schedule: SessionTerminationOptionsType) {
       switch (schedule) {
         case 'End on Timer #1':
@@ -86,9 +75,5 @@ export function generateChartPreparation(
     };
   });
 
-  return {
-    Data: generateData,
-    MinX: minX,
-    MaxX: maxX,
-  };
+  return generateData;
 }
