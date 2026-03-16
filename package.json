@@ -40,7 +40,7 @@
     "preview": "vite preview",
     "check-licenses": "npx license-report --only=prod --output=json > ./src/assets/licenses.json",
     "build-readme": "tsx ./scripts/index.ts",
-    "prebuild": "yarn run test && yarn run check-licenses && yarn run build-readme",
+    "prebuild": "yarn run lint && yarn run test && yarn run check-licenses && yarn run build-readme",
     "test": "vitest run --coverage",
     "test-old": "vitest run --coverage",
     "test:watch": "vitest --watch",
