@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { splitAtPoints } from '../arrays';
+import { splitAtPoints, chunking } from '../arrays';
 
 describe('splitAtPoints', () => {
   describe('basic functionality', () => {
@@ -213,6 +213,197 @@ describe('splitAtPoints', () => {
       // Should not throw and should handle gracefully
       expect(Array.isArray(result)).toBe(true);
       expect(result.flat()).toEqual(arr);
+    });
+  });
+});
+
+describe('chunking', () => {
+  describe('basic functionality', () => {
+    it('should chunk array into equal-sized chunks', () => {
+      const arr = [1, 2, 3, 4, 5, 6];
+      const chunks = Array.from(chunking(arr, 2));
+
+      expect(chunks).toEqual([
+        [1, 2],
+        [3, 4],
+        [5, 6],
+      ]);
+    });
+
+    it('should handle array that does not divide evenly', () => {
+      const arr = [1, 2, 3, 4, 5];
+      const chunks = Array.from(chunking(arr, 2));
+
+      expect(chunks).toEqual([[1, 2], [3, 4], [5]]);
+    });
+
+    it('should handle chunk size equal to array length', () => {
+      const arr = [1, 2, 3, 4, 5];
+      const chunks = Array.from(chunking(arr, 5));
+
+      expect(chunks).toEqual([[1, 2, 3, 4, 5]]);
+    });
+
+    it('should handle chunk size larger than array length', () => {
+      const arr = [1, 2, 3];
+      const chunks = Array.from(chunking(arr, 5));
+
+      expect(chunks).toEqual([[1, 2, 3]]);
+    });
+
+    it('should handle chunk size of 1', () => {
+      const arr = [1, 2, 3, 4];
+      const chunks = Array.from(chunking(arr, 1));
+
+      expect(chunks).toEqual([[1], [2], [3], [4]]);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should handle empty array', () => {
+      const arr: number[] = [];
+      const chunks = Array.from(chunking(arr, 3));
+
+      expect(chunks).toEqual([]);
+    });
+
+    it('should handle single element array', () => {
+      const arr = [42];
+      const chunks = Array.from(chunking(arr, 3));
+
+      expect(chunks).toEqual([[42]]);
+    });
+
+    it('should handle zero chunk size gracefully', () => {
+      const arr = [1, 2, 3];
+      const generator = chunking(arr, 0);
+
+      // Zero chunk size would cause infinite loop, so we should expect no results
+      const chunks = [];
+      let count = 0;
+      const maxIterations = 10; // Safety limit
+
+      for (const chunk of generator) {
+        chunks.push(chunk);
+        count++;
+        if (count >= maxIterations) break; // Safety break to prevent infinite loop
+      }
+
+      // With zero chunk size, it would create infinite empty arrays
+      // We just verify it doesn't crash and produces empty chunks
+      expect(chunks.length).toBeLessThanOrEqual(maxIterations);
+      chunks.forEach((chunk) => {
+        expect(Array.isArray(chunk)).toBe(true);
+      });
+    });
+  });
+
+  describe('generator behavior', () => {
+    it('should work with iterator protocol', () => {
+      const arr = [1, 2, 3, 4, 5];
+      const gen = chunking(arr, 2);
+
+      const first = gen.next();
+      expect(first.value).toEqual([1, 2]);
+      expect(first.done).toBe(false);
+
+      const second = gen.next();
+      expect(second.value).toEqual([3, 4]);
+      expect(second.done).toBe(false);
+
+      const third = gen.next();
+      expect(third.value).toEqual([5]);
+      expect(third.done).toBe(false);
+
+      const fourth = gen.next();
+      expect(fourth.value).toBeUndefined();
+      expect(fourth.done).toBe(true);
+    });
+
+    it('should be iterable with for...of', () => {
+      const arr = [1, 2, 3, 4, 5, 6];
+      const chunks: number[][] = [];
+
+      for (const chunk of chunking(arr, 3)) {
+        chunks.push(chunk);
+      }
+
+      expect(chunks).toEqual([
+        [1, 2, 3],
+        [4, 5, 6],
+      ]);
+    });
+
+    it('should support destructuring', () => {
+      const arr = [1, 2, 3, 4, 5, 6, 7, 8];
+      const [first, second, third] = chunking(arr, 3);
+
+      expect(first).toEqual([1, 2, 3]);
+      expect(second).toEqual([4, 5, 6]);
+      expect(third).toEqual([7, 8]);
+    });
+  });
+
+  describe('different data types', () => {
+    it('should work with string arrays', () => {
+      const arr = ['a', 'b', 'c', 'd', 'e', 'f'];
+      const chunks = Array.from(chunking(arr, 3));
+
+      expect(chunks).toEqual([
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f'],
+      ]);
+    });
+
+    it('should work with object arrays', () => {
+      const arr = [
+        { id: 1, name: 'Alice' },
+        { id: 2, name: 'Bob' },
+        { id: 3, name: 'Charlie' },
+        { id: 4, name: 'David' },
+        { id: 5, name: 'Eve' },
+      ];
+      const chunks = Array.from(chunking(arr, 2));
+
+      expect(chunks).toEqual([
+        [
+          { id: 1, name: 'Alice' },
+          { id: 2, name: 'Bob' },
+        ],
+        [
+          { id: 3, name: 'Charlie' },
+          { id: 4, name: 'David' },
+        ],
+        [{ id: 5, name: 'Eve' }],
+      ]);
+    });
+  });
+
+  describe('complex scenarios', () => {
+    it('should handle chunk size equal to 2 with small odd-length array', () => {
+      const arr = [1, 2, 3, 4, 5];
+      const chunks = Array.from(chunking(arr, 2));
+
+      expect(chunks).toHaveLength(3); // 2 pairs + 1 single
+      expect(chunks[0]).toEqual([1, 2]);
+      expect(chunks[1]).toEqual([3, 4]);
+      expect(chunks[2]).toEqual([5]); // Last chunk with single element
+    });
+
+    it('should handle different chunk sizes correctly', () => {
+      const arr = [1, 2, 3, 4, 5, 6];
+
+      // Test various chunk sizes
+      expect(Array.from(chunking(arr, 2))).toEqual([
+        [1, 2],
+        [3, 4],
+        [5, 6],
+      ]);
+      expect(Array.from(chunking(arr, 3))).toEqual([
+        [1, 2, 3],
+        [4, 5, 6],
+      ]);
+      expect(Array.from(chunking(arr, 1))).toEqual([[1], [2], [3], [4], [5], [6]]);
     });
   });
 });

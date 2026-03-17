@@ -94,7 +94,7 @@ export async function syncAllFiles(
 ) {
   const files_added: string[] = [];
   for (const row of rows) {
-    writeOutFileToRemote(RemoteHandle, Handle, row);
+    await writeOutFileToRemote(RemoteHandle, Handle, row);
     files_added.push(row.file);
   }
 
