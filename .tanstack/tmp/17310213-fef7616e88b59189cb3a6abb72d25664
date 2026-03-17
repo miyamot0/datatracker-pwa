@@ -13,7 +13,7 @@ import {
 import { pullMostRecentKeySet } from '@/lib/keyset';
 import { ToggleDisplayKey } from '@/types/visuals';
 
-export const Route = createFileRoute('/session/$group/$individual/$evaluation/proportion/')({
+export const Route = createFileRoute('/session/$group/$individual/$evaluation/proportion')({
   beforeLoad: routeGuard,
   loader: async ({ params, context }) => {
     const { group, individual, evaluation } = params;

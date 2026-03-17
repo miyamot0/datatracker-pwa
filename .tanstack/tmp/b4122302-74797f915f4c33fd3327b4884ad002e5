@@ -1,15 +1,15 @@
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import ResultsViewerPage from '../components/pages/summary-outcomes/results-viewer-page';
 import { routeGuard } from '@/lib/routing';
+import ViewerKeysetPage from '@/components/pages/dashboard-keysets-import/viewer-keysets-page';
 
-export const Route = createFileRoute('/session/$group/$individual/$evaluation/view/')({
+export const Route = createFileRoute('/session/$group/$individual/$evaluation/keysets/import')({
   beforeLoad: routeGuard,
   loader: ({ params }) => {
-    const { group, individual, evaluation } = params;
+    const { group, individual } = params;
 
-    if (!group || !individual || !evaluation) {
+    if (!group || !individual) {
       throw redirect({
         href: createHref({ type: 'Dashboard' }),
       });
@@ -18,14 +18,13 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/vi
     return {
       Group: CleanUpString(group),
       Individual: CleanUpString(individual),
-      Evaluation: CleanUpString(evaluation),
     };
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { Group, Individual, Evaluation } = Route.useLoaderData();
+  const { Group, Individual } = Route.useLoaderData();
 
-  return <ResultsViewerPage Group={Group} Individual={Individual} Evaluation={Evaluation} />;
+  return <ViewerKeysetPage Group={Group} Individual={Individual} />;
 }

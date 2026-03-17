@@ -3,7 +3,7 @@ import { DocumentationObjects } from '@/lib/docs';
 import { KeywordColors } from '@/types/colors';
 import { FrontMatterUniversalType } from '@/types/mdx';
 import { createFileRoute } from '@tanstack/react-router';
-import DocumentationListingPage from '../components/pages/documentation/documentation-listing-page';
+import DocumentationListingPage from '../../components/pages/documentation/documentation-listing-page';
 
 export const Route = createFileRoute('/documentation/')({
   loader: () => {

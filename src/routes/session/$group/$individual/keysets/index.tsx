@@ -1,10 +1,10 @@
-import ViewerEvaluationsPage from '@/components/pages/dashboard-evaluations-import/viewer-evaluations-page';
+import { createFileRoute, redirect } from '@tanstack/react-router';
+import { CleanUpString } from '@/lib/strings';
 import createHref from '@/lib/links';
 import { routeGuard } from '@/lib/routing';
-import { CleanUpString } from '@/lib/strings';
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import KeySetsPage from '@/components/pages/dashboard-keysets/keysets-page';
 
-export const Route = createFileRoute('/session/$group/$individual/import/')({
+export const Route = createFileRoute('/session/$group/$individual/keysets/')({
   beforeLoad: routeGuard,
   loader: ({ params }) => {
     const { group, individual } = params;
@@ -26,5 +26,5 @@ export const Route = createFileRoute('/session/$group/$individual/import/')({
 function RouteComponent() {
   const { Group, Individual } = Route.useLoaderData();
 
-  return <ViewerEvaluationsPage Group={Group} Individual={Individual} />;
+  return <KeySetsPage Group={Group} Individual={Individual} />;
 }

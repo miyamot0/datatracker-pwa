@@ -4,7 +4,7 @@ import { CleanUpString } from '@/lib/strings';
 import ClientsPage from '../components/pages/dashboard-participants/clients-page';
 import { routeGuard } from '@/lib/routing';
 
-export const Route = createFileRoute('/session/$group/')({
+export const Route = createFileRoute('/session/$group/session/$group/')({
   beforeLoad: routeGuard,
   loader: ({ params }) => {
     if (!params.group) {

@@ -1,20 +1,19 @@
-import { CleanUpString } from '@/lib/strings';
-import { createFileRoute, redirect } from '@tanstack/react-router';
-import ResultsRateVisualsPage from '../components/pages/visualize-outcomes/rate/results-rate-visuals-page';
-import { KeySet } from '@/types/keyset';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
+import { CleanUpString } from '@/lib/strings';
+import { KeySet } from '@/types/keyset';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { routeGuard } from '@/lib/routing';
 import {
-  createCTBKeyWithPreferences,
   extractAndDeduplicateKeysets,
   filterSessionsByPrimaryRole,
   mapKeysWithStoragePreference,
 } from '@/lib/graphing';
 import { pullMostRecentKeySet } from '@/lib/keyset';
 import { ToggleDisplayKey } from '@/types/visuals';
+import ResultsProportionVisualsPage from '@/components/pages/visualize-outcomes/proportion/results-proportion-visuals-page';
 
-export const Route = createFileRoute('/session/$group/$individual/$evaluation/rate/')({
+export const Route = createFileRoute('/session/$group/$individual/$evaluation/proportion')({
   beforeLoad: routeGuard,
   loader: async ({ params, context }) => {
     const { group, individual, evaluation } = params;
@@ -48,14 +47,13 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
       DurationKeys: targetedDKeys,
     } as unknown as KeySet;
 
-    const keys: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map((key) => ({
+    const keys: ToggleDisplayKey[] = dynamicKeyset.DurationKeys.map((key) => ({
       KeyDescription: key.KeyDescription,
       Visible: true,
     }));
 
-    const storedPreferences = getLocalCachedPrefs(group, individual, evaluation, 'Rate');
-    const { ctbEntry, excludeFromCTB } = createCTBKeyWithPreferences(keys, storedPreferences);
-    const showKeysBase = mapKeysWithStoragePreference([...keys, ctbEntry], storedPreferences);
+    const storedPreferences = getLocalCachedPrefs(group, individual, evaluation, 'Duration');
+    const showKeysBase = mapKeysWithStoragePreference(keys, storedPreferences);
 
     const resultsFiltered = filterSessionsByPrimaryRole(results);
 
@@ -78,7 +76,6 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
       MaxX: maxX,
       DynamicKeySet: dynamicKeyset,
       ShowKeys: showKeysBase,
-      ExcludeKeysFromCTB: excludeFromCTB,
       Schedule: storedPreferences.Schedule ?? 'End on Timer #1',
     };
   },
@@ -86,35 +83,21 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
 });
 
 function RouteComponent() {
-  const {
-    Group,
-    Individual,
-    Evaluation,
-    Handle,
-    Results,
-    ResultsFiltered,
-    DynamicKeySet,
-    Schedule,
-    ShowKeys,
-    ExcludeKeysFromCTB,
-    MinX,
-    MaxX,
-  } = Route.useLoaderData();
+  const { Group, Individual, Evaluation, Results, ResultsFiltered, MinX, MaxX, DynamicKeySet, Schedule, ShowKeys } =
+    Route.useLoaderData();
 
   return (
-    <ResultsRateVisualsPage
+    <ResultsProportionVisualsPage
       Group={Group}
       Individual={Individual}
       Evaluation={Evaluation}
-      Handle={Handle}
       Results={Results}
       ResultsFiltered={ResultsFiltered}
+      MinX={MinX}
+      MaxX={MaxX}
       DynamicKeySet={DynamicKeySet}
       Schedule={Schedule}
       ShowKeys={ShowKeys}
-      ExcludeKeysFromCTB={ExcludeKeysFromCTB}
-      MinX={MinX}
-      MaxX={MaxX}
     />
   );
 }
