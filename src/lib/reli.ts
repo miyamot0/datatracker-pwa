@@ -1,6 +1,14 @@
 import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
-import { BinValueType, ProbedKey, ReliabilityPairType, ScoredKey } from '@/types/reli';
+import {
+  BinValueType,
+  KeyedReli,
+  PreparedReliabilityData,
+  ProbedKey,
+  ReliabilityPairType,
+  ScoredKey,
+} from '@/types/reli';
 import { SavedSessionResult } from './dtos';
+import { KeySet } from '@/types/keyset';
 
 /**
  * Generate an empty bin array
@@ -222,6 +230,20 @@ export function getCorrespondingSessionPairs(
   });
 
   return primary_with_reli.filter((pair) => pair.reli !== undefined) as ReliabilityPairType[];
+}
+
+/**
+ * Pulls the relevant session numbers from a set of paired sessions for reliability calculations.
+ *
+ * @param pairedSessions An array of paired sessions used for reliability calculations
+ * @returns An array of unique session numbers that are present in the paired sessions, sorted in ascending order
+ */
+export function pullRelevantSessions(pairedSessions: ReliabilityPairType[]) {
+  return [
+    ...new Set(
+      pairedSessions.map((pair) => Number(pair.primary?.SessionSettings?.Session)).filter((n) => !Number.isNaN(n)),
+    ),
+  ].sort((a, b) => a - b);
 }
 
 /**
@@ -463,4 +485,282 @@ export function generateBinsProportion(primary: SavedSessionResult, keys_to_code
       Proportion,
     };
   });
+}
+
+export function prepareFrequencyReliTable(paired: ReliabilityPairType[], keyset: KeySet): PreparedReliabilityData {
+  const sessions = pullRelevantSessions(paired);
+  const sessions_scored_frequency = paired.map((pair) => calculateReliabilityFrequency(pair, keyset.FrequencyKeys));
+
+  const headings = keyset.FrequencyKeys.flatMap((key) => {
+    return [
+      `${key.KeyDescription} (EIA)`,
+      `${key.KeyDescription} (PIA)`,
+      `${key.KeyDescription} (TIA)`,
+      `${key.KeyDescription} (OIA)`,
+      `${key.KeyDescription} (NIA)`,
+      `${key.KeyDescription} (PMA)`,
+    ];
+  });
+  headings.unshift('Session #');
+
+  const EIA_values: KeyedReli[] = [];
+  const PIA_values: KeyedReli[] = [];
+  const TIA_values: KeyedReli[] = [];
+  const OIA_values: KeyedReli[] = [];
+  const NIA_values: KeyedReli[] = [];
+  const PMA_values: KeyedReli[] = [];
+
+  const rows = sessions.map((session) => {
+    const temp_array = [{ value: session.toString(), readOnly: true }];
+
+    keyset.FrequencyKeys.forEach((key) => {
+      const session_to_show = sessions_scored_frequency
+        .flat()
+        .find((s) => s.Session === session && s.KeyName === key.KeyName);
+
+      if (!session_to_show) {
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        return;
+      }
+
+      const { EIA, PIA, TIA, OIA, NIA, PMA } = session_to_show;
+
+      EIA_values.push({ Value: EIA, KeyName: key.KeyName });
+      PIA_values.push({ Value: PIA, KeyName: key.KeyName });
+      TIA_values.push({ Value: TIA, KeyName: key.KeyName });
+      OIA_values.push({ Value: OIA, KeyName: key.KeyName });
+      NIA_values.push({ Value: NIA, KeyName: key.KeyName });
+      PMA_values.push({ Value: PMA, KeyName: key.KeyName });
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      (temp_array.push({
+        value: EIA.toFixed(2) ?? '',
+        readOnly: true,
+      }),
+        temp_array.push({
+          value: PIA.toFixed(2) ?? '',
+          readOnly: true,
+        }),
+        temp_array.push({
+          value: TIA.toFixed(2) ?? '',
+          readOnly: true,
+        }),
+        temp_array.push({
+          value: OIA.toFixed(2) ?? '',
+          readOnly: true,
+        }),
+        temp_array.push({
+          value: NIA.toFixed(2) ?? '',
+          readOnly: true,
+        }),
+        temp_array.push({
+          value: PMA.toFixed(2) ?? '',
+          readOnly: true,
+        }));
+    });
+
+    return temp_array;
+  });
+
+  // Calculate mean row
+  const mean_row = [{ value: 'Averaged', readOnly: true }];
+
+  keyset.FrequencyKeys.forEach((key) => {
+    const relevantEIA_values = EIA_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantPIA_values = PIA_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantTIA_values = TIA_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantOIA_values = OIA_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantNIA_values = NIA_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantPMA_values = PMA_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+
+    mean_row.push({
+      value: (relevantEIA_values.reduce((a, b) => a + b, 0) / relevantEIA_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_row.push({
+      value: (relevantPIA_values.reduce((a, b) => a + b, 0) / relevantPIA_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_row.push({
+      value: (relevantTIA_values.reduce((a, b) => a + b, 0) / relevantTIA_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_row.push({
+      value: (relevantOIA_values.reduce((a, b) => a + b, 0) / relevantOIA_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_row.push({
+      value: (relevantNIA_values.reduce((a, b) => a + b, 0) / relevantNIA_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_row.push({
+      value: (relevantPMA_values.reduce((a, b) => a + b, 0) / relevantPMA_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+  });
+
+  rows.push(mean_row);
+
+  return { headings, rows };
+}
+
+export function prepareDurationReliTable(paired: ReliabilityPairType[], keyset: KeySet): PreparedReliabilityData {
+  const sessions = pullRelevantSessions(paired);
+  const sessions_scored_duration = paired.map((pair) => calculateReliabilityDuration(pair, keyset.DurationKeys));
+
+  const headings = keyset.DurationKeys.flatMap((key) => {
+    return [
+      `${key.KeyDescription} (EIA)`,
+      `${key.KeyDescription} (PIA)`,
+      `${key.KeyDescription} (TIA)`,
+      `${key.KeyDescription} (OIA)`,
+      `${key.KeyDescription} (NIA)`,
+      `${key.KeyDescription} (PMA)`,
+    ];
+  });
+  headings.unshift('Session #');
+
+  const EIA_values: KeyedReli[] = [];
+  const PIA_values: KeyedReli[] = [];
+  const TIA_values: KeyedReli[] = [];
+  const OIA_values: KeyedReli[] = [];
+  const NIA_values: KeyedReli[] = [];
+  const PMA_values: KeyedReli[] = [];
+
+  const rows = sessions.map((session) => {
+    const temp_array = [{ value: session.toString(), readOnly: true }];
+
+    keyset.DurationKeys.forEach((key) => {
+      const session_to_show = sessions_scored_duration
+        .flat()
+        .find((s) => s.Session === session && s.KeyName === key.KeyName);
+
+      if (!session_to_show) {
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        temp_array.push({ value: '', readOnly: true });
+        return;
+      }
+
+      const { EIA, PIA, TIA, OIA, NIA, PMA } = session_to_show;
+
+      EIA_values.push({ KeyName: key.KeyName, Value: EIA });
+      PIA_values.push({ KeyName: key.KeyName, Value: PIA });
+      TIA_values.push({ KeyName: key.KeyName, Value: TIA });
+      OIA_values.push({ KeyName: key.KeyName, Value: OIA });
+      NIA_values.push({ KeyName: key.KeyName, Value: NIA });
+      PMA_values.push({ KeyName: key.KeyName, Value: PMA });
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      (temp_array.push({
+        value: EIA.toFixed(2) ?? '',
+        readOnly: true,
+      }),
+        temp_array.push({
+          value: PIA.toFixed(2) ?? '',
+          readOnly: true,
+        }),
+        temp_array.push({
+          value: TIA.toFixed(2) ?? '',
+          readOnly: true,
+        }),
+        temp_array.push({
+          value: OIA.toFixed(2) ?? '',
+          readOnly: true,
+        }),
+        temp_array.push({
+          value: NIA.toFixed(2) ?? '',
+          readOnly: true,
+        }),
+        temp_array.push({
+          value: PMA.toFixed(2) ?? '',
+          readOnly: true,
+        }));
+    });
+
+    return temp_array;
+  });
+
+  // Calculate mean row
+  const mean_row = [{ value: 'Averaged', readOnly: true }];
+
+  keyset.DurationKeys.forEach((key) => {
+    const relevantEIA_values = EIA_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantPIA_values = PIA_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantTIA_values = TIA_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantOIA_values = OIA_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantNIA_values = NIA_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+    const relevantPMA_values = PMA_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
+      (k) => k.Value,
+    );
+
+    mean_row.push({
+      value: (relevantEIA_values.reduce((a, b) => a + b, 0) / relevantEIA_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_row.push({
+      value: (relevantPIA_values.reduce((a, b) => a + b, 0) / relevantPIA_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_row.push({
+      value: (relevantTIA_values.reduce((a, b) => a + b, 0) / relevantTIA_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_row.push({
+      value: (relevantOIA_values.reduce((a, b) => a + b, 0) / relevantOIA_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_row.push({
+      value: (relevantNIA_values.reduce((a, b) => a + b, 0) / relevantNIA_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+
+    mean_row.push({
+      value: (relevantPMA_values.reduce((a, b) => a + b, 0) / relevantPMA_values.length).toFixed(2) ?? '',
+      readOnly: true,
+    });
+  });
+
+  rows.push(mean_row);
+
+  return { headings, rows };
 }

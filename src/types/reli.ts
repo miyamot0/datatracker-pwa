@@ -35,15 +35,17 @@ export type ReliabilityPairType = {
 };
 
 /**
- * Pulls the relevant session numbers from a set of paired sessions for reliability calculations.
- *
- * @param pairedSessions An array of paired sessions used for reliability calculations
- * @returns An array of unique session numbers that are present in the paired sessions, sorted in ascending order
+ * A key/value pairing for reliability metrics, used for preparing data for display in the reliability viewer
  */
-export function pullRelevantSessions(pairedSessions: ReliabilityPairType[]) {
-  return [
-    ...new Set(
-      pairedSessions.map((pair) => Number(pair.primary?.SessionSettings?.Session)).filter((n) => !Number.isNaN(n)),
-    ),
-  ].sort((a, b) => a - b);
-}
+export type KeyedReli = {
+  KeyName: string;
+  Value: number;
+};
+
+/**
+ * This is the type definition for the PreparedReliabilityData type, which is the format of the data used to display reliability metrics in the reliability viewer
+ */
+export type PreparedReliabilityData = {
+  headings: string[];
+  rows: Array<Array<{ value: string; readOnly: boolean }>>;
+};
