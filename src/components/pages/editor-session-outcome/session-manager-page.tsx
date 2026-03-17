@@ -7,8 +7,8 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { useContext } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
-import { ErrorDisplay } from '../suspense/error-display';
-import { LoadingDisplay } from '../suspense/loading-display';
+import { ErrorDisplay } from '../../suspense/error-display';
+import { LoadingDisplay } from '../../suspense/loading-display';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { useQuery } from '@tanstack/react-query';
 import { redirect } from '@tanstack/react-router';

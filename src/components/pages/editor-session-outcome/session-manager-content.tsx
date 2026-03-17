@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useContext, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { KeyManageType } from '../session-recorder/types/session-recorder-types';
+import { KeyManageType } from '../../session-recorder/types/session-recorder-types';
 import { Button } from '@/components/ui/button';
 import { Pencil1Icon } from '@radix-ui/react-icons';
 import { DeleteIcon, SaveIcon } from 'lucide-react';

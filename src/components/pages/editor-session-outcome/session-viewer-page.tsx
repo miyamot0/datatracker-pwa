@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import PageWrapper from '@/components/elements/page-wrapper';
 import {
   BuildEvaluationsBreadcrumb,
@@ -9,15 +8,17 @@ import {
 import { useContext } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
-import { ErrorDisplay } from '../suspense/error-display';
-import { LoadingDisplay } from '../suspense/loading-display';
+import { ErrorDisplay } from '../../suspense/error-display';
+import { LoadingDisplay } from '../../suspense/loading-display';
 import { useQuery } from '@tanstack/react-query';
 import { GenerateSavedFileName } from '@/lib/writer';
 import { redirect } from '@tanstack/react-router';
 import SessionViewerContent from './views/session-viewer-content';
 import { pullMostRecentKeySet } from '@/lib/keyset';
-import { prepareDataOrganization } from '@/lib/summary';
+import { prepareDataOrganization, preparePlotDataCumulative } from '@/lib/summary';
 import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
+import { generateTicks } from '@/lib/graphing';
+import { ExpandedSavedSessionResult } from '@/lib/dtos';
 
 export default function SessionViewerPage({
   Group,
@@ -48,74 +49,27 @@ export default function SessionViewerPage({
   if (relevantSession) {
     const keySet = pullMostRecentKeySet(data);
     const { UnfilteredKeysFrequency } = prepareDataOrganization(Group, Individual, Evaluation, keySet);
+    const plot_object = preparePlotDataCumulative(relevantSession);
 
-    const plot_object: any[] = [];
+    const yValues = plot_object
+      .map((point) => {
+        const keys = Object.keys(point).filter((k) => k !== 'second');
 
-    const keys = relevantSession.Keyset.FrequencyKeys.map((k) => k.KeyDescription);
+        return keys.map((key) => point[key]);
+      })
+      .flat();
 
-    const start_object: any = {
-      second: 0,
-    };
-
-    // Start point
-    keys.forEach((k) => {
-      start_object[k] = 0;
-    });
-    plot_object.push(start_object);
-
-    // For holding the reference object
-    const reference_object = { ...start_object };
-
-    relevantSession.FrequencyKeyPresses.forEach((k) => {
-      const prev: any = {
-        second: Math.floor(k.TimeIntoSession),
-      };
-      prev[k.KeyDescription] = reference_object[k.KeyDescription];
-
-      plot_object.push(prev);
-
-      reference_object[k.KeyDescription] = reference_object[k.KeyDescription] + 1;
-
-      const curr: any = {
-        second: Math.floor(k.TimeIntoSession),
-      };
-      curr[k.KeyDescription] = reference_object[k.KeyDescription];
-
-      plot_object.push(curr);
-    });
-
-    const final_object = {
-      ...reference_object,
-      second: Math.floor(relevantSession.TimerMain),
-    };
-
-    plot_object.push(final_object);
-
-    const max_ys = [] as number[];
-
-    plot_object.forEach((point) => {
-      const keys = Object.keys(point).filter((k) => k !== 'second');
-
-      keys.forEach((key) => {
-        max_ys.push(point[key]);
-      });
-    });
-
-    const max_y = Math.max(...max_ys);
-
-    const y_ticks = Array(max_y + 1)
-      .fill(0)
-      .map((_, index) => index);
-
+    const maxYValue = Math.max(...yValues) + 1;
+    const yTicks = generateTicks(maxYValue, 0);
     const expandedSessionData = {
       ...relevantSession,
       Filename: GenerateSavedFileName(relevantSession.SessionSettings),
-      MaxY: max_y + 1,
-      YTicks: y_ticks,
+      MaxY: maxYValue,
+      YTicks: yTicks,
       PlottedKeys: combineAndSortKeyPresses(relevantSession),
-    };
+    } satisfies ExpandedSavedSessionResult;
 
-    const show_keys_base = UnfilteredKeysFrequency.map((key) => ({
+    const showKeysBase = UnfilteredKeysFrequency.map((key) => ({
       KeyDescription: key.KeyDescription,
       Visible: key.Visible,
     }));
@@ -135,7 +89,7 @@ export default function SessionViewerPage({
           Group={Group}
           Individual={Individual}
           Evaluation={Evaluation}
-          ShowKeys={show_keys_base}
+          ShowKeys={showKeysBase}
           ExpandedSession={expandedSessionData}
           PlotObject={plot_object}
         />

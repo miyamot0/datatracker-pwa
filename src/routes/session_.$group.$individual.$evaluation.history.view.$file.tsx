@@ -1,6 +1,6 @@
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import SessionViewerPage from '../components/editor-session-outcome/session-viewer-page';
+import SessionViewerPage from '../components/pages/editor-session-outcome/session-viewer-page';
 import { routeGuard } from '@/lib/routing';
 
 export const Route = createFileRoute('/session_/$group/$individual/$evaluation/history/view/$file')({

@@ -1,7 +1,7 @@
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import SessionManagerPage from '../components/editor-session-outcome/session-manager-page';
+import SessionManagerPage from '../components/pages/editor-session-outcome/session-manager-page';
 import { routeGuard } from '@/lib/routing';
 
 export const Route = createFileRoute('/session_/$group/$individual/$evaluation/history/edit/$file')({

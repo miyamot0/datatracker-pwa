@@ -16,18 +16,17 @@ import {
 import { ExpandedKeySetInstance, KeySetInstance } from '@/types/keyset';
 import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
 import { ExpandedSavedSessionResult } from '@/lib/dtos';
+import { PlotPoint } from '@/types/visuals';
 
 type Props = {
   Session?: ExpandedSavedSessionResult;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  PlotData?: any[];
+  PlotData?: PlotPoint[];
   KeysHidden: ExpandedKeySetInstance[];
 };
 
 export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) {
   if (!Session || !PlotData) return <></>;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const CustomTooltip = ({ active, payload }: { active: boolean; payload: any[] }) => {
     if (active && payload && payload.length) {
       const main_payload = payload[0].payload;
