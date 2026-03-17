@@ -1,7 +1,7 @@
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import SessionRecorderPage from '../components/session-recorder/session-recorder-page';
+import SessionRecorderPage from '../components/pages/session-recorder/session-recorder-page';
 import { routeGuard } from '@/lib/routing';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/run/$keyset')({

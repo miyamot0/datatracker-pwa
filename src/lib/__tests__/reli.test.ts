@@ -15,7 +15,7 @@ import {
 } from '../reli.ts';
 import { ProbedKey, BinValueType, ReliabilityPairType } from '../../types/reli';
 import { SavedSessionResult, SavedSettings } from '../dtos';
-import { KeyManageType } from '../../components/session-recorder/types/session-recorder-types';
+import { KeyManageType } from '@/types/timing';
 import { KeySet } from '@/types/keyset';
 
 // Sample data for testing

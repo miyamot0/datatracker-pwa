@@ -1,4 +1,4 @@
-import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
+import { KeyManageType } from '@/types/timing';
 import {
   BinValueType,
   KeyedReli,

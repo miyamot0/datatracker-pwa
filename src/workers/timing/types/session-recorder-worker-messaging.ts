@@ -1,4 +1,4 @@
-import { KeyManageType, TimerSetting } from '@/components/session-recorder/types/session-recorder-types';
+import { KeyManageType, TimerSetting } from '@/types/timing';
 import { SavedSettings } from '@/lib/dtos';
 import { KeySet } from '@/types/keyset';
 import { SessionRecorderPolling } from '@/types/settings';

@@ -1,4 +1,4 @@
-import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
+import { KeyManageType } from '@/types/timing';
 import { SessionDesignerSchemaType } from '@/components/pages/editor-session/views/session-designer-schema';
 import { KeySet } from '@/types/keyset';
 import { DataCollectorRolesType } from '@/types/roles';

@@ -14,9 +14,9 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { ExpandedKeySetInstance, KeySetInstance } from '@/types/keyset';
-import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
 import { ExpandedSavedSessionResult } from '@/lib/dtos';
 import { CustomTooltipProps, PlotPoint } from '@/types/visuals';
+import { KeyManageType } from '@/types/timing';
 
 type Props = {
   Session?: ExpandedSavedSessionResult;

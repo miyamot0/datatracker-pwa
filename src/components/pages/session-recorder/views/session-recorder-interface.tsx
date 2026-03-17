@@ -1,10 +1,10 @@
 import PageWrapper from '@/components/elements/page-wrapper';
-import { useEventListener } from '@/components/session-recorder/helpers/event-listeners';
+import { useEventListener } from '@/components/elements/event-listeners';
 import { SavedSessionResult, SavedSettings } from '@/lib/dtos';
 import { cn } from '@/lib/utils';
 import { KeySet } from '@/types/keyset';
 import { useState, useRef, useEffect, useContext } from 'react';
-import { KeyManageType, TimerSetting } from '../types/session-recorder-types';
+import { KeyManageType,  TimerSetting } from '@/types/timing';
 import { toast } from 'sonner';
 import SessionRecorderWorker from '@/workers/timing/session-recorder-worker.ts?worker';
 import SessionRecorderInstructions from './ui-instructions';

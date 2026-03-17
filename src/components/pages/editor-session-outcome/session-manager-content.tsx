@@ -1,7 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useContext, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { KeyManageType } from '../../session-recorder/types/session-recorder-types';
 import { Button } from '@/components/ui/button';
 import { Pencil1Icon } from '@radix-ui/react-icons';
 import { DeleteIcon, SaveIcon } from 'lucide-react';
@@ -16,6 +15,7 @@ import { SavedSessionResult } from '@/lib/dtos';
 import { useMutation } from '@tanstack/react-query';
 import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outcomes';
 import { queryClient } from '@/App';
+import { KeyManageType } from '@/types/timing';
 
 function ColoredDot({ KeyObject }: { KeyObject: KeyManageType }) {
   let key_color = '#fff';

@@ -1,6 +1,6 @@
 import { KeySet } from '@/types/keyset';
 import { SavedSettings } from '@/lib/dtos';
-import { KeyManageType, KeyTiming, TimerSetting } from '../../components/session-recorder/types/session-recorder-types';
+import { KeyManageType, KeyTiming, TimerSetting } from '@/types/timing';
 import { SessionPollingIntervals, SessionRecorderPolling } from '@/types/settings';
 import { WorkerMessage, WorkerResponse } from './types/session-recorder-worker-messaging';
 

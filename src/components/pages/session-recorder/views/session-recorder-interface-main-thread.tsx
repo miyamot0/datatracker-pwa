@@ -1,10 +1,9 @@
 import PageWrapper from '@/components/elements/page-wrapper';
-import { useEventListener } from '@/components/session-recorder/helpers/event-listeners';
+import { useEventListener } from '@/components/elements/event-listeners';
 import { SavedSessionResult, SavedSettings } from '@/lib/dtos';
 import { cn } from '@/lib/utils';
 import { KeySet } from '@/types/keyset';
 import { useState, useRef, useEffect, useContext } from 'react';
-import { KeyManageType, KeyTiming, TimerSetting } from '../types/session-recorder-types';
 import { toast } from 'sonner';
 import SessionRecorderInstructions from './ui-instructions';
 import KeyHistoryListing from './ui-key-listing';
@@ -23,6 +22,7 @@ import { queryClient } from '@/App';
 import { useNavigate } from '@tanstack/react-router';
 import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outcomes';
 import { TRANSITION_CLASSES } from '@/types/transitions';
+import { KeyManageType, KeyTiming, TimerSetting } from '@/types/timing';
 
 type Props = {
   Group: string;

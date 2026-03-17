@@ -1,16 +1,9 @@
+import { chunking } from '@/lib/arrays';
 import { KeySet, KeySetInstance } from '@/types/keyset';
 import { ScreenSizingTypes } from '@/types/settings';
 
 const MIN_KEY_COUNT_FOR_SPLIT_TWO_COL = 6;
-
 const MIN_KEY_COUNT_FOR_SPLIT_THREE_COL = 12;
-
-// TODO: Move to lib
-function* chunking<T>(arr: T[], n: number): Generator<T[], void> {
-  for (let i = 0; i < arr.length; i += n) {
-    yield arr.slice(i, i + n);
-  }
-}
 
 export function generateChunkedVisuals(
   Keyset: KeySet,

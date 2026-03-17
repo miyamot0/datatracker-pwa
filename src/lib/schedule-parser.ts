@@ -1,4 +1,4 @@
-import { KeyTiming } from '@/components/session-recorder/types/session-recorder-types';
+import { KeyTiming } from '@/types/timing';
 import { SavedSessionResult } from '@/lib/dtos';
 import { KeySetInstance } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';

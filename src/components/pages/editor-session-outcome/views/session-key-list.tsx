@@ -2,8 +2,8 @@ import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table-common';
 import { ApplicationSettingsTypes } from '@/types/settings';
-import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
 import { ExpandedSavedSessionResult } from '@/lib/dtos';
+import { KeyManageType } from '@/types/timing';
 
 type Props = {
   Session: ExpandedSavedSessionResult | undefined;

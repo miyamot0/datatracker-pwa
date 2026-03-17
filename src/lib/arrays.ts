@@ -12,3 +12,9 @@ export function splitAtPoints<T>(arr: T[], points: number[]): T[][] {
 
   return result;
 }
+
+export function* chunking<T>(arr: T[], n: number): Generator<T[], void> {
+  for (let i = 0; i < arr.length; i += n) {
+    yield arr.slice(i, i + n);
+  }
+}

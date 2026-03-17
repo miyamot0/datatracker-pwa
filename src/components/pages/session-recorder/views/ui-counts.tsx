@@ -1,9 +1,9 @@
 import { cn } from '@/lib/utils';
 import { KeySet } from '@/types/keyset';
-import { KeyManageType } from '../types/session-recorder-types';
 import { ApplicationSettingsTypes } from '@/types/settings';
 import { GenerateTableCols } from './ui-counts-cols';
-import { generateChunkedVisuals } from '../helpers/key-display-columns';
+import { generateChunkedVisuals } from '@/lib/displays';
+import { KeyManageType } from '@/types/timing';
 
 type Props = {
   Keyset: KeySet;

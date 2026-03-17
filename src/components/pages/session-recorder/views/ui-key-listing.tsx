@@ -1,7 +1,7 @@
 import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
 import { formatTimeOfDay } from '@/lib/time';
-import { KeyManageType, TimerSetting } from '../types/session-recorder-types';
 import { PaddedTimerRow } from './padded-row';
+import { KeyManageType, TimerSetting } from '@/types/timing';
 
 type Props = {
   KeysPressed: KeyManageType[];

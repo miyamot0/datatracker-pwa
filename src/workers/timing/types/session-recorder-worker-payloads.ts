@@ -1,4 +1,5 @@
-import { KeyManageType, TimerSetting } from '@/components/session-recorder/types/session-recorder-types';
+import { KeyManageType, TimerSetting } from "@/types/timing";
+
 
 export type TimerUpdatePayload = {
   total: number;

@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
-import { TimerSetting } from '../types/session-recorder-types';
 import { formatTimeSeconds, formatTimeSecondsMin } from '@/lib/time';
+import { TimerSetting } from '@/types/timing';
 
 export const PaddedRow = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-row mx-4 text-sm">
