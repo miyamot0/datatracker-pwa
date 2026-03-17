@@ -40,3 +40,8 @@ export type KeySetSerialize = {
   createdAt: string;
   lastModified: string;
 };
+
+export type ExpandedKeySetInstance = {
+  KeyDescription: string;
+  Visible: boolean;
+};

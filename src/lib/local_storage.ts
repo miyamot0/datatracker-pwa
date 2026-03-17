@@ -1,4 +1,4 @@
-import { SessionTerminationOptionsType } from '@/components/editor-session/forms/schema/session-designer-schema';
+import { SessionTerminationOptionsType } from '@/types/terminations';
 
 /**
  * This is the type definition for the ReturnLocalStorageCache type

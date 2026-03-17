@@ -33,6 +33,26 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
             cleanupOutdatedCaches: true,
             sourcemap: false,
             maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+            // Ensure SharedArrayBuffer support in service worker
+            additionalManifestEntries: [
+              {
+                url: '/manifest.json',
+                revision: null,
+              },
+            ],
+            runtimeCaching: [
+              {
+                urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+                handler: 'CacheFirst',
+                options: {
+                  cacheName: 'google-fonts-cache',
+                  expiration: {
+                    maxEntries: 10,
+                    maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+                  },
+                },
+              },
+            ],
           },
           manifest: {
             theme_color: '#F5F5F5',
@@ -194,6 +214,20 @@ export default defineConfig(({ mode }) => {
     define: {
       BUILD_DATE: JSON.stringify(new Date().toLocaleDateString('en-US')),
       BUILD_VERSION: JSON.stringify(package_json.version),
+    },
+    // Note: Support needed for SharedArrayBuffer
+    server: {
+      headers: {
+        'Cross-Origin-Embedder-Policy': 'require-corp',
+        'Cross-Origin-Opener-Policy': 'same-origin',
+      },
+      cors: true,
+    },
+    preview: {
+      headers: {
+        'Cross-Origin-Embedder-Policy': 'require-corp',
+        'Cross-Origin-Opener-Policy': 'same-origin',
+      },
     },
     resolve: {
       alias: {

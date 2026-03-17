@@ -1,10 +1,8 @@
-import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
-import {
-  DataCollectorRolesType,
-  SessionDesignerSchemaType,
-  SessionTerminationOptionsType,
-} from '@/components/editor-session/forms/schema/session-designer-schema';
+import { KeyManageType } from '@/types/timing';
+import { SessionDesignerSchemaType } from '@/components/pages/editor-session/views/session-designer-schema';
 import { KeySet } from '@/types/keyset';
+import { DataCollectorRolesType } from '@/types/roles';
+import { SessionTerminationOptionsType } from '@/types/terminations';
 
 /**
  * This is the type definition for the HumanReadableResults type
@@ -52,6 +50,16 @@ export type SavedSessionResult = {
   TimerThree: number;
   Filename?: string;
   Comments?: string;
+};
+
+/**
+ * This is the type definition for the ExpandedSavedSessionResult type, which extends the SavedSessionResult type with additional properties used for plotting session outcomes
+ */
+export type ExpandedSavedSessionResult = SavedSessionResult & {
+  Filename: string;
+  MaxY: number;
+  YTicks: number[];
+  PlottedKeys: KeyManageType[];
 };
 
 /**

@@ -17,7 +17,7 @@ import {
 import { useState } from 'react';
 import { Button } from './button';
 import { RefreshCcw } from 'lucide-react';
-import { SyncEntryTableRow } from '../dashboard-sync/types/sync-entry-table-row';
+import { SyncEntryTableRow } from '@/types/sync';
 
 //export type RowSelectOptions = 'None';
 
@@ -85,8 +85,10 @@ export function ReliabilityDataTable<TData, TValue>({
             size={'sm'}
             variant={'outline'}
             onClick={() => {
-              //@ts-expect-error - rowSelection is not typed correctly
-              callback(table.getFilteredSelectedRowModel().rows.map((row) => row.original));
+              const selectedRows = table
+                .getFilteredSelectedRowModel()
+                .rows.map((row) => row.original) as SyncEntryTableRow[];
+              callback(selectedRows);
 
               setRowSelection({});
             }}

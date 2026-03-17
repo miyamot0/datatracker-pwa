@@ -37,18 +37,6 @@ describe('LocalStorage Prefs', () => {
       const result = getLocalCachedPrefs(group, individual, evaluation, type);
       expect(result).toEqual(defaultCache);
     });
-
-    it.skip('should handle malformed data in localStorage by returning the default object', () => {
-      localStorage.setItem(dynamicKey, 'malformed_data');
-
-      const result = getLocalCachedPrefs(group, individual, evaluation, type);
-      const defaultCache = {
-        KeyDescription: [],
-        CTBElements: [],
-        Schedule: 'End on Timer #1',
-      };
-      expect(result).toEqual(defaultCache);
-    });
   });
 
   describe('setLocalCachedPrefs', () => {
@@ -71,7 +59,7 @@ describe('LocalStorage Prefs', () => {
         individualWithSpaces,
         evaluationWithSpaces,
         type,
-        mockCache as ReturnLocalStorageCache
+        mockCache as ReturnLocalStorageCache,
       );
 
       const storedValue = localStorage.getItem(trimmedKey);

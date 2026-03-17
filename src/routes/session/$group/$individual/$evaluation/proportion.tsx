@@ -1,0 +1,103 @@
+import { getLocalCachedPrefs } from '@/lib/local_storage';
+import { CleanUpString } from '@/lib/strings';
+import { KeySet } from '@/types/keyset';
+import { createFileRoute, redirect } from '@tanstack/react-router';
+import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
+import { routeGuard } from '@/lib/routing';
+import {
+  extractAndDeduplicateKeysets,
+  filterSessionsByPrimaryRole,
+  mapKeysWithStoragePreference,
+} from '@/lib/graphing';
+import { pullMostRecentKeySet } from '@/lib/keyset';
+import { ToggleDisplayKey } from '@/types/visuals';
+import ResultsProportionVisualsPage from '@/components/pages/visualize-outcomes/proportion/results-proportion-visuals-page';
+
+export const Route = createFileRoute('/session/$group/$individual/$evaluation/proportion')({
+  beforeLoad: routeGuard,
+  loader: async ({ params, context }) => {
+    const { group, individual, evaluation } = params;
+    const { handle } = context.folderHandleContext;
+
+    if (!group || !individual || !evaluation || !handle) {
+      throw redirect({
+        href: '/dashboard',
+      });
+    }
+
+    const results = await context.queryClient.ensureQueryData(
+      sessionOutcomesQueryOptions(handle, group, individual, evaluation),
+    );
+
+    // Note: base to pull from
+    const keyset = pullMostRecentKeySet(results);
+
+    if (!keyset) {
+      throw redirect({
+        href: '/dashboard',
+      });
+    }
+
+    // Extract and deduplicate keysets using discrete function
+    const { frequencyKeys: targetedFKeys, durationKeys: targetedDKeys } = extractAndDeduplicateKeysets(results);
+
+    const dynamicKeyset = {
+      ...keyset,
+      FrequencyKeys: targetedFKeys,
+      DurationKeys: targetedDKeys,
+    } as unknown as KeySet;
+
+    const keys: ToggleDisplayKey[] = dynamicKeyset.DurationKeys.map((key) => ({
+      KeyDescription: key.KeyDescription,
+      Visible: true,
+    }));
+
+    const storedPreferences = getLocalCachedPrefs(group, individual, evaluation, 'Duration');
+    const showKeysBase = mapKeysWithStoragePreference(keys, storedPreferences);
+
+    const resultsFiltered = filterSessionsByPrimaryRole(results);
+
+    let minX = 0;
+    let maxX = 1;
+
+    if (resultsFiltered.length > 0) {
+      minX = Math.min(...resultsFiltered.map((r) => r.SessionSettings.Session));
+      maxX = Math.max(...resultsFiltered.map((r) => r.SessionSettings.Session));
+    }
+
+    return {
+      Group: CleanUpString(group),
+      Individual: CleanUpString(individual),
+      Evaluation: CleanUpString(evaluation),
+      Handle: handle,
+      Results: results,
+      ResultsFiltered: resultsFiltered,
+      MinX: minX,
+      MaxX: maxX,
+      DynamicKeySet: dynamicKeyset,
+      ShowKeys: showKeysBase,
+      Schedule: storedPreferences.Schedule ?? 'End on Timer #1',
+    };
+  },
+  component: RouteComponent,
+});
+
+function RouteComponent() {
+  const { Group, Individual, Evaluation, Results, ResultsFiltered, MinX, MaxX, DynamicKeySet, Schedule, ShowKeys } =
+    Route.useLoaderData();
+
+  return (
+    <ResultsProportionVisualsPage
+      Group={Group}
+      Individual={Individual}
+      Evaluation={Evaluation}
+      Results={Results}
+      ResultsFiltered={ResultsFiltered}
+      MinX={MinX}
+      MaxX={MaxX}
+      DynamicKeySet={DynamicKeySet}
+      Schedule={Schedule}
+      ShowKeys={ShowKeys}
+    />
+  );
+}

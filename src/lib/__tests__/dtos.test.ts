@@ -1,9 +1,7 @@
 import { SavedSettings, toSavedSettings } from '../dtos';
-import {
-  DataCollectorRolesType,
-  SessionDesignerSchemaType,
-  SessionTerminationOptionsType,
-} from '../../components/editor-session/forms/schema/session-designer-schema';
+import { SessionDesignerSchemaType } from '../../components/pages/editor-session/views/session-designer-schema';
+import { DataCollectorRolesType } from '@/types/roles';
+import { SessionTerminationOptionsType } from '@/types/terminations';
 
 const DEFAULT_KEY_SET = 'asdf';
 

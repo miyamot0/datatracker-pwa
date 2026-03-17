@@ -49,7 +49,7 @@ export const mutationConditions = async ({
       newConditionsList.push(Condition);
 
       break;
-    case 'Clear':
+    case 'Clear': {
       const entries = await evaluation_dir.values();
 
       for await (const entry of entries) {
@@ -58,6 +58,8 @@ export const mutationConditions = async ({
           const entriesInCondition = await conditionDir.values();
 
           let fileCount = 0;
+
+          // eslint-disable-next-line
           for await (const _ of entriesInCondition) {
             fileCount = fileCount + 1;
           }
@@ -70,6 +72,7 @@ export const mutationConditions = async ({
       }
 
       break;
+    }
   }
 
   return newConditionsList;
