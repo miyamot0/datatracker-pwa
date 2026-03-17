@@ -1,4 +1,4 @@
-import DashboardHistoryPage from '@/components/dashboard-outcomes/dashboard-history-page';
+import DashboardHistoryPage from '@/components/pages/dashboard-outcomes/dashboard-history-page';
 import createHref from '@/lib/links';
 import { routeGuard } from '@/lib/routing';
 import { CleanUpString } from '@/lib/strings';

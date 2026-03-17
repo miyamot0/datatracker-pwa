@@ -14,6 +14,7 @@ import { getCorrespondingSessionPairs } from '@/lib/reli';
 import { useContext } from 'react';
 import ReliabilityBlank from './views/reli-blank';
 import ReliabilityViewerContent from './views/reli-viewer-content';
+import { filterSessionsByPrimaryRole, filterSessionsByReliabilityRole } from '@/lib/graphing';
 
 export default function ReliabilityViewerPage({
   Group,
@@ -32,7 +33,6 @@ export default function ReliabilityViewerPage({
   });
 
   if (isLoading) return <LoadingDisplay />;
-
   if (error || !data) return <ErrorDisplay Text={error?.message} />;
 
   // If there are no outcomes, show the blank state
@@ -49,14 +49,8 @@ export default function ReliabilityViewerPage({
   // Pull most recent keyset
   const KeySet = data.slice(-1)[0].Keyset;
 
-  const resultsPrimary = data
-    .sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session)
-    .filter((result) => result.SessionSettings.Role === 'Primary');
-
-  const resultsReli = data
-    .sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session)
-    .filter((result) => result.SessionSettings.Role === 'Reliability');
-
+  const resultsPrimary = filterSessionsByPrimaryRole(data);
+  const resultsReli = filterSessionsByReliabilityRole(data);
   const pairedSessionData = getCorrespondingSessionPairs(resultsPrimary, resultsReli);
 
   // If there are no paired sessions, show the blank state

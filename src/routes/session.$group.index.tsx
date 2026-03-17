@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
-import ClientsPage from '../components/dashboard-participants/clients-page';
+import ClientsPage from '../components/pages/dashboard-participants/clients-page';
 import { routeGuard } from '@/lib/routing';
 
 export const Route = createFileRoute('/session/$group/')({

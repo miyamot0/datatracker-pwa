@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import KeySetsPage from '../components/dashboard-keysets/keysets-page';
+import KeySetsPage from '../components/pages/dashboard-keysets/keysets-page';
 import { CleanUpString } from '@/lib/strings';
 import createHref from '@/lib/links';
 import { routeGuard } from '@/lib/routing';

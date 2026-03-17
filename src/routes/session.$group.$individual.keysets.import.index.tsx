@@ -1,7 +1,7 @@
 import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import ViewerKeysetPage from '../components/dashboard-keysets-import/viewer-keysets-page';
+import ViewerKeysetPage from '../components/pages/dashboard-keysets-import/viewer-keysets-page';
 import { routeGuard } from '@/lib/routing';
 
 export const Route = createFileRoute('/session/$group/$individual/keysets/import/')({

@@ -8,6 +8,12 @@ export function filterSessionsByPrimaryRole(results: SavedSessionResult[]) {
     .sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session);
 }
 
+export function filterSessionsByReliabilityRole(results: SavedSessionResult[]) {
+  return results
+    .filter((result) => result.SessionSettings.Role === 'Reliability')
+    .sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session);
+}
+
 export function getUniqueSessionConditions(results: SavedSessionResult[]) {
   return Array.from(new Set(results.map((result) => result.SessionSettings.Condition)));
 }

@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Spreadsheet from 'react-spreadsheet';
 import { calculateReliabilityDuration, calculateReliabilityFrequency } from '@/lib/reli';
 import BackButton from '@/components/ui/back-button';
-import { ReliabilityPairType } from '@/types/reli';
+import { pullRelevantSessions, ReliabilityPairType } from '@/types/reli';
 import { KeySet } from '@/types/keyset';
 
 type Props = {
@@ -20,10 +20,7 @@ type KeyedReli = {
 export default function ReliabilityViewerContent({ Paired, Keyset }: Props) {
   const sessions_scored_frequency = Paired.map((pair) => calculateReliabilityFrequency(pair, Keyset.FrequencyKeys));
   const sessions_scored_duration = Paired.map((pair) => calculateReliabilityDuration(pair, Keyset.DurationKeys));
-
-  const sessions = Paired.map((pair) => pair.primary.SessionSettings.Session).filter((value, index, array) => {
-    return array.indexOf(value) === index;
-  });
+  const sessions = pullRelevantSessions(Paired);
 
   const f_headings = Keyset.FrequencyKeys.flatMap((key) => {
     return [
