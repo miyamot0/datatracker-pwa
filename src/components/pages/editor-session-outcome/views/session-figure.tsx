@@ -16,7 +16,7 @@ import {
 import { ExpandedKeySetInstance, KeySetInstance } from '@/types/keyset';
 import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
 import { ExpandedSavedSessionResult } from '@/lib/dtos';
-import { PlotPoint } from '@/types/visuals';
+import { CustomTooltipProps, PlotPoint } from '@/types/visuals';
 
 type Props = {
   Session?: ExpandedSavedSessionResult;
@@ -27,7 +27,7 @@ type Props = {
 export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) {
   if (!Session || !PlotData) return <></>;
 
-  const CustomTooltip = ({ active, payload }: { active: boolean; payload: any[] }) => {
+  const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       const main_payload = payload[0].payload;
 
@@ -211,13 +211,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
               value={'Event Recording During Session'}
             />
           </YAxis>
-          <Tooltip
-            animationDuration={100}
-            content={
-              // @ts-expect-error will inherit the correct types from recharts
-              <CustomTooltip />
-            }
-          />
+          <Tooltip animationDuration={100} content={<CustomTooltip />} />
           <Legend
             payload={Session.Keyset.FrequencyKeys.filter((k) => keys_to_skip.includes(k.KeyDescription) === false).map(
               (item: KeySetInstance, index: number) => ({
