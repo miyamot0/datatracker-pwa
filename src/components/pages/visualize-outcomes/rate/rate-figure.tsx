@@ -38,7 +38,7 @@ export default function RateFigureVisualization({
 }: Props) {
   const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
   const navigate = useNavigate({
-    from: `/session/$group/$individual/$evaluation/rate/`,
+    from: `/session/$group/$individual/$evaluation/rate`,
   });
 
   const { preparedData } = prepareRateData(FilteredSessions, ScheduleOption, CTBKeys);
@@ -49,7 +49,7 @@ export default function RateFigureVisualization({
 
   const yAxisConfig = {
     min: 0,
-    label: 'Response per Minute',
+    label: 'Responses per Min',
     padding: { bottom: 10 },
   };
 

@@ -16,9 +16,9 @@ This tool supports multiple methods of assessing reliability of behavioral measu
 
 ## Current and Planned Features
 
-DataTracker has been ported to a PWA program, which is one way to flexibly manage requirements for data security as well as to work within secure systems that require strict administrative control (i.e., the program does not need user privileges to install).
+DataTracker has been ported to a PWA program, which is one way to flexibly manage requirements for data security as well as to work within secure systems that require strict administrative control (i.e., the program does not need user privileges to install). The app is designed to provide high-performance, real-time data collection through the use of modern timing conventions and web-workers (i.e., SharedArrayBuffers, MessageChannel). It presently provides latency and fidelity consistent with native alternatives.
 
-This program can be easily installed as an 'app' (Note: PWAs are simply bundled websites) and access easily from your desktop as if it were a standalone application. It is not a 'native' application nor is it designed to be used for mobile devices at this time (e.g., tablets, phones).
+This program can be easily installed as a Desktop 'app' (Note: PWAs are simply bundled websites) and accessed easily from your desktop as if it were a standalone application. It is not a true 'native' application nor is it designed to be used for mobile devices at this time (e.g., tablets, phones).
 
 Features include the following:
 
@@ -26,15 +26,18 @@ Features include the following:
 - [x] Cross-platform support (installable as Progressive Web App [PWA])
 - [x] Automated updates and delivery
 - [x] Simultaneous recording of behavior across multiple observers
-- [x] Various methods for calculating reliability indices
+- [x] Automated interobserver agreement (IOA) calculations across multiple methods
+- [x] Automated data visualization and interpretation tools (e.g., visual analysis, effect size calculations)
+- [x] Real-time data recording with millisecond-level fidelity
 - [x] Manual export of data in multiple formats (i.e., JSON, CSV)
-- [x] Quick visualization of behavioral data across sessions/conditions
 
 ## Alternative/Islanded Mode for Highly Secure Environments
 
-In addition to the standard PWA build, there is also an 'islanded' mode that allows for use in highly secure environments where internet access is restricted or virtually unavailable (i.e., all non-internal traffic is blocked). This mode is designed to function entirely offline after the initial installation, ensuring that all data remains local to the device.
+In addition to the standard PWA build, there is also an 'islanded' mode that allows for use in highly secure environments where internet access is restricted or virtually unavailable (i.e., all non-internal traffic is blocked). This mode is designed to function entirely offline after the initial installation, ensuring that all data remains local to the device. In practice, this would be similar to an 'on-prem' solution that would not have any external dependencies (or updates, for that matter).
 
-This is not provided via the hosted site per se, but rather is available for download and installation by users who need this level of security. The islanded version includes all the features of the standard PWA but is optimized for environments with stringent data security requirements. These are compiled as numbered releases available on the [GitHub releases page](https://github.com/miyamot0/datatracker-pwa/releases).
+This is not provided via the hosted site per se, but rather, is available for download and installation by users who need this level of security. The islanded version includes all the features of the standard PWA but is optimized for environments with stringent data security requirements.
+
+Islanded builds are compiled as numbered releases (main-branch) available on the [GitHub releases page](https://github.com/miyamot0/datatracker-pwa/releases).
 
 ## Screenshots and Visuals
 

@@ -36,7 +36,7 @@ export default function ProportionFigureVisualization({
 }: Props) {
   const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
   const navigate = useNavigate({
-    from: `/session/$group/$individual/$evaluation/proportion/`,
+    from: `/session/$group/$individual/$evaluation/proportion`,
   });
 
   const { preparedData } = prepareProportionData(FilteredSessions, ScheduleOption);
@@ -49,7 +49,7 @@ export default function ProportionFigureVisualization({
     min: 0,
     max: 100,
     domain: [0, 100] as [number, number],
-    label: 'Percentage of Session Time',
+    label: 'Percentage of Session',
     padding: { bottom: 10 },
   };
 
