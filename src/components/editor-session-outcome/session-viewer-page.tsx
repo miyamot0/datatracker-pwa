@@ -7,7 +7,6 @@ import {
   BuildSessionHistoryBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
 import { useContext } from 'react';
-import { getLocalCachedPrefs } from '@/lib/local_storage';
 import { FolderHandleContext } from '@/context/folder-context';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { ErrorDisplay } from '../suspense/error-display';
@@ -16,6 +15,9 @@ import { useQuery } from '@tanstack/react-query';
 import { GenerateSavedFileName } from '@/lib/writer';
 import { redirect } from '@tanstack/react-router';
 import SessionViewerContent from './views/session-viewer-content';
+import { pullMostRecentKeySet } from '@/lib/keyset';
+import { prepareDataOrganization } from '@/lib/summary';
+import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
 
 export default function SessionViewerPage({
   Group,
@@ -35,12 +37,21 @@ export default function SessionViewerPage({
 
   if (error || data == undefined) return <ErrorDisplay Text={'An error occurred while fetching session outcomes.'} />;
 
-  const relevant_session = data.find((s) => s.Filename.startsWith(FileString));
+  const relevantSession = data.find((s) => s.Filename.startsWith(FileString));
 
-  if (relevant_session) {
+  if (!relevantSession) {
+    throw redirect({
+      to: '/dashboard',
+    });
+  }
+
+  if (relevantSession) {
+    const keySet = pullMostRecentKeySet(data);
+    const { UnfilteredKeysFrequency } = prepareDataOrganization(Group, Individual, Evaluation, keySet);
+
     const plot_object: any[] = [];
 
-    const keys = relevant_session.Keyset.FrequencyKeys.map((k) => k.KeyDescription);
+    const keys = relevantSession.Keyset.FrequencyKeys.map((k) => k.KeyDescription);
 
     const start_object: any = {
       second: 0,
@@ -55,7 +66,7 @@ export default function SessionViewerPage({
     // For holding the reference object
     const reference_object = { ...start_object };
 
-    relevant_session.FrequencyKeyPresses.forEach((k) => {
+    relevantSession.FrequencyKeyPresses.forEach((k) => {
       const prev: any = {
         second: Math.floor(k.TimeIntoSession),
       };
@@ -75,7 +86,7 @@ export default function SessionViewerPage({
 
     const final_object = {
       ...reference_object,
-      second: Math.floor(relevant_session.TimerMain),
+      second: Math.floor(relevantSession.TimerMain),
     };
 
     plot_object.push(final_object);
@@ -96,37 +107,18 @@ export default function SessionViewerPage({
       .fill(0)
       .map((_, index) => index);
 
-    const saved_keys = [
-      ...relevant_session.FrequencyKeyPresses,
-      ...relevant_session.DurationKeyPresses,
-      ...relevant_session.SystemKeyPresses,
-    ].sort((a, b) => a.TimeIntoSession - b.TimeIntoSession);
-
     const expandedSessionData = {
-      ...relevant_session,
-      Filename: GenerateSavedFileName(relevant_session.SessionSettings),
+      ...relevantSession,
+      Filename: GenerateSavedFileName(relevantSession.SessionSettings),
       MaxY: max_y + 1,
       YTicks: y_ticks,
-      PlottedKeys: saved_keys,
+      PlottedKeys: combineAndSortKeyPresses(relevantSession),
     };
 
-    const stored_prefs = getLocalCachedPrefs(Group, Individual, Evaluation, `${Group} ${Individual} ${Evaluation}`);
-
-    const show_keys_base = relevant_session.Keyset.FrequencyKeys.map((key) => {
-      const should_disable = stored_prefs.KeyDescription.includes(key.KeyDescription);
-
-      if (should_disable) {
-        return {
-          KeyDescription: key.KeyDescription,
-          Visible: false,
-        };
-      }
-
-      return {
-        KeyDescription: key.KeyDescription,
-        Visible: true,
-      };
-    });
+    const show_keys_base = UnfilteredKeysFrequency.map((key) => ({
+      KeyDescription: key.KeyDescription,
+      Visible: key.Visible,
+    }));
 
     return (
       <PageWrapper
