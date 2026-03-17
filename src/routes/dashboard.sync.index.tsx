@@ -1,4 +1,4 @@
-import ViewSyncPage from '@/components/dashboard-sync/view-sync-page';
+import ViewSyncPage from '@/components/pages/dashboard-sync/view-sync-page';
 import { routeGuard } from '@/lib/routing';
 import { createFileRoute } from '@tanstack/react-router';
 

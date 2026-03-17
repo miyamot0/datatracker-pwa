@@ -1,0 +1,85 @@
+import { SyncEntryTableRow } from '@/types/sync';
+
+/**
+ * Helper function to read a file as text using FileReader API
+ *
+ * @param file - The File object to be read
+ * @returns A promise that resolves with the file content as a string
+ */
+export function readFileAsync(file: File) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+}
+
+/**
+ * Helper function to get a file handle from a directory handle and a path, creating directories/files as needed
+ *
+ * @param localHandle - The root directory handle to start from
+ * @param path - The path to the file, with directories separated by '/'
+ * @returns A promise that resolves with the file handle, or undefined if the localHandle is not provided
+ */
+export async function getFileHandle(
+  localHandle: FileSystemDirectoryHandle,
+  path: string,
+): Promise<FileSystemFileHandle | undefined> {
+  if (!localHandle) return;
+
+  const path_parts = path.split('/').filter((part) => part.trim().length > 0);
+  if (path_parts.length === 0) throw new Error('Invalid Path');
+
+  let handle_rem = localHandle;
+
+  for (let i = 0; i < path_parts.length; i++) {
+    const is_file = i === path_parts.length - 1;
+
+    if (is_file) {
+      const file_handle_rem = await handle_rem.getFileHandle(path_parts[i], { create: true });
+
+      return file_handle_rem;
+    } else {
+      handle_rem = await handle_rem.getDirectoryHandle(path_parts[i], { create: true });
+    }
+  }
+}
+
+export async function writeOutFileToRemote(
+  remoteDirectory: FileSystemDirectoryHandle,
+  handle: FileSystemDirectoryHandle,
+  value: SyncEntryTableRow,
+) {
+  if (!remoteDirectory || !handle) return;
+
+  const path_parts = value.file.split('/').filter((part) => part.trim().length > 0);
+
+  if (path_parts.length === 0) return;
+
+  const file_lcl = await getFileHandle(handle, value.file);
+  const file_lcl_contents = await file_lcl?.getFile();
+  const text = await readFileAsync(file_lcl_contents!);
+
+  const file_handle_rem = await getFileHandle(remoteDirectory, value.file);
+  const writer = await file_handle_rem?.createWritable();
+  await writer?.write(new Blob([text as string]));
+  await writer?.close();
+}
+
+export async function syncAllFiles(
+  rows: SyncEntryTableRow[],
+  Handle: FileSystemDirectoryHandle,
+  RemoteHandle: FileSystemDirectoryHandle,
+  SetRemoteCallback: React.Dispatch<React.SetStateAction<string[]>>,
+) {
+  const files_added: string[] = [];
+  for (const row of rows) {
+    writeOutFileToRemote(RemoteHandle, Handle, row);
+    files_added.push(row.file);
+  }
+
+  SetRemoteCallback((prev) => [...(prev ?? []), ...files_added]);
+}

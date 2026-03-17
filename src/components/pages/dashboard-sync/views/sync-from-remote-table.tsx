@@ -1,15 +1,14 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { SyncFromRemoteOptionIndicator } from './views/sync-from-remote-option-indicator';
+import { SyncFromRemoteOptionIndicator } from './sync-from-remote-option-indicator';
 import { ArrowLeft } from 'lucide-react';
-import { SyncEntryTableRow } from '../types/sync-entry-table-row';
 import { ReliabilityDataTable } from '@/components/ui/data-table-reli';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ColumnDef } from '@tanstack/react-table';
-import { getFileHandle } from '../helpers/get-file-handle-async';
-import { readFileAsync } from '../helpers/read-file-async';
 import { toast } from 'sonner';
+import { SyncEntryTableRow } from '@/types/sync';
+import { readFileAsync, getFileHandle } from '@/lib/file';
 
 type Props = {
   Handle: FileSystemDirectoryHandle;

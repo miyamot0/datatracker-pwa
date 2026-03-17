@@ -1,16 +1,33 @@
 import PageWrapper from '@/components/elements/page-wrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FolderHandleContext } from '@/context/folder-context';
-import { useContext, useMemo, useState } from 'react';
+import { ReactNode, useContext, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileSyncingStatus } from '@/types/sync';
 import { RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { displayConditionalNotification } from '@/lib/notifications';
 import BackButton from '@/components/ui/back-button';
-import SyncToRemoteTable from './tables/sync-to-remote-table';
-import SyncFromRemoteTable from './tables/sync-from-remote-table';
-import { WrappedButton } from './views/wrapped-btn';
+import SyncToRemoteTable from './views/sync-to-remote-table';
+import SyncFromRemoteTable from './views/sync-from-remote-table';
+import { Badge } from '../../ui/badge';
+import { toast } from 'sonner';
+
+const WrappedButton = ({ active, children }: { active: boolean; children: ReactNode }) => {
+  return (
+    <div className="flex flex-row items-center gap-2 h-fit">
+      <Badge
+        className={cn('text-nowrap text-white', {
+          'bg-green-500 hover:bg-green-400': active,
+          'bg-red-500 hover:bg-red-400': !active,
+        })}
+      >
+        {active ? 'Remote Access Authorized' : 'No Remote Selected'}
+      </Badge>
+      {children}
+    </div>
+  );
+};
 
 export default function ViewSyncPage() {
   const Context = useContext(FolderHandleContext);
@@ -82,7 +99,9 @@ export default function ViewSyncPage() {
               );
             }
           } catch {
-            //console.error(error);
+            toast.error(
+              'Directory access was not authorized. Please try again and authorize access to a folder to continue.',
+            );
           }
         }}
       >
