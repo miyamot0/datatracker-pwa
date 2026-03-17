@@ -1,5 +1,5 @@
 import { GithubIcon, HomeIcon, TwitterIcon } from 'lucide-react';
-import { Button } from '../../ui/button';
+import { Button } from '../ui/button';
 import { Link } from '@tanstack/react-router';
 
 export default function LayoutFooter() {

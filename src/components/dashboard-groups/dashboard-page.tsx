@@ -1,4 +1,4 @@
-import PageWrapper from '@/components/layout/page-wrapper';
+import PageWrapper from '@/components/elements/page-wrapper';
 import { FolderHandleContext } from '@/context/folder-context';
 import AuthorizedDisplayPage from './views/authorized-display';
 import UnauthorizedDisplay from './gated-displays/unauthorized-display';

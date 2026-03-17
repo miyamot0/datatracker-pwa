@@ -1,4 +1,4 @@
-import PageWrapper from '@/components/layout/page-wrapper';
+import PageWrapper from '@/components/elements/page-wrapper';
 import BackButton from '@/components/ui/back-button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

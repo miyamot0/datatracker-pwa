@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import PageWrapper from '@/components/layout/page-wrapper';
+import PageWrapper from '@/components/elements/page-wrapper';
 import {
   BuildEvaluationsBreadcrumb,
   BuildGroupBreadcrumb,

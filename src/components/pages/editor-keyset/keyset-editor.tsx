@@ -1,4 +1,4 @@
-import PageWrapper from '@/components/layout/page-wrapper';
+import PageWrapper from '@/components/elements/page-wrapper';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';

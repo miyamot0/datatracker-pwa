@@ -1,4 +1,4 @@
-import PageWrapper from '@/components/layout/page-wrapper';
+import PageWrapper from '@/components/elements/page-wrapper';
 import BackButton from '@/components/ui/back-button';
 import {
   BuildEvaluationsBreadcrumb,
@@ -31,8 +31,7 @@ export default function ReliabilityBlank({ Group, Individual, Evaluation }: Prop
               <CardTitle>Reliability Viewer</CardTitle>
               <CardDescription>Error in Calculating Reliability</CardDescription>
             </div>
-            <BackButton
-            />
+            <BackButton />
           </CardHeader>
 
           <CardContent>No data files are currently available to inspect.</CardContent>

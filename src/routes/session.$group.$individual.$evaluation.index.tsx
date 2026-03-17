@@ -1,4 +1,4 @@
-import { SessionDesignerPage } from '@/components/editor-session/session-designer';
+import { SessionDesignerPage } from '@/components/pages/editor-session/session-designer';
 import createHref from '@/lib/links';
 import { routeGuard } from '@/lib/routing';
 import { CleanUpString } from '@/lib/strings';

@@ -1,9 +1,9 @@
 import { cn } from '@/lib/utils';
-import NavigationBar, { BreadCrumbListing } from './views/navigation-bar';
+import NavigationBar, { BreadCrumbListing } from './navigation-bar';
 import { useContext } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
-import LayoutFooter from './views/footer';
-import ScrollReset from './views/scroll-reset';
+import LayoutFooter from './footer';
+import ScrollReset from './scroll-reset';
 
 type Props = {
   children: React.ReactNode;
@@ -24,6 +24,7 @@ export default function PageWrapper({ children, className, breadcrumbs, label, H
       className={cn('flex min-h-screen flex-col items-center w-full py-4 mx-2 max-w-7xl self-center', className, {
         'max-w-[90rem]': settings.DisplaySize === 'wide',
         'max-w-[106rem]': settings.DisplaySize === 'extra-wide',
+        // TODO: Even further for full-screen mode?
       })}
     >
       {!HideNavbar && <NavigationBar breadcrumbs={breadcrumbs} label={label} />}

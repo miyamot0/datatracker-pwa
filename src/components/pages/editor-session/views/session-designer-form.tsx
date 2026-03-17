@@ -1,4 +1,4 @@
-import PageWrapper from '@/components/layout/page-wrapper';
+import PageWrapper from '@/components/elements/page-wrapper';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ import {
 import {
   SessionDesignerSchema,
   SessionDesignerSchemaType,
-} from '@/components/editor-session/views/session-designer-schema';
+} from '@/components/pages/editor-session/views/session-designer-schema';
 import { CleanUpString } from '@/lib/strings';
 import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -65,6 +65,7 @@ export default function SessionDesigner({
     from: `/session/$group/$individual/$evaluation/`,
   });
 
+  // TODO: Pass working defaults from loader?
   const form = useForm<SessionDesignerSchemaType>({
     resolver: zodResolver(SessionDesignerSchema),
     values: {

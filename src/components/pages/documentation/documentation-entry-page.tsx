@@ -1,5 +1,5 @@
 import { FrontMatterUniversalType, ParsedFrontMatterType } from '@/types/mdx';
-import PageWrapper from '@/components/layout/page-wrapper';
+import PageWrapper from '@/components/elements/page-wrapper';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { BuildDocumentationBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { Badge } from '@/components/ui/badge';

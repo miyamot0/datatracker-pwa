@@ -6,7 +6,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
   BreadcrumbPage,
-} from '../../ui/breadcrumb';
+} from '../ui/breadcrumb';
 import AuthorizationStatus from './authorization-status';
 import createHref from '@/lib/links';
 import { Button } from '@/components/ui/button';

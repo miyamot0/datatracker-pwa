@@ -1,4 +1,4 @@
-import PageWrapper from '@/components/layout/page-wrapper';
+import PageWrapper from '@/components/elements/page-wrapper';
 import { useEventListener } from '@/components/session-recorder/helpers/event-listeners';
 import { SavedSessionResult, SavedSettings } from '@/lib/dtos';
 import { cn } from '@/lib/utils';

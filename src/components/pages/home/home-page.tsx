@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { BookTextIcon, ChartLineIcon, HardDriveDownloadIcon, PackageIcon } from 'lucide-react';
-import PageWrapper from '@/components/layout/page-wrapper';
+import PageWrapper from '@/components/elements/page-wrapper';
 import createHref from '@/lib/links';
 import {
   Dialog,

@@ -1,7 +1,5 @@
 import { SavedSettings, toSavedSettings } from '../dtos';
-import {
-  SessionDesignerSchemaType,
-} from '../../components/editor-session/views/session-designer-schema';
+import { SessionDesignerSchemaType } from '../../components/pages/editor-session/views/session-designer-schema';
 import { DataCollectorRolesType } from '@/types/roles';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 

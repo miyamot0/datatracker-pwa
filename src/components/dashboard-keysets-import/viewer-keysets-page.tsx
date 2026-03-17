@@ -1,5 +1,5 @@
 import { queryClient } from '@/App';
-import PageWrapper from '@/components/layout/page-wrapper';
+import PageWrapper from '@/components/elements/page-wrapper';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import BackButton from '@/components/ui/back-button';
 import {
