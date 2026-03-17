@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { KeyboardIcon, PointerIcon, ScatterChartIcon } from 'lucide-react';
-import RateFigureVisualization from '../../../visualize-outcomes/rate/rate-figure';
+import RateFigureVisualization from './rate-figure';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';

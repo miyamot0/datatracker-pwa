@@ -69,7 +69,8 @@ export default function SessionViewerPage({
       PlottedKeys: combineAndSortKeyPresses(relevantSession),
     } satisfies ExpandedSavedSessionResult;
 
-    const showKeysBase = UnfilteredKeysFrequency.map((key) => ({
+    // Note: No CTB here
+    const showKeysBase = UnfilteredKeysFrequency.filter((k) => k.Type !== 'Summary').map((key) => ({
       KeyDescription: key.KeyDescription,
       Visible: key.Visible,
     }));
