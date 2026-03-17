@@ -15,6 +15,7 @@ import { useContext } from 'react';
 import ReliabilityBlank from './views/reli-blank';
 import ReliabilityViewerContent from './views/reli-viewer-content';
 import { filterSessionsByPrimaryRole, filterSessionsByReliabilityRole } from '@/lib/graphing';
+import { pullMostRecentKeySet } from '@/lib/keyset';
 
 export default function ReliabilityViewerPage({
   Group,
@@ -46,9 +47,7 @@ export default function ReliabilityViewerPage({
     );
   }
 
-  // Pull most recent keyset
-  const KeySet = data.slice(-1)[0].Keyset;
-
+  const KeySet = pullMostRecentKeySet(data);
   const resultsPrimary = filterSessionsByPrimaryRole(data);
   const resultsReli = filterSessionsByReliabilityRole(data);
   const pairedSessionData = getCorrespondingSessionPairs(resultsPrimary, resultsReli);

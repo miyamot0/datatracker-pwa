@@ -6,14 +6,14 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { CleanUpString } from '@/lib/strings';
 import { FolderHandleContext } from '@/context/folder-context';
-
 import { useQuery } from '@tanstack/react-query';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import ResultsViewerContent from './views/results-viewer-content';
-import { PullRelevantSetup } from './helpers/results_setup';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { useContext } from 'react';
+import { pullMostRecentKeySet } from '@/lib/keyset';
+import { prepareDataOrganization } from '@/lib/summary';
 
 export default function ResultsViewerPage({
   Group,
@@ -31,7 +31,13 @@ export default function ResultsViewerPage({
 
   if (error || !data) return <ErrorDisplay Text={error?.message} />;
 
-  const prep = PullRelevantSetup(Group, Individual, Evaluation, data[0].Keyset);
+  const keySet = pullMostRecentKeySet(data);
+  const { UnfilteredKeysFrequency, UnfilteredKeysDuration, TimerMapping, ExcludeFromCTB } = prepareDataOrganization(
+    Group,
+    Individual,
+    Evaluation,
+    keySet,
+  );
 
   return (
     <PageWrapper
@@ -44,12 +50,12 @@ export default function ResultsViewerPage({
       className="select-none"
     >
       <ResultsViewerContent
-        UnfilteredKeysFrequency={prep.UnfilteredKeysFrequency}
-        UnfilteredKeysDuration={prep.UnfilteredKeysDuration}
-        TimerMapping={prep.TimerMapping}
-        ExcludeFromCTB={prep.ExcludeFromCTB}
+        UnfilteredKeysFrequency={UnfilteredKeysFrequency}
+        UnfilteredKeysDuration={UnfilteredKeysDuration}
+        TimerMapping={TimerMapping}
+        ExcludeFromCTB={ExcludeFromCTB}
         Results={data}
-        Keyset={data[0].Keyset}
+        Keyset={keySet}
         Group={Group}
         Individual={Individual}
         Evaluation={Evaluation}

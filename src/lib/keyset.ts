@@ -1,5 +1,7 @@
 import { KeySet, KeySetSerialize } from '@/types/keyset';
 import { v4 as uuidv4 } from 'uuid';
+import { SavedSessionResult } from './dtos';
+import { ModifiedSessionResult } from '@/types/storage';
 
 /**
  * Create a new key set
@@ -54,4 +56,8 @@ export function deserializeKeySet(json: string): KeySet {
     createdAt: new Date(keyset_json.createdAt),
     lastModified: new Date(keyset_json.lastModified),
   };
+}
+
+export function pullMostRecentKeySet(data: SavedSessionResult[] | ModifiedSessionResult[]): KeySet {
+  return data.sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session).slice(-1)[0].Keyset;
 }

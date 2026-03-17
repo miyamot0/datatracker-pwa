@@ -1,6 +1,6 @@
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { SavedSessionResult } from './dtos';
-import { walkSessionDurationKey, walkSessionFrequencyKey } from '@/components/summary-outcomes/helpers/schedule_parser';
+import { walkSessionDurationKey, walkSessionFrequencyKey } from './schedule-parser';
 
 export function filterSessionsByPrimaryRole(results: SavedSessionResult[]) {
   return results

@@ -3,7 +3,7 @@ import { SavedSessionResult } from '../dtos';
 import { KeySet, KeySetInstance } from '@/types/keyset';
 
 // Mock the helper functions from schedule_parser
-vi.mock('@/components/summary-outcomes/helpers/schedule_parser', () => ({
+vi.mock('@/lib/schedule-parser', () => ({
   walkSessionFrequencyKey: vi.fn(),
   walkSessionDurationKey: vi.fn(),
 }));
@@ -16,7 +16,7 @@ import {
 } from '../graphing';
 
 // Import the mocked functions for use in tests
-import { walkSessionFrequencyKey, walkSessionDurationKey } from '@/components/summary-outcomes/helpers/schedule_parser';
+import { walkSessionFrequencyKey, walkSessionDurationKey } from '@/lib/schedule-parser';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 
 describe('graphing utility functions', () => {
