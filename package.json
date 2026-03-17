@@ -133,9 +133,6 @@
     "include": [
       "./src/**/*.d.ts",
       "src/**/*.{tsx,ts}"
-    ],
-    "exclude": [
-      "./src/components/ui/*.{tsx,ts}"
     ]
   },
   "resolutions": {

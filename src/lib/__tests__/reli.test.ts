@@ -9,11 +9,14 @@ import {
   generatePMABinMatch,
   addBinToKeyData,
   getCorrespondingSessionPairs,
+  pullRelevantSessions,
   calculateReliabilityFrequency,
   calculateReliabilityDuration,
   generateBinsProportion,
+  prepareFrequencyReliTable,
+  prepareDurationReliTable,
 } from '../reli.ts';
-import { ProbedKey, BinValueType, ReliabilityPairType } from '../../types/reli';
+import { ProbedKey, BinValueType, ReliabilityPairType, PreparedReliabilityData } from '../../types/reli';
 import { SavedSessionResult, SavedSettings } from '../dtos';
 import { KeyManageType } from '@/types/timing';
 import { KeySet } from '@/types/keyset';
@@ -757,5 +760,478 @@ describe('generateBinsProportion - Additional Edge Cases', () => {
     const result = generateBinsProportion(mockPrimarySession, keyToCode);
     expect(result[0].KeyDescription).toBe('TestKey');
     expect((result[0] as any).CustomProperty).toBe('CustomValue');
+  });
+});
+
+describe('pullRelevantSessions', () => {
+  const mockPair1: ReliabilityPairType = {
+    primary: {
+      ...mockPrimarySession,
+      SessionSettings: { Session: 3 } as SavedSettings,
+    },
+    reli: {
+      ...mockReliabilitySession,
+      SessionSettings: { Session: 3 } as SavedSettings,
+    },
+  };
+
+  const mockPair2: ReliabilityPairType = {
+    primary: {
+      ...mockPrimarySession,
+      SessionSettings: { Session: 1 } as SavedSettings,
+    },
+    reli: {
+      ...mockReliabilitySession,
+      SessionSettings: { Session: 1 } as SavedSettings,
+    },
+  };
+
+  const mockPair3: ReliabilityPairType = {
+    primary: {
+      ...mockPrimarySession,
+      SessionSettings: { Session: 5 } as SavedSettings,
+    },
+    reli: {
+      ...mockReliabilitySession,
+      SessionSettings: { Session: 5 } as SavedSettings,
+    },
+  };
+
+  it('should extract and sort session numbers from paired sessions', () => {
+    const pairedSessions = [mockPair1, mockPair2, mockPair3];
+    const result = pullRelevantSessions(pairedSessions);
+
+    expect(result).toEqual([1, 3, 5]);
+  });
+
+  it('should handle empty paired sessions', () => {
+    const result = pullRelevantSessions([]);
+    expect(result).toEqual([]);
+  });
+
+  it('should deduplicate session numbers', () => {
+    const duplicatePair: ReliabilityPairType = {
+      primary: {
+        ...mockPrimarySession,
+        SessionSettings: { Session: 3 } as SavedSettings,
+      },
+      reli: {
+        ...mockReliabilitySession,
+        SessionSettings: { Session: 3 } as SavedSettings,
+      },
+    };
+
+    const pairedSessions = [mockPair1, duplicatePair, mockPair2];
+    const result = pullRelevantSessions(pairedSessions);
+
+    expect(result).toEqual([1, 3]);
+  });
+
+  it('should filter out NaN session numbers', () => {
+    const invalidPair: ReliabilityPairType = {
+      primary: {
+        ...mockPrimarySession,
+        SessionSettings: { Session: null as any } as SavedSettings,
+      },
+      reli: {
+        ...mockReliabilitySession,
+        SessionSettings: { Session: null as any } as SavedSettings,
+      },
+    };
+
+    const pairedSessions = [mockPair1, invalidPair, mockPair2];
+    const result = pullRelevantSessions(pairedSessions);
+
+    expect(result).toEqual([0, 1, 3]); // null becomes 0, not NaN
+  });
+
+  it('should handle mixed valid and invalid session numbers', () => {
+    const undefinedPair: ReliabilityPairType = {
+      primary: {
+        ...mockPrimarySession,
+        SessionSettings: {} as SavedSettings,
+      },
+      reli: {
+        ...mockReliabilitySession,
+        SessionSettings: {} as SavedSettings,
+      },
+    };
+
+    const pairedSessions = [mockPair2, undefinedPair, mockPair1];
+    const result = pullRelevantSessions(pairedSessions);
+
+    expect(result).toEqual([1, 3]);
+  });
+
+  it('should sort large session numbers correctly', () => {
+    const largePair1: ReliabilityPairType = {
+      primary: {
+        ...mockPrimarySession,
+        SessionSettings: { Session: 100 } as SavedSettings,
+      },
+      reli: {
+        ...mockReliabilitySession,
+        SessionSettings: { Session: 100 } as SavedSettings,
+      },
+    };
+
+    const largePair2: ReliabilityPairType = {
+      primary: {
+        ...mockPrimarySession,
+        SessionSettings: { Session: 15 } as SavedSettings,
+      },
+      reli: {
+        ...mockReliabilitySession,
+        SessionSettings: { Session: 15 } as SavedSettings,
+      },
+    };
+
+    const pairedSessions = [largePair1, largePair2, mockPair1];
+    const result = pullRelevantSessions(pairedSessions);
+
+    expect(result).toEqual([3, 15, 100]);
+  });
+});
+
+describe('prepareFrequencyReliTable', () => {
+  const mockKeySet: KeySet = {
+    id: 'test-keyset',
+    Name: 'Test KeySet',
+    FrequencyKeys: [
+      { KeyName: 'A', KeyDescription: 'Key A', KeyCode: 65 },
+      { KeyName: 'B', KeyDescription: 'Key B', KeyCode: 66 },
+    ],
+    DurationKeys: [],
+    createdAt: new Date('2024-01-01'),
+    lastModified: new Date('2024-01-01'),
+  };
+
+  const mockPairedSessions: ReliabilityPairType[] = [
+    {
+      primary: {
+        ...mockPrimarySession,
+        SessionSettings: { Session: 1 } as SavedSettings,
+        FrequencyKeyPresses: [{ KeyDescription: 'Key A', KeyName: 'A', TimeIntoSession: 30 }] as KeyManageType[],
+      },
+      reli: {
+        ...mockReliabilitySession,
+        SessionSettings: { Session: 1 } as SavedSettings,
+        FrequencyKeyPresses: [{ KeyDescription: 'Key A', KeyName: 'A', TimeIntoSession: 30 }] as KeyManageType[],
+      },
+    },
+    {
+      primary: {
+        ...mockPrimarySession,
+        SessionSettings: { Session: 2 } as SavedSettings,
+        FrequencyKeyPresses: [{ KeyDescription: 'Key B', KeyName: 'B', TimeIntoSession: 45 }] as KeyManageType[],
+      },
+      reli: {
+        ...mockReliabilitySession,
+        SessionSettings: { Session: 2 } as SavedSettings,
+        FrequencyKeyPresses: [{ KeyDescription: 'Key B', KeyName: 'B', TimeIntoSession: 50 }] as KeyManageType[],
+      },
+    },
+  ];
+
+  it('should create proper table structure with headings', () => {
+    const result = prepareFrequencyReliTable(mockPairedSessions, mockKeySet);
+
+    expect(result.headings).toEqual([
+      'Session #',
+      'Key A (EIA)',
+      'Key A (PIA)',
+      'Key A (TIA)',
+      'Key A (OIA)',
+      'Key A (NIA)',
+      'Key A (PMA)',
+      'Key B (EIA)',
+      'Key B (PIA)',
+      'Key B (TIA)',
+      'Key B (OIA)',
+      'Key B (NIA)',
+      'Key B (PMA)',
+    ]);
+  });
+
+  it('should create rows for each session', () => {
+    const result = prepareFrequencyReliTable(mockPairedSessions, mockKeySet);
+
+    expect(result.rows).toHaveLength(3); // 2 sessions + 1 averaged row
+    expect(result.rows[0][0].value).toBe('1');
+    expect(result.rows[1][0].value).toBe('2');
+    expect(result.rows[2][0].value).toBe('Averaged');
+  });
+
+  it('should handle sessions with no matching keys', () => {
+    const singlePairedSession = [mockPairedSessions[0]];
+    const result = prepareFrequencyReliTable(singlePairedSession, mockKeySet);
+
+    expect(result.rows).toHaveLength(2); // 1 session + 1 averaged row
+    // First session should have data for Key A but 100.00 for Key B (all bins empty = perfect match)
+    expect(result.rows[0][1].value).toBeTruthy(); // Key A EIA value
+    expect(result.rows[0][7].value).toBe('100.00'); // Key B EIA value (empty bins = 100% match)
+  });
+
+  it('should calculate averages correctly', () => {
+    const result = prepareFrequencyReliTable(mockPairedSessions, mockKeySet);
+    const averageRow = result.rows[result.rows.length - 1];
+
+    expect(averageRow[0].value).toBe('Averaged');
+    // Averages should be calculated for valid values, NaN for keys with no data
+    expect(averageRow[1].value).not.toBe(''); // Should have averaged EIA for Key A
+  });
+
+  it('should handle empty paired sessions', () => {
+    const result = prepareFrequencyReliTable([], mockKeySet);
+
+    expect(result.headings).toHaveLength(13); // Session # + 6 metrics × 2 keys
+    expect(result.rows).toHaveLength(1); // Only averaged row
+    expect(result.rows[0][0].value).toBe('Averaged');
+  });
+
+  it('should handle keyset with no frequency keys', () => {
+    const emptyKeySet: KeySet = {
+      ...mockKeySet,
+      FrequencyKeys: [],
+    };
+
+    const result = prepareFrequencyReliTable(mockPairedSessions, emptyKeySet);
+
+    expect(result.headings).toEqual(['Session #']);
+    expect(result.rows).toHaveLength(3); // 2 sessions + 1 averaged row
+    expect(result.rows[0]).toHaveLength(1); // Only session number
+    expect(result.rows[1]).toHaveLength(1); // Only session number
+    expect(result.rows[2]).toHaveLength(1); // Only session number
+  });
+
+  it('should handle all values as readOnly', () => {
+    const result = prepareFrequencyReliTable(mockPairedSessions, mockKeySet);
+
+    result.rows.forEach((row) => {
+      row.forEach((cell) => {
+        expect(cell.readOnly).toBe(true);
+      });
+    });
+  });
+
+  it('should format numeric values to 2 decimal places', () => {
+    const result = prepareFrequencyReliTable(mockPairedSessions, mockKeySet);
+
+    // Check that non-empty numeric values are formatted correctly
+    result.rows.slice(0, -1).forEach((row) => {
+      row.slice(1).forEach((cell) => {
+        if (cell.value && cell.value !== '') {
+          const numValue = parseFloat(cell.value);
+          if (!isNaN(numValue)) {
+            expect(cell.value).toMatch(/^\d+\.\d{2}$/);
+          }
+        }
+      });
+    });
+  });
+});
+
+describe('prepareDurationReliTable', () => {
+  const mockDurationKeySet: KeySet = {
+    id: 'test-duration-keyset',
+    Name: 'Test Duration KeySet',
+    FrequencyKeys: [],
+    DurationKeys: [
+      { KeyName: 'D1', KeyDescription: 'Duration Key 1', KeyCode: 68 },
+      { KeyName: 'D2', KeyDescription: 'Duration Key 2', KeyCode: 69 },
+    ],
+    createdAt: new Date('2024-01-01'),
+    lastModified: new Date('2024-01-01'),
+  };
+
+  const mockDurationPairedSessions: ReliabilityPairType[] = [
+    {
+      primary: {
+        ...mockPrimarySession,
+        SessionSettings: { Session: 1 } as SavedSettings,
+        DurationKeyPresses: [
+          { KeyDescription: 'Duration Key 1', KeyName: 'D1', TimeIntoSession: 10 },
+          { KeyDescription: 'Duration Key 1', KeyName: 'D1', TimeIntoSession: 40 },
+        ] as KeyManageType[],
+      },
+      reli: {
+        ...mockReliabilitySession,
+        SessionSettings: { Session: 1 } as SavedSettings,
+        DurationKeyPresses: [
+          { KeyDescription: 'Duration Key 1', KeyName: 'D1', TimeIntoSession: 15 },
+          { KeyDescription: 'Duration Key 1', KeyName: 'D1', TimeIntoSession: 45 },
+        ] as KeyManageType[],
+      },
+    },
+    {
+      primary: {
+        ...mockPrimarySession,
+        SessionSettings: { Session: 2 } as SavedSettings,
+        DurationKeyPresses: [
+          { KeyDescription: 'Duration Key 2', KeyName: 'D2', TimeIntoSession: 20 },
+          { KeyDescription: 'Duration Key 2', KeyName: 'D2', TimeIntoSession: 60 },
+        ] as KeyManageType[],
+      },
+      reli: {
+        ...mockReliabilitySession,
+        SessionSettings: { Session: 2 } as SavedSettings,
+        DurationKeyPresses: [
+          { KeyDescription: 'Duration Key 2', KeyName: 'D2', TimeIntoSession: 25 },
+          { KeyDescription: 'Duration Key 2', KeyName: 'D2', TimeIntoSession: 65 },
+        ] as KeyManageType[],
+      },
+    },
+  ];
+
+  it('should create proper table structure with duration key headings', () => {
+    const result = prepareDurationReliTable(mockDurationPairedSessions, mockDurationKeySet);
+
+    expect(result.headings).toEqual([
+      'Session #',
+      'Duration Key 1 (EIA)',
+      'Duration Key 1 (PIA)',
+      'Duration Key 1 (TIA)',
+      'Duration Key 1 (OIA)',
+      'Duration Key 1 (NIA)',
+      'Duration Key 1 (PMA)',
+      'Duration Key 2 (EIA)',
+      'Duration Key 2 (PIA)',
+      'Duration Key 2 (TIA)',
+      'Duration Key 2 (OIA)',
+      'Duration Key 2 (NIA)',
+      'Duration Key 2 (PMA)',
+    ]);
+  });
+
+  it('should create rows for each session with duration data', () => {
+    const result = prepareDurationReliTable(mockDurationPairedSessions, mockDurationKeySet);
+
+    expect(result.rows).toHaveLength(3); // 2 sessions + 1 averaged row
+    expect(result.rows[0][0].value).toBe('1');
+    expect(result.rows[1][0].value).toBe('2');
+    expect(result.rows[2][0].value).toBe('Averaged');
+  });
+
+  it('should handle sessions with no matching duration keys', () => {
+    const singleDurationSession = [mockDurationPairedSessions[0]];
+    const result = prepareDurationReliTable(singleDurationSession, mockDurationKeySet);
+
+    expect(result.rows).toHaveLength(2); // 1 session + 1 averaged row
+    // First session should have data for Duration Key 1 but 100.00 for Duration Key 2 (all bins empty = perfect match)
+    expect(result.rows[0][1].value).toBeTruthy(); // Duration Key 1 EIA value
+    expect(result.rows[0][7].value).toBe('100.00'); // Duration Key 2 EIA value (empty bins = 100% match)
+  });
+
+  it('should calculate duration averages correctly', () => {
+    const result = prepareDurationReliTable(mockDurationPairedSessions, mockDurationKeySet);
+    const averageRow = result.rows[result.rows.length - 1];
+
+    expect(averageRow[0].value).toBe('Averaged');
+    // Averages should be calculated for valid values
+    expect(averageRow[1].value).not.toBe(''); // Should have averaged EIA for Duration Key 1
+  });
+
+  it('should handle empty duration paired sessions', () => {
+    const result = prepareDurationReliTable([], mockDurationKeySet);
+
+    expect(result.headings).toHaveLength(13); // Session # + 6 metrics × 2 keys
+    expect(result.rows).toHaveLength(1); // Only averaged row
+    expect(result.rows[0][0].value).toBe('Averaged');
+  });
+
+  it('should handle keyset with no duration keys', () => {
+    const emptyDurationKeySet: KeySet = {
+      ...mockDurationKeySet,
+      DurationKeys: [],
+    };
+
+    const result = prepareDurationReliTable(mockDurationPairedSessions, emptyDurationKeySet);
+
+    expect(result.headings).toEqual(['Session #']);
+    expect(result.rows).toHaveLength(3); // 2 sessions + 1 averaged row
+    expect(result.rows[0]).toHaveLength(1); // Only session number
+    expect(result.rows[1]).toHaveLength(1); // Only session number
+    expect(result.rows[2]).toHaveLength(1); // Only session number
+  });
+
+  it('should handle odd number of duration key presses', () => {
+    const oddDurationSessions: ReliabilityPairType[] = [
+      {
+        primary: {
+          ...mockPrimarySession,
+          SessionSettings: { Session: 1 } as SavedSettings,
+          DurationKeyPresses: [
+            { KeyDescription: 'Duration Key 1', KeyName: 'D1', TimeIntoSession: 10 },
+            { KeyDescription: 'Duration Key 1', KeyName: 'D1', TimeIntoSession: 40 },
+            { KeyDescription: 'Duration Key 1', KeyName: 'D1', TimeIntoSession: 70 }, // Odd number
+          ] as KeyManageType[],
+        },
+        reli: {
+          ...mockReliabilitySession,
+          SessionSettings: { Session: 1 } as SavedSettings,
+          DurationKeyPresses: [
+            { KeyDescription: 'Duration Key 1', KeyName: 'D1', TimeIntoSession: 10 },
+            { KeyDescription: 'Duration Key 1', KeyName: 'D1', TimeIntoSession: 40 },
+            { KeyDescription: 'Duration Key 1', KeyName: 'D1', TimeIntoSession: 70 }, // Odd number
+          ] as KeyManageType[],
+        },
+      },
+    ];
+
+    const result = prepareDurationReliTable(oddDurationSessions, mockDurationKeySet);
+
+    expect(result.rows).toHaveLength(2); // 1 session + 1 averaged row
+    expect(result.rows[0][1].value).toBeTruthy(); // Should have calculated EIA
+  });
+
+  it('should format duration numeric values to 2 decimal places', () => {
+    const result = prepareDurationReliTable(mockDurationPairedSessions, mockDurationKeySet);
+
+    // Check that non-empty numeric values are formatted correctly
+    result.rows.slice(0, -1).forEach((row) => {
+      row.slice(1).forEach((cell) => {
+        if (cell.value && cell.value !== '') {
+          const numValue = parseFloat(cell.value);
+          if (!isNaN(numValue)) {
+            expect(cell.value).toMatch(/^\d+\.\d{2}$/);
+          }
+        }
+      });
+    });
+  });
+
+  it('should handle NaN values in calculations gracefully', () => {
+    // Create sessions that might produce NaN values
+    const problematicSessions: ReliabilityPairType[] = [
+      {
+        primary: {
+          ...mockPrimarySession,
+          SessionSettings: { Session: 1 } as SavedSettings,
+          DurationKeyPresses: [] as KeyManageType[], // No key presses
+        },
+        reli: {
+          ...mockReliabilitySession,
+          SessionSettings: { Session: 1 } as SavedSettings,
+          DurationKeyPresses: [] as KeyManageType[], // No key presses
+        },
+      },
+    ];
+
+    const result = prepareDurationReliTable(problematicSessions, mockDurationKeySet);
+
+    expect(result.rows).toHaveLength(2); // 1 session + 1 averaged row
+    // Should handle gracefully without throwing errors
+    expect(result.rows[0]).toBeDefined();
+    expect(result.rows[1]).toBeDefined();
+  });
+
+  it('should ensure all duration table values are marked as readOnly', () => {
+    const result = prepareDurationReliTable(mockDurationPairedSessions, mockDurationKeySet);
+
+    result.rows.forEach((row) => {
+      row.forEach((cell) => {
+        expect(cell.readOnly).toBe(true);
+      });
+    });
   });
 });
