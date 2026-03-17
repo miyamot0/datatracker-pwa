@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { KeyboardIcon, PointerIcon, ScatterChartIcon } from 'lucide-react';
-import RateFigureVisualization from './rate-figure';
+import RateFigureVisualization from '../../../visualize-outcomes/rate/rate-figure';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
@@ -27,6 +27,7 @@ import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibil
 import { Link } from '@tanstack/react-router';
 import { Switch } from '@/components/ui/switch';
 import { SessionTerminationOptionsType } from '@/types/terminations';
+import { ToggleDisplayKey } from '@/types/visuals';
 
 export default function ResultsRateVisualsPage({
   Group,
@@ -48,14 +49,8 @@ export default function ResultsRateVisualsPage({
   ResultsFiltered: SavedSessionResult[];
   DynamicKeySet: KeySet;
   Schedule: SessionTerminationOptionsType;
-  ShowKeys: {
-    KeyDescription: string;
-    Visible: boolean;
-  }[];
-  ExcludeKeysFromCTB: {
-    KeyDescription: string;
-    Visible: boolean;
-  }[];
+  ShowKeys: ToggleDisplayKey[];
+  ExcludeKeysFromCTB: ToggleDisplayKey[];
   MinX: number;
   MaxX: number;
 }) {

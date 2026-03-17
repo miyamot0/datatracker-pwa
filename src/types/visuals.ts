@@ -33,3 +33,11 @@ export type CustomTooltipProps = {
   payload?: TooltipPayloadEntry[];
   label?: string | number;
 };
+
+/**
+ * Type definition for keys with visibility toggling in visualizations, used for user preferences and dynamic display handling
+ */
+export type ToggleDisplayKey = {
+  KeyDescription: string;
+  Visible: boolean;
+};

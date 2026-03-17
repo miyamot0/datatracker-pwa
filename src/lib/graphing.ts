@@ -1,6 +1,9 @@
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { SavedSessionResult } from './dtos';
 import { walkSessionDurationKey, walkSessionFrequencyKey } from './schedule-parser';
+import { ToggleDisplayKey } from '@/types/visuals';
+import { KeySetInstance } from '@/types/keyset';
+import { ModifiedSessionResult } from '@/types/storage';
 
 export function filterSessionsByPrimaryRole(results: SavedSessionResult[]) {
   return results
@@ -82,4 +85,81 @@ export function generateChartPreparation(
   });
 
   return generateData;
+}
+
+/**
+ * Extracts and deduplicates keysets from session results to create a dynamic keyset for visualization
+ * @param results - Array of session results containing keysets
+ * @returns An object containing deduplicated frequency and duration keys for use in visualizations
+ */
+export function extractAndDeduplicateKeysets(results: ModifiedSessionResult[]) {
+  const allKeysets = results.map((result) => result.Keyset);
+  const allFKeys = allKeysets.map((keyset) => keyset.FrequencyKeys).flat();
+  const allDKeys = allKeysets.map((keyset) => keyset.DurationKeys).flat();
+
+  const targetedFKeys: KeySetInstance[] = [];
+  allFKeys.forEach((key) => {
+    if (!targetedFKeys.some((k) => k.KeyCode === key.KeyCode)) {
+      targetedFKeys.push(key);
+    }
+  });
+
+  const targetedDKeys: KeySetInstance[] = [];
+  allDKeys.forEach((key) => {
+    if (!targetedDKeys.some((k) => k.KeyCode === key.KeyCode)) {
+      targetedDKeys.push(key);
+    }
+  });
+
+  return {
+    frequencyKeys: targetedFKeys,
+    durationKeys: targetedDKeys,
+  };
+}
+
+/**
+ * Maps keys with their storage preference visibility based on stored preferences
+ */
+export function mapKeysWithStoragePreference(keys: ToggleDisplayKey[], storedPreferences: any) {
+  return keys.map((key) => {
+    const shouldDisable = storedPreferences.KeyDescription.includes(key.KeyDescription);
+
+    if (shouldDisable) {
+      return {
+        ...key,
+        Visible: false,
+      };
+    }
+
+    return key;
+  });
+}
+
+/**
+ * Creates CTB key with preferences and handling for exclusions
+ */
+export function createCTBKeyWithPreferences(keys: ToggleDisplayKey[], storedPreferences: any) {
+  const ctbEntry = {
+    KeyDescription: 'CTB',
+    Visible: true,
+  };
+
+  // Map CTB exclusions
+  const excludeFromCTB = keys.map((key) => {
+    const shouldDisable = storedPreferences.CTBElements.includes(key.KeyDescription);
+
+    if (shouldDisable) {
+      return {
+        ...key,
+        Visible: false,
+      };
+    }
+
+    return key;
+  });
+
+  return {
+    ctbEntry,
+    excludeFromCTB,
+  };
 }

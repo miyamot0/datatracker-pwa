@@ -27,6 +27,7 @@ import ProportionFigureVisualization from '@/components/visualize-outcomes/propo
 import { Link } from '@tanstack/react-router';
 import { Switch } from '@/components/ui/switch';
 import { SessionTerminationOptionsType } from '@/types/terminations';
+import { ToggleDisplayKey } from '@/types/visuals';
 
 export default function ResultsProportionVisualsPage({
   Group,
@@ -45,7 +46,7 @@ export default function ResultsProportionVisualsPage({
   Results: SavedSessionResult[];
   DynamicKeySet: KeySet;
   Schedule: SessionTerminationOptionsType;
-  ShowKeys: { KeyDescription: string; Visible: boolean }[];
+  ShowKeys: ToggleDisplayKey[];
   ResultsFiltered: SavedSessionResult[];
   MinX: number;
   MaxX: number;

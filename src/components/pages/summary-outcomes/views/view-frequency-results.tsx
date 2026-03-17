@@ -20,15 +20,13 @@ import { EnhancedKeySetInstance } from '@/types/keyset';
 import { walkSessionFrequencyKey } from '@/lib/schedule-parser';
 import BackButton from '@/components/ui/back-button';
 import { SessionTerminationOptions, SessionTerminationOptionsType } from '@/types/terminations';
+import { ToggleDisplayKey } from '@/types/visuals';
 
 type Props = {
   SessionTimer: SessionTerminationOptionsType;
   Results: SavedSessionResult[];
   UnfilteredKeyList: EnhancedKeySetInstance[];
-  ExcludeFromCTB: {
-    KeyDescription: string;
-    Visible: boolean;
-  }[];
+  ExcludeFromCTB: ToggleDisplayKey[];
   Group: string;
   Individual: string;
   Evaluation: string;

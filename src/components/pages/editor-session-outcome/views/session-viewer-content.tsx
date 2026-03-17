@@ -19,6 +19,7 @@ import SessionFigure from './session-figure';
 import SessionKeyList from './session-key-list';
 import { FolderHandleContext } from '@/context/folder-context';
 import { ExpandedSavedSessionResult } from '@/lib/dtos';
+import { ToggleDisplayKey } from '@/types/visuals';
 
 export default function SessionViewerContent({
   Group,
@@ -31,10 +32,7 @@ export default function SessionViewerContent({
   Group: string;
   Individual: string;
   Evaluation: string;
-  ShowKeys: {
-    KeyDescription: string;
-    Visible: boolean;
-  }[];
+  ShowKeys: ToggleDisplayKey[];
   ExpandedSession: ExpandedSavedSessionResult;
   PlotObject: any[];
 }) {
