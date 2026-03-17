@@ -21,6 +21,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/')
       Evaluation: CleanUpString(evaluation),
     };
   },
+
   component: RouteComponent,
 });
 

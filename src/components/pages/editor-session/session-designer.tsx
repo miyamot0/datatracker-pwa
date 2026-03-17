@@ -1,8 +1,8 @@
 import { FolderHandleContext } from '@/context/folder-context';
 import { useQuery } from '@tanstack/react-query';
 import { conditionQueryOptions } from '@/queries/conditions/query-conditions';
-import { fetchKeyboards } from '@/queries/keysets/query-keyboards';
-import { fetchSessionParams } from '@/queries/session/query-session-params';
+import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
+import { sessionQueryOptions } from '@/queries/session/query-session-params';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { useContext } from 'react';
@@ -29,19 +29,13 @@ export function SessionDesignerPage({
     data: dataKeySets,
     isLoading: loadingKeySets,
     error: errorKeySets,
-  } = useQuery({
-    queryKey: ['/', Group, Individual, 'keyboards'],
-    queryFn: () => fetchKeyboards({ Handle: handle!, Group, Individual }),
-  });
+  } = useQuery(keyboardQueryOptions(handle!, Group, Individual));
 
   const {
     data: dataSessionParams,
     isLoading: loadingSessionParams,
     error: errorSessionParams,
-  } = useQuery({
-    queryKey: ['/', Group, Individual, Evaluation, 'settings'],
-    queryFn: () => fetchSessionParams({ Handle: handle!, Group, Individual, Evaluation }),
-  });
+  } = useQuery(sessionQueryOptions(handle!, Group, Individual, Evaluation));
 
   if (loadingCondition || loadingKeySets || loadingSessionParams) return <LoadingDisplay />;
 

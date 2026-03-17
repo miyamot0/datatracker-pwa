@@ -1,8 +1,8 @@
 import { FolderHandleContext } from '@/context/folder-context';
 import SessionRecorderInterface from './views/session-recorder-interface';
 import { useQuery } from '@tanstack/react-query';
-import { fetchKeyboards } from '@/queries/keysets/query-keyboards';
-import { fetchSessionParams } from '@/queries/session/query-session-params';
+import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
+import { sessionQueryOptions } from '@/queries/session/query-session-params';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { useContext } from 'react';
@@ -25,8 +25,7 @@ export default function SessionRecorderPage({
     isLoading: loadingKeySets,
     error: errorKeySets,
   } = useQuery({
-    queryKey: ['/', Group, Individual, 'keyboards'],
-    queryFn: () => fetchKeyboards({ Handle: handle!, Group, Individual }),
+    ...keyboardQueryOptions(handle!, Group, Individual),
     subscribed: false,
   });
 
@@ -35,8 +34,7 @@ export default function SessionRecorderPage({
     isLoading: loadingSessionParams,
     error: errorSessionParams,
   } = useQuery({
-    queryKey: ['/', Group, Individual, Evaluation, 'settings'],
-    queryFn: () => fetchSessionParams({ Handle: handle!, Group, Individual, Evaluation }),
+    ...sessionQueryOptions(handle!, Group, Individual, Evaluation),
     subscribed: false,
   });
 

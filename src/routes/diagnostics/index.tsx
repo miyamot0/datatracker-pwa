@@ -1,11 +1,14 @@
+import { queryClient } from '@/App';
 import PageWrapper from '@/components/elements/page-wrapper';
 import BackButton from '@/components/ui/back-button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { FolderHandleContext } from '@/context/folder-context';
 import { checkCrossOriginIsolation } from '@/lib/shared-buffer';
 import { cn } from '@/lib/utils';
 import { createFileRoute } from '@tanstack/react-router';
+import { useContext } from 'react';
 
 export const Route = createFileRoute('/diagnostics/')({
   component: RouteComponent,
@@ -25,6 +28,7 @@ function AdaptiveBadge({ isSupported }: { isSupported: boolean }) {
 
 function RouteComponent() {
   const check = checkCrossOriginIsolation();
+  const { settings } = useContext(FolderHandleContext);
 
   return (
     <PageWrapper label="Diagnostics" className="flex flex-col gap-6 select-none">
@@ -77,6 +81,22 @@ function RouteComponent() {
               </ul>
             </>
           )}
+
+          <Separator className="my-1" />
+
+          <div className="flex flex-row justify-between">
+            <p>Caching Mode:</p> <span>{settings.CacheBehavior}</span>
+          </div>
+
+          <div className="flex flex-row justify-between">
+            <p>Stale Time (ms):</p>
+            <span>{queryClient.getDefaultOptions().queries?.staleTime?.toString() ?? ''} ms</span>
+          </div>
+
+          <div className="flex flex-row justify-between">
+            <p>Cache Time (ms):</p>
+            <span>{queryClient.getDefaultOptions().queries?.gcTime?.toString() ?? ''} ms</span>
+          </div>
         </CardContent>
       </Card>
     </PageWrapper>

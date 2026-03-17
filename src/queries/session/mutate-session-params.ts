@@ -1,5 +1,5 @@
 import { CleanUpString } from '@/lib/strings';
-import { fetchSessionParams } from './query-session-params';
+import { sessionQueryOptions } from './query-session-params';
 import { SavedSettings } from '@/lib/dtos';
 import { queryClient } from '@/App';
 
@@ -27,10 +27,9 @@ export const mutationSettingsParams = async ({
   Settings: SavedSettings;
   Handle: FileSystemDirectoryHandle;
 }): Promise<SavedSettings> => {
-  const savedSettings: SavedSettings = await queryClient.fetchQuery({
-    queryKey: ['/', Group, Individual, Evaluation, 'settings'],
-    queryFn: () => fetchSessionParams({ Handle, Group, Individual, Evaluation }),
-  });
+  const savedSettings: SavedSettings = await queryClient.fetchQuery(
+    sessionQueryOptions(Handle, Group, Individual, Evaluation),
+  );
 
   if (!savedSettings) {
     throw new Error('Settings not found');

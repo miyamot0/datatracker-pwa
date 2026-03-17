@@ -38,7 +38,7 @@ import { mutationConditions } from '@/queries/conditions/mutate-conditions';
 import { useMutation } from '@tanstack/react-query';
 import { mutationSettingsParams } from '@/queries/session/mutate-session-params';
 import { queryClient } from '@/App';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouter } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { DataCollectorRoles } from '@/types/roles';
 import { SessionTerminationOptionsDescriptions } from '@/types/terminations';
@@ -61,6 +61,7 @@ export default function SessionDesigner({
   SessionSettings,
 }: Props) {
   const { settings, handle } = useContext(FolderHandleContext);
+  const router = useRouter();
   const navigate = useNavigate({
     from: `/session/$group/$individual/$evaluation/`,
   });
@@ -108,6 +109,26 @@ export default function SessionDesigner({
 
   const [keySet, setKeySet] = useState<KeySet | undefined>(undefined);
 
+  async function preLoadRoute(keySet?: KeySet) {
+    if (!keySet) return;
+
+    if (settings.CacheBehavior === 'aggressive') {
+      try {
+        await router.preloadRoute({
+          to: '/session/$group/$individual/$evaluation/run/$keyset',
+          params: {
+            group: Group,
+            individual: Individual,
+            evaluation: Evaluation,
+            keyset: keySet.Name,
+          },
+        });
+      } catch (err) {
+        console.log('Error preloading route:', err);
+      }
+    }
+  }
+
   useEffect(() => {
     form.setValue('SessionKeySet', SessionSettings.KeySet);
     form.setValue('DataCollectorID', SessionSettings.Initials);
@@ -129,7 +150,10 @@ export default function SessionDesigner({
     if (SessionSettings.KeySet.trim().length > 0) {
       const keyset_default = Keysets.find((keyset) => keyset.Name === SessionSettings.KeySet);
 
-      if (keyset_default) setKeySet(keyset_default);
+      if (keyset_default) {
+        setKeySet(keyset_default);
+        preLoadRoute(keyset_default);
+      }
     }
 
     form.trigger('SessionKeySet');
@@ -299,9 +323,13 @@ export default function SessionDesigner({
                       <Select
                         onValueChange={(value) => {
                           field.onChange(value);
-                          setKeySet(Keysets.find((keyset) => keyset.Name === value));
+
+                          const newKeySet = Keysets.find((keyset) => keyset.Name === value);
+                          setKeySet(newKeySet);
 
                           form.trigger('SessionKeySet');
+
+                          preLoadRoute(newKeySet);
                         }}
                         value={field.value}
                       >

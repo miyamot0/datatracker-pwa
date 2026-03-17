@@ -40,7 +40,7 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
   const staleTimeAggressive = 1000 * 60 * 15; // 15 minutes
   const gcTimeAggressive = 1000 * 60 * 30; // 30 minutes
 
-  const staleTimeDefault = 0; // 0 minutes
+  const staleTimeDefault = 1000 * 60 * 1; // 1 minute
   const gcTimeDefault = 1000 * 60 * 5; // 5 minutes
 
   /**
