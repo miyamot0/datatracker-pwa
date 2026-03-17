@@ -15,12 +15,14 @@ import {
   THEME_OPTIONS,
   ThemeTypes,
   SettingsDisplayEnum,
+  TransitionSettingTypes,
+  TRANSITION_SETTING_OPTIONS,
 } from '@/types/settings';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useTheme } from '@/components/ui/theme-provider';
 import { useContext } from 'react';
 import { displayConditionalNotification } from '@/lib/notifications';
-import { TRANSITION_OPTIONS, TransitionOptions, viewTransitionCall } from '@/types/transitions';
+import { viewTransitionCall } from '@/types/transitions';
 import { useRouter } from '@tanstack/react-router';
 
 export function SettingsTabDisplay() {
@@ -63,7 +65,7 @@ export function SettingsTabDisplay() {
         >
           <Select
             value={settings.TransitionBehavior}
-            onValueChange={(value: TransitionOptions) => {
+            onValueChange={(value: TransitionSettingTypes) => {
               const newSettings = {
                 ...settings,
                 TransitionBehavior: value,
@@ -82,7 +84,7 @@ export function SettingsTabDisplay() {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {TRANSITION_OPTIONS.map((option) => (
+                {TRANSITION_SETTING_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>

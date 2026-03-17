@@ -1,5 +1,4 @@
 import { walkSessionFrequencyKey, walkSessionDurationKey, combineAndSortKeyPresses } from '../schedule-parser';
-import { KeyTiming } from '@/types/timing';
 import { SavedSessionResult } from '@/lib/dtos';
 import { KeySetInstance } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';
@@ -278,12 +277,6 @@ describe('walkSessionFrequencyKey', () => {
   });
 
   it('should only count keys matching the specified key name', () => {
-    const otherKey: KeySetInstance = {
-      KeyName: 'OtherKey',
-      KeyDescription: 'Other Frequency Key',
-      KeyCode: 2,
-    };
-
     const sessionWithMultipleKeys: SavedSessionResult = {
       ...baseSessionSettings,
       SystemKeyPresses: [

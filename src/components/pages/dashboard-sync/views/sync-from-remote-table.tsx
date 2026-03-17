@@ -1,55 +1,16 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { SyncFromRemoteOptionIndicator } from './sync-from-remote-option-indicator';
-import { ArrowLeft } from 'lucide-react';
 import { ReliabilityDataTable } from '@/components/ui/data-table-reli';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ColumnDef } from '@tanstack/react-table';
 import { toast } from 'sonner';
 import { SyncEntryTableRow } from '@/types/sync';
-import { readFileAsync, getFileHandle } from '@/lib/file';
+import { syncAllFiles } from '@/lib/file';
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
   RemoteHandle: FileSystemDirectoryHandle;
 };
-
-async function writeOutFileToLocal(
-  remoteDirectory: FileSystemDirectoryHandle,
-  handle: FileSystemDirectoryHandle,
-  value: SyncEntryTableRow,
-) {
-  if (!remoteDirectory || !handle) return;
-
-  const path_parts = value.file.split('/').filter((part) => part.trim().length > 0);
-
-  if (path_parts.length === 0) return;
-
-  const file_rem = await getFileHandle(remoteDirectory, value.file);
-  const file_rem_contents = await file_rem?.getFile();
-  const text = await readFileAsync(file_rem_contents!);
-
-  const file_handle_lcl = await getFileHandle(handle, value.file);
-  const writer = await file_handle_lcl?.createWritable();
-  await writer?.write(new Blob([text as string]));
-  await writer?.close();
-}
-
-async function syncAllFiles(
-  rows: SyncEntryTableRow[],
-  Handle: FileSystemDirectoryHandle,
-  RemoteHandle: FileSystemDirectoryHandle,
-  SetLocalCallback: React.Dispatch<React.SetStateAction<string[]>>,
-) {
-  const files_added: string[] = [];
-  for (const row of rows) {
-    writeOutFileToLocal(RemoteHandle, Handle, row);
-    files_added.push(row.file);
-  }
-
-  SetLocalCallback((prev) => [...(prev ?? []), ...files_added]);
-}
 
 export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
   const [localFileList, setLocalFileList] = useState<string[]>([]);
@@ -160,43 +121,5 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
       }}
       optionalButtons={<div className="flex gap-2"></div>}
     />
-  );
-
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>File Path</TableHead>
-          <TableHead>Operation</TableHead>
-          <TableHead>Local</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {sync_status
-          ?.sort((a, b) => -a.status.localeCompare(b.status))
-          .map((value, index) => {
-            return (
-              <TableRow key={index}>
-                <TableCell>{value.file}</TableCell>
-                <TableCell>
-                  <span className="flex flex-row gap-1 items-center">
-                    Local <ArrowLeft className="h-4 w-4" /> Remote
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <SyncFromRemoteOptionIndicator
-                    value={value}
-                    remoteDirectory={RemoteHandle}
-                    handle={Handle}
-                    setLocalFileList={(value: string) => {
-                      setLocalFileList([...(localFileList ?? []), value]);
-                    }}
-                  />
-                </TableCell>
-              </TableRow>
-            );
-          })}
-      </TableBody>
-    </Table>
   );
 }

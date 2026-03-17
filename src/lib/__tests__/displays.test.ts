@@ -291,7 +291,7 @@ describe('generateChunkedVisuals', () => {
       it('should handle both empty key arrays when dense', () => {
         const keyset = createMockKeySet(0, 0);
 
-        mockChunking.mockImplementation(function* <T>(arr: T[], n: number) {
+        mockChunking.mockImplementation(function* <T>(arr: T[], _n: number) {
           if (arr.length === 0) return;
         });
 
@@ -311,7 +311,7 @@ describe('generateChunkedVisuals', () => {
         const durKeys = createKeySetInstance(6, 'D');
 
         // Mock chunking to return specific chunks
-        mockChunking.mockImplementation(function* <T>(arr: T[], n: number) {
+        mockChunking.mockImplementation(function* <T>(arr: T[], _n: number) {
           if (arr === keyset.FrequencyKeys) {
             yield arr.slice(0, 3);
             yield arr.slice(3, 6);

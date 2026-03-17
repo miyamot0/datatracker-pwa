@@ -77,7 +77,7 @@ describe('prepareDataOrganization', () => {
   });
 
   it('should hide frequency keys based on user preferences', () => {
-    mockGetLocalCachedPrefs.mockImplementation((group, individual, evaluation, type) => {
+    mockGetLocalCachedPrefs.mockImplementation((_group, _individual, _evaluation, type) => {
       if (type === 'Rate') {
         return {
           KeyDescription: ['Frequency Key 1', 'CTB'],
@@ -101,7 +101,7 @@ describe('prepareDataOrganization', () => {
   });
 
   it('should hide duration keys based on user preferences', () => {
-    mockGetLocalCachedPrefs.mockImplementation((group, individual, evaluation, type) => {
+    mockGetLocalCachedPrefs.mockImplementation((_group, _individual, _evaluation, type) => {
       if (type === 'Duration') {
         return {
           KeyDescription: ['Duration Key 2'],
@@ -124,7 +124,7 @@ describe('prepareDataOrganization', () => {
   });
 
   it('should exclude keys from CTB based on CTBElements preferences', () => {
-    mockGetLocalCachedPrefs.mockImplementation((group, individual, evaluation, type) => {
+    mockGetLocalCachedPrefs.mockImplementation((_group, _individual, _evaluation, type) => {
       if (type === 'Rate') {
         return {
           KeyDescription: [],

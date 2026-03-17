@@ -16,6 +16,7 @@ export default defineConfig(
     'public',
     'scripts',
     '**/*.test.{ts,tsx}',
+    '**/__tests__/**',
     '.eslintrc.{js,json}',
     'eslint.config.{js,json}',
     'prettier.rc',
