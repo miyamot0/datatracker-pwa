@@ -11,7 +11,7 @@ import {
 } from '@/types/settings';
 import { displayConditionalNotification } from '@/lib/notifications';
 import SettingsFormItemWrapper from './settings-form-item-wrapper';
-import { TabsContent } from '../../ui/tabs';
+import { TabsContent } from '../../../ui/tabs';
 import { SettingsTabContainer } from './settings-tab-container';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useContext } from 'react';

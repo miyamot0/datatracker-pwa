@@ -7,10 +7,6 @@ import { EntryHolder, HumanReadableResults, HumanReadableResultsRow } from '@/ty
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import Spreadsheet, { CellBase, Matrix } from 'react-spreadsheet';
 import {
-  SessionTerminationOptionsType,
-  SessionTerminationOptions,
-} from '@/components/editor-session/forms/schema/session-designer-schema';
-import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
@@ -23,6 +19,7 @@ import { setLocalCachedPrefs } from '@/lib/local_storage';
 import { EnhancedKeySetInstance } from '@/types/keyset';
 import { walkSessionFrequencyKey } from '../helpers/schedule_parser';
 import BackButton from '@/components/ui/back-button';
+import { SessionTerminationOptions, SessionTerminationOptionsType } from '@/types/terminations';
 
 type Props = {
   SessionTimer: SessionTerminationOptionsType;

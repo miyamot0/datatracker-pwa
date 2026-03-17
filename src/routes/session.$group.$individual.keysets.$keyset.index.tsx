@@ -1,4 +1,4 @@
-import KeySetEditor from '@/components/editor-keyset/keyset-editor';
+import KeySetEditor from '@/components/pages/editor-keyset/keyset-editor';
 import createHref from '@/lib/links';
 import { routeGuard } from '@/lib/routing';
 import { CleanUpString } from '@/lib/strings';

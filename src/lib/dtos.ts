@@ -1,10 +1,8 @@
 import { KeyManageType } from '@/components/session-recorder/types/session-recorder-types';
-import {
-  DataCollectorRolesType,
-  SessionDesignerSchemaType,
-  SessionTerminationOptionsType,
-} from '@/components/editor-session/forms/schema/session-designer-schema';
+import { SessionDesignerSchemaType } from '@/components/editor-session/views/session-designer-schema';
 import { KeySet } from '@/types/keyset';
+import { DataCollectorRolesType } from '@/types/roles';
+import { SessionTerminationOptionsType } from '@/types/terminations';
 
 /**
  * This is the type definition for the HumanReadableResults type

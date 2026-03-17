@@ -62,15 +62,9 @@ export default function KeySetEditor({
 
   if (error || data == undefined) return <ErrorDisplay Text={'An error occurred while fetching session outcomes.'} />;
 
-  if (!Group || !Individual || !KeySet || !data) {
-    throw new Error('Params missing.');
-  }
-
   const relevantKeySet = data.find((ks) => ks.Name === KeySet);
 
-  if (!relevantKeySet) {
-    return <div>KeySet not found.</div>;
-  }
+  if (!relevantKeySet) return <ErrorDisplay Text={'KeySet not found.'} />;
 
   const addKeyCallback = async (base_keyset: KeySet, new_key: KeySetInstance, type: 'Duration' | 'Frequency') => {
     let new_state = {
@@ -214,7 +208,7 @@ export default function KeySetEditor({
             <div className="flex flex-row gap-2">
               <DurationDialogKeyCreator KeySet={relevantKeySet} Callback={addKeyCallback} />
 
-              <BackButton  />
+              <BackButton />
             </div>
           </CardHeader>
           <CardContent className="flex-1">

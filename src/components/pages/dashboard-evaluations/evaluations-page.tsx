@@ -37,7 +37,7 @@ import {
 } from 'lucide-react';
 import { useContext } from 'react';
 import { toast } from 'sonner';
-import BackButton from '../ui/back-button';
+import BackButton from '../../ui/back-button';
 
 type EvaluationTableRow = {
   Evaluation: string;

@@ -1,4 +1,4 @@
-import EvaluationsPage from '@/components/dashboard-evaluations/evaluations-page';
+import EvaluationsPage from '@/components/pages/dashboard-evaluations/evaluations-page';
 import createHref from '@/lib/links';
 import { routeGuard } from '@/lib/routing';
 import { CleanUpString } from '@/lib/strings';

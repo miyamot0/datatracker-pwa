@@ -1,11 +1,11 @@
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ViewDurationResults from './view-duration-results';
 import ViewFrequencyResults from './view-frequency-results';
-import { DataCollectorRolesType } from '@/components/editor-session/forms/schema/session-designer-schema';
 import { useState } from 'react';
 import { ModifiedSessionResult } from '@/types/storage';
 import { EnhancedKeySetInstance, KeySet } from '@/types/keyset';
 import { ScheduleMappingOptions, ScheduleMappingOptionsType } from '@/types/schedules';
+import { DataCollectorRolesType } from '@/types/roles';
 
 type Props = {
   UnfilteredKeysFrequency: EnhancedKeySetInstance[];

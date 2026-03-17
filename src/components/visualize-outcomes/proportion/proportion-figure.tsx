@@ -15,7 +15,6 @@ import {
 import { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { SavedSessionResult } from '@/lib/dtos';
-import { SessionTerminationOptionsType } from '@/components/editor-session/forms/schema/session-designer-schema';
 import { getShape } from '@/lib/shapes';
 import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
@@ -25,6 +24,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { ExpandedKeySetInstance } from '@/types/keyset';
 import { splitAtPoints } from '@/lib/arrays';
 import { getUniqueSessionConditions, generateTicks, generateChartPreparation } from '@/lib/graphing';
+import { SessionTerminationOptionsType } from '@/types/terminations';
 
 type Props = {
   Group: string;

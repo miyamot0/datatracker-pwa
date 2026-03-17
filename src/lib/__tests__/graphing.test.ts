@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SavedSessionResult } from '../dtos';
 import { KeySet, KeySetInstance } from '@/types/keyset';
-import { SessionTerminationOptionsType } from '@/components/editor-session/forms/schema/session-designer-schema';
 
 // Mock the helper functions from schedule_parser
 vi.mock('@/components/summary-outcomes/helpers/schedule_parser', () => ({
@@ -18,6 +17,7 @@ import {
 
 // Import the mocked functions for use in tests
 import { walkSessionFrequencyKey, walkSessionDurationKey } from '@/components/summary-outcomes/helpers/schedule_parser';
+import { SessionTerminationOptionsType } from '@/types/terminations';
 
 describe('graphing utility functions', () => {
   beforeEach(() => {

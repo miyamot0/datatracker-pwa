@@ -12,11 +12,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  DataCollectorRoles,
   SessionDesignerSchema,
   SessionDesignerSchemaType,
-  SessionTerminationOptionsDescriptions,
-} from '@/components/editor-session/forms/schema/session-designer-schema';
+} from '@/components/editor-session/views/session-designer-schema';
 import { CleanUpString } from '@/lib/strings';
 import { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -42,6 +40,8 @@ import { mutationSettingsParams } from '@/queries/session/mutate-session-params'
 import { queryClient } from '@/App';
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
+import { DataCollectorRoles } from '@/types/roles';
+import { SessionTerminationOptionsDescriptions } from '@/types/terminations';
 
 type Props = {
   Group: string;

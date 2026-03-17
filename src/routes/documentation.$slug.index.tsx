@@ -1,4 +1,4 @@
-import DocumentationEntryPage from '@/components/documentation/documentation-entry-page';
+import DocumentationEntryPage from '@/components/pages/documentation/documentation-entry-page';
 import { generateKeywordColors } from '@/lib/colors';
 import { DocumentationObjects } from '@/lib/docs';
 import createHref from '@/lib/links';

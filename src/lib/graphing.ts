@@ -1,4 +1,4 @@
-import { SessionTerminationOptionsType } from '@/components/editor-session/forms/schema/session-designer-schema';
+import { SessionTerminationOptionsType } from '@/types/terminations';
 import { SavedSessionResult } from './dtos';
 import { walkSessionDurationKey, walkSessionFrequencyKey } from '@/components/summary-outcomes/helpers/schedule_parser';
 

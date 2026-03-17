@@ -66,12 +66,6 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
         },
       });
     }
-
-    /*
-    if (router?.options) {
-      router.options.defaultViewTransition = viewTransitionCall(_settings.TransitionBehavior);
-    }
-    */
   };
 
   useEffect(() => {

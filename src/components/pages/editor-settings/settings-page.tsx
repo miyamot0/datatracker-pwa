@@ -1,7 +1,7 @@
 import PageWrapper from '@/components/layout/page-wrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
-import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '../../ui/tabs';
 import { SettingsTabDisplay } from './views/settings-tab-display';
 import { SettingsTabIO } from './views/settings-tab-io';
 import { SettingsTabNotifications } from './views/settings-tab-notifications';

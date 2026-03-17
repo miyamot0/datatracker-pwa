@@ -9,7 +9,6 @@ import { CleanUpString } from '@/lib/strings';
 import { KeySet } from '@/types/keyset';
 import { useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SessionTerminationOptionsType } from '@/components/editor-session/forms/schema/session-designer-schema';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -27,6 +26,7 @@ import BackButton from '@/components/ui/back-button';
 import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import { Link } from '@tanstack/react-router';
 import { Switch } from '@/components/ui/switch';
+import { SessionTerminationOptionsType } from '@/types/terminations';
 
 export default function ResultsRateVisualsPage({
   Group,
