@@ -162,7 +162,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
 
           <XAxis
             dataKey="second"
-            domain={[0, Session.TimerMain]}
+            domain={[0, Math.floor(Session.TimerMain) + 1]}
             height={50}
             interval={'equidistantPreserveStart'}
             minTickGap={25}
