@@ -13,6 +13,7 @@ import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-ou
 import { useQuery } from '@tanstack/react-query';
 import { redirect } from '@tanstack/react-router';
 import SessionManagerContent from './session-manager-content';
+import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
 
 export default function SessionManagerPage({
   Group,
@@ -32,38 +33,34 @@ export default function SessionManagerPage({
 
   if (error || data == undefined) return <ErrorDisplay Text={'An error occurred while fetching session outcomes.'} />;
 
-  const relevant_session = data.find((s) => s.Filename.startsWith(FileString));
+  const relevantSession = data.find((s) => s.Filename.startsWith(FileString));
 
-  if (relevant_session) {
-    const saved_keys = [
-      ...relevant_session.FrequencyKeyPresses,
-      ...relevant_session.DurationKeyPresses,
-      ...relevant_session.SystemKeyPresses,
-    ].sort((a, b) => a.TimeIntoSession - b.TimeIntoSession);
-
-    return (
-      <PageWrapper
-        breadcrumbs={[
-          BuildGroupBreadcrumb(),
-          BuildIndividualsBreadcrumb(Group),
-          BuildEvaluationsBreadcrumb(Group, Individual),
-          BuildSessionHistoryBreadcrumb(Group, Individual, Evaluation),
-        ]}
-        label={'Session Manager'}
-        className="select-none"
-      >
-        <SessionManagerContent
-          Group={Group}
-          Individual={Individual}
-          Evaluation={Evaluation}
-          Session={relevant_session}
-          SavedKeys={saved_keys}
-        />
-      </PageWrapper>
-    );
-  } else {
+  if (!relevantSession) {
     throw redirect({
       to: '/dashboard',
     });
   }
+
+  const savedKeys = combineAndSortKeyPresses(relevantSession);
+
+  return (
+    <PageWrapper
+      breadcrumbs={[
+        BuildGroupBreadcrumb(),
+        BuildIndividualsBreadcrumb(Group),
+        BuildEvaluationsBreadcrumb(Group, Individual),
+        BuildSessionHistoryBreadcrumb(Group, Individual, Evaluation),
+      ]}
+      label={'Session Manager'}
+      className="select-none"
+    >
+      <SessionManagerContent
+        Group={Group}
+        Individual={Individual}
+        Evaluation={Evaluation}
+        Session={relevantSession}
+        SavedKeys={savedKeys}
+      />
+    </PageWrapper>
+  );
 }

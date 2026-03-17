@@ -48,6 +48,14 @@ export async function getFileHandle(
   }
 }
 
+/**
+ * Writes the content of a local file to a remote file in the specified remote directory, using the provided file path and handles. It reads the content of the local file, creates or gets the corresponding file handle in the remote directory, and writes the content to the remote file.
+ *
+ * @param remoteDirectory - The remote directory handle where the file should be written
+ * @param handle - The local directory handle where the file is located
+ * @param value - The sync entry containing the file path and other metadata
+ * @returns A promise that resolves when the file has been written to the remote directory
+ */
 export async function writeOutFileToRemote(
   remoteDirectory: FileSystemDirectoryHandle,
   handle: FileSystemDirectoryHandle,
@@ -69,6 +77,15 @@ export async function writeOutFileToRemote(
   await writer?.close();
 }
 
+/**
+ * Synchronizes all files listed in the provided rows from the local directory to the remote directory. It iterates through each row, writes the corresponding file to the remote directory using the writeOutFileToRemote function, and keeps track of the files that were added. After all files have been processed, it updates the remote file list state using the provided SetRemoteCallback.
+ *
+ * @param rows - An array of SyncEntryTableRow objects representing the files to be synchronized, each containing the file path and other metadata.
+ * @param Handle - The local directory handle where the files are located.
+ * @param RemoteHandle - The remote directory handle where the files should be written.
+ * @param SetRemoteCallback - A callback function to update the state of the remote file list after synchronization.
+ * @returns A promise that resolves when all files have been synchronized and the remote file list has been updated.
+ */
 export async function syncAllFiles(
   rows: SyncEntryTableRow[],
   Handle: FileSystemDirectoryHandle,

@@ -1,7 +1,16 @@
 import { KeyTiming } from '@/components/session-recorder/types/session-recorder-types';
 import { SavedSessionResult } from '@/lib/dtos';
 import { KeySetInstance } from '@/types/keyset';
+import { ModifiedSessionResult } from '@/types/storage';
 
+/**
+ * Calculates the total count of key presses for a specific key that occurred during the periods defined by a given schedule key. It iterates through the system key presses to identify the relevant schedule changes and then counts the number of times the specified key was pressed within those periods.
+ *
+ * @param SessionSettings - The session result object containing the key presses to analyze.
+ * @param Schedule - The name of the schedule key that defines the periods to analyze.
+ * @param Key - The key set instance representing the specific key to calculate the count for.
+ * @returns An object containing the key name, description, schedule, total count of key presses, and the number of bouts (schedule changes).
+ */
 export function walkSessionFrequencyKey(SessionSettings: SavedSessionResult, Schedule: KeyTiming, Key: KeySetInstance) {
   const { SystemKeyPresses, FrequencyKeyPresses } = SessionSettings;
 
@@ -32,6 +41,14 @@ export function walkSessionFrequencyKey(SessionSettings: SavedSessionResult, Sch
   };
 }
 
+/**
+ * Calculates the total duration of time that a specific key was active during the periods defined by a given schedule key. It iterates through the system key presses to identify the relevant schedule changes and then sums up the durations of the specified key within those periods, accounting for multiple presses and releases.
+ *
+ * @param SessionSettings - The session result object containing the key presses to analyze.
+ * @param Schedule - The name of the schedule key that defines the periods to analyze.
+ * @param Key - The key set instance representing the specific key to calculate the duration for.
+ * @returns An object containing the key name, description, schedule, total active duration in seconds, and the number of bouts (schedule changes).
+ */
 export function walkSessionDurationKey(SessionSettings: SavedSessionResult, Schedule: KeyTiming, Key: KeySetInstance) {
   const { SystemKeyPresses, DurationKeyPresses } = SessionSettings;
   const relevantScheduleChanges = SystemKeyPresses.filter((k) => k.KeyName === Schedule);
@@ -85,4 +102,18 @@ export function walkSessionDurationKey(SessionSettings: SavedSessionResult, Sche
     Value: workingDuration,
     Bouts: bouts,
   };
+}
+
+/**
+ * Combines and sorts all key presses (Frequency, Duration, System) for a session by their TimeIntoSession property.
+ *
+ * @param relevantSession The session result object containing the key presses to combine and sort.
+ * @returns An array of key presses sorted by TimeIntoSession, which can be used for plotting session outcomes in chronological order.
+ */
+export function combineAndSortKeyPresses(relevantSession: ModifiedSessionResult) {
+  return [
+    ...relevantSession.FrequencyKeyPresses,
+    ...relevantSession.DurationKeyPresses,
+    ...relevantSession.SystemKeyPresses,
+  ].sort((a, b) => a.TimeIntoSession - b.TimeIntoSession);
 }
