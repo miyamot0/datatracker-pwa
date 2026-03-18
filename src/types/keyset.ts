@@ -30,6 +30,11 @@ export type KeySetExtended = KeySet & { Group: string; Individual: string };
 export type EnhancedKeySetInstance = KeySetInstance & { Visible: boolean; Type: 'Key' | 'Summary' };
 
 /**
+ * Type for extending keyset
+ */
+export type KeySetLogical = KeySetInstance & { Value: number };
+
+/**
  * Keyset type more amenable to serialization
  */
 export type KeySetSerialize = {

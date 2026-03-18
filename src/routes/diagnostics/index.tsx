@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { FolderHandleContext } from '@/context/folder-context';
+import { testLogic } from '@/lib/logic/logic';
 import { checkCrossOriginIsolation } from '@/lib/shared-buffer';
 import { cn } from '@/lib/utils';
 import { createFileRoute } from '@tanstack/react-router';
@@ -29,6 +30,8 @@ function AdaptiveBadge({ isSupported }: { isSupported: boolean }) {
 function RouteComponent() {
   const check = checkCrossOriginIsolation();
   const { settings } = useContext(FolderHandleContext);
+
+  testLogic();
 
   return (
     <PageWrapper label="Diagnostics" className="flex flex-col gap-6 select-none">
