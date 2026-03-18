@@ -32,7 +32,7 @@ export type EnhancedKeySetInstance = KeySetInstance & { Visible: boolean; Type: 
 /**
  * Type for extending keyset
  */
-export type KeySetLogical = KeySetInstance & { Value: number };
+export type KeySetLogical = KeySetInstance & { Value: number; Tag: string };
 
 /**
  * Keyset type more amenable to serialization

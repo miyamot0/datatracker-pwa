@@ -3,16 +3,18 @@ import { KeySetLogical } from '@/types/keyset';
 /**
  * Types for the logic engine
  */
-type ValueSourceConstant = { type: 'constant'; value: number };
-type ValueSourceField = { type: 'field'; field: KeySetLogical };
-type ValueSource = ValueSourceConstant | ValueSourceField;
+export type ValueSourceConstant = { type: 'constant'; value: number };
+export type ValueSourceField = { type: 'field'; field: KeySetLogical };
+export type ValueSource = ValueSourceConstant | ValueSourceField;
 
 /**
  * Operations (TODO: Need function application)
  */
-type Operation = 'add' | 'subtract' | 'multiply' | 'divide';
+export const OperationTypes = ['add', 'subtract', 'multiply', 'divide'] as const;
 
-type Step = {
+export type Operation = (typeof OperationTypes)[number];
+
+export type LogicalStep = {
   // UUID
   id: string;
 
@@ -23,7 +25,7 @@ type Step = {
   operand: ValueSource;
 };
 
-type LogicState = {
+export type LogicState = {
   // The initial value for the logic engine
   // Example: Initial keyed value count
   initial: ValueSource;
@@ -33,10 +35,14 @@ type LogicState = {
 
   // The sequence of steps to execute in the logic engine
   // Note: Linear logic system, branching not planned
-  steps: Step[];
+  steps: LogicalStep[];
 
   // Result
   value: number;
+
+  name: string;
+
+  id: string;
 };
 
 function resolveValue(source: ValueSource, state: LogicState): number {
@@ -62,48 +68,78 @@ function applyOp(a: number, b: number, op: Operation) {
 }
 
 export function evaluate(state: LogicState) {
-  const startValue = resolveValue(state.initial, state);
+  const newState = { ...state };
+  const startValue = resolveValue(newState.initial, newState);
 
-  console.log('Initial value:', startValue);
+  //console.log('Initial value:', startValue);
 
-  state.value = startValue;
+  newState.value = startValue;
 
-  for (let step = 0; step < state.steps.length; step++) {
-    const currentStep = state.steps[step];
+  for (let step = 0; step < newState.steps.length; step++) {
+    const currentStep = newState.steps[step];
 
-    const operandValue = resolveValue(currentStep.operand, state);
+    const operandValue = resolveValue(currentStep.operand, newState);
 
-    state.value = applyOp(state.value, operandValue, currentStep.operation);
+    newState.value = applyOp(newState.value, operandValue, currentStep.operation);
 
-    console.log(`Step ${step + 1} (${currentStep.operation} ${operandValue}): ${state.value}`);
+    console.log(`Step ${step + 1} (${currentStep.operation} ${operandValue}): ${newState.value}`);
   }
 
-  console.log('Final value:', state.value);
+  console.log('Final value:', newState.value);
+
+  return newState.value;
 }
 
 export function getRelevantFieldValues() {
   const field1 = {
     KeyName: 'a',
-    KeyDescription: 'Description for a',
+    KeyDescription: 'SIB',
     KeyCode: 65,
-    Value: 5,
+    Value: 1,
+    Tag: 'field.SIB',
   } as KeySetLogical;
 
   const field2 = {
     KeyName: 'b',
-    KeyDescription: 'Description for b',
+    KeyDescription: 'AGG',
     KeyCode: 66,
-    Value: 10,
+    Value: 2,
+    Tag: 'field.AGG',
   } as KeySetLogical;
 
   const field3 = {
     KeyName: 'r',
-    KeyDescription: 'Description for r (duration key)',
+    KeyDescription: 'DIS',
     KeyCode: 82,
-    Value: 30,
+    Value: 3,
+    Tag: 'field.DIS',
   } as KeySetLogical;
 
-  return [field1, field2, field3];
+  const fielda = {
+    KeyName: 'TimerOne',
+    KeyDescription: 'Timer #1 Seconds',
+    KeyCode: -1,
+    Value: 30,
+    Tag: 'field.TimerOne',
+  } as KeySetLogical;
+
+  const fieldb = {
+    KeyName: 'TimerTwo',
+    KeyDescription: 'Timer #2 Seconds',
+    KeyCode: -2,
+    Value: 0,
+    Tag: 'field.TimerTwo',
+  } as KeySetLogical;
+
+  const fieldc = {
+    KeyName: 'TimerThree',
+    KeyDescription: 'Timer #3 Seconds',
+    KeyCode: -3,
+    Value: 0,
+    Tag: 'field.TimerThree',
+  } as KeySetLogical;
+
+  return [field1, field2, field3, fielda, fieldb, fieldc];
 }
 
 export function getLogicalSteps() {
@@ -118,7 +154,7 @@ export function getLogicalSteps() {
         type: 'field',
         field: field1,
       } as ValueSourceField,
-    } as Step,
+    } as LogicalStep,
     {
       id: 'step2',
       operation: 'add',
@@ -126,7 +162,7 @@ export function getLogicalSteps() {
         type: 'field',
         field: field2,
       } as ValueSourceField,
-    } as Step,
+    } as LogicalStep,
     {
       id: 'step3',
       operation: 'divide',
@@ -134,7 +170,7 @@ export function getLogicalSteps() {
         type: 'field',
         field: field3,
       } as ValueSourceField,
-    } as Step,
+    } as LogicalStep,
     {
       id: 'step4',
       operation: 'multiply',
@@ -142,7 +178,7 @@ export function getLogicalSteps() {
         type: 'constant',
         value: 60,
       } as ValueSourceConstant,
-    } as Step,
+    } as LogicalStep,
   ];
 }
 
@@ -153,6 +189,7 @@ export function testLogic() {
   // Note: Specific to SINGLE rule
   const steps = getLogicalSteps();
 
+  /*
   const initialStateConstant = {
     initial: { type: 'constant', value: 0 },
     steps: steps,
@@ -172,4 +209,5 @@ export function testLogic() {
 
   console.log('Evaluating logic with initial state field:');
   evaluate(initialStateField);
+  */
 }
