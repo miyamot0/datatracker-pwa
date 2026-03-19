@@ -3,6 +3,7 @@ import { CleanUpString } from '@/lib/strings';
 // Mutation type constants for type safety and extensibility
 const MUTATION_TYPES = {
   MUTATE_CONDITIONS: 'MUTATE_CONDITIONS',
+  MUTATE_EVALUATIONS: 'MUTATE_EVALUATIONS',
 } as const;
 
 type MutationType = (typeof MUTATION_TYPES)[keyof typeof MUTATION_TYPES];
@@ -45,7 +46,17 @@ interface MutateConditionsRequest extends BaseMutationRequest {
   action: 'Add' | 'Clear';
 }
 
-type MutationRequest = MutateConditionsRequest;
+interface MutateEvaluationsRequest extends BaseMutationRequest {
+  type: typeof MUTATION_TYPES.MUTATE_EVALUATIONS;
+  handle: FileSystemDirectoryHandle;
+  groupName: string;
+  individualName: string;
+  evaluationNames: string[];
+  renameTo?: string;
+  action: 'Add' | 'Delete' | 'Duplicate' | 'Rename';
+}
+
+type MutationRequest = MutateConditionsRequest | MutateEvaluationsRequest;
 
 // Type-safe createResponse function with overloads
 function createResponse<T>(id: string, startTime: number, success: true, data: T): SuccessResponse<T>;
@@ -94,6 +105,28 @@ function createResponse<T>(
 type CreateResponseFunction = typeof createResponse;
 
 // Core mutation handlers
+async function copyDirectory(
+  sourceDir: FileSystemDirectoryHandle,
+  targetDir: FileSystemDirectoryHandle,
+): Promise<void> {
+  for await (const [name, item] of sourceDir.entries()) {
+    if (name === '.DS_Store') continue;
+
+    if (item.kind === 'file') {
+      const sourceFile = await sourceDir.getFileHandle(name);
+      const targetFile = await targetDir.getFileHandle(name, { create: true });
+      const fileData = await sourceFile.getFile();
+      const writable = await targetFile.createWritable();
+      await writable.write(fileData);
+      await writable.close();
+    } else if (item.kind === 'directory') {
+      const sourceSubDir = await sourceDir.getDirectoryHandle(name);
+      const targetSubDir = await targetDir.getDirectoryHandle(name, { create: true });
+      await copyDirectory(sourceSubDir, targetSubDir);
+    }
+  }
+}
+
 async function mutateConditions(
   handle: FileSystemDirectoryHandle,
   groupName: string,
@@ -160,10 +193,90 @@ async function mutateConditions(
   }
 }
 
+async function mutateEvaluations(
+  handle: FileSystemDirectoryHandle,
+  groupName: string,
+  individualName: string,
+  evaluationNames: string[],
+  action: 'Add' | 'Delete' | 'Duplicate' | 'Rename',
+  renameTo?: string,
+): Promise<string[]> {
+  try {
+    const group_dir = await handle.getDirectoryHandle(CleanUpString(groupName));
+    const individual_dir = await group_dir.getDirectoryHandle(CleanUpString(individualName));
+
+    // First, get current evaluations list
+    const evaluations: string[] = [];
+    for await (const [name, entry] of individual_dir.entries()) {
+      if (entry.kind === 'directory' && name !== '.DS_Store') {
+        evaluations.push(name);
+      }
+    }
+
+    let newEvaluationsList = [...evaluations];
+
+    switch (action) {
+      case 'Add':
+        await individual_dir.getDirectoryHandle(evaluationNames[0], { create: true });
+        if (!newEvaluationsList.includes(evaluationNames[0])) {
+          newEvaluationsList.push(evaluationNames[0]);
+        }
+        break;
+
+      case 'Delete':
+        for (const evaluationName of evaluationNames) {
+          await individual_dir.removeEntry(evaluationName, { recursive: true });
+          newEvaluationsList = newEvaluationsList.filter((e) => e !== evaluationName);
+        }
+        break;
+
+      case 'Duplicate': {
+        if (!renameTo) {
+          throw new Error('renameTo is required for Duplicate action');
+        }
+
+        const sourceEvalDir = await individual_dir.getDirectoryHandle(evaluationNames[0]);
+        const targetEvalDir = await individual_dir.getDirectoryHandle(renameTo, { create: true });
+        await copyDirectory(sourceEvalDir, targetEvalDir);
+
+        if (!newEvaluationsList.includes(renameTo)) {
+          newEvaluationsList.push(renameTo);
+        }
+        break;
+      }
+
+      case 'Rename': {
+        if (!renameTo) {
+          throw new Error('renameTo is required for Rename action');
+        }
+
+        const sourceEvalDir = await individual_dir.getDirectoryHandle(evaluationNames[0]);
+        const targetEvalDir = await individual_dir.getDirectoryHandle(renameTo, { create: true });
+        await copyDirectory(sourceEvalDir, targetEvalDir);
+
+        // Delete the original
+        await individual_dir.removeEntry(evaluationNames[0], { recursive: true });
+
+        // Update the list
+        newEvaluationsList = newEvaluationsList.map((e) => (e === evaluationNames[0] ? renameTo : e));
+        break;
+      }
+    }
+
+    return newEvaluationsList;
+  } catch (error) {
+    console.error('Error mutating evaluations:', error);
+    throw error;
+  }
+}
+
 // Mutation dispatcher - maps mutation types to handlers
 const mutationHandlers: Record<MutationType, (request: any) => Promise<any>> = {
   [MUTATION_TYPES.MUTATE_CONDITIONS]: (req: MutateConditionsRequest) =>
     mutateConditions(req.handle, req.groupName, req.individualName, req.evaluationName, req.action, req.conditionName),
+
+  [MUTATION_TYPES.MUTATE_EVALUATIONS]: (req: MutateEvaluationsRequest) =>
+    mutateEvaluations(req.handle, req.groupName, req.individualName, req.evaluationNames, req.action, req.renameTo),
 };
 
 // Main message handler
@@ -216,6 +329,7 @@ export type {
   ErrorResponse,
   BaseMutationResponse,
   MutateConditionsRequest,
+  MutateEvaluationsRequest,
   CreateResponseFunction,
 };
 

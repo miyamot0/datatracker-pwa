@@ -28,6 +28,7 @@ import {
   ChevronDown,
   Copy,
   Disc3,
+  Edit2Icon,
   FilePlus,
   ImportIcon,
   KeyboardIcon,
@@ -191,6 +192,42 @@ export default function EvaluationsPage({ Group, Individual }: { Group: string; 
                 >
                   <Copy className="mr-2 h-4 w-4" />
                   Duplicate Evaluation
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={async () => {
+                    const new_evaluation_name = window.prompt(
+                      'Enter the name for the renamed evaluation:',
+                      `${row.original.Evaluation}`,
+                    );
+
+                    if (!new_evaluation_name) return;
+
+                    if (new_evaluation_name.trim().length < 4) return;
+
+                    toast.promise(
+                      async () =>
+                        await mutateEvaluations.mutateAsync({
+                          Group,
+                          Individual,
+                          Evaluations: [row.original.Evaluation],
+                          Rename: new_evaluation_name,
+                          Handle: handle!,
+                          Action: 'Rename',
+                        }),
+                      {
+                        loading: 'Renaming existing evaluation...',
+                        success: () => {
+                          return 'Evaluation folders have been renamed successfully!';
+                        },
+                        error: (e: Error) => {
+                          return `An error occurred while renaming evaluation folders: ${e.message}`;
+                        },
+                      },
+                    );
+                  }}
+                >
+                  <Edit2Icon className="mr-2 h-4 w-4" />
+                  Rename Evaluation
                 </DropdownMenuItem>
               </>
             )}
