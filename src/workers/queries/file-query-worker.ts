@@ -1,6 +1,7 @@
 import { deserializeKeySet } from '@/lib/keyset';
 import { CleanUpString } from '@/lib/strings';
 import { KeySet } from '@/types/keyset';
+import { DEFAULT_SESSION_SETTINGS, SavedSettings } from '@/lib/dtos';
 
 // Query type constants for type safety and extensibility
 const QUERY_TYPES = {
@@ -10,6 +11,7 @@ const QUERY_TYPES = {
   FETCH_CONDITIONS: 'FETCH_CONDITIONS',
   FETCH_KEYSETS: 'FETCH_KEYSETS',
   FETCH_SESSIONS: 'FETCH_SESSIONS',
+  FETCH_SESSION_PARAMS: 'FETCH_SESSION_PARAMS',
   FETCH_OUTCOMES: 'FETCH_OUTCOMES',
   FETCH_DIRECTORIES: 'FETCH_DIRECTORIES', // Generic directory fetcher
 } as const;
@@ -77,6 +79,14 @@ interface FetchKeysetsRequest extends BaseQueryRequest {
   individualName: string;
 }
 
+interface FetchSessionParamsRequest extends BaseQueryRequest {
+  type: typeof QUERY_TYPES.FETCH_SESSION_PARAMS;
+  handle: FileSystemDirectoryHandle;
+  groupName: string;
+  individualName: string;
+  evaluationName: string;
+}
+
 interface FetchDirectoriesRequest extends BaseQueryRequest {
   type: typeof QUERY_TYPES.FETCH_DIRECTORIES;
   handle: FileSystemDirectoryHandle;
@@ -91,6 +101,7 @@ type QueryRequest =
   | FetchEvaluationsRequest
   | FetchConditionsRequest
   | FetchKeysetsRequest
+  | FetchSessionParamsRequest
   | FetchDirectoriesRequest;
 
 // Utility functions
@@ -272,6 +283,45 @@ async function fetchKeysets(
   }
 }
 
+async function fetchSessionParams(
+  handle: FileSystemDirectoryHandle,
+  groupName: string,
+  individualName: string,
+  evaluationName: string,
+): Promise<SavedSettings> {
+  try {
+    const group_folder = await handle.getDirectoryHandle(CleanUpString(groupName));
+    const individual_folder = await group_folder.getDirectoryHandle(CleanUpString(individualName));
+    const evaluations = await individual_folder.getDirectoryHandle(CleanUpString(evaluationName));
+
+    try {
+      const settings_file = await evaluations.getFileHandle('settings.json');
+      const settings = await settings_file.getFile();
+      const settings_text = await settings.text();
+      const settings_json = JSON.parse(settings_text) as SavedSettings;
+
+      if (!settings_json) throw new Error('Settings file not well-formed');
+
+      return settings_json;
+    } catch (error) {
+      // Create default settings file if not found
+      try {
+        const file = await evaluations.getFileHandle('settings.json', { create: true });
+        const writer = await file.createWritable();
+        await writer.write(JSON.stringify(DEFAULT_SESSION_SETTINGS));
+        await writer.close();
+      } catch (writeError) {
+        console.error('Error creating default settings file:', writeError);
+      }
+
+      return DEFAULT_SESSION_SETTINGS;
+    }
+  } catch (error) {
+    console.error('Error fetching session params:', error);
+    return DEFAULT_SESSION_SETTINGS;
+  }
+}
+
 // Query dispatcher - maps query types to handlers
 const queryHandlers: Record<QueryType, (request: any) => Promise<any>> = {
   [QUERY_TYPES.FETCH_GROUPS]: (req: FetchGroupsRequest) => fetchGroups(req.handle),
@@ -286,6 +336,9 @@ const queryHandlers: Record<QueryType, (request: any) => Promise<any>> = {
 
   [QUERY_TYPES.FETCH_KEYSETS]: (req: FetchKeysetsRequest) =>
     fetchKeysets(req.handle, req.groupName, req.individualName),
+
+  [QUERY_TYPES.FETCH_SESSION_PARAMS]: (req: FetchSessionParamsRequest) =>
+    fetchSessionParams(req.handle, req.groupName, req.individualName, req.evaluationName),
 
   [QUERY_TYPES.FETCH_SESSIONS]: (req: FetchDirectoriesRequest) =>
     fetchDirectories(req.handle, {
@@ -363,6 +416,7 @@ export type {
   FetchEvaluationsRequest,
   FetchConditionsRequest,
   FetchKeysetsRequest,
+  FetchSessionParamsRequest,
   FetchDirectoriesRequest,
   CreateResponseFunction,
 };

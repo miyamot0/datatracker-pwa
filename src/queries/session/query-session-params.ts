@@ -1,5 +1,7 @@
 import { DEFAULT_SESSION_SETTINGS, SavedSettings } from '@/lib/dtos';
-import { CleanUpString } from '@/lib/strings';
+import { FetchSessionParamsRequest, QueryResponse } from '@/workers/queries/file-query-worker';
+import GenericFileWorker from '@/workers/queries/file-query-worker.ts?worker';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Defines the query options for fetching session parameters based on the provided file system handle, group, individual, and evaluation identifiers. It constructs a query key using these parameters and specifies a query function that retrieves the session parameters by calling the fetchSessionParams function with the appropriate arguments.
@@ -17,7 +19,7 @@ export const sessionQueryOptions = (
   Evaluation: string,
 ) => ({
   queryKey: ['/', Group, Individual, Evaluation, 'settings'],
-  queryFn: () => fetchSessionParams({ Handle, Group, Individual, Evaluation }),
+  queryFn: () => fetchSessionParamsWorker(Handle, Group, Individual, Evaluation),
 });
 
 /**
@@ -30,40 +32,36 @@ export const sessionQueryOptions = (
  * @returns A promise that resolves to a SavedSettings object containing the details of the session parameters found, or default session settings if no settings are found or if there is an error during the file system operations.
  * @throws An error if there is an issue with file system operations.
  */
-export const fetchSessionParams = async ({
-  Handle,
-  Group,
-  Individual,
-  Evaluation,
-}: {
-  Handle: FileSystemDirectoryHandle;
-  Group: string;
-  Individual: string;
-  Evaluation: string;
-}): Promise<SavedSettings> => {
-  const group_folder = await Handle.getDirectoryHandle(CleanUpString(Group));
-  const individual_folder = await group_folder.getDirectoryHandle(CleanUpString(Individual));
-  const evaluations = await individual_folder.getDirectoryHandle(CleanUpString(Evaluation));
+export const fetchSessionParamsWorker = async (
+  Handle: FileSystemDirectoryHandle,
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+) => {
+  const worker = new GenericFileWorker();
+  const request = {
+    id: uuidv4(),
+    type: 'FETCH_SESSION_PARAMS',
+    handle: Handle,
+    groupName: Group,
+    individualName: Individual,
+    evaluationName: Evaluation,
+  } satisfies FetchSessionParamsRequest;
 
-  try {
-    const settings_file = await evaluations.getFileHandle('settings.json');
-    const settings = await settings_file.getFile();
-    const settings_text = await settings.text();
-    const settings_json = JSON.parse(settings_text) as SavedSettings;
-
-    if (!settings_json) throw new Error('Settings file not well-formed');
-
-    return settings_json;
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
-    evaluations.getFileHandle('settings.json', { create: true }).then((file) => {
-      file.createWritable().then((writer) => {
-        writer.write(JSON.stringify(DEFAULT_SESSION_SETTINGS));
-        writer.close();
-      });
-    });
-
-    return DEFAULT_SESSION_SETTINGS;
-  }
+  return new Promise<SavedSettings>((resolve) => {
+    worker.onmessage = (event: MessageEvent<QueryResponse>) => {
+      const response = event.data;
+      if (response.success) {
+        const settings = response.data;
+        resolve(settings);
+      } else {
+        resolve(DEFAULT_SESSION_SETTINGS);
+      }
+    };
+    worker.onerror = (error) => {
+      console.error('Worker error:', error);
+      resolve(DEFAULT_SESSION_SETTINGS);
+    };
+    worker.postMessage(request);
+  });
 };

@@ -1,6 +1,7 @@
 import { CleanUpString } from '@/lib/strings';
-import { fetchConditions } from './query-conditions';
+//import { fetchConditions } from './query-conditions';
 import { queryClient } from '@/App';
+import { conditionQueryOptions } from './query-conditions';
 
 /**
  * This function is responsible for mutating the conditions associated with a specific group, individual, and evaluation. It takes in the necessary parameters to identify the target evaluation and the condition to be added. The function first retrieves the current list of conditions using React Query's `fetchQuery` method. It then performs the specified action (in this case, adding a new condition) by interacting with the file system through the provided directory handle. Finally, it returns the updated list of conditions after the mutation is complete.
@@ -28,10 +29,9 @@ export const mutationConditions = async ({
   Handle: FileSystemDirectoryHandle;
   Action: 'Add' | 'Clear';
 }): Promise<string[]> => {
-  const conditions: string[] = await queryClient.fetchQuery({
-    queryKey: ['/', Group, Individual, Evaluation, 'conditions'],
-    queryFn: () => fetchConditions(Handle, Group, Individual, Evaluation),
-  });
+  const conditions: string[] = await queryClient.fetchQuery(
+    conditionQueryOptions(Handle, Group, Individual, Evaluation),
+  );
 
   if (!conditions) {
     throw new Error('Conditions not found');
