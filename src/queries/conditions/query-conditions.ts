@@ -1,4 +1,6 @@
-import { CleanUpString } from '@/lib/strings';
+import { FetchConditionsRequest, QueryResponse } from '@/workers/queries/file-query-worker';
+import GenericFileWorker from '@/workers/queries/file-query-worker.ts?worker';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Queries the conditions for a specific group, individual, and evaluation by accessing the file system and retrieving the names of condition directories within the evaluation folder. It returns an array of condition names that are found, or an empty array if no conditions are found or if there is an error during the file system operations.
@@ -16,7 +18,7 @@ export const conditionQueryOptions = (
   Evaluation: string,
 ) => ({
   queryKey: ['/', Group, Individual, Evaluation, 'conditions'],
-  queryFn: () => fetchConditions(Handle, Group, Individual, Evaluation),
+  queryFn: () => fetchConditionsWorker(Handle, Group, Individual, Evaluation),
 });
 
 /**
@@ -28,30 +30,36 @@ export const conditionQueryOptions = (
  * @param Evaluation - The evaluation identifier for which the conditions are being fetched.
  * @returns A promise that resolves to an array of condition names found within the evaluation folder, or an empty array if no conditions are found or if there is an error during the file system operations.
  */
-export const fetchConditions = async (
+export const fetchConditionsWorker = async (
   Handle: FileSystemDirectoryHandle,
   Group: string,
   Individual: string,
   Evaluation: string,
 ) => {
-  const conditions: string[] = [];
+  const worker = new GenericFileWorker();
+  const request = {
+    id: uuidv4(),
+    type: 'FETCH_CONDITIONS',
+    handle: Handle,
+    groupName: Group,
+    individualName: Individual,
+    evaluationName: Evaluation,
+  } satisfies FetchConditionsRequest;
 
-  try {
-    const group_folder = await Handle.getDirectoryHandle(CleanUpString(Group));
-    const individual_folder = await group_folder.getDirectoryHandle(CleanUpString(Individual));
-    const evaluations = await individual_folder.getDirectoryHandle(CleanUpString(Evaluation));
-
-    const entries = await evaluations.values();
-
-    for await (const entry of entries) {
-      if (entry.kind === 'directory' && entry.name !== '.DS_Store') {
-        conditions.push(entry.name);
+  return new Promise<string[]>((resolve) => {
+    worker.onmessage = (event: MessageEvent<QueryResponse>) => {
+      const response = event.data;
+      if (response.success) {
+        const directories = response.data;
+        resolve(directories);
+      } else {
+        resolve([]);
       }
-    }
-
-    return conditions;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
-    return [];
-  }
+    };
+    worker.onerror = (error) => {
+      console.error('Worker error:', error);
+      resolve([]);
+    };
+    worker.postMessage(request);
+  });
 };

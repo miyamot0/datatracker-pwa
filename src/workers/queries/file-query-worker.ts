@@ -62,6 +62,14 @@ interface FetchEvaluationsRequest extends BaseQueryRequest {
   clientName: string;
 }
 
+interface FetchConditionsRequest extends BaseQueryRequest {
+  type: typeof QUERY_TYPES.FETCH_CONDITIONS;
+  handle: FileSystemDirectoryHandle;
+  groupName: string;
+  individualName: string;
+  evaluationName: string;
+}
+
 interface FetchKeysetsRequest extends BaseQueryRequest {
   type: typeof QUERY_TYPES.FETCH_KEYSETS;
   handle: FileSystemDirectoryHandle;
@@ -81,6 +89,7 @@ type QueryRequest =
   | FetchGroupsRequest
   | FetchClientsRequest
   | FetchEvaluationsRequest
+  | FetchConditionsRequest
   | FetchKeysetsRequest
   | FetchDirectoriesRequest;
 
@@ -200,6 +209,32 @@ async function fetchEvaluations(
   });
 }
 
+async function fetchConditions(
+  handle: FileSystemDirectoryHandle,
+  groupName: string,
+  individualName: string,
+  evaluationName: string,
+): Promise<string[]> {
+  const conditions: string[] = [];
+
+  try {
+    const group_folder = await handle.getDirectoryHandle(CleanUpString(groupName));
+    const individual_folder = await group_folder.getDirectoryHandle(CleanUpString(individualName));
+    const evaluations = await individual_folder.getDirectoryHandle(CleanUpString(evaluationName));
+
+    for await (const [name, entry] of evaluations.entries()) {
+      if (entry.kind === 'directory' && name !== '.DS_Store') {
+        conditions.push(name);
+      }
+    }
+
+    return conditions;
+  } catch (error) {
+    console.error('Error fetching conditions:', error);
+    return [];
+  }
+}
+
 async function fetchKeysets(
   handle: FileSystemDirectoryHandle,
   groupName: string,
@@ -246,12 +281,8 @@ const queryHandlers: Record<QueryType, (request: any) => Promise<any>> = {
   [QUERY_TYPES.FETCH_EVALUATIONS]: (req: FetchEvaluationsRequest) =>
     fetchEvaluations(req.handle, req.groupName, req.clientName),
 
-  [QUERY_TYPES.FETCH_CONDITIONS]: (req: FetchDirectoriesRequest) =>
-    fetchDirectories(req.handle, {
-      path: req.path,
-      filterPattern: req.filterPattern,
-      excludeSystemFiles: req.excludeSystemFiles,
-    }),
+  [QUERY_TYPES.FETCH_CONDITIONS]: (req: FetchConditionsRequest) =>
+    fetchConditions(req.handle, req.groupName, req.individualName, req.evaluationName),
 
   [QUERY_TYPES.FETCH_KEYSETS]: (req: FetchKeysetsRequest) =>
     fetchKeysets(req.handle, req.groupName, req.individualName),
@@ -330,6 +361,7 @@ export type {
   FetchGroupsRequest,
   FetchClientsRequest,
   FetchEvaluationsRequest,
+  FetchConditionsRequest,
   FetchKeysetsRequest,
   FetchDirectoriesRequest,
   CreateResponseFunction,
