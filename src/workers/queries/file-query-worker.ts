@@ -1,0 +1,288 @@
+// Query type constants for type safety and extensibility
+const QUERY_TYPES = {
+  FETCH_GROUPS: 'FETCH_GROUPS',
+  FETCH_CLIENTS: 'FETCH_CLIENTS',
+  FETCH_EVALUATIONS: 'FETCH_EVALUATIONS',
+  FETCH_CONDITIONS: 'FETCH_CONDITIONS',
+  FETCH_KEYSETS: 'FETCH_KEYSETS',
+  FETCH_SESSIONS: 'FETCH_SESSIONS',
+  FETCH_OUTCOMES: 'FETCH_OUTCOMES',
+  FETCH_DIRECTORIES: 'FETCH_DIRECTORIES', // Generic directory fetcher
+} as const;
+
+type QueryType = (typeof QUERY_TYPES)[keyof typeof QUERY_TYPES];
+
+// Base interfaces for type safety
+interface BaseQueryRequest {
+  id: string; // Unique ID for request tracking
+  type: QueryType;
+  timestamp?: number;
+}
+
+interface BaseQueryResponse {
+  id: string;
+  success: boolean;
+  timestamp: number;
+  executionTime: number;
+}
+
+interface SuccessResponse<T = any> extends BaseQueryResponse {
+  success: true;
+  data: T;
+}
+
+interface ErrorResponse extends BaseQueryResponse {
+  success: false;
+  error: string;
+  stack?: string;
+}
+
+type QueryResponse<T = any> = SuccessResponse<T> | ErrorResponse;
+
+// Specific query request types
+interface FetchGroupsRequest extends BaseQueryRequest {
+  type: typeof QUERY_TYPES.FETCH_GROUPS;
+  handle: FileSystemDirectoryHandle;
+}
+
+interface FetchClientsRequest extends BaseQueryRequest {
+  type: typeof QUERY_TYPES.FETCH_CLIENTS;
+  handle: FileSystemDirectoryHandle;
+  groupName: string;
+}
+
+interface FetchEvaluationsRequest extends BaseQueryRequest {
+  type: typeof QUERY_TYPES.FETCH_EVALUATIONS;
+  handle: FileSystemDirectoryHandle;
+  groupName: string;
+  clientName?: string;
+}
+
+interface FetchDirectoriesRequest extends BaseQueryRequest {
+  type: typeof QUERY_TYPES.FETCH_DIRECTORIES;
+  handle: FileSystemDirectoryHandle;
+  path?: string[];
+  filterPattern?: RegExp;
+  excludeSystemFiles?: boolean;
+}
+
+type QueryRequest = FetchGroupsRequest | FetchClientsRequest | FetchEvaluationsRequest | FetchDirectoriesRequest;
+
+// Utility functions
+const isSystemFile = (name: string): boolean => {
+  return name.startsWith('.') || ['Thumbs.db', 'desktop.ini'].includes(name);
+};
+
+// Type-safe createResponse function with overloads
+function createResponse<T>(id: string, startTime: number, success: true, data: T): SuccessResponse<T>;
+
+function createResponse(
+  id: string,
+  startTime: number,
+  success: false,
+  data: undefined,
+  error: string,
+  stack?: string,
+): ErrorResponse;
+
+function createResponse<T>(
+  id: string,
+  startTime: number,
+  success: boolean,
+  data?: T,
+  error?: string,
+  stack?: string,
+): QueryResponse<T> {
+  const timestamp = Date.now();
+  const executionTime = timestamp - startTime;
+
+  if (success) {
+    return {
+      id,
+      success: true,
+      data: data!,
+      timestamp,
+      executionTime,
+    } as SuccessResponse<T>;
+  } else {
+    return {
+      id,
+      success: false,
+      error: error!,
+      stack,
+      timestamp,
+      executionTime,
+    } as ErrorResponse;
+  }
+}
+
+// Type alias for the createResponse function
+type CreateResponseFunction = typeof createResponse;
+
+// Core query handlers
+async function fetchDirectories(
+  handle: FileSystemDirectoryHandle,
+  options?: {
+    path?: string[];
+    filterPattern?: RegExp;
+    excludeSystemFiles?: boolean;
+  },
+): Promise<string[]> {
+  const { path = [], filterPattern, excludeSystemFiles = true } = options || {};
+
+  let currentHandle = handle;
+
+  // Navigate to the specified path
+  for (const segment of path) {
+    try {
+      currentHandle = await currentHandle.getDirectoryHandle(segment);
+    } catch {
+      return []; // Path doesn't exist
+    }
+  }
+
+  const directories: string[] = [];
+
+  try {
+    for await (const [name, entry] of currentHandle.entries()) {
+      if (entry.kind !== 'directory') continue;
+
+      if (excludeSystemFiles && isSystemFile(name)) continue;
+
+      if (filterPattern && !filterPattern.test(name)) continue;
+
+      directories.push(name);
+    }
+
+    return directories.sort(); // Return sorted for consistency
+  } catch (error) {
+    console.error('Error fetching directories:', error);
+    return [];
+  }
+}
+
+async function fetchGroups(handle: FileSystemDirectoryHandle): Promise<string[]> {
+  return fetchDirectories(handle, { excludeSystemFiles: true });
+}
+
+async function fetchClients(handle: FileSystemDirectoryHandle, groupName: string): Promise<string[]> {
+  return fetchDirectories(handle, {
+    path: [groupName],
+    excludeSystemFiles: true,
+  });
+}
+
+async function fetchEvaluations(
+  handle: FileSystemDirectoryHandle,
+  groupName: string,
+  clientName?: string,
+): Promise<string[]> {
+  const path = clientName ? [groupName, clientName] : [groupName];
+  return fetchDirectories(handle, {
+    path,
+    excludeSystemFiles: true,
+  });
+}
+
+// Query dispatcher - maps query types to handlers
+const queryHandlers: Record<QueryType, (request: any) => Promise<any>> = {
+  [QUERY_TYPES.FETCH_GROUPS]: (req: FetchGroupsRequest) => fetchGroups(req.handle),
+
+  [QUERY_TYPES.FETCH_CLIENTS]: (req: FetchClientsRequest) => fetchClients(req.handle, req.groupName),
+
+  [QUERY_TYPES.FETCH_EVALUATIONS]: (req: FetchEvaluationsRequest) =>
+    fetchEvaluations(req.handle, req.groupName, req.clientName),
+
+  [QUERY_TYPES.FETCH_CONDITIONS]: (req: FetchDirectoriesRequest) =>
+    fetchDirectories(req.handle, {
+      path: req.path,
+      filterPattern: req.filterPattern,
+      excludeSystemFiles: req.excludeSystemFiles,
+    }),
+
+  [QUERY_TYPES.FETCH_KEYSETS]: (req: FetchDirectoriesRequest) =>
+    fetchDirectories(req.handle, {
+      path: req.path,
+      filterPattern: req.filterPattern,
+      excludeSystemFiles: req.excludeSystemFiles,
+    }),
+
+  [QUERY_TYPES.FETCH_SESSIONS]: (req: FetchDirectoriesRequest) =>
+    fetchDirectories(req.handle, {
+      path: req.path,
+      filterPattern: req.filterPattern,
+      excludeSystemFiles: req.excludeSystemFiles,
+    }),
+
+  [QUERY_TYPES.FETCH_OUTCOMES]: (req: FetchDirectoriesRequest) =>
+    fetchDirectories(req.handle, {
+      path: req.path,
+      filterPattern: req.filterPattern,
+      excludeSystemFiles: req.excludeSystemFiles,
+    }),
+
+  [QUERY_TYPES.FETCH_DIRECTORIES]: (req: FetchDirectoriesRequest) =>
+    fetchDirectories(req.handle, {
+      path: req.path,
+      filterPattern: req.filterPattern,
+      excludeSystemFiles: req.excludeSystemFiles,
+    }),
+};
+
+// Main message handler
+self.onmessage = async (event: MessageEvent<QueryRequest>) => {
+  const startTime = Date.now();
+  const request = event.data;
+
+  // Validate request structure
+  if (!request || !request.id || !request.type) {
+    const response = createResponse(
+      request?.id || 'unknown',
+      startTime,
+      false,
+      undefined,
+      'Invalid request: missing id or type',
+    );
+    self.postMessage(response);
+    return;
+  }
+
+  try {
+    // Get the appropriate handler
+    const handler = queryHandlers[request.type];
+    if (!handler) {
+      throw new Error(`Unsupported query type: ${request.type}`);
+    }
+
+    // Execute the query
+    const result = await handler(request);
+
+    // Send success response
+    const response = createResponse(request.id, startTime, true, result);
+    self.postMessage(response);
+  } catch (error) {
+    // Send error response
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const stack = error instanceof Error ? error.stack : undefined;
+
+    const response = createResponse(request.id, startTime, false, undefined, errorMessage, stack);
+    self.postMessage(response);
+  }
+};
+
+// Export types for main thread usage (if using TypeScript modules)
+export type {
+  QueryType,
+  QueryRequest,
+  QueryResponse,
+  SuccessResponse,
+  ErrorResponse,
+  BaseQueryResponse,
+  FetchGroupsRequest,
+  FetchClientsRequest,
+  FetchEvaluationsRequest,
+  FetchDirectoriesRequest,
+  CreateResponseFunction,
+};
+
+export { QUERY_TYPES, createResponse };

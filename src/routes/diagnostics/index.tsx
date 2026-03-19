@@ -10,13 +10,11 @@ import { Separator } from '@/components/ui/separator';
 import { FolderHandleContext } from '@/context/folder-context';
 import {
   evaluate,
-  getLogicalSteps,
   getRelevantFieldValues,
   LogicalStep,
   LogicState,
   Operation,
   OperationTypes,
-  testLogic,
   ValueSourceField,
 } from '@/lib/logic/logic';
 import { checkCrossOriginIsolation } from '@/lib/shared-buffer';
@@ -24,7 +22,6 @@ import { cn } from '@/lib/utils';
 import { createFileRoute } from '@tanstack/react-router';
 import { PlusIcon, Trash } from 'lucide-react';
 import { useContext, useState } from 'react';
-import { set } from 'zod';
 
 export const Route = createFileRoute('/diagnostics/')({
   component: RouteComponent,
