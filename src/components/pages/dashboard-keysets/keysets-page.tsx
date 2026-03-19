@@ -77,7 +77,7 @@ export default function KeySetsPage({ Group, Individual }: { Group: string; Indi
       accessorKey: 'createdAt',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Date Created" />,
       cell: ({ row }) => {
-        return <span>{row.original.createdAt.toLocaleDateString()}</span>;
+        return <span>{new Date(row.original.createdAt).toLocaleDateString()}</span>;
       },
     },
     {

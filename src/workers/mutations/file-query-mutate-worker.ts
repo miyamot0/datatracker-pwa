@@ -1,5 +1,8 @@
 import { CleanUpString } from '@/lib/strings';
 import { DataExampleFiles } from '@/lib/data';
+import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
+import { v4 as uuidv4 } from 'uuid';
+import { KeySet } from '@/types/keyset';
 
 export const DemoDataFolderName = 'Example DataTracker Group';
 
@@ -9,6 +12,7 @@ const MUTATION_TYPES = {
   MUTATE_EVALUATIONS: 'MUTATE_EVALUATIONS',
   MUTATE_GROUPS: 'MUTATE_GROUPS',
   MUTATE_INDIVIDUALS: 'MUTATE_INDIVIDUALS',
+  MUTATE_KEYSETS: 'MUTATE_KEYSETS',
 } as const;
 
 type MutationType = (typeof MUTATION_TYPES)[keyof typeof MUTATION_TYPES];
@@ -76,11 +80,23 @@ interface MutateIndividualsRequest extends BaseMutationRequest {
   action: 'Add' | 'Delete';
 }
 
+interface MutateKeysetsRequest extends BaseMutationRequest {
+  type: typeof MUTATION_TYPES.MUTATE_KEYSETS;
+  handle: FileSystemDirectoryHandle;
+  groupName: string;
+  individualName: string;
+  keysetNames: string[];
+  renameTo?: string;
+  newKeySet?: KeySet;
+  action: 'Add' | 'Delete' | 'Duplicate' | 'Rename' | 'Update';
+}
+
 type MutationRequest =
   | MutateConditionsRequest
   | MutateEvaluationsRequest
   | MutateGroupsRequest
-  | MutateIndividualsRequest;
+  | MutateIndividualsRequest
+  | MutateKeysetsRequest;
 
 // Type-safe createResponse function with overloads
 function createResponse<T>(id: string, startTime: number, success: true, data: T): SuccessResponse<T>;
@@ -416,6 +432,124 @@ async function mutateIndividuals(
   }
 }
 
+async function mutateKeysets(
+  handle: FileSystemDirectoryHandle,
+  groupName: string,
+  individualName: string,
+  keysetNames: string[],
+  action: 'Add' | 'Delete' | 'Duplicate' | 'Rename' | 'Update',
+  renameTo?: string,
+  newKeySet?: KeySet,
+): Promise<KeySet[]> {
+  try {
+    const group_dir = await handle.getDirectoryHandle(CleanUpString(groupName));
+    const individual_dir = await group_dir.getDirectoryHandle(individualName);
+
+    // First, get current keysets list
+    const keysets: KeySet[] = [];
+    for await (const [name, entry] of individual_dir.entries()) {
+      if (entry.kind === 'file' && name.endsWith('.json') && name !== '.DS_Store') {
+        try {
+          const fileHandle = await individual_dir.getFileHandle(name);
+          const file = await fileHandle.getFile();
+          const text = await file.text();
+          if (text.length > 0) {
+            const keysetData = JSON.parse(text) as KeySet;
+            keysets.push(keysetData);
+          }
+        } catch (error) {
+          console.error(`Error reading keyset file ${name}:`, error);
+        }
+      }
+    }
+
+    let newKeysetsList = [...keysets];
+
+    switch (action) {
+      case 'Add': {
+        const key_set = createNewKeySet(keysetNames[0]);
+
+        const key_board = await individual_dir.getFileHandle(`${keysetNames[0]}.json`, { create: true });
+        const writer = await key_board.createWritable();
+        await writer.write(serializeKeySet(key_set));
+        await writer.close();
+        newKeysetsList = [...newKeysetsList, key_set];
+        break;
+      }
+
+      case 'Delete':
+        for (const keysetName of keysetNames) {
+          try {
+            const fileHandle = await individual_dir.getFileHandle(`${keysetName}.json`);
+            await individual_dir.removeEntry(fileHandle.name);
+            newKeysetsList = newKeysetsList.filter((e) => e.Name !== keysetName);
+          } catch (error) {
+            // eslint-disable-next-line preserve-caught-error
+            throw new Error(`Failed to remove keyboard: ${keysetName}.json`);
+          }
+        }
+        break;
+
+      case 'Duplicate': {
+        const keySetMatch = keysets.find((ks) => ks.Name === keysetNames[0].trim());
+        console.log(keySetMatch);
+        console.log('Duplicate action - keySetMatch:', keysetNames[0], 'renameTo:', renameTo);
+
+        if (!keySetMatch) {
+          throw new Error('No matching KeySet found.');
+        }
+        if (!renameTo) {
+          throw new Error('No renameTo text supplied.');
+        }
+
+        const key_set = {
+          ...keySetMatch,
+          Name: renameTo,
+          id: uuidv4(),
+          createdAt: new Date(),
+          lastModified: new Date(),
+        };
+
+        const key_board = await individual_dir.getFileHandle(`${renameTo}.json`, { create: true });
+        const writer = await key_board.createWritable();
+        await writer.write(serializeKeySet(key_set));
+        await writer.close();
+        newKeysetsList = [...newKeysetsList, key_set];
+        break;
+      }
+
+      case 'Update': {
+        if (!newKeySet) {
+          throw new Error('newKeySet not supplied');
+        }
+
+        const key_board = await individual_dir.getFileHandle(`${newKeySet.Name}.json`);
+        const writer = await key_board.createWritable();
+        await writer.write(serializeKeySet(newKeySet));
+        await writer.close();
+
+        newKeysetsList = newKeysetsList.map((k) => {
+          if (k.Name === newKeySet.Name) {
+            return newKeySet;
+          }
+          return k;
+        });
+        break;
+      }
+
+      case 'Rename': {
+        // TODO: Implement rename functionality in future
+        throw new Error('Rename action not yet implemented');
+      }
+    }
+
+    return newKeysetsList;
+  } catch (error) {
+    console.error('Error mutating keysets:', error);
+    throw error;
+  }
+}
+
 // Mutation dispatcher - maps mutation types to handlers
 const mutationHandlers: Record<MutationType, (request: any) => Promise<any>> = {
   [MUTATION_TYPES.MUTATE_CONDITIONS]: (req: MutateConditionsRequest) =>
@@ -428,6 +562,17 @@ const mutationHandlers: Record<MutationType, (request: any) => Promise<any>> = {
 
   [MUTATION_TYPES.MUTATE_INDIVIDUALS]: (req: MutateIndividualsRequest) =>
     mutateIndividuals(req.handle, req.groupName, req.individualNames, req.action),
+
+  [MUTATION_TYPES.MUTATE_KEYSETS]: (req: MutateKeysetsRequest) =>
+    mutateKeysets(
+      req.handle,
+      req.groupName,
+      req.individualName,
+      req.keysetNames,
+      req.action,
+      req.renameTo,
+      req.newKeySet,
+    ),
 };
 
 // Main message handler
@@ -483,6 +628,7 @@ export type {
   MutateEvaluationsRequest,
   MutateGroupsRequest,
   MutateIndividualsRequest,
+  MutateKeysetsRequest,
   CreateResponseFunction,
 };
 

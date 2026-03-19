@@ -29,6 +29,7 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
             enabled: false,
           },
           workbox: {
+            disableDevLogs: true,
             globPatterns: ['**/*'],
             cleanupOutdatedCaches: true,
             sourcemap: false,

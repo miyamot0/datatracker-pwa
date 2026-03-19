@@ -4,7 +4,7 @@ import { routeGuard } from '@/lib/routing';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/session/$group/$individual/keysets/$keyset')({
+export const Route = createFileRoute('/session/$group/$individual/keysets/$keyset/')({
   beforeLoad: routeGuard,
   loader: ({ params }) => {
     const { group, individual, keyset } = params;
