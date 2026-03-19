@@ -1,5 +1,5 @@
-import { FetchClientsRequest, QueryResponse } from '@/workers/queries/file-query-worker';
-import GenericFileWorker from '@/workers/queries/file-query-worker.ts?worker';
+import { FetchClientsRequest, QueryResponse } from '@/workers/queries/file-query-read-worker';
+import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
