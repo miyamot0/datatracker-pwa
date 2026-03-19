@@ -1,3 +1,7 @@
+import { deserializeKeySet } from '@/lib/keyset';
+import { CleanUpString } from '@/lib/strings';
+import { KeySet } from '@/types/keyset';
+
 // Query type constants for type safety and extensibility
 const QUERY_TYPES = {
   FETCH_GROUPS: 'FETCH_GROUPS',
@@ -58,6 +62,13 @@ interface FetchEvaluationsRequest extends BaseQueryRequest {
   clientName?: string;
 }
 
+interface FetchKeysetsRequest extends BaseQueryRequest {
+  type: typeof QUERY_TYPES.FETCH_KEYSETS;
+  handle: FileSystemDirectoryHandle;
+  groupName: string;
+  individualName: string;
+}
+
 interface FetchDirectoriesRequest extends BaseQueryRequest {
   type: typeof QUERY_TYPES.FETCH_DIRECTORIES;
   handle: FileSystemDirectoryHandle;
@@ -66,7 +77,12 @@ interface FetchDirectoriesRequest extends BaseQueryRequest {
   excludeSystemFiles?: boolean;
 }
 
-type QueryRequest = FetchGroupsRequest | FetchClientsRequest | FetchEvaluationsRequest | FetchDirectoriesRequest;
+type QueryRequest =
+  | FetchGroupsRequest
+  | FetchClientsRequest
+  | FetchEvaluationsRequest
+  | FetchKeysetsRequest
+  | FetchDirectoriesRequest;
 
 // Utility functions
 const isSystemFile = (name: string): boolean => {
@@ -184,6 +200,43 @@ async function fetchEvaluations(
   });
 }
 
+async function fetchKeysets(
+  handle: FileSystemDirectoryHandle,
+  groupName: string,
+  individualName: string,
+): Promise<KeySet[]> {
+  const keysets: KeySet[] = [];
+
+  try {
+    const individuals_folder = await handle.getDirectoryHandle(CleanUpString(groupName), { create: true });
+    const keyboards_folder = await individuals_folder.getDirectoryHandle(CleanUpString(individualName), {
+      create: true,
+    });
+
+    for await (const [name, entry] of keyboards_folder.entries()) {
+      if (name === '.DS_Store') continue;
+
+      if (entry.kind === 'file' && name.endsWith('.json')) {
+        const keyset = await entry.getFile();
+        const keyset_text = await keyset.text();
+
+        if (keyset_text.length === 0) continue;
+
+        const keyset_json = deserializeKeySet(keyset_text);
+
+        if (keyset_json) {
+          keysets.push(keyset_json);
+        }
+      }
+    }
+
+    return keysets;
+  } catch (error) {
+    console.error('Error fetching keysets:', error);
+    return [];
+  }
+}
+
 // Query dispatcher - maps query types to handlers
 const queryHandlers: Record<QueryType, (request: any) => Promise<any>> = {
   [QUERY_TYPES.FETCH_GROUPS]: (req: FetchGroupsRequest) => fetchGroups(req.handle),
@@ -200,12 +253,8 @@ const queryHandlers: Record<QueryType, (request: any) => Promise<any>> = {
       excludeSystemFiles: req.excludeSystemFiles,
     }),
 
-  [QUERY_TYPES.FETCH_KEYSETS]: (req: FetchDirectoriesRequest) =>
-    fetchDirectories(req.handle, {
-      path: req.path,
-      filterPattern: req.filterPattern,
-      excludeSystemFiles: req.excludeSystemFiles,
-    }),
+  [QUERY_TYPES.FETCH_KEYSETS]: (req: FetchKeysetsRequest) =>
+    fetchKeysets(req.handle, req.groupName, req.individualName),
 
   [QUERY_TYPES.FETCH_SESSIONS]: (req: FetchDirectoriesRequest) =>
     fetchDirectories(req.handle, {
@@ -281,6 +330,7 @@ export type {
   FetchGroupsRequest,
   FetchClientsRequest,
   FetchEvaluationsRequest,
+  FetchKeysetsRequest,
   FetchDirectoriesRequest,
   CreateResponseFunction,
 };
