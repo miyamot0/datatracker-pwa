@@ -23,6 +23,7 @@ import { queryClient } from '@/App';
 import FrequencyDialogKeyCreator from './dialogs/frequency-dialog';
 import DurationDialogKeyCreator from './dialogs/duration-dialog';
 import LogicalDialogKeyCreator from './dialogs/logical-dialog';
+import { generateFormula, LogicState } from '@/lib/logic/logic';
 
 export default function KeySetEditor({
   Group,
@@ -34,9 +35,10 @@ export default function KeySetEditor({
   KeySet: string;
 }) {
   const Context = useContext(FolderHandleContext);
-  const { handle } = Context;
-
+  const { handle, settings } = Context;
   const { data, isLoading, error } = useQuery(keyboardQueryOptions(handle!, Group, Individual));
+
+  const areDerivedKeysEnabled = settings.LogicBuilder === 'enabled';
 
   const mutateKeyboards = useMutation({
     mutationFn: mutationKeyboards,
@@ -71,7 +73,7 @@ export default function KeySetEditor({
     let new_state = {
       ...base_keyset,
       lastModified: new Date(),
-    };
+    } satisfies KeySet;
 
     if (type === 'Duration') {
       new_state = {
@@ -84,6 +86,19 @@ export default function KeySetEditor({
         FrequencyKeys: [...base_keyset.FrequencyKeys, new_key],
       };
     }
+
+    await mutateKeySet(new_state);
+  };
+
+  const addDerivedKeyCallback = async (logic: LogicState) => {
+    const new_state = {
+      ...relevantKeySet,
+      // Note: hack to kick off re-render
+      FrequencyKeys: [...relevantKeySet.FrequencyKeys],
+      DurationKeys: [...relevantKeySet.DurationKeys],
+      DerivedKeys: [...(relevantKeySet.DerivedKeys || []), logic],
+      lastModified: new Date(),
+    } satisfies KeySet;
 
     await mutateKeySet(new_state);
   };
@@ -119,7 +134,15 @@ export default function KeySetEditor({
             </div>
 
             <div className="flex flex-row gap-2">
-              <LogicalDialogKeyCreator KeySet={relevantKeySet} Callback={addKeyCallback} />
+              <LogicalDialogKeyCreator
+                KeySet={relevantKeySet}
+                Callback={addDerivedKeyCallback}
+                key={
+                  relevantKeySet.DurationKeys.length +
+                  relevantKeySet.FrequencyKeys.length +
+                  relevantKeySet.DerivedKeys.length
+                }
+              />
               <FrequencyDialogKeyCreator KeySet={relevantKeySet} Callback={addKeyCallback} />
 
               <BackButton />
@@ -144,13 +167,13 @@ export default function KeySetEditor({
                         size={'sm'}
                         variant={'outline'}
                         disabled={index === 0}
-                        onClick={() => {
+                        onClick={async () => {
                           const newFrequencyKeys = moveItemUp(relevantKeySet.FrequencyKeys, index);
                           const new_state = {
                             ...relevantKeySet,
                             FrequencyKeys: newFrequencyKeys,
                           };
-                          mutateKeySet(new_state);
+                          await mutateKeySet(new_state);
                         }}
                       >
                         <ArrowUp size={14} className="mr" />
@@ -160,13 +183,13 @@ export default function KeySetEditor({
                         size={'sm'}
                         variant={'outline'}
                         disabled={index === relevantKeySet.FrequencyKeys.length - 1}
-                        onClick={() => {
+                        onClick={async () => {
                           const newFrequencyKeys = moveItemDown(relevantKeySet.FrequencyKeys, index);
                           const new_state = {
                             ...relevantKeySet,
                             FrequencyKeys: newFrequencyKeys,
                           };
-                          mutateKeySet(new_state);
+                          await mutateKeySet(new_state);
                         }}
                       >
                         <ArrowDown size={14} className="mr" />
@@ -176,7 +199,7 @@ export default function KeySetEditor({
                         size={'sm'}
                         variant={'destructive'}
                         className="shadow-xl"
-                        onClick={() => {
+                        onClick={async () => {
                           const confirmation = window.confirm('Are you sure you want to remove this key?');
 
                           if (!confirmation) return;
@@ -186,7 +209,7 @@ export default function KeySetEditor({
                             FrequencyKeys: relevantKeySet.FrequencyKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
                           };
 
-                          mutateKeySet(new_state);
+                          await mutateKeySet(new_state);
                         }}
                       >
                         <DeleteIcon size={14} className="mr-2" />
@@ -195,6 +218,36 @@ export default function KeySetEditor({
                     </TableCell>
                   </TableRow>
                 ))}
+
+                {areDerivedKeysEnabled &&
+                  relevantKeySet.DerivedKeys?.map((state, index) => (
+                    <TableRow key={index} className="bg-muted">
+                      <TableCell>{state.name} (Derived)</TableCell>
+                      <TableCell>{generateFormula(state)}</TableCell>
+                      <TableCell className="flex flex-row gap-2 justify-end">
+                        <Button
+                          size={'sm'}
+                          variant={'destructive'}
+                          className="shadow-xl"
+                          onClick={async () => {
+                            const confirmation = window.confirm('Are you sure you want to remove this key?');
+
+                            if (!confirmation) return;
+
+                            const new_state = {
+                              ...relevantKeySet,
+                              DerivedKeys: relevantKeySet.DerivedKeys?.filter((_key) => _key.id !== state.id),
+                            } satisfies KeySet;
+
+                            await mutateKeySet(new_state);
+                          }}
+                        >
+                          <DeleteIcon size={14} className="mr-2" />
+                          Delete
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </CardContent>
@@ -232,13 +285,13 @@ export default function KeySetEditor({
                         size={'sm'}
                         variant={'outline'}
                         disabled={index === 0}
-                        onClick={() => {
+                        onClick={async () => {
                           const newDurationKeys = moveItemUp(relevantKeySet.DurationKeys, index);
                           const new_state = {
                             ...relevantKeySet,
                             DurationKeys: newDurationKeys,
                           };
-                          mutateKeySet(new_state);
+                          await mutateKeySet(new_state);
                         }}
                       >
                         <ArrowUp size={14} className="mr" />
@@ -248,13 +301,13 @@ export default function KeySetEditor({
                         size={'sm'}
                         variant={'outline'}
                         disabled={index === relevantKeySet.DurationKeys.length - 1}
-                        onClick={() => {
+                        onClick={async () => {
                           const newDurationKeys = moveItemDown(relevantKeySet.DurationKeys, index);
                           const new_state = {
                             ...relevantKeySet,
                             DurationKeys: newDurationKeys,
                           };
-                          mutateKeySet(new_state);
+                          await mutateKeySet(new_state);
                         }}
                       >
                         <ArrowDown size={14} className="mr" />
@@ -263,7 +316,7 @@ export default function KeySetEditor({
                       <Button
                         size={'sm'}
                         variant={'destructive'}
-                        onClick={() => {
+                        onClick={async () => {
                           const confirmation = window.confirm('Are you sure you want to remove this key?');
 
                           if (!confirmation) return;
@@ -273,7 +326,7 @@ export default function KeySetEditor({
                             DurationKeys: relevantKeySet.DurationKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
                           };
 
-                          mutateKeySet(new_state);
+                          await mutateKeySet(new_state);
                         }}
                       >
                         <DeleteIcon size={14} className="mr-2" />

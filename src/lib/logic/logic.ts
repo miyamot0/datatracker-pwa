@@ -45,6 +45,38 @@ export type LogicState = {
   id: string;
 };
 
+export function generateFormula(logicState: LogicState) {
+  const stringBuilderPre = logicState.steps.map((step) => {
+    let operatorString = '';
+
+    switch (step.operation) {
+      case 'add':
+        operatorString = ' += ';
+        break;
+      case 'subtract':
+        operatorString = ' -= ';
+        break;
+      case 'multiply':
+        operatorString = ' *= ';
+        break;
+      case 'divide':
+        operatorString = ' /= ';
+        break;
+    }
+
+    const operandStr =
+      step.operand.type === 'constant' ? step.operand.value.toString() : step.operand.field.KeyDescription;
+    return `${operatorString} ${operandStr}`;
+  });
+
+  return [
+    logicState.initial.type === 'constant'
+      ? logicState.initial.value.toString()
+      : logicState.initial.field.KeyDescription,
+    ...stringBuilderPre,
+  ].join(' ');
+}
+
 function resolveValue(source: ValueSource, state: LogicState): number {
   if (source.type === 'constant') return source.value;
 

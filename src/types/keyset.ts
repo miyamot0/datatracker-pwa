@@ -1,3 +1,5 @@
+import { LogicState } from '@/lib/logic/logic';
+
 /**
  * Type for holding the key values
  */
@@ -17,6 +19,8 @@ export type KeySet = {
   DurationKeys: KeySetInstance[];
   createdAt: Date;
   lastModified: Date;
+
+  DerivedKeys: LogicState[];
 };
 
 /**
@@ -44,6 +48,7 @@ export type KeySetSerialize = {
   DurationKeys: KeySetInstance[];
   createdAt: string;
   lastModified: string;
+  DerivedKeys: LogicState[];
 };
 
 export type ExpandedKeySetInstance = {
