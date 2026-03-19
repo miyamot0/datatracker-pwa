@@ -8,6 +8,7 @@ const MUTATION_TYPES = {
   MUTATE_CONDITIONS: 'MUTATE_CONDITIONS',
   MUTATE_EVALUATIONS: 'MUTATE_EVALUATIONS',
   MUTATE_GROUPS: 'MUTATE_GROUPS',
+  MUTATE_INDIVIDUALS: 'MUTATE_INDIVIDUALS',
 } as const;
 
 type MutationType = (typeof MUTATION_TYPES)[keyof typeof MUTATION_TYPES];
@@ -67,7 +68,19 @@ interface MutateGroupsRequest extends BaseMutationRequest {
   action: 'Add' | 'Delete' | 'Demo';
 }
 
-type MutationRequest = MutateConditionsRequest | MutateEvaluationsRequest | MutateGroupsRequest;
+interface MutateIndividualsRequest extends BaseMutationRequest {
+  type: typeof MUTATION_TYPES.MUTATE_INDIVIDUALS;
+  handle: FileSystemDirectoryHandle;
+  groupName: string;
+  individualNames: string[];
+  action: 'Add' | 'Delete';
+}
+
+type MutationRequest =
+  | MutateConditionsRequest
+  | MutateEvaluationsRequest
+  | MutateGroupsRequest
+  | MutateIndividualsRequest;
 
 // Type-safe createResponse function with overloads
 function createResponse<T>(id: string, startTime: number, success: true, data: T): SuccessResponse<T>;
@@ -361,6 +374,48 @@ async function mutateGroups(
   }
 }
 
+async function mutateIndividuals(
+  handle: FileSystemDirectoryHandle,
+  groupName: string,
+  individualNames: string[],
+  action: 'Add' | 'Delete',
+): Promise<string[]> {
+  try {
+    const group_dir = await handle.getDirectoryHandle(CleanUpString(groupName));
+
+    // First, get current individuals list
+    const individuals: string[] = [];
+    for await (const [name, entry] of group_dir.entries()) {
+      if (entry.kind === 'directory' && name !== '.DS_Store') {
+        individuals.push(name);
+      }
+    }
+
+    let newIndividualList = [...individuals];
+
+    switch (action) {
+      case 'Add':
+        await group_dir.getDirectoryHandle(individualNames[0], { create: true });
+        if (!newIndividualList.includes(individualNames[0])) {
+          newIndividualList.push(individualNames[0]);
+        }
+        break;
+
+      case 'Delete':
+        for (const individualName of individualNames) {
+          await group_dir.removeEntry(individualName, { recursive: true });
+          newIndividualList = newIndividualList.filter((i) => i !== individualName);
+        }
+        break;
+    }
+
+    return newIndividualList;
+  } catch (error) {
+    console.error('Error mutating individuals:', error);
+    throw error;
+  }
+}
+
 // Mutation dispatcher - maps mutation types to handlers
 const mutationHandlers: Record<MutationType, (request: any) => Promise<any>> = {
   [MUTATION_TYPES.MUTATE_CONDITIONS]: (req: MutateConditionsRequest) =>
@@ -370,6 +425,9 @@ const mutationHandlers: Record<MutationType, (request: any) => Promise<any>> = {
     mutateEvaluations(req.handle, req.groupName, req.individualName, req.evaluationNames, req.action, req.renameTo),
 
   [MUTATION_TYPES.MUTATE_GROUPS]: (req: MutateGroupsRequest) => mutateGroups(req.handle, req.groupNames, req.action),
+
+  [MUTATION_TYPES.MUTATE_INDIVIDUALS]: (req: MutateIndividualsRequest) =>
+    mutateIndividuals(req.handle, req.groupName, req.individualNames, req.action),
 };
 
 // Main message handler
@@ -424,6 +482,7 @@ export type {
   MutateConditionsRequest,
   MutateEvaluationsRequest,
   MutateGroupsRequest,
+  MutateIndividualsRequest,
   CreateResponseFunction,
 };
 

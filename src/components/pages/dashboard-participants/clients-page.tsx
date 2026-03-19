@@ -98,7 +98,7 @@ export default function ClientsPage({ Group }: { Group: string }) {
               const individualNames = rows.map((row) => row.Individual);
 
               const confirm_delete = window.confirm(
-                `Are you sure you want to delete ${individualNames.length} clients? This CANNOT be undone.`,
+                `Are you sure you want to delete ${individualNames.length} client(s)? This CANNOT be undone.`,
               );
 
               if (!confirm_delete) {
