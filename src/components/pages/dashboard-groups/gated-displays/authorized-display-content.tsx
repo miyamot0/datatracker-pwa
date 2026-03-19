@@ -7,10 +7,11 @@ import { ColumnDef } from '@tanstack/react-table';
 import { FolderHandleContext } from '@/context/folder-context';
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { DemoDataFolderName, mutationGroups } from '@/queries/groups/mutate-groups';
+import { mutationGroups } from '@/queries/groups/mutate-groups';
 import { useContext } from 'react';
 import { Link } from '@tanstack/react-router';
 import { DataTable } from '@/components/ui/data-table-common';
+import { DemoDataFolderName } from '@/workers/mutations/file-query-mutate-worker';
 
 type Props = {
   Groups: string[];

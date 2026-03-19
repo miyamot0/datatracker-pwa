@@ -1,9 +1,13 @@
 import { CleanUpString } from '@/lib/strings';
+import { DataExampleFiles } from '@/lib/data';
+
+export const DemoDataFolderName = 'Example DataTracker Group';
 
 // Mutation type constants for type safety and extensibility
 const MUTATION_TYPES = {
   MUTATE_CONDITIONS: 'MUTATE_CONDITIONS',
   MUTATE_EVALUATIONS: 'MUTATE_EVALUATIONS',
+  MUTATE_GROUPS: 'MUTATE_GROUPS',
 } as const;
 
 type MutationType = (typeof MUTATION_TYPES)[keyof typeof MUTATION_TYPES];
@@ -56,7 +60,14 @@ interface MutateEvaluationsRequest extends BaseMutationRequest {
   action: 'Add' | 'Delete' | 'Duplicate' | 'Rename';
 }
 
-type MutationRequest = MutateConditionsRequest | MutateEvaluationsRequest;
+interface MutateGroupsRequest extends BaseMutationRequest {
+  type: typeof MUTATION_TYPES.MUTATE_GROUPS;
+  handle: FileSystemDirectoryHandle;
+  groupNames: string[];
+  action: 'Add' | 'Delete' | 'Demo';
+}
+
+type MutationRequest = MutateConditionsRequest | MutateEvaluationsRequest | MutateGroupsRequest;
 
 // Type-safe createResponse function with overloads
 function createResponse<T>(id: string, startTime: number, success: true, data: T): SuccessResponse<T>;
@@ -105,6 +116,42 @@ function createResponse<T>(
 type CreateResponseFunction = typeof createResponse;
 
 // Core mutation handlers
+async function copyDemoData(handle: FileSystemDirectoryHandle): Promise<void> {
+  // Check if demo folder already exists
+  const groups: string[] = [];
+  for await (const [name, entry] of handle.entries()) {
+    if (entry.kind === 'directory' && name !== '.DS_Store') {
+      groups.push(name);
+    }
+  }
+
+  if (groups.includes(DemoDataFolderName)) {
+    throw new Error(
+      `The ${DemoDataFolderName} folder already exists. Delete it if you'd like to re-load example data.`,
+    );
+  }
+
+  const folder = await handle.getDirectoryHandle(DemoDataFolderName, { create: true });
+
+  for (const file of DataExampleFiles) {
+    const participantId = file.path[0];
+    const participantFolder = await folder.getDirectoryHandle(participantId, { create: true });
+
+    let subfolderHandle = participantFolder;
+
+    // Note: Tunnel down to final subfolder
+    for (let i = 1; i <= file.path.length - 1; i++) {
+      const subfolder = file.path[i];
+      subfolderHandle = await subfolderHandle.getDirectoryHandle(subfolder, { create: true });
+    }
+
+    const fileHandle = await subfolderHandle.getFileHandle(file.filename!, { create: true });
+    const writable = await fileHandle.createWritable();
+    await writable.write(file.text);
+    await writable.close();
+  }
+}
+
 async function copyDirectory(
   sourceDir: FileSystemDirectoryHandle,
   targetDir: FileSystemDirectoryHandle,
@@ -270,6 +317,50 @@ async function mutateEvaluations(
   }
 }
 
+async function mutateGroups(
+  handle: FileSystemDirectoryHandle,
+  groupNames: string[],
+  action: 'Add' | 'Delete' | 'Demo',
+): Promise<string[]> {
+  try {
+    // First, get current groups list
+    const groups: string[] = [];
+    for await (const [name, entry] of handle.entries()) {
+      if (entry.kind === 'directory' && name !== '.DS_Store') {
+        groups.push(name);
+      }
+    }
+
+    let newGroups = [...groups];
+
+    switch (action) {
+      case 'Add':
+        await handle.getDirectoryHandle(groupNames[0], { create: true });
+        if (!newGroups.includes(groupNames[0])) {
+          newGroups.push(groupNames[0]);
+        }
+        break;
+
+      case 'Delete':
+        await handle.removeEntry(groupNames[0], { recursive: true });
+        newGroups = newGroups.filter((g) => g !== groupNames[0]);
+        break;
+
+      case 'Demo':
+        await copyDemoData(handle);
+        if (!newGroups.includes(DemoDataFolderName)) {
+          newGroups.push(DemoDataFolderName);
+        }
+        break;
+    }
+
+    return newGroups;
+  } catch (error) {
+    console.error('Error mutating groups:', error);
+    throw error;
+  }
+}
+
 // Mutation dispatcher - maps mutation types to handlers
 const mutationHandlers: Record<MutationType, (request: any) => Promise<any>> = {
   [MUTATION_TYPES.MUTATE_CONDITIONS]: (req: MutateConditionsRequest) =>
@@ -277,6 +368,8 @@ const mutationHandlers: Record<MutationType, (request: any) => Promise<any>> = {
 
   [MUTATION_TYPES.MUTATE_EVALUATIONS]: (req: MutateEvaluationsRequest) =>
     mutateEvaluations(req.handle, req.groupName, req.individualName, req.evaluationNames, req.action, req.renameTo),
+
+  [MUTATION_TYPES.MUTATE_GROUPS]: (req: MutateGroupsRequest) => mutateGroups(req.handle, req.groupNames, req.action),
 };
 
 // Main message handler
@@ -330,6 +423,7 @@ export type {
   BaseMutationResponse,
   MutateConditionsRequest,
   MutateEvaluationsRequest,
+  MutateGroupsRequest,
   CreateResponseFunction,
 };
 
