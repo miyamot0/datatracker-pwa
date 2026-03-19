@@ -2,13 +2,12 @@ import { CleanUpString } from '@/lib/strings';
 import { DataExampleFiles } from '@/lib/data';
 import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
 import { v4 as uuidv4 } from 'uuid';
-import { KeySet } from '@/types/keyset';
+import { KeySet, KeySetExtended } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';
 import { SavedSessionResult, SavedSettings } from '@/lib/dtos';
 import { GenerateSavedFileName } from '@/lib/writer';
 import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
-import { evaluationsAllQueryOptions } from '@/queries/evaluations/query-evaluations-all';
-import { queryClient } from '@/App';
+import { importExistingKeysets } from '@/queries/keysets/helpers/import-keysets';
 
 export const DemoDataFolderName = 'Example DataTracker Group';
 
@@ -20,6 +19,7 @@ const MUTATION_TYPES = {
   MUTATE_GROUPS: 'MUTATE_GROUPS',
   MUTATE_INDIVIDUALS: 'MUTATE_INDIVIDUALS',
   MUTATE_KEYSETS: 'MUTATE_KEYSETS',
+  MUTATE_KEYSETS_ALL: 'MUTATE_KEYSETS_ALL',
   MUTATE_SESSION_OUTCOMES: 'MUTATE_SESSION_OUTCOMES',
   MUTATE_SESSION_PARAMS: 'MUTATE_SESSION_PARAMS',
 } as const;
@@ -110,6 +110,15 @@ interface MutateKeysetsRequest extends BaseMutationRequest {
   action: 'Add' | 'Delete' | 'Duplicate' | 'Rename' | 'Update';
 }
 
+interface MutateKeysetsAllRequest extends BaseMutationRequest {
+  type: typeof MUTATION_TYPES.MUTATE_KEYSETS_ALL;
+  handle: FileSystemDirectoryHandle;
+  groupName: string;
+  individualName: string;
+  keySets: KeySet[];
+  allKeySets: KeySetExtended[];
+}
+
 interface MutateSessionOutcomesRequest extends BaseMutationRequest {
   type: typeof MUTATION_TYPES.MUTATE_SESSION_OUTCOMES;
   handle: FileSystemDirectoryHandle;
@@ -141,6 +150,7 @@ type MutationRequest =
   | MutateGroupsRequest
   | MutateIndividualsRequest
   | MutateKeysetsRequest
+  | MutateKeysetsAllRequest
   | MutateSessionOutcomesRequest
   | MutateSessionParamsRequest;
 
@@ -529,6 +539,7 @@ async function mutateKeysets(
             const fileHandle = await individual_dir.getFileHandle(`${keysetName}.json`);
             await individual_dir.removeEntry(fileHandle.name);
             newKeysetsList = newKeysetsList.filter((e) => e.Name !== keysetName);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
           } catch (error) {
             // eslint-disable-next-line preserve-caught-error
             throw new Error(`Failed to remove keyboard: ${keysetName}.json`);
@@ -592,6 +603,26 @@ async function mutateKeysets(
     return newKeysetsList;
   } catch (error) {
     console.error('Error mutating keysets:', error);
+    throw error;
+  }
+}
+
+async function mutateKeysetsAll(
+  handle: FileSystemDirectoryHandle,
+  groupName: string,
+  individualName: string,
+  keySets: KeySet[],
+  allKeySets: KeySetExtended[],
+): Promise<KeySetExtended[]> {
+  try {
+    const newKeySets = await importExistingKeysets(handle, groupName, individualName, keySets);
+    const client_keyboards_by_name = newKeySets.map((keyboard) => keyboard.Name);
+
+    return allKeySets.filter(
+      (keyboard) => keyboard.Individual !== individualName && !client_keyboards_by_name.includes(keyboard.Name),
+    );
+  } catch (error) {
+    console.error('Error mutating keysets all:', error);
     throw error;
   }
 }
@@ -888,6 +919,9 @@ const mutationHandlers: Record<MutationType, (request: any) => Promise<any>> = {
       req.newKeySet,
     ),
 
+  [MUTATION_TYPES.MUTATE_KEYSETS_ALL]: (req: MutateKeysetsAllRequest) =>
+    mutateKeysetsAll(req.handle, req.groupName, req.individualName, req.keySets, req.allKeySets),
+
   [MUTATION_TYPES.MUTATE_SESSION_OUTCOMES]: (req: MutateSessionOutcomesRequest) =>
     mutateSessionOutcomes(
       req.handle,
@@ -962,6 +996,7 @@ export type {
   MutateGroupsRequest,
   MutateIndividualsRequest,
   MutateKeysetsRequest,
+  MutateKeysetsAllRequest,
   MutateSessionOutcomesRequest,
   MutateSessionParamsRequest,
   CreateResponseFunction,
