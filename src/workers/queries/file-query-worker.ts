@@ -1,7 +1,8 @@
 import { deserializeKeySet } from '@/lib/keyset';
 import { CleanUpString } from '@/lib/strings';
 import { KeySet } from '@/types/keyset';
-import { DEFAULT_SESSION_SETTINGS, SavedSettings } from '@/lib/dtos';
+import { DEFAULT_SESSION_SETTINGS, SavedSettings, SavedSessionResult } from '@/lib/dtos';
+import { ModifiedSessionResult } from '@/types/storage';
 
 // Query type constants for type safety and extensibility
 const QUERY_TYPES = {
@@ -87,6 +88,14 @@ interface FetchSessionParamsRequest extends BaseQueryRequest {
   evaluationName: string;
 }
 
+interface FetchSessionOutcomesRequest extends BaseQueryRequest {
+  type: typeof QUERY_TYPES.FETCH_OUTCOMES;
+  handle: FileSystemDirectoryHandle;
+  groupName: string;
+  individualName: string;
+  evaluationName: string;
+}
+
 interface FetchDirectoriesRequest extends BaseQueryRequest {
   type: typeof QUERY_TYPES.FETCH_DIRECTORIES;
   handle: FileSystemDirectoryHandle;
@@ -102,6 +111,7 @@ type QueryRequest =
   | FetchConditionsRequest
   | FetchKeysetsRequest
   | FetchSessionParamsRequest
+  | FetchSessionOutcomesRequest
   | FetchDirectoriesRequest;
 
 // Utility functions
@@ -322,6 +332,66 @@ async function fetchSessionParams(
   }
 }
 
+async function fetchSessionOutcomes(
+  handle: FileSystemDirectoryHandle,
+  groupName: string,
+  individualName: string,
+  evaluationName: string,
+): Promise<ModifiedSessionResult[]> {
+  try {
+    const group_folder = await handle.getDirectoryHandle(CleanUpString(groupName));
+    const individual_folder = await group_folder.getDirectoryHandle(CleanUpString(individualName));
+    const evaluations = await individual_folder.getDirectoryHandle(CleanUpString(evaluationName));
+
+    const files: FileSystemFileHandle[] = [];
+
+    for await (const [name, entry] of evaluations.entries()) {
+      if (name === '.DS_Store') continue;
+
+      if (entry.kind === 'file' && name.endsWith('.json')) {
+        // Skip the settings file
+        if (name === 'settings.json') continue;
+        files.push(entry);
+      } else if (entry.kind === 'directory') {
+        const condition_folder = await evaluations.getDirectoryHandle(name);
+
+        for await (const [conditionName, condition_entry] of condition_folder.entries()) {
+          if (condition_entry.kind === 'file' && conditionName.endsWith('.json')) {
+            files.push(condition_entry);
+          }
+        }
+      }
+    }
+
+    const session_results: ModifiedSessionResult[] = [];
+
+    for (const file of files) {
+      try {
+        const file_data = await file.getFile();
+        const file_text = await file_data.text();
+
+        const session_result: ModifiedSessionResult = {
+          ...(JSON.parse(file_text) as SavedSessionResult),
+          Filename: file.name,
+        };
+
+        if (session_result) {
+          session_results.push(session_result);
+        }
+      } catch (error) {
+        console.error(`Error parsing session outcome file ${file.name}:`, error);
+      }
+    }
+
+    return session_results.sort(
+      (a, b) => new Date(b.SessionSettings.Session).valueOf() - new Date(a.SessionSettings.Session).valueOf(),
+    );
+  } catch (error) {
+    console.error('Error fetching session outcomes:', error);
+    return [];
+  }
+}
+
 // Query dispatcher - maps query types to handlers
 const queryHandlers: Record<QueryType, (request: any) => Promise<any>> = {
   [QUERY_TYPES.FETCH_GROUPS]: (req: FetchGroupsRequest) => fetchGroups(req.handle),
@@ -347,12 +417,8 @@ const queryHandlers: Record<QueryType, (request: any) => Promise<any>> = {
       excludeSystemFiles: req.excludeSystemFiles,
     }),
 
-  [QUERY_TYPES.FETCH_OUTCOMES]: (req: FetchDirectoriesRequest) =>
-    fetchDirectories(req.handle, {
-      path: req.path,
-      filterPattern: req.filterPattern,
-      excludeSystemFiles: req.excludeSystemFiles,
-    }),
+  [QUERY_TYPES.FETCH_OUTCOMES]: (req: FetchSessionOutcomesRequest) =>
+    fetchSessionOutcomes(req.handle, req.groupName, req.individualName, req.evaluationName),
 
   [QUERY_TYPES.FETCH_DIRECTORIES]: (req: FetchDirectoriesRequest) =>
     fetchDirectories(req.handle, {
@@ -417,6 +483,7 @@ export type {
   FetchConditionsRequest,
   FetchKeysetsRequest,
   FetchSessionParamsRequest,
+  FetchSessionOutcomesRequest,
   FetchDirectoriesRequest,
   CreateResponseFunction,
 };
