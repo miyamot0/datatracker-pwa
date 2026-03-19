@@ -4,7 +4,7 @@ import { routeGuard } from '@/lib/routing';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/session/$group/$individual/$evaluation/history')({
+export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/')({
   beforeLoad: routeGuard,
   loader: ({ params }) => {
     const { group, individual, evaluation } = params;

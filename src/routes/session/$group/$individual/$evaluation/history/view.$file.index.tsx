@@ -3,7 +3,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router';
 import { routeGuard } from '@/lib/routing';
 import SessionViewerPage from '@/components/pages/editor-session-outcome/session-viewer-page';
 
-export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/view/$file')({
+export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/view/$file/')({
   beforeLoad: routeGuard,
   loader: async ({ params }) => {
     const { group, individual, evaluation, file } = params;
