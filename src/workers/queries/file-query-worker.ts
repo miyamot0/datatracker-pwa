@@ -3,12 +3,14 @@ import { CleanUpString } from '@/lib/strings';
 import { KeySet } from '@/types/keyset';
 import { DEFAULT_SESSION_SETTINGS, SavedSettings, SavedSessionResult } from '@/lib/dtos';
 import { ModifiedSessionResult } from '@/types/storage';
+import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
 
 // Query type constants for type safety and extensibility
 const QUERY_TYPES = {
   FETCH_GROUPS: 'FETCH_GROUPS',
   FETCH_CLIENTS: 'FETCH_CLIENTS',
   FETCH_EVALUATIONS: 'FETCH_EVALUATIONS',
+  FETCH_EVALUATIONS_ALL: 'FETCH_EVALUATIONS_ALL',
   FETCH_CONDITIONS: 'FETCH_CONDITIONS',
   FETCH_KEYSETS: 'FETCH_KEYSETS',
   FETCH_SESSIONS: 'FETCH_SESSIONS',
@@ -65,6 +67,11 @@ interface FetchEvaluationsRequest extends BaseQueryRequest {
   clientName: string;
 }
 
+interface FetchEvaluationsAllRequest extends BaseQueryRequest {
+  type: typeof QUERY_TYPES.FETCH_EVALUATIONS_ALL;
+  handle: FileSystemDirectoryHandle;
+}
+
 interface FetchConditionsRequest extends BaseQueryRequest {
   type: typeof QUERY_TYPES.FETCH_CONDITIONS;
   handle: FileSystemDirectoryHandle;
@@ -108,6 +115,7 @@ type QueryRequest =
   | FetchGroupsRequest
   | FetchClientsRequest
   | FetchEvaluationsRequest
+  | FetchEvaluationsAllRequest
   | FetchConditionsRequest
   | FetchKeysetsRequest
   | FetchSessionParamsRequest
@@ -228,6 +236,62 @@ async function fetchEvaluations(
     path,
     excludeSystemFiles: true,
   });
+}
+
+async function fetchEvaluationsAll(handle: FileSystemDirectoryHandle): Promise<EvaluationRecord[]> {
+  try {
+    const temp_evaluation_folders: EvaluationRecord[] = [];
+
+    for await (const [groupName, possibleGroupFolder] of handle.entries()) {
+      if (groupName === '.DS_Store') continue;
+
+      if (possibleGroupFolder.kind === 'directory') {
+        // Note: This is for the Group folder
+        const actualGroupFolderHandle = await handle.getDirectoryHandle(groupName);
+        
+        for await (const [individualName, possibleIndividualFolder] of actualGroupFolderHandle.entries()) {
+          if (individualName === '.DS_Store') continue;
+
+          if (possibleIndividualFolder.kind === 'directory') {
+            // Note: This is for the Individual's folder
+            const actualIndividualFolderHandle = await actualGroupFolderHandle.getDirectoryHandle(individualName);
+            
+            for await (const [evaluationName, possibleEvaluationFolder] of actualIndividualFolderHandle.entries()) {
+              if (evaluationName === '.DS_Store') continue;
+
+              if (possibleEvaluationFolder.kind === 'directory') {
+                const actualEvaluationFolderHandle = await actualIndividualFolderHandle.getDirectoryHandle(evaluationName);
+                const conditions: string[] = [];
+
+                for await (const [conditionName, condition_entry] of actualEvaluationFolderHandle.entries()) {
+                  if (conditionName === '.DS_Store') continue;
+                  if (condition_entry.kind === 'file') continue;
+
+                  if (condition_entry.kind === 'directory') {
+                    conditions.push(conditionName);
+                  }
+                }
+
+                const eval_record: EvaluationRecord = {
+                  Group: groupName,
+                  Individual: individualName,
+                  Evaluation: evaluationName,
+                  Conditions: conditions,
+                };
+
+                temp_evaluation_folders.push(eval_record);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return temp_evaluation_folders;
+  } catch (error) {
+    console.error('Error fetching all evaluations:', error);
+    return [];
+  }
 }
 
 async function fetchConditions(
@@ -401,6 +465,9 @@ const queryHandlers: Record<QueryType, (request: any) => Promise<any>> = {
   [QUERY_TYPES.FETCH_EVALUATIONS]: (req: FetchEvaluationsRequest) =>
     fetchEvaluations(req.handle, req.groupName, req.clientName),
 
+  [QUERY_TYPES.FETCH_EVALUATIONS_ALL]: (req: FetchEvaluationsAllRequest) =>
+    fetchEvaluationsAll(req.handle),
+
   [QUERY_TYPES.FETCH_CONDITIONS]: (req: FetchConditionsRequest) =>
     fetchConditions(req.handle, req.groupName, req.individualName, req.evaluationName),
 
@@ -480,6 +547,7 @@ export type {
   FetchGroupsRequest,
   FetchClientsRequest,
   FetchEvaluationsRequest,
+  FetchEvaluationsAllRequest,
   FetchConditionsRequest,
   FetchKeysetsRequest,
   FetchSessionParamsRequest,
