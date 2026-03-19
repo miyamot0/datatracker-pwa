@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { KeyboardIcon, PointerIcon, ScatterChartIcon } from 'lucide-react';
+import { KeyboardIcon, ScatterChartIcon } from 'lucide-react';
 import RateFigureVisualization from './rate-figure';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,7 +37,6 @@ export default function ResultsRateVisualsPage({
   DynamicKeySet,
   ResultsFiltered,
   Schedule,
-  ExcludeKeysFromCTB,
   MinX,
   MaxX,
 }: {
@@ -50,15 +49,13 @@ export default function ResultsRateVisualsPage({
   DynamicKeySet: KeySet;
   Schedule: SessionTerminationOptionsType;
   ShowKeys: ToggleDisplayKey[];
-  ExcludeKeysFromCTB: ToggleDisplayKey[];
   MinX: number;
   MaxX: number;
 }) {
-  const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
+  const [filteredKeys, setFilteredKeys] = useState(ShowKeys.sort((a, b) => b.KeyType.localeCompare(a.KeyType)));
   const [connectAllPoints, setConnectAllPoints] = useState(false);
   const [schedule, setSchedule] = useState<SessionTerminationOptionsType>(Schedule);
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
-  const [ctbSumKeys, setCTBSumKeys] = useState(ExcludeKeysFromCTB);
 
   return (
     <PageWrapper
@@ -111,6 +108,7 @@ export default function ResultsRateVisualsPage({
                   <DropdownMenuSeparator />
                   {filteredKeys.map((key, index) => (
                     <DropdownMenuCheckboxItem
+                      className="flex flex-row justify-between"
                       key={`key-${index}`}
                       checked={key.Visible}
                       onCheckedChange={(checked) => {
@@ -129,68 +127,15 @@ export default function ResultsRateVisualsPage({
 
                         const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
 
-                        const exclude_from_ctb = ctbSumKeys
-                          .filter((k) => k.Visible === false)
-                          .map((k) => k.KeyDescription);
-
-                        // TODO: Share this w/ summarizer
                         setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
                           KeyDescription: hidden_keys,
-                          CTBElements: exclude_from_ctb,
+                          CTBElements: [],
                           Schedule: schedule,
                         });
                       }}
                     >
-                      {key.KeyDescription}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-fit">
-                    <PointerIcon className="mr-2 w-4 h-4" />
-                    Select Keys for CTB Calculation
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  <DropdownMenuLabel>Toggle Inclusion</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {ctbSumKeys.map((key, index) => (
-                    <DropdownMenuCheckboxItem
-                      key={`key-${index}`}
-                      checked={key.Visible}
-                      onCheckedChange={(checked: boolean) => {
-                        const updatedKeys = ctbSumKeys.map((k) => {
-                          if (k.KeyDescription === key.KeyDescription) {
-                            return {
-                              ...k,
-                              Visible: checked,
-                            };
-                          }
-
-                          return k;
-                        });
-
-                        const hidden_keys = filteredKeys
-                          .filter((k) => k.Visible === false)
-                          .map((k) => k.KeyDescription);
-
-                        const exclude_from_ctb = updatedKeys
-                          .filter((k) => k.Visible === false)
-                          .map((k) => k.KeyDescription);
-
-                        setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
-                          KeyDescription: hidden_keys,
-                          CTBElements: exclude_from_ctb,
-                          Schedule: schedule,
-                        });
-
-                        setCTBSumKeys(updatedKeys);
-                      }}
-                    >
-                      {key.KeyDescription}
+                      <p>{key.KeyDescription}</p>
+                      {key.KeyType === 'Derived' && <p className="text-xs text-muted-foreground">({key.KeyType})</p>}
                     </DropdownMenuCheckboxItem>
                   ))}
                 </DropdownMenuContent>
@@ -204,14 +149,11 @@ export default function ResultsRateVisualsPage({
                   value={schedule}
                   onValueChange={(value: SessionTerminationOptionsType) => {
                     setSchedule(value);
-
                     const hidden_keys = filteredKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
-
-                    const exclude_from_ctb = ctbSumKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
 
                     setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
                       KeyDescription: hidden_keys,
-                      CTBElements: exclude_from_ctb,
+                      CTBElements: [],
                       Schedule: value,
                     });
                   }}
@@ -270,15 +212,14 @@ export default function ResultsRateVisualsPage({
           <p>
             This page provides a visual of the available data regarding <i>rate</i>. For convenience, series of data can
             be enabled or disabled for viewing. Similarly, an omnibus measure of behavior can be calculated by selecting
-            which types of events to combine together (i.e., a combined target behavior [CTB] metric). Options set here
-            will persist for future visits.
+            which types of events to combine together using the optional logic builder. Options set here will persist
+            for future visits.
           </p>
 
           {DynamicKeySet && (
             <RateFigureVisualization
               FilteredSessions={ResultsFiltered}
               ScheduleOption={schedule}
-              CTBKeys={ctbSumKeys}
               KeySetFull={filteredKeys}
               DynamicKeySet={DynamicKeySet}
               Group={Group}

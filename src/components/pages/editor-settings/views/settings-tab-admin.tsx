@@ -5,8 +5,6 @@ import {
   ElevatedPrivilegesType,
   ENFORCED_NAMING_OPTIONS,
   EnforceDataFolderType,
-  LOGIC_BUILDER_EXPERIMENTAL_OPTIONS,
-  LogicBuilderExperimental,
   SettingsDisplayEnum,
 } from '@/types/settings';
 import { displayConditionalNotification } from '@/lib/notifications';
@@ -77,38 +75,6 @@ export function SettingsTabAdministrative() {
             <SelectContent>
               <SelectGroup>
                 {ENFORCED_NAMING_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </SettingsFormItemWrapper>
-
-        <SettingsFormItemWrapper
-          Label="Experimental: Logic Builder"
-          Description="Select whether to enable the experimental logic builder feature"
-        >
-          <Select
-            value={settings.LogicBuilder}
-            onValueChange={(value: LogicBuilderExperimental) => {
-              const newSettings = {
-                ...settings,
-                LogicBuilder: value,
-              } satisfies ApplicationSettingsTypes;
-              setSettings(newSettings);
-              saveSettings(newSettings);
-
-              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
-            }}
-          >
-            <SelectTrigger className="w-full md:max-w-[250px]">
-              <SelectValue placeholder="Select Logic Builder Option" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {LOGIC_BUILDER_EXPERIMENTAL_OPTIONS.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>

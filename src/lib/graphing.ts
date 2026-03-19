@@ -36,6 +36,7 @@ export function generateChartPreparation(
   FilteredSessions: SavedSessionResult[],
   ScheduleOption: SessionTerminationOptionsType,
   Perspective: 'Frequency' | 'Duration',
+  KeySetFull?: ExpandedKeySetInstance[],
   DynamicKeySet?: KeySet,
 ) {
   function convertScheduleSetting(schedule: SessionTerminationOptionsType) {
@@ -98,15 +99,18 @@ export function generateChartPreparation(
       };
     });
 
-    // TODO: Clean up handling
     for (const newValues of newScores || []) {
-      scores.push({
-        KeyName: newValues.name,
-        KeyDescription: newValues.name,
-        Value: newValues.Value,
-        Schedule: convertScheduleSetting(ScheduleOption),
-        Bouts: -1,
-      });
+      const relevantKey = KeySetFull?.find((key) => key.KeyDescription === newValues.name);
+
+      if (relevantKey && relevantKey.Visible === true) {
+        scores.push({
+          KeyName: newValues.name,
+          KeyDescription: newValues.name,
+          Value: newValues.Value,
+          Schedule: convertScheduleSetting(ScheduleOption),
+          Bouts: -1,
+        });
+      }
     }
 
     return {
@@ -367,12 +371,10 @@ export function prepareProportionData(
 export function prepareRateData(
   filteredSessions: SavedSessionResult[],
   scheduleOption: SessionTerminationOptionsType,
-  ctbKeys: ExpandedKeySetInstance[],
+  KeySetFull: ExpandedKeySetInstance[],
   DynamicKeySet: KeySet,
 ) {
-  const data = generateChartPreparation(filteredSessions, scheduleOption, 'Frequency', DynamicKeySet);
-
-  //console.log(data);
+  const data = generateChartPreparation(filteredSessions, scheduleOption, 'Frequency', KeySetFull, DynamicKeySet);
 
   let maxY = 0;
 
@@ -395,17 +397,6 @@ export function prepareRateData(
         maxY = rate_calc;
       }
     });
-
-    // Calculate CTB rate
-    const ctb_calc = ctbKeys
-      .filter((k) => k.Visible === true)
-      .map((key) => {
-        const pull_value = data.Scores.find((s) => s.KeyDescription === key.KeyDescription);
-        return pull_value ? pull_value.Value : 0;
-      })
-      .reduce((a, b) => a + b, 0);
-
-    temp_obj.CTB = ctb_calc / min_in_session;
 
     return temp_obj;
   });

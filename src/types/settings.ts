@@ -1,20 +1,4 @@
 /**
- * Types for logic builder
- */
-export type LogicBuilderExperimental = 'enabled' | 'disabled';
-
-/**
- * Options for logic build settings
- */
-export const LOGIC_BUILDER_EXPERIMENTAL_OPTIONS: {
-  value: LogicBuilderExperimental;
-  label: string;
-}[] = [
-  { value: 'enabled', label: 'Enable Logic Builder' },
-  { value: 'disabled', label: 'Disable Logic Builder' },
-];
-
-/**
  * Types for session display options
  */
 export type SessionDisplayOptions = 'Standard' | 'FullScreen';
@@ -255,7 +239,6 @@ export type ApplicationSettingsTypes = {
   RecorderPolling: SessionRecorderPolling;
   ApplicationFooterDisplay: ApplicationFooterDisplay;
   SessionDisplay: SessionDisplayOptions;
-  LogicBuilder: LogicBuilderExperimental;
 };
 
 /**
@@ -275,5 +258,4 @@ export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
   RecorderPolling: 'normal',
   ApplicationFooterDisplay: 'Standard',
   SessionDisplay: 'Standard',
-  LogicBuilder: 'disabled',
 };

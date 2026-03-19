@@ -35,10 +35,8 @@ export default function KeySetEditor({
   KeySet: string;
 }) {
   const Context = useContext(FolderHandleContext);
-  const { handle, settings } = Context;
+  const { handle } = Context;
   const { data, isLoading, error } = useQuery(keyboardQueryOptions(handle!, Group, Individual));
-
-  const areDerivedKeysEnabled = settings.LogicBuilder === 'enabled';
 
   const mutateKeyboards = useMutation({
     mutationFn: mutationKeyboards,
@@ -219,35 +217,34 @@ export default function KeySetEditor({
                   </TableRow>
                 ))}
 
-                {areDerivedKeysEnabled &&
-                  relevantKeySet.DerivedKeys?.map((state, index) => (
-                    <TableRow key={index} className="bg-muted">
-                      <TableCell>{state.name} (Derived)</TableCell>
-                      <TableCell>{generateFormula(state)}</TableCell>
-                      <TableCell className="flex flex-row gap-2 justify-end">
-                        <Button
-                          size={'sm'}
-                          variant={'destructive'}
-                          className="shadow-xl"
-                          onClick={async () => {
-                            const confirmation = window.confirm('Are you sure you want to remove this key?');
+                {relevantKeySet.DerivedKeys?.map((state, index) => (
+                  <TableRow key={index} className="bg-muted">
+                    <TableCell>{state.name} (Derived)</TableCell>
+                    <TableCell>{generateFormula(state)}</TableCell>
+                    <TableCell className="flex flex-row gap-2 justify-end">
+                      <Button
+                        size={'sm'}
+                        variant={'destructive'}
+                        className="shadow-xl"
+                        onClick={async () => {
+                          const confirmation = window.confirm('Are you sure you want to remove this key?');
 
-                            if (!confirmation) return;
+                          if (!confirmation) return;
 
-                            const new_state = {
-                              ...relevantKeySet,
-                              DerivedKeys: relevantKeySet.DerivedKeys?.filter((_key) => _key.id !== state.id),
-                            } satisfies KeySet;
+                          const new_state = {
+                            ...relevantKeySet,
+                            DerivedKeys: relevantKeySet.DerivedKeys?.filter((_key) => _key.id !== state.id),
+                          } satisfies KeySet;
 
-                            await mutateKeySet(new_state);
-                          }}
-                        >
-                          <DeleteIcon size={14} className="mr-2" />
-                          Delete
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                          await mutateKeySet(new_state);
+                        }}
+                      >
+                        <DeleteIcon size={14} className="mr-2" />
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </CardContent>

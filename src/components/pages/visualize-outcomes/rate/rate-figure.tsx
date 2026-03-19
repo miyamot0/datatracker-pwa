@@ -15,7 +15,6 @@ type Props = {
   Evaluation: string;
   FilteredSessions: SavedSessionResult[];
   ScheduleOption: SessionTerminationOptionsType;
-  CTBKeys: ExpandedKeySetInstance[];
   KeySetFull: ExpandedKeySetInstance[];
   DynamicKeySet: KeySet;
   FigureTextSize: FigureVisualSizing;
@@ -30,7 +29,6 @@ export default function RateFigureVisualization({
   Evaluation,
   FilteredSessions,
   ScheduleOption,
-  CTBKeys,
   KeySetFull,
   DynamicKeySet,
   FigureTextSize,
@@ -43,20 +41,10 @@ export default function RateFigureVisualization({
     from: `/session/$group/$individual/$evaluation/rate`,
   });
 
-  const { preparedData } = prepareRateData(FilteredSessions, ScheduleOption, CTBKeys, DynamicKeySet);
+  const { preparedData } = prepareRateData(FilteredSessions, ScheduleOption, KeySetFull, DynamicKeySet);
 
   const x_ticks = generateTicks(MaxX, MinX);
-
-  console.log(KeySetFull);
-
-  const hackyOverrideDerived = DynamicKeySet.DerivedKeys?.map((derived) => ({
-    KeyDescription: derived.name,
-    Visible: true,
-  })) as ExpandedKeySetInstance[];
-
-  const extendedKeyset = [...KeySetFull, ...hackyOverrideDerived];
-
-  const legends = createChartLegends(FilteredSessions, extendedKeyset);
+  const legends = createChartLegends(FilteredSessions, KeySetFull);
   const onNavigate = createNavigationHandler(navigate, Group, Individual, Evaluation);
 
   const yAxisConfig = {
@@ -71,7 +59,7 @@ export default function RateFigureVisualization({
         title="Visualization of Data as Rates"
         preparedData={preparedData}
         filteredSessions={FilteredSessions}
-        keySetFull={extendedKeyset}
+        keySetFull={KeySetFull}
         figureTextSize={FigureTextSize}
         connectSpans={ConnectSpans}
         minX={MinX}

@@ -5,12 +5,11 @@ import { getLocalCachedPrefs } from '@/lib/local_storage';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { routeGuard } from '@/lib/routing';
 import {
-  createCTBKeyWithPreferences,
   extractAndDeduplicateKeysets,
   filterSessionsByPrimaryRole,
   mapKeysWithStoragePreference,
 } from '@/lib/graphing';
-import { pullMostRecentKeySet, pullMostRecentSession } from '@/lib/keyset';
+import { pullMostRecentSession } from '@/lib/keyset';
 import { ToggleDisplayKey } from '@/types/visuals';
 import ResultsRateVisualsPage from '@/components/pages/visualize-outcomes/rate/results-rate-visuals-page';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
@@ -67,19 +66,17 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
         }) satisfies ToggleDisplayKey,
     );
 
-    // TODO: revisit this
     const derivedKeys: ToggleDisplayKey[] = dynamicKeyset.DerivedKeys?.map(
       (key) =>
         ({
           KeyDescription: key.name,
           Visible: true,
-          KeyType: 'Observed',
+          KeyType: 'Derived',
         }) satisfies ToggleDisplayKey,
     );
 
     const storedPreferences = getLocalCachedPrefs(group, individual, evaluation, 'Rate');
-    const { ctbEntry, excludeFromCTB } = createCTBKeyWithPreferences(keys, storedPreferences);
-    const showKeysBase = mapKeysWithStoragePreference([...keys, ctbEntry], storedPreferences);
+    const showKeysBase = mapKeysWithStoragePreference([...keys, ...derivedKeys], storedPreferences);
 
     const resultsFiltered = filterSessionsByPrimaryRole(results);
 
@@ -102,7 +99,6 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
       MaxX: maxX,
       DynamicKeySet: dynamicKeyset,
       ShowKeys: showKeysBase,
-      ExcludeKeysFromCTB: excludeFromCTB,
       Schedule: storedPreferences.Schedule ?? 'End on Timer #1',
     };
   },
@@ -120,7 +116,6 @@ function RouteComponent() {
     DynamicKeySet,
     Schedule,
     ShowKeys,
-    ExcludeKeysFromCTB,
     MinX,
     MaxX,
   } = Route.useLoaderData();
@@ -136,7 +131,6 @@ function RouteComponent() {
       DynamicKeySet={DynamicKeySet}
       Schedule={Schedule}
       ShowKeys={ShowKeys}
-      ExcludeKeysFromCTB={ExcludeKeysFromCTB}
       MinX={MinX}
       MaxX={MaxX}
     />
