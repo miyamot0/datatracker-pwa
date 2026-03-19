@@ -3,7 +3,7 @@ import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
 import { type FigureVisualSizing } from '@/types/accessibility';
 import { useNavigate } from '@tanstack/react-router';
-import { ExpandedKeySetInstance } from '@/types/keyset';
+import { ExpandedKeySetInstance, KeySet } from '@/types/keyset';
 import { generateTicks, createChartLegends, createNavigationHandler, prepareRateData } from '@/lib/graphing';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { BaseChart } from '@/components/pages/visualize-outcomes/shared/base-chart';
@@ -17,6 +17,7 @@ type Props = {
   ScheduleOption: SessionTerminationOptionsType;
   CTBKeys: ExpandedKeySetInstance[];
   KeySetFull: ExpandedKeySetInstance[];
+  DynamicKeySet: KeySet;
   FigureTextSize: FigureVisualSizing;
   ConnectSpans: boolean;
   MinX: number;
@@ -31,6 +32,7 @@ export default function RateFigureVisualization({
   ScheduleOption,
   CTBKeys,
   KeySetFull,
+  DynamicKeySet,
   FigureTextSize,
   ConnectSpans,
   MinX,
@@ -41,10 +43,20 @@ export default function RateFigureVisualization({
     from: `/session/$group/$individual/$evaluation/rate`,
   });
 
-  const { preparedData } = prepareRateData(FilteredSessions, ScheduleOption, CTBKeys);
+  const { preparedData } = prepareRateData(FilteredSessions, ScheduleOption, CTBKeys, DynamicKeySet);
 
   const x_ticks = generateTicks(MaxX, MinX);
-  const legends = createChartLegends(FilteredSessions, KeySetFull);
+
+  console.log(KeySetFull);
+
+  const hackyOverrideDerived = DynamicKeySet.DerivedKeys?.map((derived) => ({
+    KeyDescription: derived.name,
+    Visible: true,
+  })) as ExpandedKeySetInstance[];
+
+  const extendedKeyset = [...KeySetFull, ...hackyOverrideDerived];
+
+  const legends = createChartLegends(FilteredSessions, extendedKeyset);
   const onNavigate = createNavigationHandler(navigate, Group, Individual, Evaluation);
 
   const yAxisConfig = {
@@ -59,7 +71,7 @@ export default function RateFigureVisualization({
         title="Visualization of Data as Rates"
         preparedData={preparedData}
         filteredSessions={FilteredSessions}
-        keySetFull={KeySetFull}
+        keySetFull={extendedKeyset}
         figureTextSize={FigureTextSize}
         connectSpans={ConnectSpans}
         minX={MinX}

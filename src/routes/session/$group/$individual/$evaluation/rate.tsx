@@ -10,9 +10,10 @@ import {
   filterSessionsByPrimaryRole,
   mapKeysWithStoragePreference,
 } from '@/lib/graphing';
-import { pullMostRecentKeySet } from '@/lib/keyset';
+import { pullMostRecentKeySet, pullMostRecentSession } from '@/lib/keyset';
 import { ToggleDisplayKey } from '@/types/visuals';
 import ResultsRateVisualsPage from '@/components/pages/visualize-outcomes/rate/results-rate-visuals-page';
+import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/rate')({
   beforeLoad: routeGuard,
@@ -30,28 +31,51 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
       sessionOutcomesQueryOptions(handle, group, individual, evaluation),
     );
 
-    // Note: base to pull from
-    const keyset = pullMostRecentKeySet(results);
+    const keyboards = await context.queryClient.ensureQueryData(keyboardQueryOptions(handle, group, individual));
 
-    if (!keyset) {
+    // Note: base to pull from
+    const recentKeysetName = pullMostRecentSession(results);
+
+    // Pull most up-to-date keyboard
+    const latestKeyset = keyboards.find((kb) => kb.Name === recentKeysetName.SessionSettings.KeySet);
+
+    if (!latestKeyset) {
       throw redirect({
         href: '/dashboard',
       });
     }
 
-    // Extract and deduplicate keysets using discrete function
-    const { frequencyKeys: targetedFKeys, durationKeys: targetedDKeys } = extractAndDeduplicateKeysets(results);
+    const {
+      frequencyKeys: targetedFKeys,
+      durationKeys: targetedDKeys,
+      derivedKeys: targetedDerivedKeys,
+    } = extractAndDeduplicateKeysets(results, latestKeyset);
 
     const dynamicKeyset = {
-      ...keyset,
+      ...latestKeyset,
       FrequencyKeys: targetedFKeys,
       DurationKeys: targetedDKeys,
+      DerivedKeys: targetedDerivedKeys,
     } as unknown as KeySet;
 
-    const keys: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map((key) => ({
-      KeyDescription: key.KeyDescription,
-      Visible: true,
-    }));
+    const keys: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map(
+      (key) =>
+        ({
+          KeyDescription: key.KeyDescription,
+          Visible: true,
+          KeyType: 'Observed',
+        }) satisfies ToggleDisplayKey,
+    );
+
+    // TODO: revisit this
+    const derivedKeys: ToggleDisplayKey[] = dynamicKeyset.DerivedKeys?.map(
+      (key) =>
+        ({
+          KeyDescription: key.name,
+          Visible: true,
+          KeyType: 'Observed',
+        }) satisfies ToggleDisplayKey,
+    );
 
     const storedPreferences = getLocalCachedPrefs(group, individual, evaluation, 'Rate');
     const { ctbEntry, excludeFromCTB } = createCTBKeyWithPreferences(keys, storedPreferences);

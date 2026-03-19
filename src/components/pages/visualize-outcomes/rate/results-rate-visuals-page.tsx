@@ -280,6 +280,7 @@ export default function ResultsRateVisualsPage({
               ScheduleOption={schedule}
               CTBKeys={ctbSumKeys}
               KeySetFull={filteredKeys}
+              DynamicKeySet={DynamicKeySet}
               Group={Group}
               Individual={Individual}
               Evaluation={Evaluation}

@@ -38,6 +38,7 @@ export type CustomTooltipProps = {
  * Type definition for keys with visibility toggling in visualizations, used for user preferences and dynamic display handling
  */
 export type ToggleDisplayKey = {
+  KeyType: 'Observed' | 'Derived';
   KeyDescription: string;
   Visible: boolean;
 };

@@ -39,7 +39,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
     value: 0,
     name: '',
     id: uuidv4(),
-  };
+  } satisfies LogicState;
 
   const [logicState, setLogicState] = useState(defaultEntry);
 

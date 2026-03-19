@@ -103,21 +103,13 @@ export function evaluate(state: LogicState) {
   const newState = { ...state };
   const startValue = resolveValue(newState.initial, newState);
 
-  //console.log('Initial value:', startValue);
-
   newState.value = startValue;
 
   for (let step = 0; step < newState.steps.length; step++) {
     const currentStep = newState.steps[step];
-
     const operandValue = resolveValue(currentStep.operand, newState);
-
     newState.value = applyOp(newState.value, operandValue, currentStep.operation);
-
-    console.log(`Step ${step + 1} (${currentStep.operation} ${operandValue}): ${newState.value}`);
   }
-
-  console.log('Final value:', newState.value);
 
   return newState.value;
 }

@@ -53,6 +53,7 @@ describe('graphing utility functions', () => {
   const createMockKeySet = (frequencyKeys: KeySetInstance[] = [], durationKeys: KeySetInstance[] = []): KeySet => ({
     id: 'test-keyset-1',
     Name: 'Test KeySet',
+    DerivedKeys: [],
     FrequencyKeys: frequencyKeys,
     DurationKeys: durationKeys,
     createdAt: new Date('2024-01-01'),
@@ -549,9 +550,9 @@ describe('graphing utility functions', () => {
   describe('mapKeysWithStoragePreference', () => {
     it('should mark keys as invisible when they are in stored preferences', () => {
       const keys: ToggleDisplayKey[] = [
-        { KeyDescription: 'Key1', Visible: true },
-        { KeyDescription: 'Key2', Visible: true },
-        { KeyDescription: 'Key3', Visible: true },
+        { KeyDescription: 'Key1', Visible: true, KeyType: 'Observed' },
+        { KeyDescription: 'Key2', Visible: true, KeyType: 'Observed' },
+        { KeyDescription: 'Key3', Visible: true, KeyType: 'Observed' },
       ];
 
       const storedPreferences = {
@@ -562,15 +563,15 @@ describe('graphing utility functions', () => {
       const result = mapKeysWithStoragePreference(keys, storedPreferences);
 
       expect(result).toHaveLength(3);
-      expect(result[0]).toEqual({ KeyDescription: 'Key1', Visible: false });
-      expect(result[1]).toEqual({ KeyDescription: 'Key2', Visible: true });
-      expect(result[2]).toEqual({ KeyDescription: 'Key3', Visible: false });
+      expect(result[0]).toEqual({ KeyDescription: 'Key1', Visible: false, KeyType: 'Observed' });
+      expect(result[1]).toEqual({ KeyDescription: 'Key2', Visible: true, KeyType: 'Observed' });
+      expect(result[2]).toEqual({ KeyDescription: 'Key3', Visible: false, KeyType: 'Observed' });
     });
 
     it('should keep keys visible when they are not in stored preferences', () => {
       const keys: ToggleDisplayKey[] = [
-        { KeyDescription: 'Key1', Visible: true },
-        { KeyDescription: 'Key2', Visible: true },
+        { KeyDescription: 'Key1', Visible: true, KeyType: 'Observed' },
+        { KeyDescription: 'Key2', Visible: true, KeyType: 'Observed' },
       ];
 
       const storedPreferences = {
@@ -599,8 +600,8 @@ describe('graphing utility functions', () => {
 
     it('should handle keys that start as invisible', () => {
       const keys: ToggleDisplayKey[] = [
-        { KeyDescription: 'Key1', Visible: false },
-        { KeyDescription: 'Key2', Visible: true },
+        { KeyDescription: 'Key1', Visible: false, KeyType: 'Observed' },
+        { KeyDescription: 'Key2', Visible: true, KeyType: 'Observed' },
       ];
 
       const storedPreferences = {
@@ -610,17 +611,17 @@ describe('graphing utility functions', () => {
 
       const result = mapKeysWithStoragePreference(keys, storedPreferences);
 
-      expect(result[0]).toEqual({ KeyDescription: 'Key1', Visible: false });
-      expect(result[1]).toEqual({ KeyDescription: 'Key2', Visible: false });
+      expect(result[0]).toEqual({ KeyDescription: 'Key1', Visible: false, KeyType: 'Observed' });
+      expect(result[1]).toEqual({ KeyDescription: 'Key2', Visible: false, KeyType: 'Observed' });
     });
   });
 
   describe('createCTBKeyWithPreferences', () => {
     it('should create CTB entry and mark excluded keys as invisible', () => {
       const keys: ToggleDisplayKey[] = [
-        { KeyDescription: 'Key1', Visible: true },
-        { KeyDescription: 'Key2', Visible: true },
-        { KeyDescription: 'Key3', Visible: true },
+        { KeyDescription: 'Key1', Visible: true, KeyType: 'Observed' },
+        { KeyDescription: 'Key2', Visible: true, KeyType: 'Observed' },
+        { KeyDescription: 'Key3', Visible: true, KeyType: 'Observed' },
       ];
 
       const storedPreferences = {
@@ -636,15 +637,15 @@ describe('graphing utility functions', () => {
       });
 
       expect(result.excludeFromCTB).toHaveLength(3);
-      expect(result.excludeFromCTB[0]).toEqual({ KeyDescription: 'Key1', Visible: false });
-      expect(result.excludeFromCTB[1]).toEqual({ KeyDescription: 'Key2', Visible: true });
-      expect(result.excludeFromCTB[2]).toEqual({ KeyDescription: 'Key3', Visible: false });
+      expect(result.excludeFromCTB[0]).toEqual({ KeyDescription: 'Key1', Visible: false, KeyType: 'Observed' });
+      expect(result.excludeFromCTB[1]).toEqual({ KeyDescription: 'Key2', Visible: true, KeyType: 'Observed' });
+      expect(result.excludeFromCTB[2]).toEqual({ KeyDescription: 'Key3', Visible: false, KeyType: 'Observed' });
     });
 
     it('should keep all keys visible when no CTB exclusions', () => {
       const keys: ToggleDisplayKey[] = [
-        { KeyDescription: 'Key1', Visible: true },
-        { KeyDescription: 'Key2', Visible: true },
+        { KeyDescription: 'Key1', Visible: true, KeyType: 'Observed' },
+        { KeyDescription: 'Key2', Visible: true, KeyType: 'Observed' },
       ];
 
       const storedPreferences = {
@@ -660,8 +661,8 @@ describe('graphing utility functions', () => {
       });
 
       expect(result.excludeFromCTB).toHaveLength(2);
-      expect(result.excludeFromCTB[0]).toEqual({ KeyDescription: 'Key1', Visible: true });
-      expect(result.excludeFromCTB[1]).toEqual({ KeyDescription: 'Key2', Visible: true });
+      expect(result.excludeFromCTB[0]).toEqual({ KeyDescription: 'Key1', Visible: true, KeyType: 'Observed' });
+      expect(result.excludeFromCTB[1]).toEqual({ KeyDescription: 'Key2', Visible: true, KeyType: 'Observed' });
     });
 
     it('should handle empty keys array', () => {

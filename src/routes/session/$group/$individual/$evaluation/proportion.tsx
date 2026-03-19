@@ -50,6 +50,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/pr
     const keys: ToggleDisplayKey[] = dynamicKeyset.DurationKeys.map((key) => ({
       KeyDescription: key.KeyDescription,
       Visible: true,
+      KeyType: 'Observed',
     }));
 
     const storedPreferences = getLocalCachedPrefs(group, individual, evaluation, 'Duration');
