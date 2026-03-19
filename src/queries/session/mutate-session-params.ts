@@ -1,7 +1,9 @@
-import { CleanUpString } from '@/lib/strings';
 import { sessionQueryOptions } from './query-session-params';
 import { SavedSettings } from '@/lib/dtos';
 import { queryClient } from '@/App';
+import { MutateSessionParamsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
+import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Mutates the session parameters by updating the settings for a specific group, individual, and evaluation. It interacts with the file system to write the new settings to a 'settings.json' file within the appropriate evaluation directory and returns the updated settings after the mutation is complete.
@@ -35,17 +37,53 @@ export const mutationSettingsParams = async ({
     throw new Error('Settings not found');
   }
 
-  const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
-  const individual_dir = await group_dir.getDirectoryHandle(CleanUpString(Individual));
-  const evaluation_dir = await individual_dir.getDirectoryHandle(CleanUpString(Evaluation));
-
-  const settings_file = await evaluation_dir.getFileHandle('settings.json', {
-    create: true,
+  return await mutationSessionParamsWorker({
+    Group,
+    Individual,
+    Evaluation,
+    Settings,
+    Handle,
   });
+};
 
-  const writer = await settings_file.createWritable();
-  await writer.write(JSON.stringify(Settings));
-  await writer.close();
+export const mutationSessionParamsWorker = async ({
+  Group,
+  Individual,
+  Evaluation,
+  Settings,
+  Handle,
+}: {
+  Group: string;
+  Individual: string;
+  Evaluation: string;
+  Settings: SavedSettings;
+  Handle: FileSystemDirectoryHandle;
+}) => {
+  const worker = new GenericFileWorker();
+  const request = {
+    id: uuidv4(),
+    type: 'MUTATE_SESSION_PARAMS',
+    handle: Handle,
+    groupName: Group,
+    individualName: Individual,
+    evaluationName: Evaluation,
+    settings: Settings,
+  } satisfies MutateSessionParamsRequest;
 
-  return Settings;
+  return new Promise<SavedSettings>((resolve) => {
+    worker.onmessage = (event: MessageEvent<MutationResponse>) => {
+      const response = event.data;
+      if (response.success) {
+        const settings = response.data;
+        resolve(settings);
+      } else {
+        throw new Error(`Worker error: ${response.error}\nStack: ${response.stack}`);
+      }
+    };
+    worker.onerror = (error) => {
+      console.error('Worker error:', error);
+      throw new Error(`Worker error: ${error.message}`);
+    };
+    worker.postMessage(request);
+  });
 };

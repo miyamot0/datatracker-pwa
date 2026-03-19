@@ -4,9 +4,9 @@ import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
 import { v4 as uuidv4 } from 'uuid';
 import { KeySet } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult, SavedSettings } from '@/lib/dtos';
 import { GenerateSavedFileName } from '@/lib/writer';
-import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
+import { sessionQueryOptions } from '@/queries/session/query-session-params';
 
 export const DemoDataFolderName = 'Example DataTracker Group';
 
@@ -18,6 +18,7 @@ const MUTATION_TYPES = {
   MUTATE_INDIVIDUALS: 'MUTATE_INDIVIDUALS',
   MUTATE_KEYSETS: 'MUTATE_KEYSETS',
   MUTATE_SESSION_OUTCOMES: 'MUTATE_SESSION_OUTCOMES',
+  MUTATE_SESSION_PARAMS: 'MUTATE_SESSION_PARAMS',
 } as const;
 
 type MutationType = (typeof MUTATION_TYPES)[keyof typeof MUTATION_TYPES];
@@ -111,13 +112,23 @@ interface MutateSessionOutcomesRequest extends BaseMutationRequest {
   action: 'Delete' | 'EditCondition' | 'Modify' | 'Add';
 }
 
+interface MutateSessionParamsRequest extends BaseMutationRequest {
+  type: typeof MUTATION_TYPES.MUTATE_SESSION_PARAMS;
+  handle: FileSystemDirectoryHandle;
+  groupName: string;
+  individualName: string;
+  evaluationName: string;
+  settings: SavedSettings;
+}
+
 type MutationRequest =
   | MutateConditionsRequest
   | MutateEvaluationsRequest
   | MutateGroupsRequest
   | MutateIndividualsRequest
   | MutateKeysetsRequest
-  | MutateSessionOutcomesRequest;
+  | MutateSessionOutcomesRequest
+  | MutateSessionParamsRequest;
 
 // Type-safe createResponse function with overloads
 function createResponse<T>(id: string, startTime: number, success: true, data: T): SuccessResponse<T>;
@@ -744,6 +755,33 @@ async function mutateSessionOutcomes(
   }
 }
 
+async function mutateSessionParams(
+  handle: FileSystemDirectoryHandle,
+  groupName: string,
+  individualName: string,
+  evaluationName: string,
+  settings: SavedSettings,
+): Promise<SavedSettings> {
+  try {
+    const group_dir = await handle.getDirectoryHandle(CleanUpString(groupName));
+    const individual_dir = await group_dir.getDirectoryHandle(CleanUpString(individualName));
+    const evaluation_dir = await individual_dir.getDirectoryHandle(CleanUpString(evaluationName));
+
+    const settings_file = await evaluation_dir.getFileHandle('settings.json', {
+      create: true,
+    });
+
+    const writer = await settings_file.createWritable();
+    await writer.write(JSON.stringify(settings));
+    await writer.close();
+
+    return settings;
+  } catch (error) {
+    console.error('Error mutating session params:', error);
+    throw error;
+  }
+}
+
 // Mutation dispatcher - maps mutation types to handlers
 const mutationHandlers: Record<MutationType, (request: any) => Promise<any>> = {
   [MUTATION_TYPES.MUTATE_CONDITIONS]: (req: MutateConditionsRequest) =>
@@ -782,6 +820,9 @@ const mutationHandlers: Record<MutationType, (request: any) => Promise<any>> = {
       req.priorOutcome,
       req.newOutcome,
     ),
+
+  [MUTATION_TYPES.MUTATE_SESSION_PARAMS]: (req: MutateSessionParamsRequest) =>
+    mutateSessionParams(req.handle, req.groupName, req.individualName, req.evaluationName, req.settings),
 };
 
 // Main message handler
@@ -839,6 +880,7 @@ export type {
   MutateIndividualsRequest,
   MutateKeysetsRequest,
   MutateSessionOutcomesRequest,
+  MutateSessionParamsRequest,
   CreateResponseFunction,
 };
 
