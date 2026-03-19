@@ -1,9 +1,10 @@
 import { deserializeKeySet } from '@/lib/keyset';
 import { CleanUpString } from '@/lib/strings';
-import { KeySet } from '@/types/keyset';
+import { KeySet, KeySetExtended } from '@/types/keyset';
 import { DEFAULT_SESSION_SETTINGS, SavedSettings, SavedSessionResult } from '@/lib/dtos';
 import { ModifiedSessionResult } from '@/types/storage';
 import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
+import { readKeyboardParameters } from '@/lib/reader';
 
 // Query type constants for type safety and extensibility
 const QUERY_TYPES = {
@@ -13,6 +14,7 @@ const QUERY_TYPES = {
   FETCH_EVALUATIONS_ALL: 'FETCH_EVALUATIONS_ALL',
   FETCH_CONDITIONS: 'FETCH_CONDITIONS',
   FETCH_KEYSETS: 'FETCH_KEYSETS',
+  FETCH_KEYSETS_ALL: 'FETCH_KEYSETS_ALL',
   FETCH_SESSIONS: 'FETCH_SESSIONS',
   FETCH_SESSION_PARAMS: 'FETCH_SESSION_PARAMS',
   FETCH_OUTCOMES: 'FETCH_OUTCOMES',
@@ -87,6 +89,13 @@ interface FetchKeysetsRequest extends BaseQueryRequest {
   individualName: string;
 }
 
+interface FetchKeysetsAllRequest extends BaseQueryRequest {
+  type: typeof QUERY_TYPES.FETCH_KEYSETS_ALL;
+  handle: FileSystemDirectoryHandle;
+  groupName: string;
+  individualName: string;
+}
+
 interface FetchSessionParamsRequest extends BaseQueryRequest {
   type: typeof QUERY_TYPES.FETCH_SESSION_PARAMS;
   handle: FileSystemDirectoryHandle;
@@ -118,6 +127,7 @@ type QueryRequest =
   | FetchEvaluationsAllRequest
   | FetchConditionsRequest
   | FetchKeysetsRequest
+  | FetchKeysetsAllRequest
   | FetchSessionParamsRequest
   | FetchSessionOutcomesRequest
   | FetchDirectoriesRequest;
@@ -248,19 +258,20 @@ async function fetchEvaluationsAll(handle: FileSystemDirectoryHandle): Promise<E
       if (possibleGroupFolder.kind === 'directory') {
         // Note: This is for the Group folder
         const actualGroupFolderHandle = await handle.getDirectoryHandle(groupName);
-        
+
         for await (const [individualName, possibleIndividualFolder] of actualGroupFolderHandle.entries()) {
           if (individualName === '.DS_Store') continue;
 
           if (possibleIndividualFolder.kind === 'directory') {
             // Note: This is for the Individual's folder
             const actualIndividualFolderHandle = await actualGroupFolderHandle.getDirectoryHandle(individualName);
-            
+
             for await (const [evaluationName, possibleEvaluationFolder] of actualIndividualFolderHandle.entries()) {
               if (evaluationName === '.DS_Store') continue;
 
               if (possibleEvaluationFolder.kind === 'directory') {
-                const actualEvaluationFolderHandle = await actualIndividualFolderHandle.getDirectoryHandle(evaluationName);
+                const actualEvaluationFolderHandle =
+                  await actualIndividualFolderHandle.getDirectoryHandle(evaluationName);
                 const conditions: string[] = [];
 
                 for await (const [conditionName, condition_entry] of actualEvaluationFolderHandle.entries()) {
@@ -353,6 +364,72 @@ async function fetchKeysets(
     return keysets;
   } catch (error) {
     console.error('Error fetching keysets:', error);
+    return [];
+  }
+}
+
+async function fetchKeysetsAll(
+  handle: FileSystemDirectoryHandle,
+  groupName: string,
+  individualName: string,
+): Promise<KeySetExtended[]> {
+  let keysets: KeySetExtended[] = [];
+
+  try {
+    for await (const [groupFolderName, groupFolderEntry] of handle.entries()) {
+      if (groupFolderEntry.kind !== 'directory') continue;
+      if (groupFolderName === '.DS_Store') continue;
+
+      const group_dir_handle = await handle.getDirectoryHandle(CleanUpString(groupFolderName), {
+        create: false,
+      });
+
+      // Note: CLIENTS
+      for await (const [clientName, client_entry] of group_dir_handle.entries()) {
+        if (client_entry.kind !== 'directory') continue;
+        if (clientName === '.DS_Store') continue;
+
+        const keyboards_folder = await group_dir_handle.getDirectoryHandle(CleanUpString(clientName), {
+          create: false,
+        });
+
+        // Note: KEYBOARDS
+        for await (const [kbName, kb_entry] of keyboards_folder.entries()) {
+          if (kb_entry.kind === 'directory') continue;
+          if (kbName === '.DS_Store') continue;
+
+          if (kbName.includes('.json')) {
+            try {
+              const keyset_obj = await readKeyboardParameters(kb_entry);
+
+              if (keyset_obj) {
+                keysets.push({
+                  ...keyset_obj,
+                  Group: CleanUpString(groupFolderName),
+                  Individual: CleanUpString(clientName),
+                } satisfies KeySetExtended);
+              }
+            } catch (error) {
+              console.error(`Error reading keyboard ${kbName}:`, error);
+            }
+          }
+        }
+      }
+    }
+
+    const clientKeyboards = keysets.filter(
+      (keyboard) => keyboard.Group === groupName && keyboard.Individual === individualName,
+    );
+
+    const clientKeyboardNames = clientKeyboards.map((keyboard) => keyboard.Name);
+
+    keysets = keysets.filter(
+      (keyboard) => keyboard.Individual !== individualName && !clientKeyboardNames.includes(keyboard.Name),
+    );
+
+    return keysets;
+  } catch (error) {
+    console.error('Error fetching all keysets:', error);
     return [];
   }
 }
@@ -465,14 +542,16 @@ const queryHandlers: Record<QueryType, (request: any) => Promise<any>> = {
   [QUERY_TYPES.FETCH_EVALUATIONS]: (req: FetchEvaluationsRequest) =>
     fetchEvaluations(req.handle, req.groupName, req.clientName),
 
-  [QUERY_TYPES.FETCH_EVALUATIONS_ALL]: (req: FetchEvaluationsAllRequest) =>
-    fetchEvaluationsAll(req.handle),
+  [QUERY_TYPES.FETCH_EVALUATIONS_ALL]: (req: FetchEvaluationsAllRequest) => fetchEvaluationsAll(req.handle),
 
   [QUERY_TYPES.FETCH_CONDITIONS]: (req: FetchConditionsRequest) =>
     fetchConditions(req.handle, req.groupName, req.individualName, req.evaluationName),
 
   [QUERY_TYPES.FETCH_KEYSETS]: (req: FetchKeysetsRequest) =>
     fetchKeysets(req.handle, req.groupName, req.individualName),
+
+  [QUERY_TYPES.FETCH_KEYSETS_ALL]: (req: FetchKeysetsAllRequest) =>
+    fetchKeysetsAll(req.handle, req.groupName, req.individualName),
 
   [QUERY_TYPES.FETCH_SESSION_PARAMS]: (req: FetchSessionParamsRequest) =>
     fetchSessionParams(req.handle, req.groupName, req.individualName, req.evaluationName),
@@ -550,6 +629,7 @@ export type {
   FetchEvaluationsAllRequest,
   FetchConditionsRequest,
   FetchKeysetsRequest,
+  FetchKeysetsAllRequest,
   FetchSessionParamsRequest,
   FetchSessionOutcomesRequest,
   FetchDirectoriesRequest,
