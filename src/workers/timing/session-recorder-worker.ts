@@ -8,11 +8,9 @@ const TIME_DELTA = 10; /** Polling interval in milliseconds */
 const TIME_UNIT = 1000; /** Number of milliseconds in one second */
 const INCREMENT = TIME_DELTA / TIME_UNIT; /** Increment value for timers, i.e., 20 hz */
 
-// UI update throttling - send UI updates less frequently than data collection (interesting option to toggle?)
-let UI_UPDATE_INTERVAL = 100; // Update UI interval in milliseconds (e.g., 100 ms for 10 updates per second)
+let UI_UPDATE_INTERVAL = 100; // Update UI interval in ms
 let uiUpdateCounter = 0;
 
-// High-precision timing
 const getHighResTime = (): number => {
   return performance.now();
 };
@@ -42,7 +40,6 @@ class SessionRecorderWorker {
   private timerInterval: NodeJS.Timeout | null = null;
   private isRunning = false;
 
-  // MessageChannel for high-frequency updates
   private messageChannel: MessagePort | null = null;
 
   /**
@@ -53,9 +50,10 @@ class SessionRecorderWorker {
   }
 
   /**
-   *  Initializes the session recorder worker with the provided settings and keyset. This method sets up the necessary state for the worker to function correctly, including storing the settings and keyset, and resetting any existing state to ensure a clean start for the session recording. The `init` method is typically called when the worker receives an 'INIT' message from the main thread, allowing it to prepare for handling session recording tasks based on the provided configuration.
-   * @param settings
-   * @param keyset
+   * Initializes the session recorder worker with the provided settings and keyset. This method sets up the necessary state for the worker to function correctly, including storing the settings and keyset, and resetting any existing state to ensure a clean start for the session recording. The `init` method is typically called when the worker receives an 'INIT' message from the main thread, allowing it to prepare for handling session recording tasks based on the provided configuration.
+   *
+   * @param settings - The settings object containing configuration options for the session recording, such as timer options and duration.
+   * @param keyset - The keyset object containing the frequency and duration keys that the session recorder will listen for during the session.
    */
   init(settings: SavedSettings, keyset: KeySet, uiPollingInterval: SessionRecorderPolling) {
     this.settings = settings;
@@ -211,6 +209,7 @@ class SessionRecorderWorker {
 
   /**
    * Checks if the session should end based on the configured timer option in the settings. This method evaluates the elapsed time for the active timer against the specified duration in the settings, determining whether the session has reached its end condition according to the selected timer option (e.g., primary, secondary, tertiary, or total duration).
+   *
    * @returns A boolean value indicating whether the session should end.
    */
   private checkSessionEnd(): boolean {
@@ -232,6 +231,7 @@ class SessionRecorderWorker {
 
   /**
    * Switches the active timer to the specified timer (Primary, Secondary, or Tertiary).
+   *
    * @param timer - The timer to switch to, which can be 'Primary', 'Secondary', or 'Tertiary'
    */
   switchTimer(timer: 'Primary' | 'Secondary' | 'Tertiary') {
@@ -278,9 +278,9 @@ class SessionRecorderWorker {
 
   /**
    * Processes a key event by determining if the key code corresponds to a frequency or duration key in the keyset, creating a `KeyManageType` event object with the relevant details, and sending a message back to the main thread with the processed key information and the total number of keys pressed.
+   *
    * @param _keyName - The name of the key being processed (not used in the current implementation but can be utilized for additional logic if needed)
    * @param keyCode - The code of the key being processed, which is used to determine if it corresponds to a frequency or duration key in the keyset and to create the appropriate event object for recording the key press.
-   * @returns
    */
   processKey(_keyName: string, keyCode: number) {
     if (!this.isRunning || !this.keyset) return;
@@ -360,6 +360,7 @@ class SessionRecorderWorker {
 
   /**
    * Stops the session recording by calling the `endSession` method with the provided reason for stopping (either 'Completed' or 'Cancelled').
+   *
    * @param reason - The reason for stopping the session, which can be 'Completed' if the session ended naturally based on timer conditions, or 'Cancelled' if the session was manually stopped by the user before completion.
    */
   stopSession(reason: 'Completed' | 'Cancelled') {
@@ -368,6 +369,7 @@ class SessionRecorderWorker {
 
   /**
    * Ends the session recording by performing necessary cleanup, creating final system events for the end of the session and active timer.
+   *
    * @param reason - The reason for ending the session, which can be 'Completed' if the session ended naturally based on timer conditions, or 'Cancelled' if the session was manually stopped by the user before completion.
    */
   private endSession(reason: 'Completed' | 'Cancelled') {
@@ -429,6 +431,7 @@ class SessionRecorderWorker {
 
   /**
    * Utility method to post messages back to the main thread with a consistent structure defined by the `WorkerResponse` interface.
+   *
    * @param message - The message to be posted to the main thread.
    */
   private postMessage(message: WorkerResponse) {
@@ -436,10 +439,8 @@ class SessionRecorderWorker {
   }
 }
 
-// Initialize worker instance
 const worker = new SessionRecorderWorker();
 
-// Handle messages from main thread
 self.onmessage = (event: MessageEvent<WorkerMessage>) => {
   const { type, payload, ports } = event.data;
 

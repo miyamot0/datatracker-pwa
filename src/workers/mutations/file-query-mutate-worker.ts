@@ -26,7 +26,7 @@ import {
   mutateKeysetsAll,
   mutateSessionOutcomes,
   mutateSessionParams,
-} from './helpers/file-query-mutate-mutations';
+} from './helpers/file-query-mutate-actions';
 
 // Type-safe createResponse function with overloads
 function createResponse<T>(id: string, startTime: number, success: true, data: T): SuccessResponse<T>;
