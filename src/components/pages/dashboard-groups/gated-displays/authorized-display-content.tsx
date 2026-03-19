@@ -11,7 +11,7 @@ import { mutationGroups } from '@/queries/groups/mutate-groups';
 import { useContext } from 'react';
 import { Link } from '@tanstack/react-router';
 import { DataTable } from '@/components/ui/data-table-common';
-import { DemoDataFolderName } from '@/workers/mutations/file-query-mutate-worker';
+import { DemoDataFolderName } from '@/workers/mutations/helpers/file-query-mutate-actions';
 
 type Props = {
   Groups: string[];

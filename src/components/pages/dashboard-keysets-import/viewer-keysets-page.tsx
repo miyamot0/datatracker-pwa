@@ -148,7 +148,7 @@ export default function ViewerKeysetPage({ Group, Individual }: { Group: string;
                 {
                   loading: 'Importing keyset...',
                   success: () => {
-                    return 'KeySets have been deleted successfully!';
+                    return 'KeySets have been imported successfully!';
                   },
                   error: (e: Error) => {
                     return `An error occurred while importing KeySets: ${e.message}.`;

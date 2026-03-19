@@ -22,6 +22,7 @@ import { useContext } from 'react';
 import { queryClient } from '@/App';
 import FrequencyDialogKeyCreator from './dialogs/frequency-dialog';
 import DurationDialogKeyCreator from './dialogs/duration-dialog';
+import LogicalDialogKeyCreator from './dialogs/logical-dialog';
 
 export default function KeySetEditor({
   Group,
@@ -118,6 +119,7 @@ export default function KeySetEditor({
             </div>
 
             <div className="flex flex-row gap-2">
+              <LogicalDialogKeyCreator KeySet={relevantKeySet} Callback={addKeyCallback} />
               <FrequencyDialogKeyCreator KeySet={relevantKeySet} Callback={addKeyCallback} />
 
               <BackButton />

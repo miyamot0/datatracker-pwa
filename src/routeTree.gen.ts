@@ -29,6 +29,7 @@ import { Route as SessionGroupIndividualEvaluationProportionRouteImport } from '
 import { Route as SessionGroupIndividualKeysetsKeysetIndexRouteImport } from './routes/session/$group/$individual/keysets/$keyset.index'
 import { Route as SessionGroupIndividualEvaluationHistoryIndexRouteImport } from './routes/session/$group/$individual/$evaluation/history/index'
 import { Route as SessionGroupIndividualEvaluationRunKeysetRouteImport } from './routes/session/$group/$individual/$evaluation/run.$keyset'
+import { Route as SessionGroupIndividualKeysetsKeysetUuidIndexRouteImport } from './routes/session/$group/$individual/keysets/$keyset.$uuid.index'
 import { Route as SessionGroupIndividualEvaluationHistoryViewFileIndexRouteImport } from './routes/session/$group/$individual/$evaluation/history/view.$file.index'
 import { Route as SessionGroupIndividualEvaluationHistoryEditFileIndexRouteImport } from './routes/session/$group/$individual/$evaluation/history/edit.$file.index'
 
@@ -144,6 +145,12 @@ const SessionGroupIndividualEvaluationRunKeysetRoute =
     path: '/session/$group/$individual/$evaluation/run/$keyset',
     getParentRoute: () => rootRouteImport,
   } as any)
+const SessionGroupIndividualKeysetsKeysetUuidIndexRoute =
+  SessionGroupIndividualKeysetsKeysetUuidIndexRouteImport.update({
+    id: '/session/$group/$individual/keysets/$keyset/$uuid/',
+    path: '/session/$group/$individual/keysets/$keyset/$uuid/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const SessionGroupIndividualEvaluationHistoryViewFileIndexRoute =
   SessionGroupIndividualEvaluationHistoryViewFileIndexRouteImport.update({
     id: '/session/$group/$individual/$evaluation/history/view/$file/',
@@ -178,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/session/$group/$individual/$evaluation/run/$keyset': typeof SessionGroupIndividualEvaluationRunKeysetRoute
   '/session/$group/$individual/$evaluation/history/': typeof SessionGroupIndividualEvaluationHistoryIndexRoute
   '/session/$group/$individual/keysets/$keyset/': typeof SessionGroupIndividualKeysetsKeysetIndexRoute
+  '/session/$group/$individual/keysets/$keyset/$uuid/': typeof SessionGroupIndividualKeysetsKeysetUuidIndexRoute
   '/session/$group/$individual/$evaluation/history/edit/$file/': typeof SessionGroupIndividualEvaluationHistoryEditFileIndexRoute
   '/session/$group/$individual/$evaluation/history/view/$file/': typeof SessionGroupIndividualEvaluationHistoryViewFileIndexRoute
 }
@@ -202,6 +210,7 @@ export interface FileRoutesByTo {
   '/session/$group/$individual/$evaluation/run/$keyset': typeof SessionGroupIndividualEvaluationRunKeysetRoute
   '/session/$group/$individual/$evaluation/history': typeof SessionGroupIndividualEvaluationHistoryIndexRoute
   '/session/$group/$individual/keysets/$keyset': typeof SessionGroupIndividualKeysetsKeysetIndexRoute
+  '/session/$group/$individual/keysets/$keyset/$uuid': typeof SessionGroupIndividualKeysetsKeysetUuidIndexRoute
   '/session/$group/$individual/$evaluation/history/edit/$file': typeof SessionGroupIndividualEvaluationHistoryEditFileIndexRoute
   '/session/$group/$individual/$evaluation/history/view/$file': typeof SessionGroupIndividualEvaluationHistoryViewFileIndexRoute
 }
@@ -227,6 +236,7 @@ export interface FileRoutesById {
   '/session/$group/$individual/$evaluation/run/$keyset': typeof SessionGroupIndividualEvaluationRunKeysetRoute
   '/session/$group/$individual/$evaluation/history/': typeof SessionGroupIndividualEvaluationHistoryIndexRoute
   '/session/$group/$individual/keysets/$keyset/': typeof SessionGroupIndividualKeysetsKeysetIndexRoute
+  '/session/$group/$individual/keysets/$keyset/$uuid/': typeof SessionGroupIndividualKeysetsKeysetUuidIndexRoute
   '/session/$group/$individual/$evaluation/history/edit/$file/': typeof SessionGroupIndividualEvaluationHistoryEditFileIndexRoute
   '/session/$group/$individual/$evaluation/history/view/$file/': typeof SessionGroupIndividualEvaluationHistoryViewFileIndexRoute
 }
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/session/$group/$individual/$evaluation/run/$keyset'
     | '/session/$group/$individual/$evaluation/history/'
     | '/session/$group/$individual/keysets/$keyset/'
+    | '/session/$group/$individual/keysets/$keyset/$uuid/'
     | '/session/$group/$individual/$evaluation/history/edit/$file/'
     | '/session/$group/$individual/$evaluation/history/view/$file/'
   fileRoutesByTo: FileRoutesByTo
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/session/$group/$individual/$evaluation/run/$keyset'
     | '/session/$group/$individual/$evaluation/history'
     | '/session/$group/$individual/keysets/$keyset'
+    | '/session/$group/$individual/keysets/$keyset/$uuid'
     | '/session/$group/$individual/$evaluation/history/edit/$file'
     | '/session/$group/$individual/$evaluation/history/view/$file'
   id:
@@ -301,6 +313,7 @@ export interface FileRouteTypes {
     | '/session/$group/$individual/$evaluation/run/$keyset'
     | '/session/$group/$individual/$evaluation/history/'
     | '/session/$group/$individual/keysets/$keyset/'
+    | '/session/$group/$individual/keysets/$keyset/$uuid/'
     | '/session/$group/$individual/$evaluation/history/edit/$file/'
     | '/session/$group/$individual/$evaluation/history/view/$file/'
   fileRoutesById: FileRoutesById
@@ -326,6 +339,7 @@ export interface RootRouteChildren {
   SessionGroupIndividualEvaluationRunKeysetRoute: typeof SessionGroupIndividualEvaluationRunKeysetRoute
   SessionGroupIndividualEvaluationHistoryIndexRoute: typeof SessionGroupIndividualEvaluationHistoryIndexRoute
   SessionGroupIndividualKeysetsKeysetIndexRoute: typeof SessionGroupIndividualKeysetsKeysetIndexRoute
+  SessionGroupIndividualKeysetsKeysetUuidIndexRoute: typeof SessionGroupIndividualKeysetsKeysetUuidIndexRoute
   SessionGroupIndividualEvaluationHistoryEditFileIndexRoute: typeof SessionGroupIndividualEvaluationHistoryEditFileIndexRoute
   SessionGroupIndividualEvaluationHistoryViewFileIndexRoute: typeof SessionGroupIndividualEvaluationHistoryViewFileIndexRoute
 }
@@ -472,6 +486,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SessionGroupIndividualEvaluationRunKeysetRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/session/$group/$individual/keysets/$keyset/$uuid/': {
+      id: '/session/$group/$individual/keysets/$keyset/$uuid/'
+      path: '/session/$group/$individual/keysets/$keyset/$uuid'
+      fullPath: '/session/$group/$individual/keysets/$keyset/$uuid/'
+      preLoaderRoute: typeof SessionGroupIndividualKeysetsKeysetUuidIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/session/$group/$individual/$evaluation/history/view/$file/': {
       id: '/session/$group/$individual/$evaluation/history/view/$file/'
       path: '/session/$group/$individual/$evaluation/history/view/$file'
@@ -520,6 +541,8 @@ const rootRouteChildren: RootRouteChildren = {
     SessionGroupIndividualEvaluationHistoryIndexRoute,
   SessionGroupIndividualKeysetsKeysetIndexRoute:
     SessionGroupIndividualKeysetsKeysetIndexRoute,
+  SessionGroupIndividualKeysetsKeysetUuidIndexRoute:
+    SessionGroupIndividualKeysetsKeysetUuidIndexRoute,
   SessionGroupIndividualEvaluationHistoryEditFileIndexRoute:
     SessionGroupIndividualEvaluationHistoryEditFileIndexRoute,
   SessionGroupIndividualEvaluationHistoryViewFileIndexRoute:
