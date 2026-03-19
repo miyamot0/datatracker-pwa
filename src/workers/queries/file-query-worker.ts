@@ -59,7 +59,7 @@ interface FetchEvaluationsRequest extends BaseQueryRequest {
   type: typeof QUERY_TYPES.FETCH_EVALUATIONS;
   handle: FileSystemDirectoryHandle;
   groupName: string;
-  clientName?: string;
+  clientName: string;
 }
 
 interface FetchKeysetsRequest extends BaseQueryRequest {
