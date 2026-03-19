@@ -46,6 +46,16 @@ export const mutationSettingsParams = async ({
   });
 };
 
+/**
+ * Sends a mutation request to the worker to update the session parameters for a specific group, individual, and evaluation. It constructs a request object with the necessary parameters and sends it to the worker, which will handle the file system operations accordingly. The function returns a promise that resolves to the updated SavedSettings object after the mutation is complete.
+ *
+ * @param Group - The group identifier for which the session parameters are being mutated.
+ * @param Individual - The individual identifier for which the session parameters are being mutated.
+ * @param Evaluation - The evaluation identifier for which the session parameters are being mutated.
+ * @param Settings - The new settings object that is to be written to the file system and returned after mutation.
+ * @param Handle - The file system directory handle for accessing the storage.
+ * @returns A promise that resolves to the updated SavedSettings object after the mutation is complete.
+ */
 export const mutationSessionParamsWorker = async ({
   Group,
   Individual,

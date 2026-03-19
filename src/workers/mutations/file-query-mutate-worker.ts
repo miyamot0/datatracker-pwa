@@ -6,7 +6,9 @@ import { KeySet } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';
 import { SavedSessionResult, SavedSettings } from '@/lib/dtos';
 import { GenerateSavedFileName } from '@/lib/writer';
-import { sessionQueryOptions } from '@/queries/session/query-session-params';
+import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
+import { evaluationsAllQueryOptions } from '@/queries/evaluations/query-evaluations-all';
+import { queryClient } from '@/App';
 
 export const DemoDataFolderName = 'Example DataTracker Group';
 
@@ -14,6 +16,7 @@ export const DemoDataFolderName = 'Example DataTracker Group';
 const MUTATION_TYPES = {
   MUTATE_CONDITIONS: 'MUTATE_CONDITIONS',
   MUTATE_EVALUATIONS: 'MUTATE_EVALUATIONS',
+  MUTATE_EVALUATIONS_ALL: 'MUTATE_EVALUATIONS_ALL',
   MUTATE_GROUPS: 'MUTATE_GROUPS',
   MUTATE_INDIVIDUALS: 'MUTATE_INDIVIDUALS',
   MUTATE_KEYSETS: 'MUTATE_KEYSETS',
@@ -71,6 +74,16 @@ interface MutateEvaluationsRequest extends BaseMutationRequest {
   action: 'Add' | 'Delete' | 'Duplicate' | 'Rename';
 }
 
+interface MutateEvaluationsAllRequest extends BaseMutationRequest {
+  type: typeof MUTATION_TYPES.MUTATE_EVALUATIONS_ALL;
+  handle: FileSystemDirectoryHandle;
+  groupName: string;
+  individualName: string;
+  relevantRecords?: EvaluationRecord[];
+  allRecords: EvaluationRecord[];
+  action: 'Import';
+}
+
 interface MutateGroupsRequest extends BaseMutationRequest {
   type: typeof MUTATION_TYPES.MUTATE_GROUPS;
   handle: FileSystemDirectoryHandle;
@@ -124,6 +137,7 @@ interface MutateSessionParamsRequest extends BaseMutationRequest {
 type MutationRequest =
   | MutateConditionsRequest
   | MutateEvaluationsRequest
+  | MutateEvaluationsAllRequest
   | MutateGroupsRequest
   | MutateIndividualsRequest
   | MutateKeysetsRequest
@@ -582,6 +596,64 @@ async function mutateKeysets(
   }
 }
 
+async function duplicateEvaluationRecord(
+  handle: FileSystemDirectoryHandle,
+  groupName: string,
+  individualName: string,
+  evaluation: EvaluationRecord,
+): Promise<EvaluationRecord> {
+  try {
+    const g_folder = await handle.getDirectoryHandle(groupName);
+    const i_folder = await g_folder.getDirectoryHandle(individualName);
+    const e_folder = await i_folder.getDirectoryHandle(evaluation.Evaluation, { create: true });
+
+    const conditionList: string[] = [];
+
+    for (const condition of evaluation.Conditions) {
+      await e_folder.getDirectoryHandle(condition, { create: true });
+      conditionList.push(condition);
+    }
+
+    return {
+      Group: groupName,
+      Individual: individualName,
+      Evaluation: evaluation.Evaluation,
+      Conditions: conditionList,
+    } satisfies EvaluationRecord;
+  } catch (error) {
+    console.error('Error duplicating evaluation record:', error);
+    throw error;
+  }
+}
+
+async function mutateEvaluationsAll(
+  handle: FileSystemDirectoryHandle,
+  groupName: string,
+  individualName: string,
+  action: 'Import',
+  allRecords: EvaluationRecord[],
+  relevantRecords?: EvaluationRecord[],
+): Promise<EvaluationRecord[]> {
+  try {
+    const newEvaluationRecordsList = [...(allRecords ?? [])];
+
+    switch (action) {
+      case 'Import': {
+        for (const evaluation of relevantRecords ?? []) {
+          const newEntry = await duplicateEvaluationRecord(handle, groupName, individualName, evaluation);
+          newEvaluationRecordsList.push(newEntry);
+        }
+        break;
+      }
+    }
+
+    return newEvaluationRecordsList;
+  } catch (error) {
+    console.error('Error mutating evaluations all:', error);
+    throw error;
+  }
+}
+
 async function mutateSessionOutcomes(
   handle: FileSystemDirectoryHandle,
   groupName: string,
@@ -790,6 +862,16 @@ const mutationHandlers: Record<MutationType, (request: any) => Promise<any>> = {
   [MUTATION_TYPES.MUTATE_EVALUATIONS]: (req: MutateEvaluationsRequest) =>
     mutateEvaluations(req.handle, req.groupName, req.individualName, req.evaluationNames, req.action, req.renameTo),
 
+  [MUTATION_TYPES.MUTATE_EVALUATIONS_ALL]: (req: MutateEvaluationsAllRequest) =>
+    mutateEvaluationsAll(
+      req.handle,
+      req.groupName,
+      req.individualName,
+      req.action,
+      req.allRecords,
+      req.relevantRecords,
+    ),
+
   [MUTATION_TYPES.MUTATE_GROUPS]: (req: MutateGroupsRequest) => mutateGroups(req.handle, req.groupNames, req.action),
 
   [MUTATION_TYPES.MUTATE_INDIVIDUALS]: (req: MutateIndividualsRequest) =>
@@ -876,6 +958,7 @@ export type {
   BaseMutationResponse,
   MutateConditionsRequest,
   MutateEvaluationsRequest,
+  MutateEvaluationsAllRequest,
   MutateGroupsRequest,
   MutateIndividualsRequest,
   MutateKeysetsRequest,

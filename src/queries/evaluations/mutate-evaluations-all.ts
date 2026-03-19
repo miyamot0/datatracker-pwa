@@ -1,5 +1,8 @@
+import { MutateEvaluationsAllRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 import { EvaluationRecord } from '../keysets/types/evaluation-record';
 import { evaluationsAllQueryOptions } from './query-evaluations-all';
+import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
+import { v4 as uuidv4 } from 'uuid';
 import { queryClient } from '@/App';
 
 /**
@@ -66,19 +69,57 @@ export const mutationEvaluationsAll = async ({
     throw new Error('Evaluations not found');
   }
 
-  const newEvaluationRecordsList = evaluationsAll;
+  return await mutationEvaluationsAllWorker({
+    Group,
+    Individual,
+    RelevantRecords,
+    AllRecords: evaluationsAll,
+    Handle,
+    Action,
+  });
+};
 
-  switch (Action) {
-    case 'Import': {
-      for (const evaluation of RelevantRecords ?? []) {
-        const newEntry = await DuplicateEvaluationRecord(Handle, Group, Individual, evaluation);
+export const mutationEvaluationsAllWorker = async ({
+  Group,
+  Individual,
+  AllRecords,
+  RelevantRecords,
+  Handle,
+  Action,
+}: {
+  Group: string;
+  Individual: string;
+  RelevantRecords?: EvaluationRecord[];
+  AllRecords: EvaluationRecord[];
+  Handle: FileSystemDirectoryHandle;
+  Action: 'Import';
+}) => {
+  const worker = new GenericFileWorker();
+  const request = {
+    id: uuidv4(),
+    type: 'MUTATE_EVALUATIONS_ALL',
+    handle: Handle,
+    groupName: Group,
+    individualName: Individual,
+    relevantRecords: RelevantRecords,
+    allRecords: AllRecords,
+    action: Action,
+  } satisfies MutateEvaluationsAllRequest;
 
-        newEvaluationRecordsList.push(newEntry);
+  return new Promise<EvaluationRecord[]>((resolve) => {
+    worker.onmessage = (event: MessageEvent<MutationResponse>) => {
+      const response = event.data;
+      if (response.success) {
+        const settings = response.data;
+        resolve(settings);
+      } else {
+        throw new Error(`Worker error: ${response.error}\nStack: ${response.stack}`);
       }
-
-      break;
-    }
-  }
-
-  return newEvaluationRecordsList;
+    };
+    worker.onerror = (error) => {
+      console.error('Worker error:', error);
+      throw new Error(`Worker error: ${error.message}`);
+    };
+    worker.postMessage(request);
+  });
 };
