@@ -6,13 +6,15 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogTrigger,
 } from '@/components/ui/dialog';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContext } from '@/context/folder-context';
 import { LogicalStep, LogicState, Operation, OperationTypes, ValueSource, ValueSourceField } from '@/lib/logic';
 import { displayConditionalNotification } from '@/lib/notifications';
+import { cn } from '@/lib/utils';
 import { KeySet, KeySetLogical } from '@/types/keyset';
 import { PlusIcon, Trash } from 'lucide-react';
 import { createRef, useContext, useState } from 'react';
@@ -73,6 +75,8 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
     ...stringBuilderPre,
   ].join(' ');
 
+  //
+
   return (
     <Dialog
       open={show}
@@ -89,13 +93,15 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
         });
       }}
     >
-      <div>
-        <ToolTipWrapper Label="Add a new Logical Key">
-          <Button className="w-fit shadow" variant={'outline'} onClick={() => setShow(true)} size={'sm'}>
-            <PlusIcon className="w-4 h-4 mr-2" /> Add Derived
-          </Button>
-        </ToolTipWrapper>
-      </div>
+      <DialogTrigger asChild>
+        <DropdownMenuItem
+          onSelect={(e) => e.preventDefault()}
+          className={cn('flex flex-row gap-2 items-center cursor-pointer px-2')}
+        >
+          <PlusIcon className="w-4 h-4" /> Add Derived
+        </DropdownMenuItem>
+      </DialogTrigger>
+
       <DialogContent className="bg-card select-none min-w-[600px]">
         <DialogHeader>
           <DialogTitle>Derived Key Creator</DialogTitle>

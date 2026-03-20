@@ -1,8 +1,8 @@
 import PageWrapper from '@/components/elements/page-wrapper';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowDown, ArrowUp, DeleteIcon } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronDown, DeleteIcon } from 'lucide-react';
 import {
   BuildEvaluationsBreadcrumb,
   BuildGroupBreadcrumb,
@@ -24,6 +24,14 @@ import FrequencyDialogKeyCreator from './dialogs/frequency-dialog';
 import DurationDialogKeyCreator from './dialogs/duration-dialog';
 import LogicalDialogKeyCreator from './dialogs/logical-dialog';
 import { generateFormula, LogicState } from '@/lib/logic';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 export default function KeySetEditor({
   Group,
@@ -112,6 +120,8 @@ export default function KeySetEditor({
     });
   };
 
+  const btnProps = buttonVariants({ variant: 'outline', size: 'sm' });
+
   return (
     <PageWrapper
       breadcrumbs={[
@@ -132,16 +142,28 @@ export default function KeySetEditor({
             </div>
 
             <div className="flex flex-row gap-2">
-              <LogicalDialogKeyCreator
-                KeySet={relevantKeySet}
-                Callback={addDerivedKeyCallback}
-                key={
-                  relevantKeySet.DurationKeys.length +
-                  relevantKeySet.FrequencyKeys.length +
-                  relevantKeySet.DerivedKeys.length
-                }
-              />
-              <FrequencyDialogKeyCreator KeySet={relevantKeySet} Callback={addKeyCallback} />
+              <div className={cn(btnProps, 'pl-3 pr-0')}>
+                <FrequencyDialogKeyCreator KeySet={relevantKeySet} Callback={addKeyCallback} />
+
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <ChevronDown className="w-fit px-2" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-48" side="bottom" align="end" sideOffset={12}>
+                    <DropdownMenuLabel>Custom Key Types</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <LogicalDialogKeyCreator
+                      KeySet={relevantKeySet}
+                      Callback={addDerivedKeyCallback}
+                      key={
+                        relevantKeySet.DurationKeys.length +
+                        relevantKeySet.FrequencyKeys.length +
+                        relevantKeySet.DerivedKeys.length
+                      }
+                    />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
 
               <BackButton />
             </div>
