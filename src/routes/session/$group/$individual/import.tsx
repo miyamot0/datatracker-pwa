@@ -12,7 +12,7 @@ export const Route = createFileRoute('/session/$group/$individual/import')({
 
     if (!context.folderHandleContext.handle) {
       throw redirect({
-        href: '/dashboard',
+        to: '/dashboard',
       });
     }
 
@@ -20,7 +20,7 @@ export const Route = createFileRoute('/session/$group/$individual/import')({
 
     if (!group || !individual) {
       throw redirect({
-        href: '/dashboard',
+        to: '/dashboard',
       });
     }
   },

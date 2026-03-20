@@ -41,6 +41,7 @@ export default function KeySetsPage({
         filter: (match) =>
           match.routeId === currentRouteId || match.routeId === '/session/$group/$individual/keysets/import',
         sync: true,
+        forcePending: true,
       });
     },
   });

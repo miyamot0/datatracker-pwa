@@ -16,7 +16,7 @@ export const Route = createFileRoute('/session/$group/$individual/')({
 
     if (!context.folderHandleContext.handle) {
       throw redirect({
-        href: '/dashboard',
+        to: '/dashboard',
       });
     }
 
@@ -24,7 +24,7 @@ export const Route = createFileRoute('/session/$group/$individual/')({
 
     if (!group || !individual) {
       throw redirect({
-        href: '/dashboard',
+        to: '/dashboard',
       });
     }
 

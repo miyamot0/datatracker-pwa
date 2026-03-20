@@ -10,7 +10,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
 
     if (!group || !individual || !evaluation || !file) {
       throw redirect({
-        href: '/dashboard',
+        to: '/dashboard',
       });
     }
 

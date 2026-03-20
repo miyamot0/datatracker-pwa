@@ -6,13 +6,13 @@ export const Route = createFileRoute('/dashboard/sync')({
   beforeLoad: ({ context }) => {
     if (!context.folderHandleContext.isInitialized) {
       throw redirect({
-        href: '/dashboard',
+        to: '/dashboard',
       });
     }
 
     if (!context.folderHandleContext.handle) {
       throw redirect({
-        href: '/dashboard',
+        to: '/dashboard',
       });
     }
 

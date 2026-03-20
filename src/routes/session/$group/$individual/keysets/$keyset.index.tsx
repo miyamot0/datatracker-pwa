@@ -12,7 +12,7 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/$keyse
 
     if (!context.folderHandleContext.handle) {
       throw redirect({
-        href: '/dashboard',
+        to: '/dashboard',
       });
     }
 
@@ -20,7 +20,7 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/$keyse
 
     if (!group || !individual || !keyset) {
       throw redirect({
-        href: '/dashboard',
+        to: '/dashboard',
       });
     }
 

@@ -80,7 +80,7 @@ describe('Routing', () => {
         expect.fail('Expected routeGuard to throw');
       } catch (error: any) {
         expect(error.message).toBe('Redirect');
-        expect(error.redirect).toEqual({ href: '/dashboard' });
+        expect(error.redirect).toEqual({ to: '/dashboard' });
       }
     });
 
@@ -92,7 +92,7 @@ describe('Routing', () => {
         expect.fail('Expected routeGuard to throw');
       } catch (error: any) {
         expect(error.message).toBe('Redirect');
-        expect(error.redirect).toEqual({ href: '/dashboard' });
+        expect(error.redirect).toEqual({ to: '/dashboard' });
       }
     });
 
@@ -136,7 +136,7 @@ describe('Routing', () => {
         // Expected to throw
       }
 
-      expect(redirect).toHaveBeenCalledWith({ href: '/dashboard' });
+      expect(redirect).toHaveBeenCalledWith({ to: '/dashboard' });
       expect(redirect).toHaveBeenCalledTimes(1);
     });
   });
@@ -165,7 +165,7 @@ describe('Routing', () => {
         expect.fail('Expected routeGuard to throw');
       } catch (error: any) {
         expect(error.message).toBe('Redirect');
-        expect(error.redirect).toEqual({ href: '/dashboard' });
+        expect(error.redirect).toEqual({ to: '/dashboard' });
       }
     });
 
