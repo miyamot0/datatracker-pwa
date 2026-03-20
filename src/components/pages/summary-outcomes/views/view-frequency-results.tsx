@@ -131,7 +131,6 @@ export default function ViewFrequencyResults({
 
                     setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
                       KeyDescription: hidden_keys,
-                      CTBElements: [],
                       Schedule: SessionTimer,
                     });
                   }}

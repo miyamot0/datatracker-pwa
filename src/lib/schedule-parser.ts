@@ -56,7 +56,7 @@ export function walkSessionDurationKey(SessionSettings: SavedSessionResult, Sche
   const isEven = relevantScheduleChanges.length % 2 === 0;
 
   const relevantKeyEvents = DurationKeyPresses.filter((k) => k.KeyName === Key.KeyName);
-  const bouts = Math.floor(relevantKeyEvents.length / 2);
+  const bouts = Math.ceil(relevantKeyEvents.length / 2);
 
   if (!isEven) throw new Error('Schedule changes must be even');
 

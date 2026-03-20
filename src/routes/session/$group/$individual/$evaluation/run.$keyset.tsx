@@ -1,25 +1,45 @@
-import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import { routeGuard } from '@/lib/routing';
 import SessionRecorderPage from '@/components/pages/session-recorder/session-recorder-page';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/run/$keyset')({
-  beforeLoad: routeGuard,
-  loader: ({ params }) => {
+  beforeLoad: ({ context, params }) => {
+    if (!context.folderHandleContext.isInitialized) {
+      throw redirect({
+        href: '/',
+      });
+    }
+
+    if (!context.folderHandleContext.handle) {
+      throw redirect({
+        href: '/dashboard',
+      });
+    }
+
     const { group, individual, evaluation, keyset } = params;
 
     if (!group || !individual || !evaluation || !keyset) {
       throw redirect({
-        href: createHref({ type: 'Dashboard' }),
+        href: '/dashboard',
       });
     }
 
     return {
-      Group: CleanUpString(group),
-      Individual: CleanUpString(individual),
-      Evaluation: CleanUpString(evaluation),
-      Keyset: CleanUpString(keyset),
+      cleanHandle: context.folderHandleContext.handle,
+      group: CleanUpString(group),
+      individual: CleanUpString(individual),
+      evaluation: CleanUpString(evaluation),
+      keyset: CleanUpString(keyset),
+    };
+  },
+  loader: ({ context }) => {
+    const { group, individual, evaluation, keyset } = context;
+
+    return {
+      Group: group,
+      Individual: individual,
+      Evaluation: evaluation,
+      Keyset: keyset,
     };
   },
   component: RouteComponent,

@@ -7,31 +7,36 @@ import { FrontMatterUniversalType } from '@/types/mdx';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/documentation/$slug')({
-  loader: ({ params }) => {
-    const { slug } = params;
+  beforeLoad({ params }) {
+    const entry = DocumentationObjects.find((entry) => entry.matter.filename.replaceAll('.md', '') === params.slug);
 
-    const Entry = DocumentationObjects.find((entry) => entry.matter.filename.replaceAll('.md', '') === slug);
-
-    if (!Entry || !Entry.matter) {
+    if (!entry || !entry.matter) {
       throw redirect({
         href: createHref({ type: 'Documentation' }),
       });
     }
+
+    return {
+      entry: entry,
+    };
+  },
+  loader: ({ context }) => {
+    const { entry } = context;
 
     const FrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(
       (entry) => entry.matter as FrontMatterUniversalType,
     );
     const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
 
-    const PreviousEntry = DocumentationObjects.find((e) => e.matter.index === Entry.matter.index - 1);
-    const NextEntry = DocumentationObjects.find((e) => e.matter.index === Entry.matter.index + 1);
+    const PreviousEntry = DocumentationObjects.find((e) => e.matter.index === entry.matter.index - 1);
+    const NextEntry = DocumentationObjects.find((e) => e.matter.index === entry.matter.index + 1);
 
     return {
       FrontMatter,
       KeywordArray,
       PreviousEntry,
       NextEntry,
-      Entry,
+      Entry: entry,
     };
   },
   component: RouteComponent,

@@ -1,20 +1,36 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
-import { routeGuard } from '@/lib/routing';
 import ClientsPage from '@/components/pages/dashboard-participants/clients-page';
 
 export const Route = createFileRoute('/session/$group/')({
-  beforeLoad: routeGuard,
-  loader: ({ params }) => {
-    if (!params.group) {
+  beforeLoad: ({ context, params }) => {
+    if (!context.folderHandleContext.isInitialized) {
       throw redirect({
-        href: createHref({ type: 'Dashboard' }),
+        href: '/',
+      });
+    }
+
+    if (!context.folderHandleContext.handle) {
+      throw redirect({
+        href: '/dashboard',
+      });
+    }
+
+    const { group } = params;
+
+    if (!group) {
+      throw redirect({
+        href: '/dashboard',
       });
     }
 
     return {
-      Group: CleanUpString(params.group),
+      Group: CleanUpString(group),
+    };
+  },
+  loader: ({ params }) => {
+    return {
+      Group: params.group,
     };
   },
   component: RouteComponent,

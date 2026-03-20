@@ -30,7 +30,6 @@ describe('LocalStorage Prefs', () => {
     it('should return the default object if localStorage does not contain the key', () => {
       const defaultCache = {
         KeyDescription: [],
-        CTBElements: [],
         Schedule: 'End on Timer #1',
       };
 

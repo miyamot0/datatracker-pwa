@@ -5,7 +5,6 @@ import { SessionTerminationOptionsType } from '@/types/terminations';
  */
 export type ReturnLocalStorageCache = {
   KeyDescription: string[];
-  CTBElements: string[];
   Schedule: SessionTerminationOptionsType;
 };
 
@@ -15,7 +14,6 @@ export type ReturnLocalStorageCache = {
  */
 const DEFAULT_LOCAL_STORAGE: ReturnLocalStorageCache = {
   KeyDescription: [],
-  CTBElements: [],
   Schedule: 'End on Timer #1',
 };
 

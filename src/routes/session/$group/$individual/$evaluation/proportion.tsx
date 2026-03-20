@@ -3,7 +3,6 @@ import { CleanUpString } from '@/lib/strings';
 import { KeySet } from '@/types/keyset';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
-import { routeGuard } from '@/lib/routing';
 import {
   extractAndDeduplicateKeysets,
   filterSessionsByPrimaryRole,
@@ -15,22 +14,42 @@ import ResultsProportionVisualsPage from '@/components/pages/visualize-outcomes/
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/proportion')({
-  beforeLoad: routeGuard,
-  loader: async ({ params, context }) => {
-    const { group, individual, evaluation } = params;
-    const { handle } = context.folderHandleContext;
+  beforeLoad: ({ context, params }) => {
+    if (!context.folderHandleContext.isInitialized) {
+      throw redirect({
+        href: '/',
+      });
+    }
 
-    if (!group || !individual || !evaluation || !handle) {
+    if (!context.folderHandleContext.handle) {
       throw redirect({
         href: '/dashboard',
       });
     }
 
+    const { group, individual, evaluation } = params;
+
+    if (!group || !individual || !evaluation) {
+      throw redirect({
+        href: '/dashboard',
+      });
+    }
+
+    return {
+      cleanHandle: context.folderHandleContext.handle,
+      group: CleanUpString(group),
+      individual: CleanUpString(individual),
+      evaluation: CleanUpString(evaluation),
+    };
+  },
+  loader: async ({ context }) => {
+    const { group, individual, evaluation, cleanHandle } = context;
+
     const results = await context.queryClient.ensureQueryData(
-      sessionOutcomesQueryOptions(handle, group, individual, evaluation),
+      sessionOutcomesQueryOptions(cleanHandle, group, individual, evaluation),
     );
 
-    const keyboards = await context.queryClient.ensureQueryData(keyboardQueryOptions(handle, group, individual));
+    const keyboards = await context.queryClient.ensureQueryData(keyboardQueryOptions(cleanHandle, group, individual));
 
     // Note: base to pull from
     const recentKeysetName = pullMostRecentSession(results);
@@ -57,7 +76,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/pr
     } as unknown as KeySet;
 
     const keys: ToggleDisplayKey[] = dynamicKeyset.DurationKeys.map((key) => ({
-      KeyDescription: key.KeyDescription,
+      ...key,
       Visible: true,
       KeyType: 'Observed',
     }));
@@ -76,10 +95,10 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/pr
     }
 
     return {
-      Group: CleanUpString(group),
-      Individual: CleanUpString(individual),
-      Evaluation: CleanUpString(evaluation),
-      Handle: handle,
+      Group: group,
+      Individual: individual,
+      Evaluation: evaluation,
+      Handle: cleanHandle,
       Results: results,
       ResultsFiltered: resultsFiltered,
       MinX: minX,

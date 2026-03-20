@@ -1,27 +1,45 @@
-import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import { routeGuard } from '@/lib/routing';
 import SessionManagerPage from '@/components/pages/editor-session-outcome/session-manager-page';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/edit/$file/')({
-  beforeLoad: routeGuard,
-  loader: async ({ params }) => {
+  beforeLoad: ({ context, params }) => {
+    if (!context.folderHandleContext.isInitialized) {
+      throw redirect({
+        href: '/',
+      });
+    }
+
+    if (!context.folderHandleContext.handle) {
+      throw redirect({
+        href: '/dashboard',
+      });
+    }
+
     const { group, individual, evaluation, file } = params;
 
     if (!group || !individual || !evaluation || !file) {
       throw redirect({
-        href: createHref({ type: 'Dashboard' }),
+        href: '/dashboard',
       });
     }
 
-    const FileString = CleanUpString(file);
+    return {
+      cleanHandle: context.folderHandleContext.handle,
+      group: CleanUpString(group),
+      individual: CleanUpString(individual),
+      evaluation: CleanUpString(evaluation),
+      file: CleanUpString(file),
+    };
+  },
+  loader: async ({ context }) => {
+    const { group, individual, evaluation, file } = context;
 
     return {
-      Group: CleanUpString(group),
-      Individual: CleanUpString(individual),
-      Evaluation: CleanUpString(evaluation),
-      FileString,
+      Group: group,
+      Individual: individual,
+      Evaluation: evaluation,
+      FileString: file,
     };
   },
   component: RouteComponent,

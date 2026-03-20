@@ -125,7 +125,6 @@ export default function ViewDurationResults({
 
                     setLocalCachedPrefs(Group, Individual, Evaluation, 'Duration', {
                       KeyDescription: hidden_keys,
-                      CTBElements: [],
                       Schedule: SessionTimer,
                     });
                   }}
