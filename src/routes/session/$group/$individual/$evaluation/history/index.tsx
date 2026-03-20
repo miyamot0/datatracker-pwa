@@ -1,6 +1,15 @@
+import PageWrapper from '@/components/elements/page-wrapper';
 import DashboardHistoryPage from '@/components/pages/dashboard-outcomes/dashboard-history-page';
+import { LoadingDisplay } from '@/components/suspense/loading-display';
+import {
+  BuildGroupBreadcrumb,
+  BuildIndividualsBreadcrumb,
+  BuildEvaluationsBreadcrumb,
+} from '@/components/ui/breadcrumb-entries';
 import { CleanUpString } from '@/lib/strings';
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
+import { ModifiedSessionResult } from '@/types/storage';
+import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/')({
   beforeLoad: ({ context, params }) => {
@@ -25,26 +34,59 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
     }
 
     return {
-      cleanHandle: context.folderHandleContext.handle,
-      group: CleanUpString(group),
-      individual: CleanUpString(individual),
-      evaluation: CleanUpString(evaluation),
+      Group: CleanUpString(group),
+      Individual: CleanUpString(individual),
+      Evaluation: CleanUpString(evaluation),
+      CleanHandle: context.folderHandleContext.handle,
+      Settings: context.folderHandleContext.settings,
     };
   },
   loader: ({ context }) => {
-    const { group, individual, evaluation } = context;
+    const { Group, Individual, Evaluation, CleanHandle, Settings } = context;
+
+    const fetchSessionOutcomes = context.queryClient.fetchQuery(
+      sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
+    );
 
     return {
-      Group: group,
-      Individual: individual,
-      Evaluation: evaluation,
+      Group,
+      Individual,
+      Evaluation,
+      Settings,
+      CleanHandle,
+      fetchSessionOutcomes,
     };
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { Group, Individual, Evaluation } = Route.useLoaderData();
+  const { Group, Individual, Evaluation, Settings, CleanHandle, fetchSessionOutcomes } = Route.useLoaderData();
 
-  return <DashboardHistoryPage Group={Group} Individual={Individual} Evaluation={Evaluation} />;
+  return (
+    <PageWrapper
+      breadcrumbs={[
+        BuildGroupBreadcrumb(),
+        BuildIndividualsBreadcrumb(Group),
+        BuildEvaluationsBreadcrumb(Group, Individual),
+      ]}
+      label={'Session History'}
+      className="select-none"
+    >
+      <Await promise={fetchSessionOutcomes} fallback={<LoadingDisplay />}>
+        {(sessions: ModifiedSessionResult[]) => {
+          return (
+            <DashboardHistoryPage
+              Group={Group}
+              Individual={Individual}
+              Evaluation={Evaluation}
+              Settings={Settings}
+              Handle={CleanHandle}
+              Sessions={sessions}
+            />
+          );
+        }}
+      </Await>
+    </PageWrapper>
+  );
 }
