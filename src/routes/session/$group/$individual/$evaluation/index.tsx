@@ -84,22 +84,25 @@ function RouteComponent() {
       Settings={Settings}
     >
       <Await promise={totalQuery} fallback={<LoadingDisplay />}>
-        {(clients: any[]) => {
-          const [conditions, keysets, sessionParams] = clients;
+        {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (clients: any[]) => {
+            const [conditions, keysets, sessionParams] = clients;
 
-          return (
-            <SessionDesignerPage
-              Group={Group}
-              Individual={Individual}
-              Evaluation={Evaluation}
-              Conditions={conditions}
-              Keysets={keysets}
-              SessionParams={sessionParams}
-              Settings={Settings}
-              Handle={CleanHandle}
-            />
-          );
-        }}
+            return (
+              <SessionDesignerPage
+                Group={Group}
+                Individual={Individual}
+                Evaluation={Evaluation}
+                Conditions={conditions}
+                Keysets={keysets}
+                SessionParams={sessionParams}
+                Settings={Settings}
+                Handle={CleanHandle}
+              />
+            );
+          }
+        }
       </Await>
     </PageWrapper>
   );
