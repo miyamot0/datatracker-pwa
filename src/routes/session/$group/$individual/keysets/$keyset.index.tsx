@@ -1,6 +1,17 @@
+import PageWrapper from '@/components/elements/page-wrapper';
 import KeySetEditor from '@/components/pages/editor-keyset/keyset-editor';
+import { LoadingDisplay } from '@/components/suspense/loading-display';
+import {
+  BuildGroupBreadcrumb,
+  BuildIndividualsBreadcrumb,
+  BuildEvaluationsBreadcrumb,
+  BuildKeysetBreadcrumb,
+} from '@/components/ui/breadcrumb-entries';
 import { CleanUpString } from '@/lib/strings';
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
+import { Await, createFileRoute, redirect } from '@tanstack/react-router';
+import { type KeySet } from '@/types/keyset';
+import { ErrorDisplay } from '@/components/suspense/error-display';
 
 export const Route = createFileRoute('/session/$group/$individual/keysets/$keyset/')({
   beforeLoad: ({ params, context }) => {
@@ -28,22 +39,51 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/$keyse
       Group: CleanUpString(group),
       Individual: CleanUpString(individual),
       KeySet: CleanUpString(keyset),
+      CleanHandle: context.folderHandleContext.handle,
     };
   },
   loader: ({ context }) => {
-    const { Group, Individual, KeySet } = context;
+    const { Group, Individual, KeySet, CleanHandle } = context;
+
+    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
 
     return {
       Group: Group,
       Individual: Individual,
       KeySet: KeySet,
+      CleanHandle: CleanHandle,
+      Settings: context.folderHandleContext.settings,
+      fetchKeyboards,
     };
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { Group, Individual, KeySet } = Route.useLoaderData();
+  const { Group, Individual, KeySet, CleanHandle, fetchKeyboards } = Route.useLoaderData();
 
-  return <KeySetEditor Group={Group} Individual={Individual} KeySet={KeySet} />;
+  return (
+    <PageWrapper
+      breadcrumbs={[
+        BuildGroupBreadcrumb(),
+        BuildIndividualsBreadcrumb(Group),
+        BuildEvaluationsBreadcrumb(Group, Individual),
+        BuildKeysetBreadcrumb(Group, Individual),
+      ]}
+      label={CleanUpString(KeySet)}
+      className="select-none"
+    >
+      <Await promise={fetchKeyboards} fallback={<LoadingDisplay />}>
+        {(keysets: KeySet[]) => {
+          const relevantKeySet = keysets.find((ks) => ks.Name === KeySet);
+
+          if (!relevantKeySet) return <ErrorDisplay Text="KeySet not found" />;
+
+          return (
+            <KeySetEditor Group={Group} Individual={Individual} KeySetObject={relevantKeySet} Handle={CleanHandle} />
+          );
+        }}
+      </Await>
+    </PageWrapper>
+  );
 }
