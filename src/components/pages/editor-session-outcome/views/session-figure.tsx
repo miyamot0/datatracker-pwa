@@ -17,11 +17,17 @@ import { ExpandedKeySetInstance, KeySetInstance } from '@/types/keyset';
 import { ExpandedSavedSessionResult } from '@/lib/dtos';
 import { CustomTooltipProps, PlotPoint } from '@/types/visuals';
 import { KeyManageType } from '@/types/timing';
+import { generateTicks } from '@/lib/graphing';
 
 type Props = {
   Session?: ExpandedSavedSessionResult;
   PlotData?: PlotPoint[];
   KeysHidden: ExpandedKeySetInstance[];
+};
+
+const noAnimationProps = {
+  isAnimationActive: false,
+  animationDuration: 0,
 };
 
 export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) {
@@ -71,10 +77,21 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
 
   const keys_to_skip = KeysHidden.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
 
+  const yValues = PlotData.map((point) => {
+    const keys = Object.keys(point).filter((k) => k !== 'second');
+    const filteredKeys = keys.filter((key) => keys_to_skip.includes(key) === false);
+
+    return filteredKeys.map((key) => point[key]);
+  }).flat();
+
+  const maxYValue = Math.max(...yValues) + 1;
+  const yTicks = generateTicks(maxYValue, 0);
+
   return (
     <div className="flex flex-col gap-4 w-full">
-      <ResponsiveContainer width="100%" height={500} className={'text-base text-primary bg-white'}>
+      <ResponsiveContainer width="100%" height={500} className={'text-base text-primary bg-white nuke-view-transition'}>
         <ComposedChart
+          {...noAnimationProps}
           width={600}
           height={300}
           title=""
@@ -93,12 +110,14 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
             (press: KeyManageType, index_of_ref: number) => {
               return (
                 <ReferenceLine
+                  {...noAnimationProps}
                   key={`ref-secondary-${index_of_ref}`}
                   x={press.TimeIntoSession}
                   stroke="red"
                   label={
                     index_of_ref % 2 === 0 ? (
                       <Label
+                        {...noAnimationProps}
                         value={'Timer #2'}
                         position={{ x: press.TimeIntoSession, y: 0 }}
                         fill="black"
@@ -115,12 +134,14 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
             (press: KeyManageType, index_of_ref: number) => {
               return (
                 <ReferenceLine
+                  {...noAnimationProps}
                   key={`ref-tertiary-${index_of_ref}`}
                   x={press.TimeIntoSession}
                   stroke="blue"
                   label={
                     index_of_ref % 2 === 0 ? (
                       <Label
+                        {...noAnimationProps}
                         value={'Timer #3'}
                         position={{ x: press.TimeIntoSession, y: 0 }}
                         fill="black"
@@ -138,6 +159,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
               return (
                 <React.Fragment key={index}>
                   <Line
+                    {...noAnimationProps}
                     animationDuration={100}
                     connectNulls={true}
                     name={`${key.KeyDescription}-Points_`}
@@ -149,6 +171,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
                     stroke={FIGURE_PATH_COLORS[index]}
                   />
                   <Scatter
+                    {...noAnimationProps}
                     data={PlotData}
                     animationDuration={100}
                     dataKey={`${key.KeyDescription}`}
@@ -161,6 +184,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
           )}
 
           <XAxis
+            {...noAnimationProps}
             dataKey="second"
             domain={[0, Math.floor(Session.TimerMain) + 1]}
             height={50}
@@ -178,6 +202,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
             }}
           >
             <Label
+              {...noAnimationProps}
               style={{
                 textAnchor: 'middle',
                 fill: 'black',
@@ -189,11 +214,12 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
             />
           </XAxis>
           <YAxis
+            {...noAnimationProps}
             min={0}
-            max={Session.MaxY}
-            range={[0, Session.MaxY]}
-            domain={[0, Session.MaxY]}
-            ticks={[...Session.YTicks, Session.MaxY]}
+            max={maxYValue}
+            range={[0, maxYValue]}
+            domain={[0, maxYValue]}
+            ticks={[...yTicks, maxYValue]}
             padding={{ bottom: 10 }}
             style={{
               stroke: 'black',
@@ -201,6 +227,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
             }}
           >
             <Label
+              {...noAnimationProps}
               style={{
                 textAnchor: 'middle',
                 fill: 'black',
@@ -211,8 +238,9 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
               value={'Event Recording During Session'}
             />
           </YAxis>
-          <Tooltip animationDuration={100} content={<CustomTooltip />} />
+          <Tooltip {...noAnimationProps} content={<CustomTooltip />} />
           <Legend
+            {...noAnimationProps}
             payload={Session.Keyset.FrequencyKeys.filter((k) => keys_to_skip.includes(k.KeyDescription) === false).map(
               (item: KeySetInstance, index: number) => ({
                 id: item.KeyDescription,

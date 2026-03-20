@@ -17,9 +17,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import SessionFigure from './session-figure';
 import SessionKeyList from './session-key-list';
-import { FolderHandleContext } from '@/context/folder-context';
 import { ExpandedSavedSessionResult } from '@/lib/dtos';
 import { ToggleDisplayKey } from '@/types/visuals';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 export default function SessionViewerContent({
   Group,
@@ -28,6 +28,7 @@ export default function SessionViewerContent({
   ShowKeys,
   ExpandedSession,
   PlotObject,
+  Settings,
 }: {
   Group: string;
   Individual: string;
@@ -35,9 +36,9 @@ export default function SessionViewerContent({
   ShowKeys: ToggleDisplayKey[];
   ExpandedSession: ExpandedSavedSessionResult;
   PlotObject: any[];
+  Settings: ApplicationSettingsTypes;
 }) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
-  const { settings } = useContext(FolderHandleContext);
 
   return (
     <Card className="w-full">
@@ -80,7 +81,6 @@ export default function SessionViewerContent({
 
                     setLocalCachedPrefs(Group, Individual, Evaluation, `${Group} ${Individual} ${Evaluation}`, {
                       KeyDescription: hidden_keys,
-                      CTBElements: [],
                       Schedule: 'End on Timer #1',
                     });
                   }}
@@ -162,7 +162,7 @@ export default function SessionViewerContent({
 
         <Separator className="my-4" />
 
-        <SessionKeyList Settings={settings} Session={ExpandedSession} />
+        <SessionKeyList Settings={Settings} Session={ExpandedSession} />
 
         <Separator className="my-4" />
 
