@@ -9,8 +9,8 @@ describe('exportHumanReadableToCSV', () => {
 
     const input: HumanReadableResults = {
       keys: [
-        { Key: 'key1', Value: 'Behavior1' },
-        { Key: 'key2', Value: 'Behavior2' },
+        { Key: 'key1', Value: 'Behavior1', KeyCode: 50 },
+        { Key: 'key2', Value: 'Behavior2', KeyCode: 51 },
       ],
       type: 'Frequency',
       results: [
@@ -21,8 +21,8 @@ describe('exportHumanReadableToCSV', () => {
           DataCollector: 'Collector1',
           Therapist: 'Therapist1',
           values: [
-            { Key: 'key1', Value: '5' },
-            { Key: 'key2', Value: '10' },
+            { Key: 'key1', Value: '5', KeyCode: 50 },
+            { Key: 'key2', Value: '10', KeyCode: 51 },
           ],
           duration: 30,
           Timer1: 10,
@@ -43,7 +43,7 @@ describe('exportHumanReadableToCSV', () => {
 
   it('should handle empty results array and return just the header', () => {
     const input: HumanReadableResults = {
-      keys: [{ Key: 'key1', Value: 'Behavior1' }],
+      keys: [{ Key: 'key1', Value: 'Behavior1', KeyCode: 50 }],
       type: 'Duration',
       results: [],
     };
@@ -62,7 +62,7 @@ describe('exportHumanReadableToCSV', () => {
     const time_string = date_test.toLocaleTimeString();
 
     const input: HumanReadableResults = {
-      keys: [{ Key: 'key1', Value: 'Behavior1' }],
+      keys: [{ Key: 'key1', Value: 'Behavior1', KeyCode: 50 }],
       type: 'Frequency',
       results: [
         {
@@ -71,7 +71,7 @@ describe('exportHumanReadableToCSV', () => {
           Condition: 'Condition1',
           DataCollector: 'Collector1',
           Therapist: 'Therapist1',
-          values: [{ Key: 'key1', Value: '5' }],
+          values: [{ Key: 'key1', Value: '5', KeyCode: 50 }],
           duration: 30,
           Timer1: 10,
           Timer2: 20,
@@ -83,7 +83,7 @@ describe('exportHumanReadableToCSV', () => {
           Condition: 'Condition2',
           DataCollector: 'Collector2',
           Therapist: 'Therapist2',
-          values: [{ Key: 'key1', Value: '7' }],
+          values: [{ Key: 'key1', Value: '7', KeyCode: 50 }],
           duration: 45,
           Timer1: 15,
           Timer2: 25,
@@ -108,7 +108,7 @@ describe('exportHumanReadableToCSV', () => {
     const time_string = date_test.toLocaleTimeString();
 
     const input: HumanReadableResults = {
-      keys: [{ Key: 'key1', Value: 'Behavior1' }],
+      keys: [{ Key: 'key1', Value: 'Behavior1', KeyCode: 50 }],
       type: 'Frequency',
       results: [
         {
@@ -117,7 +117,7 @@ describe('exportHumanReadableToCSV', () => {
           Condition: 'Condition,1',
           DataCollector: 'Collector,1',
           Therapist: 'Therapist,1',
-          values: [{ Key: 'key1', Value: '5,000' }],
+          values: [{ Key: 'key1', Value: '5,000', KeyCode: 50 }],
           duration: 30,
           Timer1: 10,
           Timer2: 20,

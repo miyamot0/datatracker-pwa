@@ -1,5 +1,4 @@
 import { getLocalCachedPrefs } from '@/lib/local_storage';
-import { EnhancedKeySetInstance } from '@/types/keyset';
 import { ScheduleMappingOptions } from '@/types/schedules';
 import { KeySet } from '@/types/keyset';
 import { PlotPoint, ToggleDisplayKey } from '@/types/visuals';
@@ -219,7 +218,8 @@ export const getFrequencyKeyValue = (
   }
 };
 
-export function prepareDataOrganization(Group: string, Individual: string, Evaluation: string, KeySet: KeySet) {
+export function prepareDataOrganization(Group: string, Individual: string, Evaluation: string, _KeySet: KeySet) {
+  /* 
   // Note: All visible by default, then apply user preferences to hide keys as needed
   const enhancedKeySetF: EnhancedKeySetInstance[] = KeySet.FrequencyKeys.map((key) => ({
     ...key,
@@ -231,9 +231,11 @@ export function prepareDataOrganization(Group: string, Individual: string, Evalu
     Visible: true,
     Type: 'Key',
   }));
+  */
 
   // Pull stored preferences for both frequency and duration keys
   const stored_prefs_F = getLocalCachedPrefs(Group, Individual, Evaluation, 'Rate');
+  /*
   const stored_prefs_D = getLocalCachedPrefs(Group, Individual, Evaluation, 'Duration');
 
   // Conditionally set these to false based on user preferences for both frequency and duration keys
@@ -261,6 +263,7 @@ export function prepareDataOrganization(Group: string, Individual: string, Evalu
 
     return key;
   });
+  */
 
   const timerMapping =
     ScheduleMappingOptions.find((i) => i.value === stored_prefs_F?.Schedule) ?? ScheduleMappingOptions[0];

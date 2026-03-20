@@ -555,9 +555,9 @@ describe('graphing utility functions', () => {
   describe('mapKeysWithStoragePreference', () => {
     it('should mark keys as invisible when they are in stored preferences', () => {
       const keys: ToggleDisplayKey[] = [
-        { KeyDescription: 'Key1', Visible: true, KeyType: 'Observed' },
-        { KeyDescription: 'Key2', Visible: true, KeyType: 'Observed' },
-        { KeyDescription: 'Key3', Visible: true, KeyType: 'Observed' },
+        { KeyDescription: 'Key1', Visible: true, KeyType: 'Observed', KeyName: 'Key1', KeyCode: 65 },
+        { KeyDescription: 'Key2', Visible: true, KeyType: 'Observed', KeyName: 'Key2', KeyCode: 66 },
+        { KeyDescription: 'Key3', Visible: true, KeyType: 'Observed', KeyName: 'Key3', KeyCode: 67 },
       ];
 
       const storedPreferences = {
@@ -568,15 +568,15 @@ describe('graphing utility functions', () => {
       const result = mapKeysWithStoragePreference(keys, storedPreferences);
 
       expect(result).toHaveLength(3);
-      expect(result[0]).toEqual({ KeyDescription: 'Key1', Visible: false, KeyType: 'Observed' });
-      expect(result[1]).toEqual({ KeyDescription: 'Key2', Visible: true, KeyType: 'Observed' });
-      expect(result[2]).toEqual({ KeyDescription: 'Key3', Visible: false, KeyType: 'Observed' });
+      expect(result[0]).toEqual({ KeyDescription: 'Key1', Visible: false, KeyType: 'Observed', KeyName: 'Key1', KeyCode: 65 });
+      expect(result[1]).toEqual({ KeyDescription: 'Key2', Visible: true, KeyType: 'Observed', KeyName: 'Key2', KeyCode: 66 });
+      expect(result[2]).toEqual({ KeyDescription: 'Key3', Visible: false, KeyType: 'Observed', KeyName: 'Key3', KeyCode: 67 });
     });
 
     it('should keep keys visible when they are not in stored preferences', () => {
       const keys: ToggleDisplayKey[] = [
-        { KeyDescription: 'Key1', Visible: true, KeyType: 'Observed' },
-        { KeyDescription: 'Key2', Visible: true, KeyType: 'Observed' },
+        { KeyDescription: 'Key1', Visible: true, KeyType: 'Observed', KeyName: 'Key1', KeyCode: 65 },
+        { KeyDescription: 'Key2', Visible: true, KeyType: 'Observed', KeyName: 'Key2', KeyCode: 66 },
       ];
 
       const storedPreferences = {
@@ -587,8 +587,20 @@ describe('graphing utility functions', () => {
       const result = mapKeysWithStoragePreference(keys, storedPreferences);
 
       expect(result).toHaveLength(2);
-      expect(result[0]).toEqual({ KeyDescription: 'Key1', Visible: true, KeyType: 'Observed' });
-      expect(result[1]).toEqual({ KeyDescription: 'Key2', Visible: true, KeyType: 'Observed' });
+      expect(result[0]).toEqual({
+        KeyDescription: 'Key1',
+        Visible: true,
+        KeyType: 'Observed',
+        KeyName: 'Key1',
+        KeyCode: 65,
+      });
+      expect(result[1]).toEqual({
+        KeyDescription: 'Key2',
+        Visible: true,
+        KeyType: 'Observed',
+        KeyName: 'Key2',
+        KeyCode: 66,
+      });
     });
 
     it('should handle empty keys array', () => {
@@ -605,8 +617,8 @@ describe('graphing utility functions', () => {
 
     it('should handle keys that start as invisible', () => {
       const keys: ToggleDisplayKey[] = [
-        { KeyDescription: 'Key1', Visible: false, KeyType: 'Observed' },
-        { KeyDescription: 'Key2', Visible: true, KeyType: 'Observed' },
+        { KeyDescription: 'Key1', Visible: false, KeyType: 'Observed', KeyName: 'Key1', KeyCode: 65 },
+        { KeyDescription: 'Key2', Visible: true, KeyType: 'Observed', KeyName: 'Key2', KeyCode: 66 },
       ];
 
       const storedPreferences = {
@@ -616,8 +628,20 @@ describe('graphing utility functions', () => {
 
       const result = mapKeysWithStoragePreference(keys, storedPreferences);
 
-      expect(result[0]).toEqual({ KeyDescription: 'Key1', Visible: false, KeyType: 'Observed' });
-      expect(result[1]).toEqual({ KeyDescription: 'Key2', Visible: false, KeyType: 'Observed' });
+      expect(result[0]).toEqual({
+        KeyDescription: 'Key1',
+        Visible: false,
+        KeyType: 'Observed',
+        KeyName: 'Key1',
+        KeyCode: 65,
+      });
+      expect(result[1]).toEqual({
+        KeyDescription: 'Key2',
+        Visible: false,
+        KeyType: 'Observed',
+        KeyName: 'Key2',
+        KeyCode: 66,
+      });
     });
   });
 

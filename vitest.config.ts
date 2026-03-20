@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig, configDefaults } from 'vitest/config';
 import path from 'path';
 
 export default defineConfig({
@@ -9,6 +9,7 @@ export default defineConfig({
   },
   test: {
     include: ['./src/lib/**/*.test.{ts,tsx}', './src/workers/**/*.test.{ts,tsx}'],
+    exclude: [...configDefaults.exclude], // Exclude specific test files
     reporters: ['default'],
     environment: 'jsdom',
     globals: true,

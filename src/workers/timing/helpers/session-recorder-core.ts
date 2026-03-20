@@ -238,7 +238,7 @@ export class SessionRecorderCore {
   /**
    * Processes a key press
    */
-  processKey(keyName: string, keyCode: number): { key: KeyManageType; totalKeys: number } | null {
+  processKey(_keyName: string, keyCode: number): { key: KeyManageType; totalKeys: number } | null {
     if (!this.state.isRunning || !this.keyset) return null;
 
     const isFreq = this.keyset.FrequencyKeys.some((key) => key.KeyCode === keyCode);

@@ -20,5 +20,6 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["vite-plugin-pwa/client", "vitest/globals", "@types/wicg-file-system-access"]
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts"],
+  "exclude": ["node_modules", "./src/**/*.test.{ts,tsx}", "**/*.test.{ts,tsx}"]
 }

@@ -1,5 +1,4 @@
 {
-  "files": [],
   "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
   "compilerOptions": {
     "types": ["vite-plugin-pwa/client", "vitest/globals", "@types/wicg-file-system-access"],
@@ -10,5 +9,7 @@
     "paths": {
       "@/*": ["./src/*"]
     }
-  }
+  },
+  "include": ["./src/**/*.{ts,tsx}"],
+  "exclude": ["node_modules", "./src/**/*.test.{ts,tsx}", "**/*.test.{ts,tsx}"]
 }
