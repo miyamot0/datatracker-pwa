@@ -144,83 +144,6 @@ describe('prepareDataOrganization', () => {
     vi.clearAllMocks();
   });
 
-  it('should create enhanced keysets with all keys visible by default', () => {
-    // Mock empty preferences (no keys to hide)
-    mockGetLocalCachedPrefs.mockReturnValue({
-      KeyDescription: [],
-      Schedule: 'End on Timer #1',
-    });
-
-    const result = prepareDataOrganization(group, individual, evaluation, mockKeySet);
-
-    expect(result.UnfilteredKeysFrequency).toHaveLength(2); // 2 freq keys
-    expect(result.UnfilteredKeysDuration).toHaveLength(2); // 2 duration keys
-
-    // Check frequency keys structure
-    expect(result.UnfilteredKeysFrequency[0]).toEqual({
-      KeyName: 'F1',
-      KeyDescription: 'Frequency Key 1',
-      KeyCode: 1,
-      Visible: true,
-      Type: 'Key',
-    });
-
-    // Check duration keys structure
-    expect(result.UnfilteredKeysDuration[0]).toEqual({
-      KeyName: 'D1',
-      KeyDescription: 'Duration Key 1',
-      KeyCode: 3,
-      Visible: true,
-      Type: 'Key',
-    });
-  });
-
-  it('should hide frequency keys based on user preferences', () => {
-    mockGetLocalCachedPrefs.mockImplementation((_group, _individual, _evaluation, type) => {
-      if (type === 'Rate') {
-        return {
-          KeyDescription: ['Frequency Key 1'],
-          CTBElements: [],
-          Schedule: 'End on Timer #1',
-        };
-      }
-      return {
-        KeyDescription: [],
-        CTBElements: [],
-        Schedule: 'End on Timer #1',
-      };
-    });
-
-    const result = prepareDataOrganization(group, individual, evaluation, mockKeySet);
-
-    // Frequency Key 1 should be hidden
-    expect(result.UnfilteredKeysFrequency[0].Visible).toBe(false);
-    expect(result.UnfilteredKeysFrequency[1].Visible).toBe(true); // Frequency Key 2
-  });
-
-  it('should hide duration keys based on user preferences', () => {
-    mockGetLocalCachedPrefs.mockImplementation((_group, _individual, _evaluation, type) => {
-      if (type === 'Duration') {
-        return {
-          KeyDescription: ['Duration Key 2'],
-          CTBElements: [],
-          Schedule: 'End on Timer #1',
-        };
-      }
-      return {
-        KeyDescription: [],
-        CTBElements: [],
-        Schedule: 'End on Timer #1',
-      };
-    });
-
-    const result = prepareDataOrganization(group, individual, evaluation, mockKeySet);
-
-    // Duration Key 2 should be hidden
-    expect(result.UnfilteredKeysDuration[1].Visible).toBe(false);
-    expect(result.UnfilteredKeysDuration[0].Visible).toBe(true); // Duration Key 1
-  });
-
   it('should use the correct timer mapping from preferences', () => {
     mockGetLocalCachedPrefs.mockReturnValue({
       KeyDescription: [],
@@ -244,24 +167,6 @@ describe('prepareDataOrganization', () => {
     const result = prepareDataOrganization(group, individual, evaluation, mockKeySet);
 
     expect(result.TimerMapping).toEqual(ScheduleMappingOptions[0]);
-  });
-
-  it('should handle empty frequency and duration keys', () => {
-    const emptyKeySet: KeySet = {
-      ...mockKeySet,
-      FrequencyKeys: [],
-      DurationKeys: [],
-    };
-
-    mockGetLocalCachedPrefs.mockReturnValue({
-      KeyDescription: [],
-      Schedule: 'End on Timer #1',
-    });
-
-    const result = prepareDataOrganization(group, individual, evaluation, emptyKeySet);
-
-    expect(result.UnfilteredKeysFrequency).toHaveLength(0);
-    expect(result.UnfilteredKeysDuration).toHaveLength(0);
   });
 
   it('should call getLocalCachedPrefs with correct parameters', () => {

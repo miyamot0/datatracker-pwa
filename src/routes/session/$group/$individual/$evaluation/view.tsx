@@ -86,80 +86,83 @@ function RouteComponent() {
       Settings={Settings}
     >
       <Await promise={totalQuery} fallback={<LoadingDisplay />}>
-        {(results: any[]) => {
-          const keyboards: KeySet[] = results[0];
-          const sessionOutcomes: ModifiedSessionResult[] = results[1];
-          const recentKeysetName = pullMostRecentSession(sessionOutcomes);
-          const latestKeyset = keyboards.find((kb) => kb.Name === recentKeysetName.SessionSettings.KeySet);
+        {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (results: any[]) => {
+            const keyboards: KeySet[] = results[0];
+            const sessionOutcomes: ModifiedSessionResult[] = results[1];
+            const recentKeysetName = pullMostRecentSession(sessionOutcomes);
+            const latestKeyset = keyboards.find((kb) => kb.Name === recentKeysetName.SessionSettings.KeySet);
 
-          // TODO: The latest keyset should be the last one in the session designer
-          if (!latestKeyset) {
-            return <ErrorDisplay Text={'KeySet not found.'} />;
+            // TODO: The latest keyset should be the last one in the session designer
+            if (!latestKeyset) {
+              return <ErrorDisplay Text={'KeySet not found.'} />;
+            }
+
+            const {
+              frequencyKeys: targetedFKeys,
+              durationKeys: targetedDKeys,
+              derivedKeys: targetedDerivedKeys,
+            } = extractAndDeduplicateKeysets(sessionOutcomes, latestKeyset);
+
+            const dynamicKeyset = {
+              ...latestKeyset,
+              FrequencyKeys: targetedFKeys,
+              DurationKeys: targetedDKeys,
+              DerivedKeys: targetedDerivedKeys,
+            } satisfies KeySet;
+
+            const keysFreqObserved: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map(
+              (key) =>
+                ({
+                  ...key,
+                  Visible: true,
+                  KeyType: 'Observed',
+                }) satisfies ToggleDisplayKey,
+            );
+
+            const keysFreqDerived: ToggleDisplayKey[] = dynamicKeyset.DerivedKeys?.map(
+              (key) =>
+                ({
+                  KeyName: key.name,
+                  KeyDescription: key.name,
+                  KeyCode: -1,
+                  Visible: true,
+                  KeyType: 'Derived',
+                }) satisfies ToggleDisplayKey,
+            );
+
+            const storedPreferences = getLocalCachedPrefs(Group, Individual, Evaluation, 'Rate');
+            const showKeysFreq = mapKeysWithStoragePreference(
+              [...keysFreqObserved, ...keysFreqDerived],
+              storedPreferences,
+            );
+
+            const keyDurationObserved: ToggleDisplayKey[] = dynamicKeyset.DurationKeys.map(
+              (key) =>
+                ({
+                  ...key,
+                  Visible: true,
+                  KeyType: 'Observed',
+                }) satisfies ToggleDisplayKey,
+            );
+
+            const storedPreferencesD = getLocalCachedPrefs(Group, Individual, Evaluation, 'Duration');
+            const showKeysDuration = mapKeysWithStoragePreference([...keyDurationObserved], storedPreferencesD);
+
+            return (
+              <ResultsViewerPage
+                Group={Group}
+                Individual={Individual}
+                Evaluation={Evaluation}
+                Sessions={sessionOutcomes}
+                LatestKeySet={dynamicKeyset}
+                ShowKeysFreq={showKeysFreq}
+                ShowKeysDuration={showKeysDuration}
+              />
+            );
           }
-
-          const {
-            frequencyKeys: targetedFKeys,
-            durationKeys: targetedDKeys,
-            derivedKeys: targetedDerivedKeys,
-          } = extractAndDeduplicateKeysets(sessionOutcomes, latestKeyset);
-
-          const dynamicKeyset = {
-            ...latestKeyset,
-            FrequencyKeys: targetedFKeys,
-            DurationKeys: targetedDKeys,
-            DerivedKeys: targetedDerivedKeys,
-          } satisfies KeySet;
-
-          const keysFreqObserved: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map(
-            (key) =>
-              ({
-                ...key,
-                Visible: true,
-                KeyType: 'Observed',
-              }) satisfies ToggleDisplayKey,
-          );
-
-          const keysFreqDerived: ToggleDisplayKey[] = dynamicKeyset.DerivedKeys?.map(
-            (key) =>
-              ({
-                KeyName: key.name,
-                KeyDescription: key.name,
-                KeyCode: -1,
-                Visible: true,
-                KeyType: 'Derived',
-              }) satisfies ToggleDisplayKey,
-          );
-
-          const storedPreferences = getLocalCachedPrefs(Group, Individual, Evaluation, 'Rate');
-          const showKeysFreq = mapKeysWithStoragePreference(
-            [...keysFreqObserved, ...keysFreqDerived],
-            storedPreferences,
-          );
-
-          const keyDurationObserved: ToggleDisplayKey[] = dynamicKeyset.DurationKeys.map(
-            (key) =>
-              ({
-                ...key,
-                Visible: true,
-                KeyType: 'Observed',
-              }) satisfies ToggleDisplayKey,
-          );
-
-          const storedPreferencesD = getLocalCachedPrefs(Group, Individual, Evaluation, 'Duration');
-          const showKeysDuration = mapKeysWithStoragePreference([...keyDurationObserved], storedPreferencesD);
-
-          return (
-            <ResultsViewerPage
-              Group={Group}
-              Individual={Individual}
-              Evaluation={Evaluation}
-              Sessions={sessionOutcomes}
-              LatestKeySet={dynamicKeyset}
-              ShowKeysFreq={showKeysFreq}
-              ShowKeysDuration={showKeysDuration}
-            />
-          );
-        }}
+        }
       </Await>
     </PageWrapper>
   );

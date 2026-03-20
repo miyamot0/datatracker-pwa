@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { ErrorDisplay } from '@/components/suspense/error-display';
+import { KeySet } from '@/types/keyset';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/run/$keyset')({
   beforeLoad: ({ context, params }) => {
@@ -86,25 +87,28 @@ function RouteComponent() {
       HideNavbar={Settings.SessionDisplay === 'FullScreen'}
     >
       <Await promise={totalQuery} fallback={<LoadingDisplay />}>
-        {(results: any[]) => {
-          const [keysets, sessionParams] = results;
+        {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (results: any[]) => {
+            const [keysets, sessionParams] = results;
 
-          const currentKeySet = keysets.find((k: any) => k.Name == Keyset);
+            const currentKeySet = keysets.find((k: KeySet) => k.Name == Keyset);
 
-          if (!currentKeySet) return <ErrorDisplay Text={'KeySet not found.'} />;
+            if (!currentKeySet) return <ErrorDisplay Text={'KeySet not found.'} />;
 
-          return (
-            <SessionRecorderPage
-              Group={Group}
-              Individual={Individual}
-              Evaluation={Evaluation}
-              KeySetObject={currentKeySet}
-              SessionParams={sessionParams}
-              Handle={CleanHandle}
-              ApplicationSettings={ApplicationSettings}
-            />
-          );
-        }}
+            return (
+              <SessionRecorderPage
+                Group={Group}
+                Individual={Individual}
+                Evaluation={Evaluation}
+                KeySetObject={currentKeySet}
+                SessionParams={sessionParams}
+                Handle={CleanHandle}
+                ApplicationSettings={ApplicationSettings}
+              />
+            );
+          }
+        }
       </Await>
     </PageWrapper>
   );

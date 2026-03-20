@@ -76,7 +76,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
 });
 
 function RouteComponent() {
-  const { Group, Individual, Evaluation, Handle, Settings, totalQuery } = Route.useLoaderData();
+  const { Group, Individual, Evaluation, Handle, totalQuery } = Route.useLoaderData();
 
   return (
     <PageWrapper
@@ -89,83 +89,86 @@ function RouteComponent() {
       className="select-none"
     >
       <Await promise={totalQuery} fallback={<LoadingDisplay />}>
-        {(results: any[]) => {
-          const keyboards: KeySet[] = results[0];
-          const sessionOutcomes: ModifiedSessionResult[] = results[1];
+        {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (results: any[]) => {
+            const keyboards: KeySet[] = results[0];
+            const sessionOutcomes: ModifiedSessionResult[] = results[1];
 
-          const resultsFiltered = filterSessionsByPrimaryRole(sessionOutcomes);
+            const resultsFiltered = filterSessionsByPrimaryRole(sessionOutcomes);
 
-          const recentKeysetName = pullMostRecentSession(sessionOutcomes);
-          const latestKeyset = keyboards.find((kb) => kb.Name === recentKeysetName.SessionSettings.KeySet);
+            const recentKeysetName = pullMostRecentSession(sessionOutcomes);
+            const latestKeyset = keyboards.find((kb) => kb.Name === recentKeysetName.SessionSettings.KeySet);
 
-          // TODO: The latest keyset should be the last one in the session designer
-          if (!latestKeyset) {
-            return <ErrorDisplay Text={'KeySet not found.'} />;
+            // TODO: The latest keyset should be the last one in the session designer
+            if (!latestKeyset) {
+              return <ErrorDisplay Text={'KeySet not found.'} />;
+            }
+
+            const {
+              frequencyKeys: targetedFKeys,
+              durationKeys: targetedDKeys,
+              derivedKeys: targetedDerivedKeys,
+            } = extractAndDeduplicateKeysets(sessionOutcomes, latestKeyset);
+
+            const dynamicKeyset = {
+              ...latestKeyset,
+              FrequencyKeys: targetedFKeys,
+              DurationKeys: targetedDKeys,
+              DerivedKeys: targetedDerivedKeys,
+            } satisfies KeySet;
+
+            const keysFreqObserved: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map(
+              (key) =>
+                ({
+                  ...key,
+                  Visible: true,
+                  KeyType: 'Observed',
+                }) satisfies ToggleDisplayKey,
+            );
+
+            const keysFreqDerived: ToggleDisplayKey[] = dynamicKeyset.DerivedKeys?.map(
+              (key) =>
+                ({
+                  KeyName: key.name,
+                  KeyDescription: key.name,
+                  KeyCode: -1,
+                  Visible: true,
+                  KeyType: 'Derived',
+                }) satisfies ToggleDisplayKey,
+            );
+
+            const storedPreferences = getLocalCachedPrefs(Group, Individual, Evaluation, 'Rate');
+            const showKeysFreq = mapKeysWithStoragePreference(
+              [...keysFreqObserved, ...keysFreqDerived],
+              storedPreferences,
+            );
+
+            let minX = 0;
+            let maxX = 1;
+
+            if (resultsFiltered.length > 0) {
+              minX = Math.min(...resultsFiltered.map((r) => r.SessionSettings.Session));
+              maxX = Math.max(...resultsFiltered.map((r) => r.SessionSettings.Session));
+            }
+
+            return (
+              <ResultsRateVisualsPage
+                Group={Group}
+                Individual={Individual}
+                Evaluation={Evaluation}
+                Handle={Handle}
+                Results={sessionOutcomes}
+                ResultsFiltered={resultsFiltered}
+                DynamicKeySet={dynamicKeyset}
+                Schedule={storedPreferences.Schedule ?? 'End on Timer #1'}
+                ShowKeys={showKeysFreq}
+                MinX={minX}
+                MaxX={maxX}
+              />
+            );
           }
-
-          const {
-            frequencyKeys: targetedFKeys,
-            durationKeys: targetedDKeys,
-            derivedKeys: targetedDerivedKeys,
-          } = extractAndDeduplicateKeysets(sessionOutcomes, latestKeyset);
-
-          const dynamicKeyset = {
-            ...latestKeyset,
-            FrequencyKeys: targetedFKeys,
-            DurationKeys: targetedDKeys,
-            DerivedKeys: targetedDerivedKeys,
-          } satisfies KeySet;
-
-          const keysFreqObserved: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map(
-            (key) =>
-              ({
-                ...key,
-                Visible: true,
-                KeyType: 'Observed',
-              }) satisfies ToggleDisplayKey,
-          );
-
-          const keysFreqDerived: ToggleDisplayKey[] = dynamicKeyset.DerivedKeys?.map(
-            (key) =>
-              ({
-                KeyName: key.name,
-                KeyDescription: key.name,
-                KeyCode: -1,
-                Visible: true,
-                KeyType: 'Derived',
-              }) satisfies ToggleDisplayKey,
-          );
-
-          const storedPreferences = getLocalCachedPrefs(Group, Individual, Evaluation, 'Rate');
-          const showKeysFreq = mapKeysWithStoragePreference(
-            [...keysFreqObserved, ...keysFreqDerived],
-            storedPreferences,
-          );
-
-          let minX = 0;
-          let maxX = 1;
-
-          if (resultsFiltered.length > 0) {
-            minX = Math.min(...resultsFiltered.map((r) => r.SessionSettings.Session));
-            maxX = Math.max(...resultsFiltered.map((r) => r.SessionSettings.Session));
-          }
-
-          return (
-            <ResultsRateVisualsPage
-              Group={Group}
-              Individual={Individual}
-              Evaluation={Evaluation}
-              Handle={Handle}
-              Results={sessionOutcomes}
-              ResultsFiltered={resultsFiltered}
-              DynamicKeySet={dynamicKeyset}
-              Schedule={storedPreferences.Schedule ?? 'End on Timer #1'}
-              ShowKeys={showKeysFreq}
-              MinX={minX}
-              MaxX={maxX}
-            />
-          );
-        }}
+        }
       </Await>
     </PageWrapper>
   );
