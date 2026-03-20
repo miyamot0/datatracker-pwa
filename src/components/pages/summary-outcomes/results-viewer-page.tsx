@@ -5,38 +5,32 @@ import {
   BuildEvaluationsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
 import { CleanUpString } from '@/lib/strings';
-import { FolderHandleContext } from '@/context/folder-context';
-import { useQuery } from '@tanstack/react-query';
-import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import ResultsViewerContent from './views/results-viewer-content';
-import { ErrorDisplay } from '@/components/suspense/error-display';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
-import { useContext } from 'react';
-import { pullMostRecentKeySet } from '@/lib/keyset';
 import { prepareDataOrganization } from '@/lib/summary';
+import { ModifiedSessionResult } from '@/types/storage';
+import { KeySet } from '@/types/keyset';
+import { ToggleDisplayKey } from '@/types/visuals';
 
 export default function ResultsViewerPage({
   Group,
   Individual,
   Evaluation,
+  Sessions,
+  LatestKeySet,
+  ShowKeysFreq,
 }: {
   Group: string;
   Individual: string;
   Evaluation: string;
+  Sessions: ModifiedSessionResult[];
+  LatestKeySet: KeySet;
+  ShowKeysFreq: ToggleDisplayKey[];
 }) {
-  const { handle } = useContext(FolderHandleContext);
-  const { data, isLoading, error } = useQuery(sessionOutcomesQueryOptions(handle!, Group, Individual, Evaluation));
-
-  if (isLoading) return <LoadingDisplay />;
-
-  if (error || !data) return <ErrorDisplay Text={error?.message} />;
-
-  const keySet = pullMostRecentKeySet(data);
-  const { UnfilteredKeysFrequency, UnfilteredKeysDuration, TimerMapping, ExcludeFromCTB } = prepareDataOrganization(
+  const { UnfilteredKeysDuration, TimerMapping } = prepareDataOrganization(
     Group,
     Individual,
     Evaluation,
-    keySet,
+    LatestKeySet,
   );
 
   return (
@@ -50,12 +44,11 @@ export default function ResultsViewerPage({
       className="select-none"
     >
       <ResultsViewerContent
-        UnfilteredKeysFrequency={UnfilteredKeysFrequency}
         UnfilteredKeysDuration={UnfilteredKeysDuration}
         TimerMapping={TimerMapping}
-        ExcludeFromCTB={ExcludeFromCTB}
-        Results={data}
-        Keyset={keySet}
+        Results={Sessions}
+        Keyset={LatestKeySet}
+        ShowKeysFreq={ShowKeysFreq}
         Group={Group}
         Individual={Individual}
         Evaluation={Evaluation}

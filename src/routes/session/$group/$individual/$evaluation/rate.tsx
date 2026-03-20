@@ -60,7 +60,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
     const keys: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map(
       (key) =>
         ({
-          KeyDescription: key.KeyDescription,
+          ...key,
           Visible: true,
           KeyType: 'Observed',
         }) satisfies ToggleDisplayKey,
@@ -69,7 +69,9 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
     const derivedKeys: ToggleDisplayKey[] = dynamicKeyset.DerivedKeys?.map(
       (key) =>
         ({
+          KeyName: key.name,
           KeyDescription: key.name,
+          KeyCode: -1,
           Visible: true,
           KeyType: 'Derived',
         }) satisfies ToggleDisplayKey,

@@ -191,8 +191,10 @@ export function mapKeysWithStoragePreference(keys: ToggleDisplayKey[], storedPre
 export function createCTBKeyWithPreferences(keys: ToggleDisplayKey[], storedPreferences: any) {
   const ctbEntry = {
     KeyDescription: 'CTB',
+    KeyName: 'CTB',
     KeyType: 'Derived',
     Visible: true,
+    KeyCode: -999,
   } satisfies ToggleDisplayKey;
 
   // Map CTB exclusions

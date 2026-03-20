@@ -68,8 +68,9 @@ export function BaseChart({
     data: preparedData.filter((data) => data.Condition === condition),
   }));
 
-  console.log(data_set_parsed_by_condition);
-  console.log(keySetFull);
+  // TODO: Needs cleaning
+  //console.log(data_set_parsed_by_condition);
+  //console.log(keySetFull);
 
   let markerSize = 100;
   if (figureTextSize == 'large') {

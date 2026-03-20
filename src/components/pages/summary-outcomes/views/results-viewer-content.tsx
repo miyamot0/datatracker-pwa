@@ -6,29 +6,28 @@ import { ModifiedSessionResult } from '@/types/storage';
 import { EnhancedKeySetInstance, KeySet } from '@/types/keyset';
 import { ScheduleMappingOptions, ScheduleMappingOptionsType } from '@/types/schedules';
 import { DataCollectorRolesType } from '@/types/roles';
+import { ToggleDisplayKey } from '@/types/visuals';
 
 type Props = {
-  UnfilteredKeysFrequency: EnhancedKeySetInstance[];
   UnfilteredKeysDuration: EnhancedKeySetInstance[];
   TimerMapping: ScheduleMappingOptionsType;
-  ExcludeFromCTB: EnhancedKeySetInstance[];
   Results: ModifiedSessionResult[];
   Keyset: KeySet;
   Group: string;
   Individual: string;
   Evaluation: string;
+  ShowKeysFreq: ToggleDisplayKey[]; // Note: Only frequency keys are toggled for display in the current UI, but this can be expanded to duration keys as needed
 };
 
 export default function ResultsViewerContent({
-  UnfilteredKeysFrequency,
   UnfilteredKeysDuration,
   TimerMapping,
-  //ExcludeFromCTB,
   Results,
   Keyset,
   Group,
   Individual,
   Evaluation,
+  ShowKeysFreq,
 }: Props) {
   const [role, setRole] = useState<DataCollectorRolesType>('Primary');
   const [schedule, setSchedule] = useState<ScheduleMappingOptionsType>(TimerMapping);
@@ -91,8 +90,8 @@ export default function ResultsViewerContent({
         <ViewFrequencyResults
           SessionTimer={schedule.value}
           Results={filteredResults}
-          ExcludeFromCTB={[]}
-          UnfilteredKeyList={UnfilteredKeysFrequency}
+          LatestKeyset={Keyset}
+          ShowKeysFreq={ShowKeysFreq}
           Group={Group}
           Individual={Individual}
           Evaluation={Evaluation}
