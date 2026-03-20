@@ -1,23 +1,15 @@
-import PageWrapper from '@/components/elements/page-wrapper';
 import { useEventListener } from '@/components/elements/event-listeners';
 import { SavedSessionResult, SavedSettings } from '@/lib/dtos';
 import { cn } from '@/lib/utils';
 import { KeySet } from '@/types/keyset';
-import { useState, useRef, useEffect, useContext } from 'react';
-import { KeyManageType,  TimerSetting } from '@/types/timing';
+import { useState, useRef, useEffect } from 'react';
+import { KeyManageType, TimerSetting } from '@/types/timing';
 import { toast } from 'sonner';
 import SessionRecorderWorker from '@/workers/timing/session-recorder-worker.ts?worker';
 import SessionRecorderInstructions from './ui-instructions';
 import KeyHistoryListing from './ui-key-listing';
 import SessionRecorderTallies from './ui-counts';
-import {
-  BuildEvaluationsBreadcrumb,
-  BuildGroupBreadcrumb,
-  BuildIndividualsBreadcrumb,
-  BuildSessionDesignerBreadcrumb,
-} from '@/components/ui/breadcrumb-entries';
 import { displayConditionalNotification } from '@/lib/notifications';
-import { FolderHandleContext } from '@/context/folder-context';
 import { useMutation } from '@tanstack/react-query';
 import { mutationSettingsParams } from '@/queries/session/mutate-session-params';
 import { queryClient } from '@/App';
@@ -30,6 +22,7 @@ import {
   TimerUpdatePayload,
 } from '@/workers/timing/types/session-recorder-worker-payloads';
 import { WorkerMessage, WorkerResponse } from '@/workers/timing/types/session-recorder-worker-messaging';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 type Props = {
   Group: string;
@@ -38,14 +31,25 @@ type Props = {
   Keyset: KeySet;
   Settings: SavedSettings;
   Handle: FileSystemDirectoryHandle;
+  ApplicationSettings: ApplicationSettingsTypes;
 };
 
-export default function SessionRecorderInterface({ Group, Individual, Evaluation, Keyset, Settings, Handle }: Props) {
-  const { settings: applicationSettings } = useContext(FolderHandleContext);
+export default function SessionRecorderInterface({
+  Group,
+  Individual,
+  Evaluation,
+  Keyset,
+  Settings,
+  Handle,
+  ApplicationSettings,
+}: Props) {
   const { history } = useRouter();
+  const router = useRouter();
+
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
 
   const workerRef = useRef<Worker | null>(null);
+
   const messageChannelRef = useRef<MessageChannel | null>(null);
   const animationFrameRef = useRef<number>();
   const lastUpdateTimeRef = useRef<number>(0);
@@ -59,8 +63,19 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
 
   const mutateSettings = useMutation({
     mutationFn: mutationSettingsParams,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.setQueryData(['/', Group, Individual, Evaluation, 'settings'], data);
+
+      // Invalidate other routes with results
+      await router.invalidate({
+        filter: (match) =>
+          match.routeId === '/session/$group/$individual/$evaluation/history/' ||
+          match.routeId === '/session/$group/$individual/$evaluation/proportion' ||
+          match.routeId === '/session/$group/$individual/$evaluation/rate' ||
+          match.routeId === '/session/$group/$individual/$evaluation/reli' ||
+          match.routeId === '/session/$group/$individual/$evaluation/view',
+        sync: false,
+      });
     },
   });
 
@@ -129,7 +144,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
     // Initialize worker with settings and keyset
     const initMessage: WorkerMessage = {
       type: 'INIT',
-      payload: { settings: Settings, keyset: Keyset, uiPollingInterval: applicationSettings.RecorderPolling },
+      payload: { settings: Settings, keyset: Keyset, uiPollingInterval: ApplicationSettings.RecorderPolling },
     };
     workerRef.current.postMessage(initMessage);
 
@@ -282,7 +297,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
           },
         });
 
-        switch (applicationSettings.PostSessionBx) {
+        switch (ApplicationSettings.PostSessionBx) {
           case 'AutoAdvance':
             history.go(-1);
 
@@ -305,7 +320,7 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (e) {
         displayConditionalNotification(
-          applicationSettings,
+          ApplicationSettings,
           'Error Saving Results',
           'An error occurred while saving the results. Please try again.',
           3000,
@@ -421,77 +436,65 @@ export default function SessionRecorderInterface({ Group, Individual, Evaluation
   });
 
   return (
-    <PageWrapper
-      breadcrumbs={[
-        BuildGroupBreadcrumb(),
-        BuildIndividualsBreadcrumb(Group),
-        BuildEvaluationsBreadcrumb(Group, Individual),
-        BuildSessionDesignerBreadcrumb(Group, Individual, Evaluation),
-      ]}
-      className="select-none"
-      HideFooter={applicationSettings.ApplicationFooterDisplay === 'NonSession'}
-      HideNavbar={applicationSettings.SessionDisplay === 'FullScreen'}
-    >
-      <div className="flex flex-col w-full gap-4">
-        <div className="w-full flex flex-row justify-between select-none">
-          <div className="flex-1 flex flex-row">
-            <p
-              className={cn(
-                'transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
-                {
-                  'bg-green-600 text-white': Settings.Role === 'Primary',
-                  'bg-purple-400 text-white': Settings.Role === 'Reliability',
-                },
-              )}
-            >
-              {`${Settings.Role} Data Collector`}
-            </p>
-            <p
-              className={cn(
-                'mx-2 transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
-                {
-                  'bg-gray-600 text-white': Settings.TimerOption === 'End on Primary Timer',
-                  'bg-green-400 text-white': Settings.TimerOption === 'End on Timer #1',
-                  'bg-orange-400 text-white': Settings.TimerOption === 'End on Timer #2',
-                  'bg-red-400 text-white': Settings.TimerOption === 'End on Timer #3',
-                },
-              )}
-            >
-              {Settings.TimerOption} ({Settings.DurationS}s)
-            </p>
-          </div>
-          <div className="flex-1 flex flex-row justify-center items-center text-center font-bold whitespace-nowrap">
-            <p className="flex-1">{`Session #${Settings.Session}`}</p>
-          </div>
-          <div className="flex-1 flex flex-row justify-end whitespace-nowrap">
-            <p
-              className={cn('transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit', {
-                'bg-gray-600 text-white': runningState === 'Not Started',
-                'bg-blue-400 text-white': runningState === 'Started',
-                'bg-green-400 text-white': runningState === 'Completed',
-              })}
-            >
-              {runningState}
-            </p>
-          </div>
+    <div className="flex flex-col w-full gap-4">
+      <div className="w-full flex flex-row justify-between select-none">
+        <div className="flex-1 flex flex-row">
+          <p
+            className={cn(
+              'transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
+              {
+                'bg-green-600 text-white': Settings.Role === 'Primary',
+                'bg-purple-400 text-white': Settings.Role === 'Reliability',
+              },
+            )}
+          >
+            {`${Settings.Role} Data Collector`}
+          </p>
+          <p
+            className={cn(
+              'mx-2 transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
+              {
+                'bg-gray-600 text-white': Settings.TimerOption === 'End on Primary Timer',
+                'bg-green-400 text-white': Settings.TimerOption === 'End on Timer #1',
+                'bg-orange-400 text-white': Settings.TimerOption === 'End on Timer #2',
+                'bg-red-400 text-white': Settings.TimerOption === 'End on Timer #3',
+              },
+            )}
+          >
+            {Settings.TimerOption} ({Settings.DurationS}s)
+          </p>
         </div>
-
-        <SessionRecorderTallies KeysPressed={keysPressed} Keyset={Keyset} Settings={applicationSettings} />
-
-        <div className="grid grid-cols-2 w-full gap-4 select-none">
-          <SessionRecorderInstructions {...{ Evaluation, Settings }} />
-          <KeyHistoryListing
-            KeysPressed={keysPressed}
-            SecondsElapsed={secondsElapsedTotal.current}
-            SecondsElapsedFirst={secondsElapsedFirst.current}
-            SecondsElapsedSecond={secondsElapsedSecond.current}
-            SecondsElapsedThird={secondsElapsedThird.current}
-            SecondsElapsedDelta={secondsElapsedActive.current}
-            ActiveTimer={activeTimerRef.current}
-            Running={runningState === 'Started'}
-          />
+        <div className="flex-1 flex flex-row justify-center items-center text-center font-bold whitespace-nowrap">
+          <p className="flex-1">{`Session #${Settings.Session}`}</p>
+        </div>
+        <div className="flex-1 flex flex-row justify-end whitespace-nowrap">
+          <p
+            className={cn('transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit', {
+              'bg-gray-600 text-white': runningState === 'Not Started',
+              'bg-blue-400 text-white': runningState === 'Started',
+              'bg-green-400 text-white': runningState === 'Completed',
+            })}
+          >
+            {runningState}
+          </p>
         </div>
       </div>
-    </PageWrapper>
+
+      <SessionRecorderTallies KeysPressed={keysPressed} Keyset={Keyset} Settings={ApplicationSettings} />
+
+      <div className="grid grid-cols-2 w-full gap-4 select-none">
+        <SessionRecorderInstructions {...{ Evaluation, Settings }} />
+        <KeyHistoryListing
+          KeysPressed={keysPressed}
+          SecondsElapsed={secondsElapsedTotal.current}
+          SecondsElapsedFirst={secondsElapsedFirst.current}
+          SecondsElapsedSecond={secondsElapsedSecond.current}
+          SecondsElapsedThird={secondsElapsedThird.current}
+          SecondsElapsedDelta={secondsElapsedActive.current}
+          ActiveTimer={activeTimerRef.current}
+          Running={runningState === 'Started'}
+        />
+      </div>
+    </div>
   );
 }
