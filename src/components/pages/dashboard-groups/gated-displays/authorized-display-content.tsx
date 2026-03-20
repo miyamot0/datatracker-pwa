@@ -30,7 +30,10 @@ export default function AuthorizedDisplayContent({ Groups, Settings, Handle }: P
     onSuccess: async (data) => {
       queryClient.setQueryData(['/'], data);
 
-      await router.invalidate({ sync: true, forcePending: true });
+      await router.invalidate({
+        filter: (match) => match.routeId === '/dashboard/',
+        sync: true,
+      });
     },
   });
 

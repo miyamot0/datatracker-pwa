@@ -284,8 +284,10 @@ export async function mutateGroups(
         break;
 
       case 'Delete':
-        await handle.removeEntry(groupNames[0], { recursive: true });
-        newGroups = newGroups.filter((g) => g !== groupNames[0]);
+        for (const groupName of groupNames) {
+          await handle.removeEntry(groupName, { recursive: true });
+          newGroups = newGroups.filter((g) => g !== groupName);
+        }
         break;
 
       case 'Demo':

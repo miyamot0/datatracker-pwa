@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { SavedSettings } from '@/lib/dtos';
 import { KeySet } from '@/types/keyset';

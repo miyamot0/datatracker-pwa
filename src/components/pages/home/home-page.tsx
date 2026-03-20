@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { BookTextIcon, ChartLineIcon, HardDriveDownloadIcon, PackageIcon } from 'lucide-react';
-import PageWrapper from '@/components/elements/page-wrapper';
 import createHref from '@/lib/links';
 import {
   Dialog,
@@ -61,7 +60,7 @@ export default function HomePage({ Settings, SaveSettings, SetSettings }: Props)
   }, [navigate, SaveSettings, SetSettings, Settings]);
 
   return (
-    <PageWrapper className="flex flex-col gap-6 select-none">
+    <>
       <div className="pb-4">
         <div className="text-center mx-auto">
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">DataTracker</h1>
@@ -71,9 +70,7 @@ export default function HomePage({ Settings, SaveSettings, SetSettings }: Props)
           <p className="text-xl text-muted-foreground">Electronic Data Collection Program</p>
         </div>
       </div>
-
       <ImageCarousel />
-
       <div className="max-w-lg flex flex-col w-full py-8 gap-4">
         <Link to={createHref({ type: 'Documentation' })} className="flex flex-row gap-2 items-center">
           <Button variant={'outline'} className="w-full shadow-xl">
@@ -143,6 +140,6 @@ export default function HomePage({ Settings, SaveSettings, SetSettings }: Props)
           </Button>
         )}
       </div>
-    </PageWrapper>
+    </>
   );
 }
