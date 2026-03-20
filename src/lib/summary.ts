@@ -266,8 +266,8 @@ export function prepareDataOrganization(Group: string, Individual: string, Evalu
     ScheduleMappingOptions.find((i) => i.value === stored_prefs_F?.Schedule) ?? ScheduleMappingOptions[0];
 
   return {
-    UnfilteredKeysFrequency: baseUnfilteredKeysF,
-    UnfilteredKeysDuration: baseUnfilteredKeysD,
+    //UnfilteredKeysFrequency: baseUnfilteredKeysF,
+    //UnfilteredKeysDuration: baseUnfilteredKeysD,
     TimerMapping: timerMapping,
   };
 }
