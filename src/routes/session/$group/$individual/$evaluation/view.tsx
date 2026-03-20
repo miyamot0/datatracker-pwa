@@ -77,6 +77,18 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/vi
     const storedPreferences = getLocalCachedPrefs(group, individual, evaluation, 'Rate');
     const showKeysFreq = mapKeysWithStoragePreference([...keysFreqObserved, ...keysFreqDerived], storedPreferences);
 
+    const keyDurationObserved: ToggleDisplayKey[] = dynamicKeyset.DurationKeys.map(
+      (key) =>
+        ({
+          ...key,
+          Visible: true,
+          KeyType: 'Observed',
+        }) satisfies ToggleDisplayKey,
+    );
+
+    const storedPreferencesD = getLocalCachedPrefs(group, individual, evaluation, 'Duration');
+    const showKeysDuration = mapKeysWithStoragePreference([...keyDurationObserved], storedPreferencesD);
+
     return {
       Group: CleanUpString(group),
       Individual: CleanUpString(individual),
@@ -84,13 +96,15 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/vi
       Sessions: results,
       LatestKeySet: dynamicKeyset,
       ShowKeysFreq: showKeysFreq,
+      ShowKeysDuration: showKeysDuration,
     };
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { Group, Individual, Evaluation, Sessions, LatestKeySet, ShowKeysFreq } = Route.useLoaderData();
+  const { Group, Individual, Evaluation, Sessions, LatestKeySet, ShowKeysFreq, ShowKeysDuration } =
+    Route.useLoaderData();
 
   return (
     <ResultsViewerPage
@@ -100,6 +114,7 @@ function RouteComponent() {
       Sessions={Sessions}
       LatestKeySet={LatestKeySet}
       ShowKeysFreq={ShowKeysFreq}
+      ShowKeysDuration={ShowKeysDuration}
     />
   );
 }

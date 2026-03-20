@@ -16,15 +16,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
-import { EnhancedKeySetInstance } from '@/types/keyset';
+import { EnhancedKeySetInstance, KeySet } from '@/types/keyset';
 import { walkSessionDurationKey } from '@/lib/schedule-parser';
 import BackButton from '@/components/ui/back-button';
 import { SessionTerminationOptions, SessionTerminationOptionsType } from '@/types/terminations';
+import { ToggleDisplayKey } from '@/types/visuals';
 
 type Props = {
   SessionTimer: SessionTerminationOptionsType;
   Results: SavedSessionResult[];
-  UnfilteredKeyList: EnhancedKeySetInstance[];
+  LatestKeyset: KeySet;
+  ShowKeysDuration: ToggleDisplayKey[];
   Group: string;
   Individual: string;
   Evaluation: string;
@@ -33,12 +35,16 @@ type Props = {
 export default function ViewDurationResults({
   SessionTimer,
   Results,
-  UnfilteredKeyList,
+  LatestKeyset,
+  ShowKeysDuration,
   Group,
   Individual,
   Evaluation,
 }: Props) {
-  const [filteredKeys, setFilteredKeys] = useState(UnfilteredKeyList);
+  const [filteredKeys, setFilteredKeys] = useState(ShowKeysDuration);
+
+  const observedKeys = filteredKeys.filter((key) => key.KeyType === 'Observed');
+  const derivedKeys = filteredKeys.filter((key) => key.KeyType === 'Derived');
 
   const filteredKeySelection = filteredKeys.filter((key) => key.Type === 'Key');
   const hr_results: HumanReadableResults = {

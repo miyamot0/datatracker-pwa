@@ -3,24 +3,23 @@ import ViewDurationResults from './view-duration-results';
 import ViewFrequencyResults from './view-frequency-results';
 import { useState } from 'react';
 import { ModifiedSessionResult } from '@/types/storage';
-import { EnhancedKeySetInstance, KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset';
 import { ScheduleMappingOptions, ScheduleMappingOptionsType } from '@/types/schedules';
 import { DataCollectorRolesType } from '@/types/roles';
 import { ToggleDisplayKey } from '@/types/visuals';
 
 type Props = {
-  UnfilteredKeysDuration: EnhancedKeySetInstance[];
   TimerMapping: ScheduleMappingOptionsType;
   Results: ModifiedSessionResult[];
   Keyset: KeySet;
   Group: string;
   Individual: string;
   Evaluation: string;
-  ShowKeysFreq: ToggleDisplayKey[]; // Note: Only frequency keys are toggled for display in the current UI, but this can be expanded to duration keys as needed
+  ShowKeysFreq: ToggleDisplayKey[];
+  ShowKeysDuration: ToggleDisplayKey[];
 };
 
 export default function ResultsViewerContent({
-  UnfilteredKeysDuration,
   TimerMapping,
   Results,
   Keyset,
@@ -28,6 +27,7 @@ export default function ResultsViewerContent({
   Individual,
   Evaluation,
   ShowKeysFreq,
+  ShowKeysDuration,
 }: Props) {
   const [role, setRole] = useState<DataCollectorRolesType>('Primary');
   const [schedule, setSchedule] = useState<ScheduleMappingOptionsType>(TimerMapping);
@@ -102,7 +102,8 @@ export default function ResultsViewerContent({
         <ViewDurationResults
           SessionTimer={schedule.value}
           Results={filteredResults}
-          UnfilteredKeyList={UnfilteredKeysDuration}
+          LatestKeyset={Keyset}
+          ShowKeysDuration={ShowKeysDuration}
           Group={Group}
           Individual={Individual}
           Evaluation={Evaluation}

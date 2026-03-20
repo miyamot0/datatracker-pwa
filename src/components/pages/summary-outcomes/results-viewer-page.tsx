@@ -18,6 +18,7 @@ export default function ResultsViewerPage({
   Sessions,
   LatestKeySet,
   ShowKeysFreq,
+  ShowKeysDuration,
 }: {
   Group: string;
   Individual: string;
@@ -25,13 +26,9 @@ export default function ResultsViewerPage({
   Sessions: ModifiedSessionResult[];
   LatestKeySet: KeySet;
   ShowKeysFreq: ToggleDisplayKey[];
+  ShowKeysDuration: ToggleDisplayKey[];
 }) {
-  const { UnfilteredKeysDuration, TimerMapping } = prepareDataOrganization(
-    Group,
-    Individual,
-    Evaluation,
-    LatestKeySet,
-  );
+  const { TimerMapping } = prepareDataOrganization(Group, Individual, Evaluation, LatestKeySet);
 
   return (
     <PageWrapper
@@ -44,11 +41,11 @@ export default function ResultsViewerPage({
       className="select-none"
     >
       <ResultsViewerContent
-        UnfilteredKeysDuration={UnfilteredKeysDuration}
         TimerMapping={TimerMapping}
         Results={Sessions}
         Keyset={LatestKeySet}
         ShowKeysFreq={ShowKeysFreq}
+        ShowKeysDuration={ShowKeysDuration}
         Group={Group}
         Individual={Individual}
         Evaluation={Evaluation}
