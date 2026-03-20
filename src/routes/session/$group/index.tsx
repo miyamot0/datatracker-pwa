@@ -59,7 +59,9 @@ function RouteComponent() {
       className="select-none"
     >
       <Await promise={fetchClients} fallback={<LoadingDisplay />}>
-        {(clients: string[]) => <ClientsPage Group={Group} Clients={clients} Handle={CleanHandle} Settings={Settings} />}
+        {(clients: string[]) => (
+          <ClientsPage Group={Group} Clients={clients} Handle={CleanHandle} Settings={Settings} />
+        )}
       </Await>
     </PageWrapper>
   );

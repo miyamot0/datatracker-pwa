@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { displayConditionalNotification } from '@/lib/notifications';
 import BackButton from '@/components/ui/back-button';
-import { useRouter } from '@tanstack/react-router';
+import { useRouter, useRouterState } from '@tanstack/react-router';
 import { useContext } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
 
@@ -12,6 +12,8 @@ async function sleep(ms: number) {
 
 export default function UnauthorizedDisplay() {
   const router = useRouter();
+  const routerState = useRouterState();
+  const currentRouteId = routerState.matches[routerState.matches.length - 1]?.routeId;
   const { settings, setHandle } = useContext(FolderHandleContext);
 
   return (
@@ -72,8 +74,13 @@ export default function UnauthorizedDisplay() {
                 );
 
                 // Hack: do not like this
-                await sleep(100);
-                await router.invalidate({ sync: true, forcePending: true });
+                await sleep(150);
+
+                await router.invalidate({
+                  filter: (match) => match.routeId === currentRouteId,
+                  sync: true,
+                  forcePending: true,
+                });
               }
             } catch (error: unknown) {
               displayConditionalNotification(

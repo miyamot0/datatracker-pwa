@@ -10,7 +10,7 @@ import { CleanUpString } from '@/lib/strings';
 import { mutationIndividuals } from '@/queries/individuals/mutate-individuals';
 import { ApplicationSettingsTypes } from '@/types/settings';
 import { useMutation } from '@tanstack/react-query';
-import { Link, useRouter } from '@tanstack/react-router';
+import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { ColumnDef } from '@tanstack/react-table';
 import { FolderInput, FolderPlus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -31,11 +31,18 @@ export default function ClientsPage({
   Settings: ApplicationSettingsTypes;
 }) {
   const router = useRouter();
+  const routerState = useRouterState();
+  const currentRouteId = routerState.matches[routerState.matches.length - 1]?.routeId;
 
   const mutateIndividuals = useMutation({
     mutationFn: mutationIndividuals,
     onSuccess: async (data) => {
       queryClient.setQueryData(['/', Group], data);
+
+      await router.invalidate({
+        filter: (match) => match.routeId === currentRouteId,
+        sync: true,
+      });
     },
   });
 

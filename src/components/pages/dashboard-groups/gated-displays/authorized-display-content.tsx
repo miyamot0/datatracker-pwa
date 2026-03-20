@@ -7,7 +7,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { mutationGroups } from '@/queries/groups/mutate-groups';
-import { Link, useRouter } from '@tanstack/react-router';
+import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { DataTable } from '@/components/ui/data-table-common';
 import { DemoDataFolderName } from '@/workers/mutations/helpers/file-query-mutate-actions';
 import { ApplicationSettingsTypes } from '@/types/settings';
@@ -25,13 +25,16 @@ type GroupTableRow = {
 export default function AuthorizedDisplayContent({ Groups, Settings, Handle }: Props) {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const routerState = useRouterState();
+  const currentRouteId = routerState.matches[routerState.matches.length - 1]?.routeId;
+
   const mutateGroups = useMutation({
     mutationFn: mutationGroups,
     onSuccess: async (data) => {
       queryClient.setQueryData(['/'], data);
 
       await router.invalidate({
-        filter: (match) => match.routeId === '/dashboard/',
+        filter: (match) => match.routeId === currentRouteId,
         sync: true,
       });
     },
