@@ -4,7 +4,7 @@ import { ScheduleMappingOptions } from '@/types/schedules';
 import { KeySet } from '@/types/keyset';
 import { PlotPoint, ToggleDisplayKey } from '@/types/visuals';
 import { ModifiedSessionResult } from '@/types/storage';
-import { walkSessionFrequencyKey } from './schedule-parser';
+import { walkSessionFrequencyKey, walkSessionDurationKey } from './schedule-parser';
 import { SavedSessionResult } from './dtos';
 import { SessionTerminationOptionsType, SessionTerminationOptions } from '@/types/terminations';
 import { evaluateLogic } from './logic';
@@ -321,3 +321,108 @@ export function preparePlotDataCumulative(relevantSession: ModifiedSessionResult
 
   return plot_object;
 }
+
+// Process duration keys for a session
+export const processDurationKeys = (
+  result: SavedSessionResult,
+  sessionTimer: SessionTerminationOptionsType,
+  filteredKeys: ToggleDisplayKey[],
+): EntryHolder[] => {
+  const entries: EntryHolder[] = [];
+  const timerValue = getTimerValue(result, sessionTimer);
+  const timerSeconds = timerValue * 60;
+
+  filteredKeys
+    .filter((key) => key.Visible)
+    .forEach((key) => {
+      const primary = walkSessionDurationKey(result, 'Primary', key);
+      const secondary = walkSessionDurationKey(result, 'Secondary', key);
+      const tertiary = walkSessionDurationKey(result, 'Tertiary', key);
+      const scoreBySchedule = [primary, secondary, tertiary];
+
+      let duration: number;
+      let percentage: number;
+      let bouts: number;
+
+      switch (sessionTimer) {
+        case SessionTerminationOptions.TimerMain:
+          duration = scoreBySchedule.reduce((sum, a) => sum + a.Value, 0);
+          percentage = (duration / timerSeconds) * 100;
+          bouts = scoreBySchedule.reduce((sum, a) => sum + a.Bouts, 0);
+          break;
+        case SessionTerminationOptions.Timer1:
+          duration = primary.Value;
+          percentage = (duration / result.TimerOne) * 100;
+          bouts = primary.Bouts;
+          break;
+        case SessionTerminationOptions.Timer2:
+          duration = secondary.Value;
+          percentage = (duration / result.TimerTwo) * 100;
+          bouts = secondary.Bouts;
+          break;
+        case SessionTerminationOptions.Timer3:
+          duration = tertiary.Value;
+          percentage = (duration / result.TimerThree) * 100;
+          bouts = tertiary.Bouts;
+          break;
+        default:
+          duration = scoreBySchedule.reduce((sum, a) => sum + a.Value, 0);
+          percentage = (duration / timerSeconds) * 100;
+          bouts = scoreBySchedule.reduce((sum, a) => sum + a.Bouts, 0);
+      }
+
+      const averageBoutLength = bouts > 0 ? duration / bouts : 0;
+
+      // Add duration entries: seconds, percentage, bouts, average bout length
+      entries.push({
+        Key: key.KeyDescription,
+        KeyCode: key.KeyCode,
+        Value: duration.toFixed(2),
+      });
+      entries.push({
+        Key: key.KeyDescription,
+        KeyCode: key.KeyCode,
+        Value: percentage.toFixed(2),
+      });
+      entries.push({
+        Key: key.KeyDescription,
+        KeyCode: key.KeyCode,
+        Value: bouts.toString(),
+      });
+      entries.push({
+        Key: key.KeyDescription,
+        KeyCode: key.KeyCode,
+        Value: averageBoutLength.toFixed(2),
+      });
+    });
+
+  return entries;
+};
+
+// Build column labels for duration spreadsheet
+export const buildDurationColumnLabels = (
+  sessionTimer: SessionTerminationOptionsType,
+  filteredKeys: ToggleDisplayKey[],
+): string[] => {
+  const timerLabel = getTimerLabel(sessionTimer);
+  const baseLabels = [
+    'Session #',
+    'Date',
+    'Time',
+    'Condition',
+    'Data Collector',
+    'Therapist',
+    `Duration ${timerLabel} (min)`,
+  ];
+
+  const durationLabels = filteredKeys
+    .filter((key) => key.Visible)
+    .flatMap((key) => [
+      `${key.KeyDescription} (${timerLabel === 'Session' ? 'Total' : timerLabel} Seconds)`,
+      `${key.KeyDescription} (${timerLabel === 'Session' ? 'Total' : timerLabel} Percentage)`,
+      `${key.KeyDescription} (${timerLabel === 'Session' ? 'Total' : timerLabel} Bouts)`,
+      `${key.KeyDescription} (${timerLabel === 'Session' ? 'Total' : timerLabel} Average Bout Length)`,
+    ]);
+
+  return [...baseLabels, ...durationLabels];
+};

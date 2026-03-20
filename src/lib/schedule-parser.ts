@@ -51,9 +51,12 @@ export function walkSessionFrequencyKey(SessionSettings: SavedSessionResult, Sch
  */
 export function walkSessionDurationKey(SessionSettings: SavedSessionResult, Schedule: KeyTiming, Key: KeySetInstance) {
   const { SystemKeyPresses, DurationKeyPresses } = SessionSettings;
+
   const relevantScheduleChanges = SystemKeyPresses.filter((k) => k.KeyName === Schedule);
   const isEven = relevantScheduleChanges.length % 2 === 0;
-  const bouts = relevantScheduleChanges.length / 2;
+
+  const relevantKeyEvents = DurationKeyPresses.filter((k) => k.KeyName === Key.KeyName);
+  const bouts = Math.floor(relevantKeyEvents.length / 2);
 
   if (!isEven) throw new Error('Schedule changes must be even');
 
@@ -62,9 +65,7 @@ export function walkSessionDurationKey(SessionSettings: SavedSessionResult, Sche
   for (let i = 0; i < relevantScheduleChanges.length - 1; i += 2) {
     const t1 = relevantScheduleChanges[i].TimePressed;
     const t2 = relevantScheduleChanges[i + 1].TimePressed;
-    const keysWithinScheduleChange = DurationKeyPresses.filter(
-      (k) => k.KeyName === Key.KeyName && k.TimePressed > t1 && k.TimePressed <= t2,
-    );
+    const keysWithinScheduleChange = relevantKeyEvents.filter((k) => k.TimePressed > t1 && k.TimePressed <= t2);
     const nEventsLogged = keysWithinScheduleChange.length;
 
     if (nEventsLogged === 0) {
