@@ -6,7 +6,6 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { FolderHandleContext } from '@/context/folder-context';
 import { CleanUpString } from '@/lib/strings';
-import { fetchSessionOutcomes } from '@/queries/outcomes/query-session-outcomes';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { useQuery } from '@tanstack/react-query';
@@ -16,6 +15,7 @@ import ReliabilityBlank from './views/reli-blank';
 import ReliabilityViewerContent from './views/reli-viewer-content';
 import { filterSessionsByPrimaryRole, filterSessionsByReliabilityRole } from '@/lib/graphing';
 import { pullMostRecentKeySet } from '@/lib/keyset';
+import { fetchSessionOutcomesWorker } from '@/queries/outcomes/query-session-outcomes';
 
 export default function ReliabilityViewerPage({
   Group,
@@ -30,7 +30,7 @@ export default function ReliabilityViewerPage({
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['/', Group, Individual, Evaluation, 'outcomes'],
-    queryFn: () => fetchSessionOutcomes({ Handle: handle!, Group, Individual, Evaluation }),
+    queryFn: () => fetchSessionOutcomesWorker(handle!, Group, Individual, Evaluation),
   });
 
   if (isLoading) return <LoadingDisplay />;

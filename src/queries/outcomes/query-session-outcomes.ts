@@ -1,6 +1,6 @@
 import { ModifiedSessionResult } from '@/types/storage';
-import { FetchSessionOutcomesRequest, QueryResponse } from '@/workers/queries/file-query-read-worker';
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
+import { FetchSessionOutcomesRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -51,7 +51,7 @@ export const fetchSessionOutcomesWorker = async (
     worker.onmessage = (event: MessageEvent<QueryResponse>) => {
       const response = event.data;
       if (response.success) {
-        const sessionOutcomes = response.data;
+        const sessionOutcomes = response.data as ModifiedSessionResult[];
         resolve(sessionOutcomes);
       } else {
         resolve([]);

@@ -1,4 +1,4 @@
-import { LogicState } from '@/lib/logic/logic';
+import { LogicState } from '@/lib/logic';
 
 /**
  * Type for holding the key values

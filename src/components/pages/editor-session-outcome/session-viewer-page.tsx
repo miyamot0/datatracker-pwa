@@ -73,6 +73,7 @@ export default function SessionViewerPage({
     const showKeysBase = UnfilteredKeysFrequency.filter((k) => k.Type !== 'Summary').map((key) => ({
       KeyDescription: key.KeyDescription,
       Visible: key.Visible,
+      KeyType: 'Observed' as 'Observed' | 'Derived',
     }));
 
     return (

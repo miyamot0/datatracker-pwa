@@ -6,7 +6,7 @@ import { KeySetInstance, ExpandedKeySetInstance, KeySet } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';
 import { FIGURE_PATH_COLORS } from './colors';
 import { getShape } from './shapes';
-import { evaluate, LogicState } from './logic/logic';
+import { evaluateLogic, LogicState } from './logic';
 
 export function filterSessionsByPrimaryRole(results: SavedSessionResult[]) {
   return results
@@ -91,7 +91,7 @@ export function generateChartPreparation(
         fields: updatedKeys,
       };
 
-      const calculatedValue = evaluate(newLogicalState);
+      const calculatedValue = evaluateLogic(newLogicalState);
 
       return {
         ...logicalState,

@@ -24,6 +24,7 @@ describe('generateChunkedVisuals', () => {
     Name: 'Test KeySet',
     FrequencyKeys: createKeySetInstance(freqCount, 'F'),
     DurationKeys: createKeySetInstance(durCount, 'D'),
+    DerivedKeys: [],
     createdAt: new Date('2023-01-01'),
     lastModified: new Date('2023-01-02'),
   });

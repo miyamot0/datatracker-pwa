@@ -1,5 +1,5 @@
-import { FetchConditionsRequest, QueryResponse } from '@/workers/queries/file-query-read-worker';
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
+import { FetchConditionsRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -50,7 +50,7 @@ export const fetchConditionsWorker = async (
     worker.onmessage = (event: MessageEvent<QueryResponse>) => {
       const response = event.data;
       if (response.success) {
-        const directories = response.data;
+        const directories = response.data as string[];
         resolve(directories);
       } else {
         resolve([]);

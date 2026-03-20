@@ -1,6 +1,6 @@
 import { DEFAULT_SESSION_SETTINGS, SavedSettings } from '@/lib/dtos';
-import { FetchSessionParamsRequest, QueryResponse } from '@/workers/queries/file-query-read-worker';
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
+import { FetchSessionParamsRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -52,7 +52,7 @@ export const fetchSessionParamsWorker = async (
     worker.onmessage = (event: MessageEvent<QueryResponse>) => {
       const response = event.data;
       if (response.success) {
-        const settings = response.data;
+        const settings = response.data as SavedSettings;
         resolve(settings);
       } else {
         resolve(DEFAULT_SESSION_SETTINGS);

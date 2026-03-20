@@ -9,9 +9,10 @@ import {
   filterSessionsByPrimaryRole,
   mapKeysWithStoragePreference,
 } from '@/lib/graphing';
-import { pullMostRecentKeySet } from '@/lib/keyset';
+import { pullMostRecentSession } from '@/lib/keyset';
 import { ToggleDisplayKey } from '@/types/visuals';
 import ResultsProportionVisualsPage from '@/components/pages/visualize-outcomes/proportion/results-proportion-visuals-page';
+import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/proportion')({
   beforeLoad: routeGuard,
@@ -29,20 +30,28 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/pr
       sessionOutcomesQueryOptions(handle, group, individual, evaluation),
     );
 
-    // Note: base to pull from
-    const keyset = pullMostRecentKeySet(results);
+    const keyboards = await context.queryClient.ensureQueryData(keyboardQueryOptions(handle, group, individual));
 
-    if (!keyset) {
+    // Note: base to pull from
+    const recentKeysetName = pullMostRecentSession(results);
+
+    // Pull most up-to-date keyboard
+    const latestKeyset = keyboards.find((kb) => kb.Name === recentKeysetName.SessionSettings.KeySet);
+
+    if (!latestKeyset) {
       throw redirect({
         href: '/dashboard',
       });
     }
 
-    // Extract and deduplicate keysets using discrete function
-    const { frequencyKeys: targetedFKeys, durationKeys: targetedDKeys } = extractAndDeduplicateKeysets(results);
+    const {
+      frequencyKeys: targetedFKeys,
+      durationKeys: targetedDKeys,
+      //derivedKeys: targetedDerivedKeys,
+    } = extractAndDeduplicateKeysets(results, latestKeyset);
 
     const dynamicKeyset = {
-      ...keyset,
+      ...latestKeyset,
       FrequencyKeys: targetedFKeys,
       DurationKeys: targetedDKeys,
     } as unknown as KeySet;

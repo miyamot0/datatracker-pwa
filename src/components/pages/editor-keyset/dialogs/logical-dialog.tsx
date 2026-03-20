@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContext } from '@/context/folder-context';
-import { LogicalStep, LogicState, Operation, OperationTypes, ValueSource, ValueSourceField } from '@/lib/logic/logic';
+import { LogicalStep, LogicState, Operation, OperationTypes, ValueSource, ValueSourceField } from '@/lib/logic';
 import { displayConditionalNotification } from '@/lib/notifications';
 import { KeySet, KeySetLogical } from '@/types/keyset';
 import { PlusIcon, Trash } from 'lucide-react';

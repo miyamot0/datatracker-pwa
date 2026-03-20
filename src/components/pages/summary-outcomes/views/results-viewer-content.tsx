@@ -23,7 +23,7 @@ export default function ResultsViewerContent({
   UnfilteredKeysFrequency,
   UnfilteredKeysDuration,
   TimerMapping,
-  ExcludeFromCTB,
+  //ExcludeFromCTB,
   Results,
   Keyset,
   Group,
@@ -91,7 +91,7 @@ export default function ResultsViewerContent({
         <ViewFrequencyResults
           SessionTimer={schedule.value}
           Results={filteredResults}
-          ExcludeFromCTB={ExcludeFromCTB}
+          ExcludeFromCTB={[]}
           UnfilteredKeyList={UnfilteredKeysFrequency}
           Group={Group}
           Individual={Individual}

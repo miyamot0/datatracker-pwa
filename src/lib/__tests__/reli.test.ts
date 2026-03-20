@@ -188,7 +188,7 @@ describe('generateBinsProportion', () => {
 
   const mockKeysToCode: ProbedKey[] = [{ KeyDescription: 'key1' }, { KeyDescription: 'key2' }] as ProbedKey[];
 
-  it('should calculate correct proportions for even keypresses', () => {
+  it('should calculate correct proportions for even key presses', () => {
     const result = generateBinsProportion(mockPrimarySession2, mockKeysToCode);
 
     // Test first key
@@ -901,6 +901,7 @@ describe('prepareFrequencyReliTable', () => {
       { KeyName: 'A', KeyDescription: 'Key A', KeyCode: 65 },
       { KeyName: 'B', KeyDescription: 'Key B', KeyCode: 66 },
     ],
+    DerivedKeys: [],
     DurationKeys: [],
     createdAt: new Date('2024-01-01'),
     lastModified: new Date('2024-01-01'),
@@ -1040,6 +1041,7 @@ describe('prepareDurationReliTable', () => {
       { KeyName: 'D1', KeyDescription: 'Duration Key 1', KeyCode: 68 },
       { KeyName: 'D2', KeyDescription: 'Duration Key 2', KeyCode: 69 },
     ],
+    DerivedKeys: [],
     createdAt: new Date('2024-01-01'),
     lastModified: new Date('2024-01-01'),
   };

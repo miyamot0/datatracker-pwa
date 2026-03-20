@@ -23,7 +23,7 @@ import { queryClient } from '@/App';
 import FrequencyDialogKeyCreator from './dialogs/frequency-dialog';
 import DurationDialogKeyCreator from './dialogs/duration-dialog';
 import LogicalDialogKeyCreator from './dialogs/logical-dialog';
-import { generateFormula, LogicState } from '@/lib/logic/logic';
+import { generateFormula, LogicState } from '@/lib/logic';
 
 export default function KeySetEditor({
   Group,

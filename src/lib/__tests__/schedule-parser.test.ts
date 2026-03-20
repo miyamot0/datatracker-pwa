@@ -18,6 +18,7 @@ describe('walkSessionFrequencyKey', () => {
       DurationKeys: [],
       createdAt: new Date('2023-01-01'),
       lastModified: new Date('2023-01-02'),
+      DerivedKeys: [],
     },
     SessionSettings: {} as any,
     SystemKeyPresses: [],
@@ -393,6 +394,7 @@ describe('walkSessionDurationKey', () => {
       Name: 'Test KeySet',
       FrequencyKeys: [],
       DurationKeys: [mockKey],
+      DerivedKeys: [],
       createdAt: new Date('2023-01-01'),
       lastModified: new Date('2023-01-02'),
     },
@@ -902,6 +904,7 @@ describe('combineAndSortKeyPresses', () => {
       DurationKeys: [],
       createdAt: new Date('2023-01-01'),
       lastModified: new Date('2023-01-02'),
+      DerivedKeys: [],
     },
     SessionSettings: {} as any,
     SystemKeyPresses: [

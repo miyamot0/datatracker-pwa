@@ -22,6 +22,7 @@ describe('KeySet Functions', () => {
     DurationKeys: [{ KeyName: 'D', KeyDescription: 'Key D', KeyCode: 68 }] as KeySetInstance[],
     createdAt: new Date('2024-01-01'),
     lastModified: new Date('2024-01-01'),
+    DerivedKeys: [],
   });
 
   // Helper function to create a mock SavedSessionResult
@@ -85,6 +86,7 @@ describe('KeySet Functions', () => {
         DurationKeys: [{ KeyName: 'D', KeyDescription: 'Key D', KeyCode: 68 }],
         createdAt: new Date('2024-09-07T12:00:00Z'),
         lastModified: new Date('2024-09-07T13:00:00Z'),
+        DerivedKeys: [],
       };
 
       const expectedSerialization = JSON.stringify({
@@ -94,6 +96,7 @@ describe('KeySet Functions', () => {
         DurationKeys: [{ KeyName: 'D', KeyDescription: 'Key D', KeyCode: 68 }],
         createdAt: '2024-09-07T12:00:00.000Z',
         lastModified: '2024-09-07T13:00:00.000Z',
+        DerivedKeys: [],
       });
 
       const result = serializeKeySet(keySet);
@@ -110,6 +113,7 @@ describe('KeySet Functions', () => {
         DurationKeys: [{ KeyName: 'D', KeyDescription: 'Key D', KeyCode: 68 }],
         createdAt: '2024-09-07T12:00:00.000Z',
         lastModified: '2024-09-07T13:00:00.000Z',
+        DerivedKeys: [],
       });
 
       const expectedKeySet: KeySet = {
@@ -119,6 +123,7 @@ describe('KeySet Functions', () => {
         DurationKeys: [{ KeyName: 'D', KeyDescription: 'Key D', KeyCode: 68 }],
         createdAt: new Date('2024-09-07T12:00:00Z'),
         lastModified: new Date('2024-09-07T13:00:00Z'),
+        DerivedKeys: [],
       };
 
       const result = deserializeKeySet(serializedKeySet);
@@ -339,6 +344,7 @@ describe('KeySet Functions', () => {
           ],
           createdAt: new Date('2024-01-01T10:00:00Z'),
           lastModified: new Date('2024-01-02T15:30:00Z'),
+          DerivedKeys: [],
         };
 
         const session = createMockSavedSession(1, 'Complex');
