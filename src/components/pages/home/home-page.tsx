@@ -14,24 +14,29 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import licenseInformation from '@/assets/licenses.json';
 import { cn } from '@/lib/utils';
 import { usePWAInstall } from 'react-use-pwa-install';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { isOnMobilePlatform } from '@/lib/user-agent';
 import ImageCarousel from './views/img-carousel';
-import { FolderHandleContext } from '@/context/folder-context';
 import { ApplicationSettingsTypes } from '@/types/settings';
 import { toast } from 'sonner';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate, useRouter } from '@tanstack/react-router';
 
-export default function HomePage() {
+type Props = {
+  Settings: ApplicationSettingsTypes;
+  SaveSettings: (settings: ApplicationSettingsTypes) => void;
+  SetSettings: (settings: ApplicationSettingsTypes) => void;
+};
+
+export default function HomePage({ Settings, SaveSettings, SetSettings }: Props) {
   const install = usePWAInstall();
+  const router = useRouter();
   const [display, setDisplay] = useState<'loading' | 'desktop' | 'mobile'>('loading');
-  const { settings, saveSettings, setSettings } = useContext(FolderHandleContext);
   const navigate = useNavigate({ from: '/' });
 
   useEffect(() => {
     setDisplay(isOnMobilePlatform() === true ? 'mobile' : 'desktop');
 
-    if (settings.IsReturningUser === false) {
+    if (Settings.IsReturningUser === false) {
       toast('Welcome! View Program Documentation for information on initial setup and use.', {
         duration: 4000,
         action: {
@@ -40,18 +45,20 @@ export default function HomePage() {
             navigate({ to: '/documentation' });
           },
         },
-        onAutoClose: () => {
+        onAutoClose: async () => {
           const newSettings = {
-            ...settings,
+            ...Settings,
             IsReturningUser: true,
           } satisfies ApplicationSettingsTypes;
 
-          setSettings(newSettings);
-          saveSettings(newSettings);
+          SetSettings(newSettings);
+          SaveSettings(newSettings);
+
+          await router.invalidate();
         },
       });
     }
-  }, [navigate, saveSettings, setSettings, settings]);
+  }, [navigate, SaveSettings, SetSettings, Settings]);
 
   return (
     <PageWrapper className="flex flex-col gap-6 select-none">

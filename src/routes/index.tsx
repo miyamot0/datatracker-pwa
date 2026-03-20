@@ -2,9 +2,18 @@ import HomePage from '@/components/pages/home/home-page';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/')({
+  loader: ({ context }) => {
+    return {
+      Settings: context.folderHandleContext.settings,
+      SaveSettings: context.folderHandleContext.saveSettings,
+      SetSettings: context.folderHandleContext.setSettings,
+    };
+  },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  return <HomePage />;
+  const { Settings, SaveSettings, SetSettings } = Route.useLoaderData();
+
+  return <HomePage Settings={Settings} SaveSettings={SaveSettings} SetSettings={SetSettings} />;
 }

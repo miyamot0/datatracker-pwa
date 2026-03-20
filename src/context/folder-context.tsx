@@ -2,6 +2,7 @@ import { queryClient } from '@/App';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ApplicationSettingsTypes, DEFAULT_APPLICATION_SETTINGS } from '@/types/settings';
+import { useRouter } from '@tanstack/react-router';
 import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react';
 
 export interface FolderHandleContextType {
@@ -36,6 +37,8 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
   const [handle, setHandle] = useState<FileSystemDirectoryHandle | undefined>();
   const [settings, setSettings] = useState<ApplicationSettingsTypes>(DEFAULT_APPLICATION_SETTINGS);
   const [isInitialized, setIsInitialized] = useState(false);
+
+  const router = useRouter();
 
   const staleTimeAggressive = 1000 * 60 * 15; // 15 minutes
   const gcTimeAggressive = 1000 * 60 * 30; // 30 minutes

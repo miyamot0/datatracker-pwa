@@ -45,6 +45,13 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/vi
       sessionOutcomesQueryOptions(cleanHandle, group, individual, evaluation),
     );
 
+    if (results.length === 0) {
+      throw redirect({
+        to: '/session/$group/$individual',
+        params: { group, individual },
+      });
+    }
+
     const keyboards = await context.queryClient.ensureQueryData(keyboardQueryOptions(cleanHandle, group, individual));
 
     // Note: base to pull from

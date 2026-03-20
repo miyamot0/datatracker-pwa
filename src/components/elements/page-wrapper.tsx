@@ -4,6 +4,7 @@ import { useContext } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
 import LayoutFooter from './footer';
 import ScrollReset from './scroll-reset';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 type Props = {
   children: React.ReactNode;
@@ -12,10 +13,21 @@ type Props = {
   className?: string;
   HideNavbar?: boolean;
   HideFooter?: boolean;
+  Settings?: ApplicationSettingsTypes;
 };
 
-export default function PageWrapper({ children, className, breadcrumbs, label, HideNavbar, HideFooter }: Props) {
-  const { settings } = useContext(FolderHandleContext);
+export default function PageWrapper({
+  children,
+  className,
+  breadcrumbs,
+  label,
+  HideNavbar,
+  HideFooter,
+  Settings,
+}: Props) {
+  const { settings: preSettings } = useContext(FolderHandleContext);
+
+  const settings = Settings ?? preSettings;
 
   const hideFooter = HideFooter === true || settings.ApplicationFooterDisplay === 'Disabled';
 
