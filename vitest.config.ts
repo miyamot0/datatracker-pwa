@@ -17,7 +17,7 @@ export default defineConfig({
       reporter: ['json', 'lcov', 'text', 'clover', 'json-summary'],
       reportsDirectory: './coverage',
       include: ['src/lib/**/*.{ts,tsx}', 'src/workers/**/*.{ts,tsx}'],
-      exclude: ['src/lib/__tests__/**/*', '**/types/**/*', 'src/lib/utils.ts'],
+      exclude: ['**/__tests__/**/*', '**/types/**/*', 'src/lib/utils.ts'],
     },
   },
 });
