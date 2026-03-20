@@ -1,7 +1,6 @@
 import PageWrapper from '@/components/elements/page-wrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FolderHandleContext } from '@/context/folder-context';
-import { ReactNode, useContext, useMemo, useState } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileSyncingStatus } from '@/types/sync';
 import { RefreshCw } from 'lucide-react';
@@ -12,6 +11,7 @@ import SyncToRemoteTable from './views/sync-to-remote-table';
 import SyncFromRemoteTable from './views/sync-from-remote-table';
 import { Badge } from '../../ui/badge';
 import { toast } from 'sonner';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 const WrappedButton = ({ active, children }: { active: boolean; children: ReactNode }) => {
   return (
@@ -29,10 +29,13 @@ const WrappedButton = ({ active, children }: { active: boolean; children: ReactN
   );
 };
 
-export default function ViewSyncPage() {
-  const Context = useContext(FolderHandleContext);
-  const { settings, handle } = Context;
-
+export default function ViewSyncPage({
+  Settings,
+  Handle,
+}: {
+  Settings: ApplicationSettingsTypes;
+  Handle: FileSystemDirectoryHandle;
+}) {
   const [remote_handle, setRemoteHandle] = useState<FileSystemDirectoryHandle | undefined>();
   const [directionalSync, setDirectionalSync] = useState<FileSyncingStatus>('to_remote');
 
@@ -78,9 +81,9 @@ export default function ViewSyncPage() {
           try {
             const directory_picker = await window.showDirectoryPicker(options);
 
-            if (settings.EnforceDataFolderName === true && directory_picker.name !== 'DataTracker') {
+            if (Settings.EnforceDataFolderName === true && directory_picker.name !== 'DataTracker') {
               displayConditionalNotification(
-                settings,
+                Settings,
                 'Error Authorizing Remote Directory',
                 "Please select a remote folder named 'DataTracker' to continue.",
                 3000,
@@ -93,7 +96,7 @@ export default function ViewSyncPage() {
               setRemoteHandle(directory_picker);
 
               displayConditionalNotification(
-                settings,
+                Settings,
                 'Access Authorized',
                 'You can you interact with files in the relevant folder.',
               );
@@ -108,7 +111,7 @@ export default function ViewSyncPage() {
         {!remote_handle !== false ? 'Select Remote Backup' : 'Remote Backup Set'}
       </Button>
     );
-  }, [directionalSync, remote_handle, setRemoteHandle, settings]);
+  }, [directionalSync, remote_handle, setRemoteHandle, Settings]);
 
   const buttonFunctionality = useMemo(() => {
     return (
@@ -140,11 +143,11 @@ export default function ViewSyncPage() {
             (e.g., Reliability data) or *from the remote directory* (e.g., keyboards).
           </p>
 
-          {handle && remote_handle && directionalSync === 'to_remote' && (
-            <SyncToRemoteTable Handle={handle} RemoteHandle={remote_handle} />
+          {remote_handle && directionalSync === 'to_remote' && (
+            <SyncToRemoteTable Handle={Handle} RemoteHandle={remote_handle} />
           )}
-          {handle && remote_handle && directionalSync === 'from_remote' && (
-            <SyncFromRemoteTable Handle={handle} RemoteHandle={remote_handle} />
+          {remote_handle && directionalSync === 'from_remote' && (
+            <SyncFromRemoteTable Handle={Handle} RemoteHandle={remote_handle} />
           )}
         </CardContent>
       </Card>
