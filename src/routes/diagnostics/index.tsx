@@ -4,13 +4,16 @@ import BackButton from '@/components/ui/back-button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { FolderHandleContext } from '@/context/folder-context';
 import { checkCrossOriginIsolation } from '@/lib/shared-buffer';
 import { cn } from '@/lib/utils';
 import { createFileRoute } from '@tanstack/react-router';
-import { useContext } from 'react';
 
 export const Route = createFileRoute('/diagnostics/')({
+  loader: ({ context }) => {
+    return {
+      Settings: context.folderHandleContext.settings,
+    };
+  },
   component: RouteComponent,
 });
 
@@ -28,10 +31,10 @@ function AdaptiveBadge({ isSupported }: { isSupported: boolean }) {
 
 function RouteComponent() {
   const check = checkCrossOriginIsolation();
-  const { settings } = useContext(FolderHandleContext);
+  const { Settings } = Route.useLoaderData();
 
   return (
-    <PageWrapper label="Diagnostics" className="flex flex-col gap-6 select-none">
+    <PageWrapper label="Diagnostics" className="flex flex-col gap-6 select-none" Settings={Settings}>
       <Card className="w-full max-w-screen-lg">
         <CardHeader className="flex flex-row justify-between align-top">
           <div className="flex flex-col gap-1.5">
@@ -85,7 +88,7 @@ function RouteComponent() {
           <Separator className="my-1" />
 
           <div className="flex flex-row justify-between">
-            <p>Caching Mode:</p> <span>{settings.CacheBehavior}</span>
+            <p>Caching Mode:</p> <span>{Settings.CacheBehavior}</span>
           </div>
 
           <div className="flex flex-row justify-between">

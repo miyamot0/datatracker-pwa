@@ -1,4 +1,6 @@
+import PageWrapper from '@/components/elements/page-wrapper';
 import DocumentationEntryPage from '@/components/pages/documentation/documentation-entry-page';
+import { BuildDocumentationBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { generateKeywordColors } from '@/lib/colors';
 import { DocumentationObjects } from '@/lib/docs';
 import createHref from '@/lib/links';
@@ -37,21 +39,29 @@ export const Route = createFileRoute('/documentation/$slug')({
       PreviousEntry,
       NextEntry,
       Entry: entry,
+      Settings: context.folderHandleContext.settings,
     };
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { FrontMatter, KeywordArray, PreviousEntry, NextEntry, Entry } = Route.useLoaderData();
+  const { FrontMatter, KeywordArray, PreviousEntry, NextEntry, Entry, Settings } = Route.useLoaderData();
 
   return (
-    <DocumentationEntryPage
-      FrontMatter={FrontMatter}
-      KeywordArray={KeywordArray}
-      PreviousEntry={PreviousEntry}
-      NextEntry={NextEntry}
-      Entry={Entry}
-    />
+    <PageWrapper
+      breadcrumbs={[BuildDocumentationBreadcrumb()]}
+      label={Entry.matter.title}
+      className="select-none"
+      Settings={Settings}
+    >
+      <DocumentationEntryPage
+        FrontMatter={FrontMatter}
+        KeywordArray={KeywordArray}
+        PreviousEntry={PreviousEntry}
+        NextEntry={NextEntry}
+        Entry={Entry}
+      />
+    </PageWrapper>
   );
 }

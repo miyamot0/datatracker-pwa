@@ -1,4 +1,3 @@
-import PageWrapper from '@/components/elements/page-wrapper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ReactNode, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -126,31 +125,29 @@ export default function ViewSyncPage({
   }, [remote_handle, buttonChangeDirection, buttonSetRemote]);
 
   return (
-    <PageWrapper breadcrumbs={[]} label={'File Sync'} className="select-none">
-      <Card className="w-full">
-        <CardHeader className="flex flex-row justify-between">
-          <div className="flex flex-col gap-1.5">
-            <CardTitle>File Sync Assistant</CardTitle>
-            <CardDescription>Sync Files as Necessary across Folders</CardDescription>
-          </div>
-          {buttonFunctionality}
-        </CardHeader>
-        <CardContent className="flex flex-col gap-1.5">
-          <p>
-            This page assists with managing a shared/remote backup directory with which to sync files. Users may select
-            a secondary (i.e., 'Remote') directory where files stored on the current machine can be copied to or copied
-            from. Once a secondary 'Remote' directory is selected, files can be synced either *to the remote directory*
-            (e.g., Reliability data) or *from the remote directory* (e.g., keyboards).
-          </p>
+    <Card className="w-full">
+      <CardHeader className="flex flex-row justify-between">
+        <div className="flex flex-col gap-1.5">
+          <CardTitle>File Sync Assistant</CardTitle>
+          <CardDescription>Sync Files as Necessary across Folders</CardDescription>
+        </div>
+        {buttonFunctionality}
+      </CardHeader>
+      <CardContent className="flex flex-col gap-1.5">
+        <p>
+          This page assists with managing a shared/remote backup directory with which to sync files. Users may select a
+          secondary (i.e., 'Remote') directory where files stored on the current machine can be copied to or copied
+          from. Once a secondary 'Remote' directory is selected, files can be synced either *to the remote directory*
+          (e.g., Reliability data) or *from the remote directory* (e.g., keyboards).
+        </p>
 
-          {remote_handle && directionalSync === 'to_remote' && (
-            <SyncToRemoteTable Handle={Handle} RemoteHandle={remote_handle} />
-          )}
-          {remote_handle && directionalSync === 'from_remote' && (
-            <SyncFromRemoteTable Handle={Handle} RemoteHandle={remote_handle} />
-          )}
-        </CardContent>
-      </Card>
-    </PageWrapper>
+        {remote_handle && directionalSync === 'to_remote' && (
+          <SyncToRemoteTable Handle={Handle} RemoteHandle={remote_handle} />
+        )}
+        {remote_handle && directionalSync === 'from_remote' && (
+          <SyncFromRemoteTable Handle={Handle} RemoteHandle={remote_handle} />
+        )}
+      </CardContent>
+    </Card>
   );
 }

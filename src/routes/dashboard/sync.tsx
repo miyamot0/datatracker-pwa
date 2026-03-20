@@ -1,3 +1,4 @@
+import PageWrapper from '@/components/elements/page-wrapper';
 import ViewSyncPage from '@/components/pages/dashboard-sync/view-sync-page';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
@@ -22,7 +23,7 @@ export const Route = createFileRoute('/dashboard/sync')({
   },
   loader({ context }) {
     return {
-      settings: context.folderHandleContext.settings,
+      Settings: context.folderHandleContext.settings,
       // Note: already screened
       handle: context.folderHandleContext.handle!,
     };
@@ -31,7 +32,11 @@ export const Route = createFileRoute('/dashboard/sync')({
 });
 
 function RouteComponent() {
-  const { settings, handle } = Route.useLoaderData();
+  const { Settings, handle } = Route.useLoaderData();
 
-  return <ViewSyncPage Settings={settings} Handle={handle} />;
+  return (
+    <PageWrapper breadcrumbs={[]} label={'File Sync'} className="select-none" Settings={Settings}>
+      <ViewSyncPage Settings={Settings} Handle={handle} />
+    </PageWrapper>
+  );
 }

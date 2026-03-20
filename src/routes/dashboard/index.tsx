@@ -22,14 +22,14 @@ export const Route = createFileRoute('/dashboard/')({
       handle: context.folderHandleContext.handle,
       isAuthorized,
       fetchGroups,
-      settings: context.folderHandleContext.settings,
+      Settings: context.folderHandleContext.settings,
     };
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { handle, isAuthorized, fetchGroups, settings } = Route.useLoaderData();
+  const { handle, isAuthorized, fetchGroups, Settings } = Route.useLoaderData();
 
   if (!isAuthorized || !handle) {
     return (
@@ -40,9 +40,9 @@ function RouteComponent() {
   }
 
   return (
-    <PageWrapper label={'Group Dashboard'} className="select-none">
+    <PageWrapper label={'Group Dashboard'} className="select-none" Settings={Settings}>
       <Await promise={fetchGroups} fallback={<LoadingDisplay />}>
-        {(groups: string[]) => <AuthorizedDisplayContent Groups={groups} Settings={settings} Handle={handle} />}
+        {(groups: string[]) => <AuthorizedDisplayContent Groups={groups} Settings={Settings} Handle={handle} />}
       </Await>
     </PageWrapper>
   );
