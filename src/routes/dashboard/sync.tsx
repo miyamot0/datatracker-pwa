@@ -29,6 +29,9 @@ export const Route = createFileRoute('/dashboard/sync')({
     };
   },
   component: RouteComponent,
+  // Note: Assume always changing
+  staleTime: 0,
+  gcTime: 0,
 });
 
 function RouteComponent() {
