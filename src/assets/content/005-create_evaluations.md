@@ -29,3 +29,11 @@ Once you create an evaluation folder, you will need to provide additional inform
 <div align="center" width="100%">
     <img src="docs/folder_preview_evaluations_delete.png" alt="Image for Evaluation Dashboard interface related to deletion"/>
 </div>
+
+### Duplicating Evaluation Folders
+
+The process for duplicating **Evaluation** folders is similar to that of **Group** and **Individual** folders, as outlined in the previous sections. To duplicate an **Evaluation** folder, you can click the "Duplicate" button associated with the specific folder you wish to copy. This will create a new **Evaluation** folder with the same name appended with "Copy" (e.g., "Functional Analysis Copy") unless you elect to name this otherwise. The duplicated folder will contain all the same data files, notes, and conditions as the original folder, allowing you to easily create a new evaluation based on an existing one. This is particularly useful when building from a prior experimental assessment (e.g., functional analysis conditions serving as a baseline for treatment development).
+
+Although duplicating evaluations is straightforward, it is important to note that not all of the copied files in the new directory may be relevant. For example, if you duplicate a "Functional Analysis" folder to create a "Treatment Evaluation" folder, you may need to remove certain files that are specific to the functional analysis (e.g., data from specific conditions that are not relevant to the treatment evaluation). Therefore, after duplicating an **Evaluation** folder, it is recommended to review the contents and remove any files that are not pertinent to the new evaluation context. This ensures that the new **Evaluation** folder remains organized and relevant to its intended purpose. Similarly, for the sake of clarity, it is recommended to rename conditions in the software to more appropriate labels (e.g., Baseline, Intervention, etc.).
+
+

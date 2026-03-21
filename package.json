@@ -30,7 +30,7 @@
     "research software"
   ],
   "license": "Apache-2.0",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "scripts": {
     "dev-island": "vite --mode island",
     "dev": "vite",

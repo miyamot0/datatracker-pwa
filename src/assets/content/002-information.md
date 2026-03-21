@@ -31,7 +31,7 @@ The DataTracker program will present a prompt to the user if access has not been
     <img src="docs/authorize_folder_access.png" alt="Image of DataTracker program access screen"/>
 </div>
 
-Pressing the 'Authorize Access' button will prompt you to use a Folder named DataTracker (i.e., "DataTracker" folder in your _Documents_ folder or on your _Desktop_). This is largely as a strategy to avoid accidentally loading a "Group" folder as if it were a "DataTracker" folder. This can be disabled, but for good practice, it is kept as a default setting. Using **Google Chrome** in Windows, this could appear as the following:
+Pressing the 'Authorize Access' button will prompt you to use a Folder named DataTracker (i.e., "DataTracker" folder in your _Documents_ folder or on your _Desktop_). This is largely as a strategy to avoid accidentally loading a "Group" folder as if it were a "DataTracker" folder. This can be disabled, but for good practice, it is kept as a default setting (i.e., to prevent novice users from losing data). Using **Google Chrome** in Windows, this could appear as the following:
 
 <div align="center" width="100%">
     <img src="docs/approve_folder.png" alt="Image of relevant 'DataTracker' folder being selected"/>
@@ -59,7 +59,7 @@ Various aspects of the program will attempt to 'remember' certain selections, an
 
 If you make major changes to the folder structure, this can introduce significant risks of program error.
 
-#### Copying a KeySet (\*\*.json File): <ins>Probably Okay</ins>
+#### Copying a KeySet (\*\*.json File): <ins>Maybe Okay</ins>
 
 It is often the case that a common set of targets is shared across Participants in a study. In this case, it is likely that you will want to copy a KeySet file from one case to another. This is generally okay, but it is important to remember that the Keyboard file _must be in the correct location_. If you copy a KeySet file to the wrong location, it will (1) not be accessible in the **Keyboard Designer** or **Session Designer** and (2) could cause the program to crash if the program reads it thinking it is a data file (e.g., when calculating Reliability or summarizing rates).
 
@@ -78,17 +78,13 @@ As a working default, files for the Reliability data collector will need to be m
 The program infers data file structure based on _how its named_ and _where it is stored_. For this reason, it is important not to unintentionally move files into locations that may prompt confusion. A simple outline of the basic 'DataTracker' folder structure is illustrated below.
 
 - _Group_ Folder (e.g., clinic, study grouping, etc.)
-
   - _Individual_ Folder (e.g., client name or identifier)
-
     - '[_KeySet Name Here_].json' File (a file associated with keys/behavior codes)
 
     - _Evaluation_ Folder (e.g., functional analysis, treatment evaluation)
-
       - 'settings.json' File (a file for remembering ongoing session designs)
 
       - _Condition_ Folder (e.g., baseline, treatment, etc.)
-
         - Session Data File, e.g. '[Session Number]\_[Condition Name]\_[Primary/Reliability].json' (File recording session performances)
 
 ### Descriptions for Each Level of File Hierarchy

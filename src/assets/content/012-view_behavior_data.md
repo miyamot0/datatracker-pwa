@@ -35,3 +35,7 @@ Within this table, information is summarized with respect to individual timers a
 ### Exporting Data
 
 The **View Evaluation Data** page provides an option to export the data collected during the **Evaluation**. The data can be exported as a CSV file or as a JSON file. In short, the CSV file type is best for viewing the data in a spreadsheet program, while the JSON file type is best for viewing the data in a text editor or for use in a programming environment. Multiple formats are provided to ensure that the data can be used in a variety of ways.
+
+### Derived Keys/Targets
+
+The Derived Key functionality provides considerable flexibility for tracking and organizing behavior and these calculations are made available across several areas of the program. These scores are calculated dynamically (i.e., on-the-fly) at the individual session level and are available in the data summary for each evaluation. This allows users to easily analyze and interpret the data collected during sessions, providing insights into behavior patterns and the effectiveness of interventions. Additionally, these keys can be adjusted as needed to reflect changes in the intervention plan or to track new behavior patterns that emerge during the course of the evaluation. Changing these does not add or create additional scores and users are free to determine which arrangements best fit their purposes.

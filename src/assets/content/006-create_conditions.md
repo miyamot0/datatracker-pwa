@@ -25,3 +25,7 @@ Adding a **Condition** to the relevant **Evaluation** will change the options av
 <div align="center" width="100%">
     <img src="docs/session_designer.png" alt="Image of DataTracker session design page"/>
 </div>
+
+### Clearing Blank/Unnecessary Conditions
+
+In rare cases that conditions added are no longer necessary, they can be removed using the inteface for the Session Designer. To do this, you can click the "Clear Blank Conditions" button, which will remove any conditions that do not have data associated with them. This is particularly useful for keeping the **Evaluation** organized and free of unnecessary folders that may have been created during the planning phase but were not ultimately used for data collection. It is important to note that this action will only remove conditions that are blank (i.e., those that do not contain any data files or notes). If a condition contains data, it will not be removed by this action, ensuring that valuable information is not accidentally deleted. In cases when removing certain conditions is desired, users must navigate to the Session Reviewer portion of the application and delete this manually.
