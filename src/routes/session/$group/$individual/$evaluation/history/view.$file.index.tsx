@@ -11,16 +11,18 @@ import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { ModifiedSessionResult } from '@/types/storage';
 import { ErrorDisplay } from '@/components/suspense/error-display';
-import { ExpandedSavedSessionResult } from '@/lib/dtos';
+import { ExpandedSavedSessionResult, SavedSettings } from '@/lib/dtos';
 import { generateTicks } from '@/lib/graphing';
 import { pullMostRecentKeySet } from '@/lib/keyset';
 import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
 import { preparePlotDataCumulative } from '@/lib/summary';
 import { GenerateSavedFileName } from '@/lib/writer';
-import { EnhancedKeySetInstance } from '@/types/keyset';
+import { EnhancedKeySetInstance, KeySet } from '@/types/keyset';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
 import SessionViewerContent from '@/components/pages/editor-session-outcome/views/session-viewer-content';
 import { ToggleDisplayKey } from '@/types/visuals';
+import { sessionQueryOptions } from '@/queries/session/query-session-params';
+import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/view/$file/')({
   beforeLoad: ({ context, params }) => {
@@ -60,20 +62,28 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
       sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
+    const fetchSessionParams = context.queryClient.fetchQuery(
+      sessionQueryOptions(CleanHandle, Group, Individual, Evaluation),
+    );
+
+    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
+
+    const totalQuery = Promise.all([fetchSessionOutcomes, fetchSessionParams, fetchKeyboards]);
+
     return {
       Group,
       Individual,
       Evaluation,
       FileString,
-      fetchSessionOutcomes,
-      Settings
+      totalQuery,
+      Settings,
     };
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { Group, Individual, Evaluation, FileString, fetchSessionOutcomes, Settings } = Route.useLoaderData();
+  const { Group, Individual, Evaluation, FileString, totalQuery, Settings } = Route.useLoaderData();
 
   return (
     <PageWrapper
@@ -86,17 +96,26 @@ function RouteComponent() {
       label={'Session Viewer'}
       className="select-none"
     >
-      <Await promise={fetchSessionOutcomes} fallback={<LoadingDisplay />}>
-        {(sessions: ModifiedSessionResult[]) => {
+      <Await promise={totalQuery} fallback={<LoadingDisplay />}>
+        {([sessions, sessionParams, keysets]: [ModifiedSessionResult[], SavedSettings, KeySet[]]) => {
           const relevantSession = sessions.find((s) => s.Filename.startsWith(FileString));
 
           if (!relevantSession) {
             return <ErrorDisplay Text={'Session not found.'} />;
           }
 
-          // TODO: The most recent should be the one from the session designer
-          const keySet = pullMostRecentKeySet(sessions);
+          if (!sessionParams) {
+            return <ErrorDisplay Text={'Session parameters not found.'} />;
+          }
 
+          const keySet = keysets.find((k: KeySet) => k.Name == sessionParams.KeySet);
+
+          if (!keySet) {
+            return <ErrorDisplay Text={'Relevant keyset not found.'} />;
+          }
+
+          // TODO: The most recent should be the one from the session designer (Fixed)
+          //const keySet = pullMostRecentKeySet(sessions);
           //const { UnfilteredKeysFrequency } = prepareDataOrganization(Group, Individual, Evaluation, keySet);
           const plot_object = preparePlotDataCumulative(relevantSession);
 

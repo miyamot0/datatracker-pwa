@@ -38,6 +38,7 @@ export default function SessionViewerContent({
   PlotObject: any[];
   Settings: ApplicationSettingsTypes;
 }) {
+  // TODO: This should be pulling in the derived calcs already
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
 
   return (

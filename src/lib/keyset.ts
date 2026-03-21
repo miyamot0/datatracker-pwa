@@ -79,6 +79,7 @@ export function pullMostRecentSession(
  *
  * @param data - An array of session results, which can be either SavedSessionResult or ModifiedSessionResult, both containing a Keyset property
  * @returns The KeySet object from the most recent session result, determined by the highest SessionSettings.Session value in the input array
+ * @deprecated Need to pull from session params for latest
  */
 export function pullMostRecentKeySet(data: SavedSessionResult[] | ModifiedSessionResult[]): KeySet {
   const latest = pullMostRecentSession(data);
