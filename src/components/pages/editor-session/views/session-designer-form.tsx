@@ -57,7 +57,6 @@ export default function SessionDesigner({
   Settings,
   Handle,
 }: Props) {
-  // TODO: Try to pre-fetch of possible
   const router = useRouter();
   const routerState = useRouterState();
   const currentRouteId = routerState.matches[routerState.matches.length - 1]?.routeId;
