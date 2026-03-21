@@ -58,6 +58,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
   loader: async ({ context }) => {
     const { Group, Individual, Evaluation, FileString, CleanHandle, Settings } = context;
 
+    // TODO: This is doing more work than needed, ideally we would just pull the one session that matches the file string, but this is easier for now and the performance should be fine since it's all local
     const fetchSessionOutcomes = context.queryClient.fetchQuery(
       sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
