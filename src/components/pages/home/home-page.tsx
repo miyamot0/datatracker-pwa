@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { BookTextIcon, ChartLineIcon, HardDriveDownloadIcon, PackageIcon } from 'lucide-react';
-import PageWrapper from '@/components/elements/page-wrapper';
 import createHref from '@/lib/links';
 import {
   Dialog,
@@ -14,24 +13,29 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import licenseInformation from '@/assets/licenses.json';
 import { cn } from '@/lib/utils';
 import { usePWAInstall } from 'react-use-pwa-install';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { isOnMobilePlatform } from '@/lib/user-agent';
 import ImageCarousel from './views/img-carousel';
-import { FolderHandleContext } from '@/context/folder-context';
 import { ApplicationSettingsTypes } from '@/types/settings';
 import { toast } from 'sonner';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate, useRouter } from '@tanstack/react-router';
 
-export default function HomePage() {
+type Props = {
+  Settings: ApplicationSettingsTypes;
+  SaveSettings: (settings: ApplicationSettingsTypes) => void;
+  SetSettings: (settings: ApplicationSettingsTypes) => void;
+};
+
+export default function HomePage({ Settings, SaveSettings, SetSettings }: Props) {
   const install = usePWAInstall();
+  const router = useRouter();
   const [display, setDisplay] = useState<'loading' | 'desktop' | 'mobile'>('loading');
-  const { settings, saveSettings, setSettings } = useContext(FolderHandleContext);
   const navigate = useNavigate({ from: '/' });
 
   useEffect(() => {
     setDisplay(isOnMobilePlatform() === true ? 'mobile' : 'desktop');
 
-    if (settings.IsReturningUser === false) {
+    if (Settings.IsReturningUser === false) {
       toast('Welcome! View Program Documentation for information on initial setup and use.', {
         duration: 4000,
         action: {
@@ -40,21 +44,23 @@ export default function HomePage() {
             navigate({ to: '/documentation' });
           },
         },
-        onAutoClose: () => {
+        onAutoClose: async () => {
           const newSettings = {
-            ...settings,
+            ...Settings,
             IsReturningUser: true,
           } satisfies ApplicationSettingsTypes;
 
-          setSettings(newSettings);
-          saveSettings(newSettings);
+          SetSettings(newSettings);
+          SaveSettings(newSettings);
+
+          await router.invalidate();
         },
       });
     }
-  }, [navigate, saveSettings, setSettings, settings]);
+  }, [navigate, SaveSettings, SetSettings, Settings]);
 
   return (
-    <PageWrapper className="flex flex-col gap-6 select-none">
+    <>
       <div className="pb-4">
         <div className="text-center mx-auto">
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">DataTracker</h1>
@@ -64,9 +70,7 @@ export default function HomePage() {
           <p className="text-xl text-muted-foreground">Electronic Data Collection Program</p>
         </div>
       </div>
-
       <ImageCarousel />
-
       <div className="max-w-lg flex flex-col w-full py-8 gap-4">
         <Link to={createHref({ type: 'Documentation' })} className="flex flex-row gap-2 items-center">
           <Button variant={'outline'} className="w-full shadow-xl">
@@ -136,6 +140,6 @@ export default function HomePage() {
           </Button>
         )}
       </div>
-    </PageWrapper>
+    </>
   );
 }

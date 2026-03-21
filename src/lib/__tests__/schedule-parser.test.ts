@@ -18,6 +18,7 @@ describe('walkSessionFrequencyKey', () => {
       DurationKeys: [],
       createdAt: new Date('2023-01-01'),
       lastModified: new Date('2023-01-02'),
+      DerivedKeys: [],
     },
     SessionSettings: {} as any,
     SystemKeyPresses: [],
@@ -393,6 +394,7 @@ describe('walkSessionDurationKey', () => {
       Name: 'Test KeySet',
       FrequencyKeys: [],
       DurationKeys: [mockKey],
+      DerivedKeys: [],
       createdAt: new Date('2023-01-01'),
       lastModified: new Date('2023-01-02'),
     },
@@ -475,7 +477,7 @@ describe('walkSessionDurationKey', () => {
       KeyDescription: 'Test Duration Key',
       Schedule: 'Primary',
       Value: 0,
-      Bouts: 1,
+      Bouts: 0,
     });
   });
 
@@ -652,7 +654,7 @@ describe('walkSessionDurationKey', () => {
       KeyDescription: 'Test Duration Key',
       Schedule: 'Primary',
       Value: 11, // (12-8) + (25-18) = 4 + 7 = 11 seconds
-      Bouts: 1,
+      Bouts: 2,
     });
   });
 
@@ -735,7 +737,7 @@ describe('walkSessionDurationKey', () => {
       KeyDescription: 'Test Duration Key',
       Schedule: 'Primary',
       Value: 13, // (12-8) + (22-18) + (30-25) = 4 + 4 + 5 = 13 seconds
-      Bouts: 1,
+      Bouts: 3,
     });
   });
 
@@ -902,6 +904,7 @@ describe('combineAndSortKeyPresses', () => {
       DurationKeys: [],
       createdAt: new Date('2023-01-01'),
       lastModified: new Date('2023-01-02'),
+      DerivedKeys: [],
     },
     SessionSettings: {} as any,
     SystemKeyPresses: [

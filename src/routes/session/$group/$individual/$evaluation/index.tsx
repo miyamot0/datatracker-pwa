@@ -1,24 +1,68 @@
+import PageWrapper from '@/components/elements/page-wrapper';
 import { SessionDesignerPage } from '@/components/pages/editor-session/session-designer';
-import createHref from '@/lib/links';
-import { routeGuard } from '@/lib/routing';
+import { LoadingDisplay } from '@/components/suspense/loading-display';
+import {
+  BuildGroupBreadcrumb,
+  BuildIndividualsBreadcrumb,
+  BuildEvaluationsBreadcrumb,
+} from '@/components/ui/breadcrumb-entries';
 import { CleanUpString } from '@/lib/strings';
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { conditionQueryOptions } from '@/queries/conditions/query-conditions';
+import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
+import { sessionQueryOptions } from '@/queries/session/query-session-params';
+import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/')({
-  beforeLoad: routeGuard,
-  loader: ({ params }) => {
+  beforeLoad: ({ context, params }) => {
+    if (!context.folderHandleContext.isInitialized) {
+      throw redirect({
+        href: '/',
+      });
+    }
+
+    if (!context.folderHandleContext.handle) {
+      throw redirect({
+        to: '/dashboard',
+      });
+    }
+
     const { group, individual, evaluation } = params;
 
     if (!group || !individual || !evaluation) {
       throw redirect({
-        href: createHref({ type: 'Dashboard' }),
+        to: '/dashboard',
       });
     }
 
     return {
+      CleanHandle: context.folderHandleContext.handle,
       Group: CleanUpString(group),
       Individual: CleanUpString(individual),
       Evaluation: CleanUpString(evaluation),
+    };
+  },
+  loader: ({ context }) => {
+    const { Group, Individual, Evaluation, CleanHandle } = context;
+
+    const fetchConditions = context.queryClient.fetchQuery(
+      conditionQueryOptions(CleanHandle, Group, Individual, Evaluation),
+    );
+
+    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
+
+    const fetchSessionParams = context.queryClient.fetchQuery(
+      sessionQueryOptions(CleanHandle, Group, Individual, Evaluation),
+    );
+
+    const totalQuery = Promise.all([fetchConditions, fetchKeyboards, fetchSessionParams]);
+
+    return {
+      Group: Group,
+      Individual: Individual,
+      Evaluation: Evaluation,
+      Settings: context.folderHandleContext.settings,
+      CleanHandle,
+      totalQuery,
     };
   },
 
@@ -26,6 +70,40 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/')
 });
 
 function RouteComponent() {
-  const { Group, Individual, Evaluation } = Route.useLoaderData();
-  return <SessionDesignerPage Group={Group} Individual={Individual} Evaluation={Evaluation} />;
+  const { Group, Individual, Evaluation, CleanHandle, Settings, totalQuery } = Route.useLoaderData();
+
+  return (
+    <PageWrapper
+      breadcrumbs={[
+        BuildGroupBreadcrumb(),
+        BuildIndividualsBreadcrumb(Group),
+        BuildEvaluationsBreadcrumb(Group, Individual),
+      ]}
+      label={`Design ${CleanUpString(Evaluation)} Session`}
+      className="select-none"
+      Settings={Settings}
+    >
+      <Await promise={totalQuery} fallback={<LoadingDisplay />}>
+        {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (clients: any[]) => {
+            const [conditions, keysets, sessionParams] = clients;
+
+            return (
+              <SessionDesignerPage
+                Group={Group}
+                Individual={Individual}
+                Evaluation={Evaluation}
+                Conditions={conditions}
+                Keysets={keysets}
+                SessionParams={sessionParams}
+                Settings={Settings}
+                Handle={CleanHandle}
+              />
+            );
+          }
+        }
+      </Await>
+    </PageWrapper>
+  );
 }

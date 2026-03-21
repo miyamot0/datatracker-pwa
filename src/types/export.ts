@@ -3,7 +3,7 @@
  */
 export type EntryHolder = {
   Key: string;
-  KeyCode?: number;
+  KeyCode: number;
   Value: string;
   Visible?: boolean;
 };

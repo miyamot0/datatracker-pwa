@@ -1,66 +1,52 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { ColumnDef } from '@tanstack/react-table';
 import { ReliabilityDataTable } from '@/components/ui/data-table-reli';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { SyncEntryTableRow } from '@/types/sync';
-import { syncAllFiles } from '@/lib/file';
+import { useMainThreadSync } from '@/hooks/use-main-thread-sync';
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
   RemoteHandle: FileSystemDirectoryHandle;
 };
+
 export default function SyncToRemoteTable({ Handle, RemoteHandle }: Props) {
   const [localFileList, setLocalFileList] = useState<string[]>([]);
   const [remoteFileList, setRemoteFileList] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const iterativeRead = useCallback(
-    async (entry: FileSystemDirectoryHandle | FileSystemFileHandle, path: string, path_array: string[]) => {
-      if (entry.kind === 'file') {
-        path_array.push(path);
-      } else if (entry.kind === 'directory') {
-        const entries = await entry.values();
-
-        for await (const entry of entries) {
-          await iterativeRead(entry, path + '/' + entry.name, path_array);
-        }
-      }
-    },
-    [],
-  );
+  const { listBothFiles, syncFiles } = useMainThreadSync();
 
   useEffect(() => {
-    const runner = async () => {
-      const groups = await Handle.values();
-      const path_array: string[] = [];
+    if (!Handle || !RemoteHandle) {
+      return;
+    }
 
-      for await (const group of groups) {
-        if (group.kind === 'directory') {
-          await iterativeRead(group, `/${group.name}`, path_array);
-        }
+    const loadFiles = async () => {
+      try {
+        setIsLoading(true);
+        const { localFiles, remoteFiles } = await listBothFiles(Handle, RemoteHandle);
+        setLocalFileList(localFiles);
+        setRemoteFileList(remoteFiles);
+      } catch (error) {
+        toast.error(`Failed to load file lists: ${error instanceof Error ? error.message : String(error)}`);
+      } finally {
+        setIsLoading(false);
       }
-
-      const groups2 = await RemoteHandle.values();
-      const path_array2: string[] = [];
-
-      for await (const group of groups2) {
-        if (group.kind === 'directory') {
-          await iterativeRead(group, `/${group.name}`, path_array2);
-        }
-      }
-
-      setLocalFileList(path_array);
-      setRemoteFileList(path_array2);
     };
 
-    runner();
-  }, [Handle, RemoteHandle, iterativeRead]);
+    loadFiles();
+  }, [Handle, RemoteHandle, listBothFiles]);
 
   const sync_status = useMemo(() => {
-    return localFileList
+    const safeLocalList = Array.isArray(localFileList) ? localFileList : [];
+    const safeRemoteList = Array.isArray(remoteFileList) ? remoteFileList : [];
+
+    return safeLocalList
       .map((file) => {
-        if (remoteFileList.includes(file)) {
+        if (safeRemoteList.includes(file)) {
           return { file, status: 'Synced' };
         } else {
           return { file, status: 'Unsynced' };
@@ -97,27 +83,40 @@ export default function SyncToRemoteTable({ Handle, RemoteHandle }: Props) {
 
   return (
     <ReliabilityDataTable
+      key={`to-remote-${localFileList.length}-${remoteFileList.length}`}
       direction="Remote"
       columns={columns}
-      data={sync_status.map((g) => {
+      data={sync_status.map((g, index) => {
         return {
-          file: g.file,
-          status: g.status,
+          id: `to-remote-${index}`,
+          file: g.file || '',
+          status: g.status || 'Unknown',
           direction: 'Local --> Remote',
         } satisfies SyncEntryTableRow;
       })}
-      callback={(rows) => {
-        toast.promise(async () => await syncAllFiles(rows, Handle, RemoteHandle, setRemoteFileList), {
-          loading: 'Syncing all files...',
-          success: () => {
-            return 'Files successfully synced!';
+      callback={async (rows) => {
+        toast.promise(
+          async () => {
+            const syncedFiles = await syncFiles(rows, Handle, RemoteHandle);
+            // Update the remote file list with the newly synced files
+            setRemoteFileList((prev) => [...prev, ...syncedFiles]);
+            return syncedFiles;
           },
-          error: () => {
-            return 'Files were not written to disk.';
+          {
+            loading: 'Syncing files to remote...',
+            success: (syncedFiles) => {
+              return `Successfully synced ${syncedFiles.length} file${syncedFiles.length === 1 ? '' : 's'} to remote!`;
+            },
+            error: (error) =>
+              `Failed to sync files to remote: ${error instanceof Error ? error.message : String(error)}`,
           },
-        });
+        );
       }}
-      optionalButtons={<div className="flex gap-2"></div>}
+      optionalButtons={
+        <div className="flex gap-2">
+          {isLoading && <span className="text-sm text-muted-foreground">Loading files...</span>}
+        </div>
+      }
     />
   );
 }

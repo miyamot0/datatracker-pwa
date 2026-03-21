@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig, configDefaults } from 'vitest/config';
 import path from 'path';
 
 export default defineConfig({
@@ -8,7 +8,8 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['./src/lib/**/*.test.{ts,tsx}'],
+    include: ['./src/lib/**/*.test.{ts,tsx}', './src/workers/**/*.test.{ts,tsx}'],
+    exclude: [...configDefaults.exclude], // Exclude specific test files
     reporters: ['default'],
     environment: 'jsdom',
     globals: true,
@@ -16,8 +17,8 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['json', 'lcov', 'text', 'clover', 'json-summary'],
       reportsDirectory: './coverage',
-      include: ['src/lib/**/*.{ts,tsx}'],
-      exclude: ['src/lib/__tests__/**/*', 'src/lib/utils.ts'],
+      include: ['src/lib/**/*.{ts,tsx}', 'src/workers/**/*.{ts,tsx}'],
+      exclude: ['**/__tests__/**/*', '**/types/**/*', 'src/lib/utils.ts'],
     },
   },
 });

@@ -1,3 +1,5 @@
+import { KeySetInstance } from './keyset';
+
 /**
  * Defines the types for visualizations in the application.
  */
@@ -37,7 +39,7 @@ export type CustomTooltipProps = {
 /**
  * Type definition for keys with visibility toggling in visualizations, used for user preferences and dynamic display handling
  */
-export type ToggleDisplayKey = {
-  KeyDescription: string;
+export type ToggleDisplayKey = KeySetInstance & {
+  KeyType: 'Observed' | 'Derived';
   Visible: boolean;
 };

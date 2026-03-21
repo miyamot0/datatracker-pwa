@@ -1,6 +1,6 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-97.57_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-92.56_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-100.00_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-86.15_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-90.91_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-91.12_Percent-green>)
 
-![Static Badge Version](https://img.shields.io/badge/Version-0.5.4-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge Version](https://img.shields.io/badge/Version-0.5.5-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 # DataTracker (Installable PWA Build)
 
@@ -24,18 +24,19 @@ Features include the following:
 
 - [x] Versatile interface for designing measurement systems
 - [x] Cross-platform support (installable as Progressive Web App [PWA])
-- [x] Automated updates and delivery
-- [x] Simultaneous recording of behavior across multiple observers
-- [x] Automated interobserver agreement (IOA) calculations across multiple methods
-- [x] Automated data visualization and interpretation tools (e.g., visual analysis, effect size calculations)
-- [x] Real-time data recording with millisecond-level fidelity
+- [x] Automated updates and delivery of bug fixes and new features
+- [x] Simultaneous recording of behavior across multiple observers with sync support
+- [x] Automated calculations of interobserver agreement (IOA) across multiple methods
+- [x] Automated visualization and summarization tools (e.g., visual analysis)
+- [x] Highly-optimized real-time data recording with millisecond-level fidelity
 - [x] Manual export of data in multiple formats (i.e., JSON, CSV)
+- [x] Support for deriving new keys/targets based on existing keys (e.g., percentage of compliance, multiple targets in a shared response class)
 
 ## Alternative/Islanded Mode for Highly Secure Environments
 
 In addition to the standard PWA build, there is also an 'islanded' mode that allows for use in highly secure environments where internet access is restricted or virtually unavailable (i.e., all non-internal traffic is blocked). This mode is designed to function entirely offline after the initial installation, ensuring that all data remains local to the device. In practice, this would be similar to an 'on-prem' solution that would not have any external dependencies (or updates, for that matter).
 
-This is not provided via the hosted site per se, but rather, is available for download and installation by users who need this level of security. The islanded version includes all the features of the standard PWA but is optimized for environments with stringent data security requirements.
+This is not provided via the hosted site per se, but rather, is available for download and installation by users who need this level of security. The islanded version includes all the features of the standard PWA but is optimized for environments with stringent data security requirements (e.g., hospital security with largely whitelisted network access).
 
 Islanded builds are compiled as numbered releases (main-branch) available on the [GitHub releases page](https://github.com/miyamot0/datatracker-pwa/releases).
 
@@ -157,4 +158,4 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Current Version
 
-0.5.4
+0.5.5

@@ -3,7 +3,7 @@ import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
 import { type FigureVisualSizing } from '@/types/accessibility';
 import { useNavigate } from '@tanstack/react-router';
-import { ExpandedKeySetInstance } from '@/types/keyset';
+import { ExpandedKeySetInstance, KeySet } from '@/types/keyset';
 import { generateTicks, createChartLegends, createNavigationHandler, prepareRateData } from '@/lib/graphing';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { BaseChart } from '@/components/pages/visualize-outcomes/shared/base-chart';
@@ -15,8 +15,8 @@ type Props = {
   Evaluation: string;
   FilteredSessions: SavedSessionResult[];
   ScheduleOption: SessionTerminationOptionsType;
-  CTBKeys: ExpandedKeySetInstance[];
   KeySetFull: ExpandedKeySetInstance[];
+  DynamicKeySet: KeySet;
   FigureTextSize: FigureVisualSizing;
   ConnectSpans: boolean;
   MinX: number;
@@ -29,8 +29,8 @@ export default function RateFigureVisualization({
   Evaluation,
   FilteredSessions,
   ScheduleOption,
-  CTBKeys,
   KeySetFull,
+  DynamicKeySet,
   FigureTextSize,
   ConnectSpans,
   MinX,
@@ -41,7 +41,7 @@ export default function RateFigureVisualization({
     from: `/session/$group/$individual/$evaluation/rate`,
   });
 
-  const { preparedData } = prepareRateData(FilteredSessions, ScheduleOption, CTBKeys);
+  const { preparedData } = prepareRateData(FilteredSessions, ScheduleOption, KeySetFull, DynamicKeySet);
 
   const x_ticks = generateTicks(MaxX, MinX);
   const legends = createChartLegends(FilteredSessions, KeySetFull);

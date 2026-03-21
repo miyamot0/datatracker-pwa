@@ -28,13 +28,16 @@ export default function FrequencyDialogKeyCreator({ KeySet, Callback }: Props) {
         setKeyInstance(DEFAULT_ENTRY);
       }}
     >
-      <div>
-        <ToolTipWrapper Label="Add a new Frequency Key">
-          <Button className="w-fit shadow" variant={'outline'} onClick={() => setShow(true)} size={'sm'}>
-            <PlusIcon className="w-4 h-4 mr-2" /> Add Key
-          </Button>
-        </ToolTipWrapper>
-      </div>
+      <ToolTipWrapper Label="Add a new frequency key" side="top">
+        <Button
+          variant={'ghost'}
+          size={'sm'}
+          className="flex flex-row gap-2 items-center cursor-pointer px-0"
+          onClick={() => setShow(true)}
+        >
+          <PlusIcon className="w-4 h-4 " /> Add Key
+        </Button>
+      </ToolTipWrapper>
       <DialogContent className="bg-card select-none">
         <DialogHeader>
           <DialogTitle>Frequency Key Creator</DialogTitle>
@@ -67,7 +70,7 @@ export default function FrequencyDialogKeyCreator({ KeySet, Callback }: Props) {
                   'Shift/Ctrl Keys Disabled',
                   `You cannot use the '${event.key}' key (i.e., no capitalization or alt. characters).`,
                   3000,
-                  true
+                  true,
                 );
                 return;
               }
@@ -80,7 +83,7 @@ export default function FrequencyDialogKeyCreator({ KeySet, Callback }: Props) {
                   'Key is already assigned',
                   `You cannot use the '${event.key}' key because it is already assigned.`,
                   3000,
-                  true
+                  true,
                 );
                 return;
               }
@@ -101,7 +104,7 @@ export default function FrequencyDialogKeyCreator({ KeySet, Callback }: Props) {
                   'Key is protected',
                   `You cannot use the '${event.key}' key in a keyset because that key is reserved.`,
                   3000,
-                  true
+                  true,
                 );
                 return;
               }
@@ -124,7 +127,7 @@ export default function FrequencyDialogKeyCreator({ KeySet, Callback }: Props) {
                 'Key Description Too Short',
                 'The key description must be at least 2 characters long.',
                 3000,
-                true
+                true,
               );
               return;
             }
@@ -134,7 +137,7 @@ export default function FrequencyDialogKeyCreator({ KeySet, Callback }: Props) {
                 'The Key Captured is Invalid',
                 'The key name must be at least 1 character long.',
                 3000,
-                true
+                true,
               );
               return;
             }

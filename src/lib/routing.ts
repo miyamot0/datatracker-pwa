@@ -13,7 +13,7 @@ export function routeGuard({ context }: { context: CustomizedRouterContext }) {
 
   if (!context.folderHandleContext.handle) {
     throw redirect({
-      href: '/dashboard',
+      to: '/dashboard',
     });
   }
 }

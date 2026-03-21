@@ -1,3 +1,7 @@
+import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
+import { FetchGroupsRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
+import { v4 as uuidv4 } from 'uuid';
+
 /**
  * Queries the groups by accessing the file system and retrieving the names of group directories. It returns an array of group names that are found, or an empty array if no groups are found or if there is an error during the file system operations.
  *
@@ -6,7 +10,7 @@
  */
 export const groupQueryOptions = (Handle: FileSystemDirectoryHandle) => ({
   queryKey: ['/'],
-  queryFn: () => fetchGroups(Handle),
+  queryFn: () => fetchGroupsWorker(Handle),
 });
 
 /**
@@ -15,20 +19,24 @@ export const groupQueryOptions = (Handle: FileSystemDirectoryHandle) => ({
  * @param Handle - The file system directory handle for accessing the storage.
  * @returns A promise that resolves to an array of group names found within the file system, or an empty array if no groups are found or if there is an error during the file system operations.
  */
-const fetchGroups = async (Handle: FileSystemDirectoryHandle) => {
-  try {
-    const entries = await Handle.values();
-    const temp_group_folders = [] as string[];
+export const fetchGroupsWorker = async (Handle: FileSystemDirectoryHandle) => {
+  const worker = new GenericFileWorker();
+  const request = { id: uuidv4(), type: 'FETCH_GROUPS', handle: Handle } satisfies FetchGroupsRequest;
 
-    for await (const entry of entries) {
-      if (entry.kind === 'directory' && entry.name !== '.DS_Store') {
-        temp_group_folders.push(entry.name);
+  return new Promise<string[]>((resolve) => {
+    worker.onmessage = (event: MessageEvent<QueryResponse>) => {
+      const response = event.data;
+      if (response.success) {
+        const directories = response.data as string[];
+        resolve(directories);
+      } else {
+        resolve([]);
       }
-    }
-
-    return temp_group_folders;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
-    return [];
-  }
+    };
+    worker.onerror = (error) => {
+      console.error('Worker error:', error);
+      resolve([]);
+    };
+    worker.postMessage(request);
+  });
 };

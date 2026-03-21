@@ -2,10 +2,11 @@ import { SessionTerminationOptionsType } from '@/types/terminations';
 import { SavedSessionResult } from './dtos';
 import { walkSessionDurationKey, walkSessionFrequencyKey } from './schedule-parser';
 import { ToggleDisplayKey } from '@/types/visuals';
-import { KeySetInstance, ExpandedKeySetInstance } from '@/types/keyset';
+import { KeySetInstance, ExpandedKeySetInstance, KeySet } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';
 import { FIGURE_PATH_COLORS } from './colors';
 import { getShape } from './shapes';
+import { evaluateLogic, LogicState } from './logic';
 
 export function filterSessionsByPrimaryRole(results: SavedSessionResult[]) {
   return results
@@ -35,36 +36,38 @@ export function generateChartPreparation(
   FilteredSessions: SavedSessionResult[],
   ScheduleOption: SessionTerminationOptionsType,
   Perspective: 'Frequency' | 'Duration',
+  KeySetFull?: ExpandedKeySetInstance[],
+  DynamicKeySet?: KeySet,
 ) {
+  function convertScheduleSetting(schedule: SessionTerminationOptionsType) {
+    switch (schedule) {
+      case 'End on Timer #1':
+        return 'Primary';
+      case 'End on Timer #2':
+        return 'Secondary';
+      case 'End on Timer #3':
+        return 'Tertiary';
+      default:
+        throw Error('Invalid Schedule Option');
+    }
+  }
+
+  function pullSessionTime(session: SavedSessionResult, schedule: SessionTerminationOptionsType) {
+    switch (schedule) {
+      case 'End on Timer #1':
+        return session.TimerOne;
+      case 'End on Timer #2':
+        return session.TimerTwo;
+      case 'End on Timer #3':
+        return session.TimerThree;
+      case 'End on Primary Timer':
+        return session.TimerMain;
+      default:
+        throw Error('Invalid Schedule Option');
+    }
+  }
+
   const generateData = FilteredSessions.map((result) => {
-    function convertScheduleSetting(schedule: SessionTerminationOptionsType) {
-      switch (schedule) {
-        case 'End on Timer #1':
-          return 'Primary';
-        case 'End on Timer #2':
-          return 'Secondary';
-        case 'End on Timer #3':
-          return 'Tertiary';
-        default:
-          throw Error('Invalid Schedule Option');
-      }
-    }
-
-    function pullSessionTime(session: SavedSessionResult, schedule: SessionTerminationOptionsType) {
-      switch (schedule) {
-        case 'End on Timer #1':
-          return session.TimerOne;
-        case 'End on Timer #2':
-          return session.TimerTwo;
-        case 'End on Timer #3':
-          return session.TimerThree;
-        case 'End on Primary Timer':
-          return session.TimerMain;
-        default:
-          throw Error('Invalid Schedule Option');
-      }
-    }
-
     const scores =
       Perspective === 'Frequency'
         ? result.Keyset.FrequencyKeys.map((key) => {
@@ -73,6 +76,42 @@ export function generateChartPreparation(
         : result.Keyset.DurationKeys.map((key) => {
             return walkSessionDurationKey(result, convertScheduleSetting(ScheduleOption), key);
           });
+
+    const newScores = DynamicKeySet?.DerivedKeys.map((logicalState) => {
+      const updatedKeys = logicalState.fields.map((field) => {
+        const foundKey = scores.find((score) => score.KeyDescription === field.KeyDescription);
+        return {
+          ...field,
+          Value: foundKey ? foundKey.Value : NaN,
+        };
+      });
+
+      const newLogicalState = {
+        ...logicalState,
+        fields: updatedKeys,
+      };
+
+      const calculatedValue = evaluateLogic(newLogicalState);
+
+      return {
+        ...logicalState,
+        Value: calculatedValue,
+      };
+    });
+
+    for (const newValues of newScores || []) {
+      const relevantKey = KeySetFull?.find((key) => key.KeyDescription === newValues.name);
+
+      if (relevantKey && relevantKey.Visible === true) {
+        scores.push({
+          KeyName: newValues.name,
+          KeyDescription: newValues.name,
+          Value: newValues.Value,
+          Schedule: convertScheduleSetting(ScheduleOption),
+          Bouts: -1,
+        });
+      }
+    }
 
     return {
       Session: result.SessionSettings.Session,
@@ -94,10 +133,12 @@ export function generateChartPreparation(
  * @param results - Array of session results containing keysets
  * @returns An object containing deduplicated frequency and duration keys for use in visualizations
  */
-export function extractAndDeduplicateKeysets(results: ModifiedSessionResult[]) {
+export function extractAndDeduplicateKeysets(results: ModifiedSessionResult[], latestKeyset: KeySet) {
   const allKeysets = results.map((result) => result.Keyset);
-  const allFKeys = allKeysets.map((keyset) => keyset.FrequencyKeys).flat();
-  const allDKeys = allKeysets.map((keyset) => keyset.DurationKeys).flat();
+
+  const allFKeys = [...allKeysets, latestKeyset].map((keyset) => keyset.FrequencyKeys).flat();
+  const allDKeys = [...allKeysets, latestKeyset].map((keyset) => keyset.DurationKeys).flat();
+  const allDerivedKeys = [...allKeysets, latestKeyset].map((keyset) => keyset.DerivedKeys || []).flat();
 
   const targetedFKeys: KeySetInstance[] = [];
   allFKeys.forEach((key) => {
@@ -113,9 +154,17 @@ export function extractAndDeduplicateKeysets(results: ModifiedSessionResult[]) {
     }
   });
 
+  const targetedDerivedKeys: LogicState[] = [];
+  allDerivedKeys.forEach((key) => {
+    if (!targetedDerivedKeys.some((k) => k.id === key.id)) {
+      targetedDerivedKeys.push(key);
+    }
+  });
+
   return {
     frequencyKeys: targetedFKeys,
     durationKeys: targetedDKeys,
+    derivedKeys: targetedDerivedKeys,
   };
 }
 
@@ -130,7 +179,7 @@ export function mapKeysWithStoragePreference(keys: ToggleDisplayKey[], storedPre
       return {
         ...key,
         Visible: false,
-      };
+      } satisfies ToggleDisplayKey;
     }
 
     return key;
@@ -143,8 +192,11 @@ export function mapKeysWithStoragePreference(keys: ToggleDisplayKey[], storedPre
 export function createCTBKeyWithPreferences(keys: ToggleDisplayKey[], storedPreferences: any) {
   const ctbEntry = {
     KeyDescription: 'CTB',
+    KeyName: 'CTB',
+    KeyType: 'Derived',
     Visible: true,
-  };
+    KeyCode: -999,
+  } satisfies ToggleDisplayKey;
 
   // Map CTB exclusions
   const excludeFromCTB = keys.map((key) => {
@@ -154,7 +206,7 @@ export function createCTBKeyWithPreferences(keys: ToggleDisplayKey[], storedPref
       return {
         ...key,
         Visible: false,
-      };
+      } satisfies ToggleDisplayKey;
     }
 
     return key;
@@ -322,14 +374,18 @@ export function prepareProportionData(
 export function prepareRateData(
   filteredSessions: SavedSessionResult[],
   scheduleOption: SessionTerminationOptionsType,
-  ctbKeys: ExpandedKeySetInstance[],
+  KeySetFull: ExpandedKeySetInstance[],
+  DynamicKeySet: KeySet,
 ) {
-  const data = generateChartPreparation(filteredSessions, scheduleOption, 'Frequency');
+  const data = generateChartPreparation(filteredSessions, scheduleOption, 'Frequency', KeySetFull, DynamicKeySet);
 
   let maxY = 0;
 
+  // Note: this is session-by-session grouping
   const preparedData = data.map((data) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const temp_obj = {} as any;
+
     temp_obj.session = data.Session;
     temp_obj.Condition = data.Condition;
     temp_obj.SessionTime = data.SessionTime;
@@ -344,17 +400,6 @@ export function prepareRateData(
         maxY = rate_calc;
       }
     });
-
-    // Calculate CTB rate
-    const ctb_calc = ctbKeys
-      .filter((k) => k.Visible === true)
-      .map((key) => {
-        const pull_value = data.Scores.find((s) => s.KeyDescription === key.KeyDescription);
-        return pull_value ? pull_value.Value : 0;
-      })
-      .reduce((a, b) => a + b, 0);
-
-    temp_obj.CTB = ctb_calc / min_in_session;
 
     return temp_obj;
   });

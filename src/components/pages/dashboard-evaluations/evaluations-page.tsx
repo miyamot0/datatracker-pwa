@@ -1,8 +1,4 @@
 import { queryClient } from '@/App';
-import PageWrapper from '@/components/elements/page-wrapper';
-import { ErrorDisplay } from '@/components/suspense/error-display';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
-import { BuildGroupBreadcrumb, BuildIndividualsBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
@@ -16,18 +12,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import { FolderHandleContext } from '@/context/folder-context';
-import { CleanUpString } from '@/lib/strings';
 import { mutationEvaluations } from '@/queries/evaluations/mutate-evaluations';
-import { evaluationQueryOptions } from '@/queries/evaluations/query-evaluations';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
+import { useMutation } from '@tanstack/react-query';
+import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { ColumnDef, Row } from '@tanstack/react-table';
 import {
   ChartColumnIcon,
   ChevronDown,
   Copy,
   Disc3,
+  Edit2Icon,
   FilePlus,
   ImportIcon,
   KeyboardIcon,
@@ -35,30 +29,43 @@ import {
   SearchIcon,
   Table2Icon,
 } from 'lucide-react';
-import { useContext } from 'react';
 import { toast } from 'sonner';
 import BackButton from '../../ui/back-button';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 type EvaluationTableRow = {
   Evaluation: string;
 };
 
-export default function EvaluationsPage({ Group, Individual }: { Group: string; Individual: string }) {
-  const Context = useContext(FolderHandleContext);
-
-  const { settings, handle } = Context;
-  const { data, isLoading, error } = useQuery(evaluationQueryOptions(handle!, Group, Individual));
+export default function EvaluationsPage({
+  Group,
+  Individual,
+  Evaluations,
+  Settings,
+  Handle,
+}: {
+  Group: string;
+  Individual: string;
+  Evaluations: string[];
+  Settings: ApplicationSettingsTypes;
+  Handle: FileSystemDirectoryHandle;
+}) {
+  const router = useRouter();
+  const routerState = useRouterState();
+  const currentRouteId = routerState.matches[routerState.matches.length - 1]?.routeId;
 
   const mutateEvaluations = useMutation({
     mutationFn: mutationEvaluations,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.setQueryData(['/', Group, Individual], data);
+
+      await queryClient.invalidateQueries({ queryKey: ['/', 'metaEvaluations'] });
+      await router.invalidate({
+        filter: (match) => match.routeId === currentRouteId || match.routeId === '/session/$group/$individual/import',
+        sync: true,
+      });
     },
   });
-
-  if (isLoading) return <LoadingDisplay />;
-
-  if (error || data == undefined) return <ErrorDisplay Text={'An error occurred while fetching evaluations.'} />;
 
   const DynamicButtonList = ({ row }: { row: Row<EvaluationTableRow> }) => {
     return (
@@ -153,7 +160,7 @@ export default function EvaluationsPage({ Group, Individual }: { Group: string; 
                 Calculate Reliability
               </Link>
             </DropdownMenuItem>
-            {settings.EnableFileDeletion && (
+            {Settings.EnableFileDeletion && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -174,7 +181,7 @@ export default function EvaluationsPage({ Group, Individual }: { Group: string; 
                           Individual,
                           Evaluations: [row.original.Evaluation],
                           Rename: new_evaluation_name,
-                          Handle: handle!,
+                          Handle,
                           Action: 'Duplicate',
                         }),
                       {
@@ -191,6 +198,42 @@ export default function EvaluationsPage({ Group, Individual }: { Group: string; 
                 >
                   <Copy className="mr-2 h-4 w-4" />
                   Duplicate Evaluation
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={async () => {
+                    const new_evaluation_name = window.prompt(
+                      'Enter the name for the renamed evaluation:',
+                      `${row.original.Evaluation}`,
+                    );
+
+                    if (!new_evaluation_name) return;
+
+                    if (new_evaluation_name.trim().length < 4) return;
+
+                    toast.promise(
+                      async () =>
+                        await mutateEvaluations.mutateAsync({
+                          Group,
+                          Individual,
+                          Evaluations: [row.original.Evaluation],
+                          Rename: new_evaluation_name,
+                          Handle,
+                          Action: 'Rename',
+                        }),
+                      {
+                        loading: 'Renaming existing evaluation...',
+                        success: () => {
+                          return 'Evaluation folders have been renamed successfully!';
+                        },
+                        error: (e: Error) => {
+                          return `An error occurred while renaming evaluation folders: ${e.message}`;
+                        },
+                      },
+                    );
+                  }}
+                >
+                  <Edit2Icon className="mr-2 h-4 w-4" />
+                  Rename Evaluation
                 </DropdownMenuItem>
               </>
             )}
@@ -217,148 +260,142 @@ export default function EvaluationsPage({ Group, Individual }: { Group: string; 
   ];
 
   return (
-    <PageWrapper
-      breadcrumbs={[BuildGroupBreadcrumb(), BuildIndividualsBreadcrumb(Group)]}
-      label={CleanUpString(Individual)}
-      className="select-none"
-    >
-      <Card className="w-full max-w-screen-2xl">
-        <CardHeader className="flex flex-col md:flex-row w-full justify-between">
-          <div className="flex flex-col gap-1.5">
-            <CardTitle>Evaluation Directory: {Individual}</CardTitle>
-            <CardDescription>Select Evaluation to Build Session</CardDescription>
-          </div>
-          <div className="flex flex-row gap-2">
-            <BackButton />
-          </div>
-        </CardHeader>
+    <Card className="w-full max-w-screen-2xl">
+      <CardHeader className="flex flex-col md:flex-row w-full justify-between">
+        <div className="flex flex-col gap-1.5">
+          <CardTitle>Evaluation Directory: {Individual}</CardTitle>
+          <CardDescription>Select Evaluation to Build Session</CardDescription>
+        </div>
+        <div className="flex flex-row gap-2">
+          <BackButton />
+        </div>
+      </CardHeader>
 
-        <CardContent className="flex flex-col gap-2">
-          <p>
-            This page provides a list of all evaluations for the respective individual. You may review individual data,
-            visualize data over time, or calculate measures of reliability by selecting the relevant action for each
-            evaluation (i.e., the 'down' arrow). You must have at least <i>one</i> evaluation to begin recording client
-            data.
-          </p>
+      <CardContent className="flex flex-col gap-2">
+        <p>
+          This page provides a list of all evaluations for the respective individual. You may review individual data,
+          visualize data over time, or calculate measures of reliability by selecting the relevant action for each
+          evaluation (i.e., the 'down' arrow). You must have at least <i>one</i> evaluation to begin recording client
+          data.
+        </p>
 
-          <DataTable
-            settings={settings}
-            columns={columns}
-            data={data.map((g) => {
-              return { Evaluation: g };
-            })}
-            callback={(rows) => {
-              const evaluationNames = rows.map((row) => row.Evaluation);
+        <DataTable
+          settings={Settings}
+          columns={columns}
+          data={Evaluations.map((g) => {
+            return { Evaluation: g };
+          })}
+          callback={(rows) => {
+            const evaluationNames = rows.map((row) => row.Evaluation);
 
-              const confirm_delete = window.confirm(
-                `Are you sure you want to delete ${evaluationNames.length} evaluations? This CANNOT be undone.`,
-              );
+            const confirm_delete = window.confirm(
+              `Are you sure you want to delete ${evaluationNames.length} evaluations? This CANNOT be undone.`,
+            );
 
-              if (!confirm_delete) return;
+            if (!confirm_delete) return;
 
-              toast.promise(
-                async () =>
-                  await mutateEvaluations.mutateAsync({
-                    Group,
-                    Individual,
-                    Evaluations: evaluationNames,
-                    Handle: handle!,
-                    Action: 'Delete',
-                  }),
-                {
-                  loading: 'Deleting evaluation folders...',
-                  success: () => {
-                    return 'Evaluation folders have been deleted successfully!';
-                  },
-                  error: (e: Error) => {
-                    return `An error occurred while deleting evaluation folders: ${e.message}`;
-                  },
+            toast.promise(
+              async () =>
+                await mutateEvaluations.mutateAsync({
+                  Group,
+                  Individual,
+                  Evaluations: evaluationNames,
+                  Handle,
+                  Action: 'Delete',
+                }),
+              {
+                loading: 'Deleting evaluation folders...',
+                success: () => {
+                  return 'Evaluation folders have been deleted successfully!';
                 },
-              );
-            }}
-            filterCol="Evaluation"
-            optionalButtons={
-              <div className="flex flex-row gap-2">
-                <ToolTipWrapper Label="Add an a new evaluation for current individual">
-                  <Button
-                    variant={'outline'}
-                    size={'sm'}
-                    className="shadow"
-                    onClick={async () => {
-                      const input = window.prompt('Enter a name for the new evaluation.');
+                error: (e: Error) => {
+                  return `An error occurred while deleting evaluation folders: ${e.message}`;
+                },
+              },
+            );
+          }}
+          filterCol="Evaluation"
+          optionalButtons={
+            <div className="flex flex-row gap-2">
+              <ToolTipWrapper Label="Add an a new evaluation for current individual">
+                <Button
+                  variant={'outline'}
+                  size={'sm'}
+                  className="shadow"
+                  onClick={async () => {
+                    const input = window.prompt('Enter a name for the new evaluation.');
 
-                      if (!input) return;
+                    if (!input) return;
 
-                      if (data.includes(input.trim())) {
-                        alert('Evaluation already exists.');
-                        return;
-                      }
+                    if (Evaluations.includes(input.trim())) {
+                      alert('Evaluation already exists.');
+                      return;
+                    }
 
-                      if (input.trim().length < 4) {
-                        alert('Evaluation name must be at least 4 characters long.');
-                        return;
-                      }
+                    if (input.trim().length < 4) {
+                      alert('Evaluation name must be at least 4 characters long.');
+                      return;
+                    }
 
-                      toast.promise(
-                        async () =>
-                          await mutateEvaluations.mutateAsync({
-                            Group,
-                            Individual,
-                            Evaluations: [input.trim()],
-                            Handle: handle!,
-                            Action: 'Add',
-                          }),
-                        {
-                          loading: 'Creating evaluation folders...',
-                          success: () => {
-                            return 'Evaluation folders have been created successfully!';
-                          },
-                          error: (e: Error) => {
-                            return `An error occurred while creating the evaluation folder: ${e.message}`;
-                          },
+                    toast.promise(
+                      async () =>
+                        await mutateEvaluations.mutateAsync({
+                          Group,
+                          Individual,
+                          Evaluations: [input.trim()],
+                          Handle,
+                          Action: 'Add',
+                        }),
+                      {
+                        loading: 'Creating evaluation folders...',
+                        success: () => {
+                          return 'Evaluation folders have been created successfully!';
                         },
-                      );
-                    }}
-                  >
-                    <FilePlus className="w-4 h-4 mr-2" />
-                    Create
+                        error: (e: Error) => {
+                          return `An error occurred while creating the evaluation folder: ${e.message}`;
+                        },
+                      },
+                    );
+                  }}
+                >
+                  <FilePlus className="w-4 h-4 mr-2" />
+                  Create
+                </Button>
+              </ToolTipWrapper>
+
+              <Link
+                to={'/session/$group/$individual/import'}
+                params={{
+                  group: Group,
+                  individual: Individual,
+                }}
+              >
+                <ToolTipWrapper Label="Import an existing evaluation for the current individual">
+                  <Button variant={'outline'} className="shadow" size={'sm'}>
+                    <ImportIcon className="w-4 h-4 mr-2" />
+                    Import
                   </Button>
                 </ToolTipWrapper>
+              </Link>
 
-                <Link
-                  to={'/session/$group/$individual/import'}
-                  params={{
-                    group: Group,
-                    individual: Individual,
-                  }}
-                >
-                  <ToolTipWrapper Label="Import an existing evaluation for the current individual">
-                    <Button variant={'outline'} className="shadow" size={'sm'}>
-                      <ImportIcon className="w-4 h-4 mr-2" />
-                      Import
-                    </Button>
-                  </ToolTipWrapper>
-                </Link>
-
-                <Link
-                  to="/session/$group/$individual/keysets"
-                  params={{
-                    group: Group,
-                    individual: Individual,
-                  }}
-                >
-                  <ToolTipWrapper Label="Manage KeySets across evaluations">
-                    <Button variant={'outline'} className="shadow" size={'sm'}>
-                      <KeyboardIcon className="w-4 h-4 mr-2" />
-                      KeySets
-                    </Button>
-                  </ToolTipWrapper>
-                </Link>
-              </div>
-            }
-          />
-        </CardContent>
-      </Card>
-    </PageWrapper>
+              <Link
+                to="/session/$group/$individual/keysets"
+                params={{
+                  group: Group,
+                  individual: Individual,
+                }}
+              >
+                <ToolTipWrapper Label="Manage KeySets across evaluations">
+                  <Button variant={'outline'} className="shadow" size={'sm'}>
+                    <KeyboardIcon className="w-4 h-4 mr-2" />
+                    KeySets
+                  </Button>
+                </ToolTipWrapper>
+              </Link>
+            </div>
+          }
+        />
+      </CardContent>
+    </Card>
   );
 }

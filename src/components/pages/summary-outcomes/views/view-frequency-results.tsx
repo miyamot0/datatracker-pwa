@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SavedSessionResult } from '@/lib/dtos';
-import { Code2Icon, KeyboardIcon, PointerIcon, TableIcon } from 'lucide-react';
+import { Code2Icon, KeyboardIcon, TableIcon } from 'lucide-react';
 import { exportHumanReadableToCSV } from '@/lib/download';
-import { EntryHolder, HumanReadableResults, HumanReadableResultsRow } from '@/types/export';
+import { HumanReadableResults, HumanReadableResultsRow } from '@/types/export';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import Spreadsheet, { CellBase, Matrix } from 'react-spreadsheet';
+import Spreadsheet from 'react-spreadsheet';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -16,17 +16,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
-import { EnhancedKeySetInstance } from '@/types/keyset';
-import { walkSessionFrequencyKey } from '@/lib/schedule-parser';
+import { KeySet } from '@/types/keyset';
 import BackButton from '@/components/ui/back-button';
-import { SessionTerminationOptions, SessionTerminationOptionsType } from '@/types/terminations';
+import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';
+import { buildColumnLabels, buildSpreadsheetData, processDerivedKeys, processObservedKeys } from '@/lib/summary';
 
 type Props = {
   SessionTimer: SessionTerminationOptionsType;
   Results: SavedSessionResult[];
-  UnfilteredKeyList: EnhancedKeySetInstance[];
-  ExcludeFromCTB: ToggleDisplayKey[];
+  LatestKeyset: KeySet;
+  ShowKeysFreq: ToggleDisplayKey[];
   Group: string;
   Individual: string;
   Evaluation: string;
@@ -35,247 +35,60 @@ type Props = {
 export default function ViewFrequencyResults({
   SessionTimer,
   Results,
-  UnfilteredKeyList,
-  ExcludeFromCTB,
+  LatestKeyset,
+  ShowKeysFreq,
   Group,
   Individual,
   Evaluation,
 }: Props) {
-  const [ctbSumKeys, setCTBSumKeys] = useState(ExcludeFromCTB);
-  const [filteredKeys, setFilteredKeys] = useState(UnfilteredKeyList);
+  const [filteredKeys, setFilteredKeys] = useState(ShowKeysFreq);
 
-  // Note no CTB included here by default
-  const filteredKeySelection = filteredKeys.filter((key) => key.Type === 'Key');
-  const includesCTB = filteredKeys.find((key) => key.Type === 'Summary');
+  const observedKeys = filteredKeys.filter((key) => key.KeyType === 'Observed');
+  const derivedKeys = filteredKeys.filter((key) => key.KeyType === 'Derived');
 
+  // Build human-readable results
   const hr_results: HumanReadableResults = {
     type: 'Frequency',
-    keys: filteredKeySelection.map((key) => ({
+    keys: observedKeys.map((key) => ({
       Key: key.KeyName,
+      KeyCode: key.KeyCode,
       Value: key.KeyDescription,
       Visible: key.Visible,
     })),
+    results: Results.map((result) => {
+      const systemEvents = result.SystemKeyPresses.map((press) => new Date(press.TimePressed)).sort(
+        (a, b) => a.getTime() - b.getTime(),
+      );
 
-    results: [],
+      if (systemEvents.length === 0) {
+        throw new Error('No system events found');
+      }
+
+      const sessionRow: HumanReadableResultsRow = {
+        Session: result.SessionSettings.Session,
+        Date: systemEvents[0],
+        Condition: result.SessionSettings.Condition,
+        DataCollector: result.SessionSettings.Initials,
+        Therapist: result.SessionSettings.Therapist,
+        duration: result.TimerMain / 60,
+        Timer1: result.TimerOne / 60,
+        Timer2: result.TimerTwo / 60,
+        Timer3: result.TimerThree / 60,
+        values: [],
+      };
+
+      // Process observed and derived keys
+      const observedValues = processObservedKeys(result, SessionTimer, LatestKeyset, observedKeys);
+      const derivedValues = processDerivedKeys(result, SessionTimer, LatestKeyset, derivedKeys);
+
+      sessionRow.values = [...observedValues, ...derivedValues];
+      return sessionRow;
+    }),
   };
 
-  Results.map((result) => {
-    const system_events = result.SystemKeyPresses.map((press) => new Date(press.TimePressed)).sort(
-      (a, b) => a.getTime() - b.getTime(),
-    );
-
-    if (system_events.length === 0) throw new Error('No system events found');
-
-    const temp_result = {
-      Session: result.SessionSettings.Session,
-      Date: system_events[0],
-      Condition: result.SessionSettings.Condition,
-      DataCollector: result.SessionSettings.Initials,
-      Therapist: result.SessionSettings.Therapist,
-      values: [] as EntryHolder[],
-      duration: result.TimerMain / 60,
-      Timer1: result.TimerOne / 60,
-      Timer2: result.TimerTwo / 60,
-      Timer3: result.TimerThree / 60,
-    } satisfies HumanReadableResultsRow;
-
-    // Note: per session
-    let ctbSum = 0;
-    let ctbDur = 0;
-
-    filteredKeySelection.map((key) => {
-      const primary = walkSessionFrequencyKey(result, 'Primary', key);
-      const secondary = walkSessionFrequencyKey(result, 'Secondary', key);
-      const tertiary = walkSessionFrequencyKey(result, 'Tertiary', key);
-      const score_by_schedule = [primary, secondary, tertiary];
-
-      const total_frequency = score_by_schedule.reduce((partialSum, a) => partialSum + a.Value, 0);
-
-      switch (SessionTimer) {
-        case SessionTerminationOptions.TimerMain:
-          if (key.Visible === true) {
-            // Total Count
-            temp_result.values.push({
-              Key: key.KeyDescription,
-              Value: total_frequency.toString(),
-            });
-
-            // Total Rate
-            temp_result.values.push({
-              Key: key.KeyDescription,
-              Value: (total_frequency / (result.TimerMain / 60)).toFixed(2),
-            });
-          }
-
-          ctbSum = ctbSum + total_frequency;
-          ctbDur = result.TimerMain / 60;
-
-          break;
-        case SessionTerminationOptions.Timer1:
-          if (key.Visible === true) {
-            // Timer #1 Count
-            temp_result.values.push({
-              Key: key.KeyDescription,
-              Value: primary.Value.toString(),
-            });
-
-            // Timer #1 Rate
-            temp_result.values.push({
-              Key: key.KeyDescription,
-              Value: (primary.Value / (result.TimerOne / 60)).toFixed(2),
-            });
-          }
-
-          ctbSum = ctbSum + primary.Value;
-          ctbDur = result.TimerOne / 60;
-
-          break;
-        case SessionTerminationOptions.Timer2:
-          if (key.Visible === true) {
-            // Timer #2 Count
-            temp_result.values.push({
-              Key: key.KeyDescription,
-              Value: secondary.Value.toString(),
-            });
-
-            // Timer #2 Rate
-            temp_result.values.push({
-              Key: key.KeyDescription,
-              Value: (secondary.Value / (result.TimerTwo / 60)).toFixed(2),
-            });
-          }
-
-          ctbSum = ctbSum + secondary.Value;
-          ctbDur = result.TimerTwo / 60;
-
-          break;
-        case SessionTerminationOptions.Timer3:
-          if (key.Visible === true) {
-            // Timer #3 Count
-            temp_result.values.push({
-              Key: key.KeyDescription,
-              Value: tertiary.Value.toString(),
-            });
-
-            // Timer #3 Rate
-            temp_result.values.push({
-              Key: key.KeyDescription,
-              Value: (tertiary.Value / (result.TimerThree / 60)).toFixed(2),
-            });
-          }
-
-          ctbSum = ctbSum + tertiary.Value;
-          ctbDur = result.TimerThree / 60;
-
-          break;
-        default:
-          break;
-      }
-    });
-
-    if (includesCTB !== null) {
-      temp_result.values.push({
-        Key: 'CTB (Count)',
-        Value: ctbSum.toString(),
-      });
-
-      temp_result.values.push({
-        Key: 'CTB (Count)',
-        Value: (ctbSum / ctbDur).toFixed(2),
-      });
-    }
-
-    hr_results.results.push(temp_result);
-  });
-
   const csv_string = exportHumanReadableToCSV(hr_results);
-
-  const columnLabels = ['Session #', 'Date', 'Time', 'Condition', 'Data Collector', 'Therapist'];
-
-  switch (SessionTimer) {
-    case SessionTerminationOptions.TimerMain:
-      columnLabels.push('Duration Session (min)');
-      break;
-    case SessionTerminationOptions.Timer1:
-      columnLabels.push('Duration Timer #1 (min)');
-      break;
-    case SessionTerminationOptions.Timer2:
-      columnLabels.push('Duration Timer #2 (min)');
-      break;
-    case SessionTerminationOptions.Timer3:
-      columnLabels.push('Duration Timer #3 (min)');
-      break;
-    default:
-      break;
-  }
-
-  hr_results.keys.forEach((entry) => {
-    if (entry.Visible === false) return;
-
-    switch (SessionTimer) {
-      case SessionTerminationOptions.TimerMain:
-        columnLabels.push(entry.Value + ' (Session Count)');
-        columnLabels.push(entry.Value + ' (Session Rate)');
-        break;
-      case SessionTerminationOptions.Timer1:
-        columnLabels.push(entry.Value + ' (Timer #1 Count)');
-        columnLabels.push(entry.Value + ' (Timer #1 Rate)');
-        break;
-      case SessionTerminationOptions.Timer2:
-        columnLabels.push(entry.Value + ' (Timer #2 Count)');
-        columnLabels.push(entry.Value + ' (Timer #2 Rate)');
-        break;
-      case SessionTerminationOptions.Timer3:
-        columnLabels.push(entry.Value + ' (Timer #3 Count)');
-        columnLabels.push(entry.Value + ' (Timer #3 Rate)');
-        break;
-      default:
-        break;
-    }
-  });
-
-  if (includesCTB !== null) {
-    columnLabels.push('CTB (Count)');
-    columnLabels.push('CTB (Rate)');
-  }
-
-  const data = hr_results.results.map((datum) => {
-    const values = datum.values.map((datum2) => {
-      return {
-        value: datum2.Value.toString(),
-        readOnly: true,
-      };
-    });
-
-    const builder = [
-      { value: datum.Session.toString(), readOnly: true },
-      { value: datum.Date.toLocaleDateString(), readOnly: true },
-      { value: datum.Date.toLocaleTimeString(), readOnly: true },
-      { value: datum.Condition.toString(), readOnly: true },
-      { value: datum.DataCollector.toString(), readOnly: true },
-      { value: datum.Therapist.toString(), readOnly: true },
-    ];
-
-    switch (SessionTimer) {
-      case SessionTerminationOptions.TimerMain:
-        builder.push({ value: datum.duration.toFixed(2), readOnly: true });
-        break;
-      case SessionTerminationOptions.Timer1:
-        builder.push({ value: datum.Timer1.toFixed(2), readOnly: true });
-        break;
-      case SessionTerminationOptions.Timer2:
-        builder.push({ value: datum.Timer2.toFixed(2), readOnly: true });
-        break;
-      case SessionTerminationOptions.Timer3:
-        builder.push({ value: datum.Timer3.toFixed(2), readOnly: true });
-        break;
-      default:
-        break;
-    }
-
-    return [...builder, ...values];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }) as Matrix<CellBase<any>>;
+  const columnLabels = buildColumnLabels(SessionTimer, observedKeys, derivedKeys);
+  const data = buildSpreadsheetData(hr_results.results, SessionTimer);
 
   return (
     <Card className="w-full">
@@ -286,53 +99,6 @@ export default function ViewFrequencyResults({
         </div>
 
         <div className="flex flex-row gap-2">
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-fit" size={'sm'}>
-                <PointerIcon className="mr-2 w-4 h-4" />
-                Keys for CTB Calculation
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Toggle Inclusion</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {ctbSumKeys.map((key, index) => (
-                <DropdownMenuCheckboxItem
-                  key={`key-${index}`}
-                  checked={key.Visible}
-                  onCheckedChange={(checked: boolean) => {
-                    const updatedKeys = ctbSumKeys.map((k) => {
-                      if (k.KeyDescription === key.KeyDescription) {
-                        return {
-                          ...k,
-                          Visible: checked,
-                        };
-                      }
-
-                      return k;
-                    });
-
-                    const hidden_keys = filteredKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
-
-                    const exclude_from_ctb = updatedKeys
-                      .filter((k) => k.Visible === false)
-                      .map((k) => k.KeyDescription);
-
-                    setLocalCachedPrefs(Group!, Individual!, Evaluation!, 'Rate', {
-                      KeyDescription: hidden_keys,
-                      CTBElements: exclude_from_ctb,
-                      Schedule: SessionTimer,
-                    });
-
-                    setCTBSumKeys(updatedKeys);
-                  }}
-                >
-                  {key.KeyDescription}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size={'sm'} className="w-fit">
@@ -360,6 +126,13 @@ export default function ViewFrequencyResults({
                     });
 
                     setFilteredKeys(updatedKeys);
+
+                    const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+
+                    setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
+                      KeyDescription: hidden_keys,
+                      Schedule: SessionTimer,
+                    });
                   }}
                 >
                   {key.KeyDescription}

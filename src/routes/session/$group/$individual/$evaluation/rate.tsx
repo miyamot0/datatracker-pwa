@@ -1,120 +1,175 @@
 import { CleanUpString } from '@/lib/strings';
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 import { KeySet } from '@/types/keyset';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
-import { routeGuard } from '@/lib/routing';
 import {
-  createCTBKeyWithPreferences,
   extractAndDeduplicateKeysets,
   filterSessionsByPrimaryRole,
   mapKeysWithStoragePreference,
 } from '@/lib/graphing';
-import { pullMostRecentKeySet } from '@/lib/keyset';
+import { pullMostRecentSession } from '@/lib/keyset';
 import { ToggleDisplayKey } from '@/types/visuals';
 import ResultsRateVisualsPage from '@/components/pages/visualize-outcomes/rate/results-rate-visuals-page';
+import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
+import PageWrapper from '@/components/elements/page-wrapper';
+import {
+  BuildGroupBreadcrumb,
+  BuildIndividualsBreadcrumb,
+  BuildEvaluationsBreadcrumb,
+} from '@/components/ui/breadcrumb-entries';
+import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { ModifiedSessionResult } from '@/types/storage';
+import { ErrorDisplay } from '@/components/suspense/error-display';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/rate')({
-  beforeLoad: routeGuard,
-  loader: async ({ params, context }) => {
+  beforeLoad: ({ context, params }) => {
+    if (!context.folderHandleContext.isInitialized) {
+      throw redirect({
+        href: '/',
+      });
+    }
+
+    if (!context.folderHandleContext.handle) {
+      throw redirect({
+        to: '/dashboard',
+      });
+    }
+
     const { group, individual, evaluation } = params;
-    const { handle } = context.folderHandleContext;
 
-    if (!group || !individual || !evaluation || !handle) {
+    if (!group || !individual || !evaluation) {
       throw redirect({
-        href: '/dashboard',
+        to: '/dashboard',
       });
-    }
-
-    const results = await context.queryClient.ensureQueryData(
-      sessionOutcomesQueryOptions(handle, group, individual, evaluation),
-    );
-
-    // Note: base to pull from
-    const keyset = pullMostRecentKeySet(results);
-
-    if (!keyset) {
-      throw redirect({
-        href: '/dashboard',
-      });
-    }
-
-    // Extract and deduplicate keysets using discrete function
-    const { frequencyKeys: targetedFKeys, durationKeys: targetedDKeys } = extractAndDeduplicateKeysets(results);
-
-    const dynamicKeyset = {
-      ...keyset,
-      FrequencyKeys: targetedFKeys,
-      DurationKeys: targetedDKeys,
-    } as unknown as KeySet;
-
-    const keys: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map((key) => ({
-      KeyDescription: key.KeyDescription,
-      Visible: true,
-    }));
-
-    const storedPreferences = getLocalCachedPrefs(group, individual, evaluation, 'Rate');
-    const { ctbEntry, excludeFromCTB } = createCTBKeyWithPreferences(keys, storedPreferences);
-    const showKeysBase = mapKeysWithStoragePreference([...keys, ctbEntry], storedPreferences);
-
-    const resultsFiltered = filterSessionsByPrimaryRole(results);
-
-    let minX = 0;
-    let maxX = 1;
-
-    if (resultsFiltered.length > 0) {
-      minX = Math.min(...resultsFiltered.map((r) => r.SessionSettings.Session));
-      maxX = Math.max(...resultsFiltered.map((r) => r.SessionSettings.Session));
     }
 
     return {
       Group: CleanUpString(group),
       Individual: CleanUpString(individual),
       Evaluation: CleanUpString(evaluation),
-      Handle: handle,
-      Results: results,
-      ResultsFiltered: resultsFiltered,
-      MinX: minX,
-      MaxX: maxX,
-      DynamicKeySet: dynamicKeyset,
-      ShowKeys: showKeysBase,
-      ExcludeKeysFromCTB: excludeFromCTB,
-      Schedule: storedPreferences.Schedule ?? 'End on Timer #1',
+      CleanHandle: context.folderHandleContext.handle,
+      Settings: context.folderHandleContext.settings,
+    };
+  },
+  loader: async ({ context }) => {
+    const { Group, Individual, Evaluation, CleanHandle, Settings } = context;
+
+    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
+
+    const fetchSessionOutcomes = context.queryClient.fetchQuery(
+      sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
+    );
+
+    const totalQuery = Promise.all([fetchKeyboards, fetchSessionOutcomes]);
+
+    return {
+      Group,
+      Individual,
+      Evaluation,
+      Handle: CleanHandle,
+      Settings,
+      totalQuery,
     };
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const {
-    Group,
-    Individual,
-    Evaluation,
-    Handle,
-    Results,
-    ResultsFiltered,
-    DynamicKeySet,
-    Schedule,
-    ShowKeys,
-    ExcludeKeysFromCTB,
-    MinX,
-    MaxX,
-  } = Route.useLoaderData();
+  const { Group, Individual, Evaluation, Handle, totalQuery } = Route.useLoaderData();
 
   return (
-    <ResultsRateVisualsPage
-      Group={Group}
-      Individual={Individual}
-      Evaluation={Evaluation}
-      Handle={Handle}
-      Results={Results}
-      ResultsFiltered={ResultsFiltered}
-      DynamicKeySet={DynamicKeySet}
-      Schedule={Schedule}
-      ShowKeys={ShowKeys}
-      ExcludeKeysFromCTB={ExcludeKeysFromCTB}
-      MinX={MinX}
-      MaxX={MaxX}
-    />
+    <PageWrapper
+      breadcrumbs={[
+        BuildGroupBreadcrumb(),
+        BuildIndividualsBreadcrumb(Group),
+        BuildEvaluationsBreadcrumb(Group, Individual),
+      ]}
+      label={`${Evaluation}: Target Rates`}
+      className="select-none"
+    >
+      <Await promise={totalQuery} fallback={<LoadingDisplay />}>
+        {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (results: any[]) => {
+            const keyboards: KeySet[] = results[0];
+            const sessionOutcomes: ModifiedSessionResult[] = results[1];
+
+            const resultsFiltered = filterSessionsByPrimaryRole(sessionOutcomes);
+
+            const recentKeysetName = pullMostRecentSession(sessionOutcomes);
+            const latestKeyset = keyboards.find((kb) => kb.Name === recentKeysetName.SessionSettings.KeySet);
+
+            // TODO: The latest keyset should be the last one in the session designer
+            if (!latestKeyset) {
+              return <ErrorDisplay Text={'KeySet not found.'} />;
+            }
+
+            const {
+              frequencyKeys: targetedFKeys,
+              durationKeys: targetedDKeys,
+              derivedKeys: targetedDerivedKeys,
+            } = extractAndDeduplicateKeysets(sessionOutcomes, latestKeyset);
+
+            const dynamicKeyset = {
+              ...latestKeyset,
+              FrequencyKeys: targetedFKeys,
+              DurationKeys: targetedDKeys,
+              DerivedKeys: targetedDerivedKeys,
+            } satisfies KeySet;
+
+            const keysFreqObserved: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map(
+              (key) =>
+                ({
+                  ...key,
+                  Visible: true,
+                  KeyType: 'Observed',
+                }) satisfies ToggleDisplayKey,
+            );
+
+            const keysFreqDerived: ToggleDisplayKey[] = dynamicKeyset.DerivedKeys?.map(
+              (key) =>
+                ({
+                  KeyName: key.name,
+                  KeyDescription: key.name,
+                  KeyCode: -1,
+                  Visible: true,
+                  KeyType: 'Derived',
+                }) satisfies ToggleDisplayKey,
+            );
+
+            const storedPreferences = getLocalCachedPrefs(Group, Individual, Evaluation, 'Rate');
+            const showKeysFreq = mapKeysWithStoragePreference(
+              [...keysFreqObserved, ...keysFreqDerived],
+              storedPreferences,
+            );
+
+            let minX = 0;
+            let maxX = 1;
+
+            if (resultsFiltered.length > 0) {
+              minX = Math.min(...resultsFiltered.map((r) => r.SessionSettings.Session));
+              maxX = Math.max(...resultsFiltered.map((r) => r.SessionSettings.Session));
+            }
+
+            return (
+              <ResultsRateVisualsPage
+                Group={Group}
+                Individual={Individual}
+                Evaluation={Evaluation}
+                Handle={Handle}
+                Results={sessionOutcomes}
+                ResultsFiltered={resultsFiltered}
+                DynamicKeySet={dynamicKeyset}
+                Schedule={storedPreferences.Schedule ?? 'End on Timer #1'}
+                ShowKeys={showKeysFreq}
+                MinX={minX}
+                MaxX={maxX}
+              />
+            );
+          }
+        }
+      </Await>
+    </PageWrapper>
   );
 }

@@ -4,30 +4,39 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DatabaseIcon, FolderInput, FolderPlus } from 'lucide-react';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { ColumnDef } from '@tanstack/react-table';
-import { FolderHandleContext } from '@/context/folder-context';
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { DemoDataFolderName, mutationGroups } from '@/queries/groups/mutate-groups';
-import { useContext } from 'react';
-import { Link } from '@tanstack/react-router';
+import { mutationGroups } from '@/queries/groups/mutate-groups';
+import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { DataTable } from '@/components/ui/data-table-common';
+import { DemoDataFolderName } from '@/workers/mutations/helpers/file-query-mutate-actions';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 type Props = {
   Groups: string[];
+  Settings: ApplicationSettingsTypes;
+  Handle: FileSystemDirectoryHandle;
 };
 
 type GroupTableRow = {
   Group: string;
 };
 
-export default function AuthorizedDisplayContent({ Groups }: Props) {
-  const { settings, handle } = useContext(FolderHandleContext);
+export default function AuthorizedDisplayContent({ Groups, Settings, Handle }: Props) {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const routerState = useRouterState();
+  const currentRouteId = routerState.matches[routerState.matches.length - 1]?.routeId;
 
   const mutateGroups = useMutation({
     mutationFn: mutationGroups,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.setQueryData(['/'], data);
+
+      await router.invalidate({
+        filter: (match) => match.routeId === currentRouteId,
+        sync: true,
+      });
     },
   });
 
@@ -77,7 +86,7 @@ export default function AuthorizedDisplayContent({ Groups }: Props) {
         </p>
 
         <DataTable
-          settings={settings}
+          settings={Settings}
           columns={columns}
           data={Groups.map((g) => {
             return { Group: g };
@@ -97,16 +106,16 @@ export default function AuthorizedDisplayContent({ Groups }: Props) {
               async () =>
                 await mutateGroups.mutateAsync({
                   Group: groupNames,
-                  Handle: handle!,
+                  Handle: Handle,
                   Action: 'Delete',
                 }),
               {
-                loading: 'Removing folders...',
+                loading: 'Removing group folders...',
                 success: () => {
-                  return 'Folders removed.';
+                  return 'Group folders removed.';
                 },
                 error: (e: Error) => {
-                  return `Folders were not removed: ${e.message}`;
+                  return `Group folders were not removed: ${e.message}`;
                 },
               },
             );
@@ -131,7 +140,7 @@ export default function AuthorizedDisplayContent({ Groups }: Props) {
                     async () =>
                       mutateGroups.mutateAsync({
                         Group: [DemoDataFolderName],
-                        Handle: handle!,
+                        Handle: Handle,
                         Action: 'Demo',
                       }),
                     {
@@ -173,7 +182,7 @@ export default function AuthorizedDisplayContent({ Groups }: Props) {
                     async () =>
                       await mutateGroups.mutateAsync({
                         Group: [input.trim()],
-                        Handle: handle!,
+                        Handle: Handle,
                         Action: 'Add',
                       }),
                     {

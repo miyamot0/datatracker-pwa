@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useContext, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Pencil1Icon } from '@radix-ui/react-icons';
@@ -10,12 +10,12 @@ import { toast } from 'sonner';
 import { ModifiedSessionResult } from '@/types/storage';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { FolderHandleContext } from '@/context/folder-context';
 import { SavedSessionResult } from '@/lib/dtos';
 import { useMutation } from '@tanstack/react-query';
 import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outcomes';
 import { queryClient } from '@/App';
 import { KeyManageType } from '@/types/timing';
+import { useRouter, useRouterState } from '@tanstack/react-router';
 
 function ColoredDot({ KeyObject }: { KeyObject: KeyManageType }) {
   let key_color = '#fff';
@@ -55,24 +55,33 @@ export default function SessionManagerContent({
   Evaluation,
   Session,
   SavedKeys,
+  Handle,
 }: {
   Group: string;
   Individual: string;
   Evaluation: string;
   Session: ModifiedSessionResult;
   SavedKeys: KeyManageType[];
+  Handle: FileSystemDirectoryHandle;
 }) {
-  const mutateSessionOutcomes = useMutation({
-    mutationFn: mutationSettingsOutcomes,
-    onSuccess: (data) => {
-      queryClient.setQueryData(['/', Group, Individual, Evaluation, 'outcomes'], data);
-    },
-  });
-
-  const { handle } = useContext(FolderHandleContext);
+  const router = useRouter();
+  const routerState = useRouterState();
+  const currentRouteId = routerState.matches[routerState.matches.length - 1]?.routeId;
 
   const [currentKeys, setCurrentKeys] = useState(SavedKeys);
   const textareaRef = useRef(null);
+
+  const mutateSessionOutcomes = useMutation({
+    mutationFn: mutationSettingsOutcomes,
+    onSuccess: async (data) => {
+      queryClient.setQueryData(['/', Group, Individual, Evaluation, 'outcomes'], data);
+
+      await router.invalidate({
+        filter: (match) => match.routeId === currentRouteId,
+        sync: true,
+      });
+    },
+  });
 
   const allKeys = [Session.Keyset.FrequencyKeys, Session.Keyset.DurationKeys].flat();
 
@@ -86,7 +95,7 @@ export default function SessionManagerContent({
     } satisfies SavedSessionResult;
 
     await mutateSessionOutcomes.mutateAsync({
-      Handle: handle!,
+      Handle,
       Group,
       Individual,
       Evaluation,

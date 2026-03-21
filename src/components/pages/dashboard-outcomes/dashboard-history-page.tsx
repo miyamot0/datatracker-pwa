@@ -1,9 +1,3 @@
-import PageWrapper from '@/components/elements/page-wrapper';
-import {
-  BuildEvaluationsBreadcrumb,
-  BuildGroupBreadcrumb,
-  BuildIndividualsBreadcrumb,
-} from '@/components/ui/breadcrumb-entries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -14,39 +8,45 @@ import { ColumnDef } from '@tanstack/react-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
 import { ModifiedSessionResult } from '@/types/storage';
-import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outcomes';
 import { toast } from 'sonner';
-import { ErrorDisplay } from '@/components/suspense/error-display';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { queryClient } from '@/App';
-import { useContext } from 'react';
-import { FolderHandleContext } from '@/context/folder-context';
-import { Link } from '@tanstack/react-router';
+import { Link, useRouter, useRouterState } from '@tanstack/react-router';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 export default function DashboardHistoryPage({
   Group,
   Individual,
   Evaluation,
+  Sessions,
+  Settings,
+  Handle,
 }: {
   Group: string;
   Individual: string;
   Evaluation: string;
+  Sessions: ModifiedSessionResult[];
+  Settings: ApplicationSettingsTypes;
+  Handle: FileSystemDirectoryHandle;
 }) {
-  const { settings, handle } = useContext(FolderHandleContext);
-  const { data, isLoading, error } = useQuery(sessionOutcomesQueryOptions(handle!, Group, Individual, Evaluation));
+  const router = useRouter();
+  const routerState = useRouterState();
+  const currentRouteId = routerState.matches[routerState.matches.length - 1]?.routeId;
 
   const mutateSessionOutcomes = useMutation({
     mutationFn: mutationSettingsOutcomes,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.setQueryData(['/', Group, Individual, Evaluation, 'outcomes'], data);
+
+      await router.invalidate({
+        filter: (match) =>
+          match.routeId === currentRouteId || match.routeId === '/session/$group/$individual/$evaluation/',
+        sync: true,
+        forcePending: true,
+      });
     },
   });
-
-  if (isLoading) return <LoadingDisplay />;
-
-  if (error || data == undefined) return <ErrorDisplay Text={'An error occurred while fetching session outcomes.'} />;
 
   const columns: ColumnDef<ModifiedSessionResult>[] = [
     {
@@ -114,7 +114,7 @@ export default function DashboardHistoryPage({
             </Button>
           </Link>
 
-          {settings.EnableFileDeletion && (
+          {Settings.EnableFileDeletion && (
             <Link
               className="flex flex-row items-center"
               to="/session/$group/$individual/$evaluation/history/edit/$file"
@@ -137,100 +137,90 @@ export default function DashboardHistoryPage({
   ];
 
   return (
-    <PageWrapper
-      breadcrumbs={[
-        BuildGroupBreadcrumb(),
-        BuildIndividualsBreadcrumb(Group),
-        BuildEvaluationsBreadcrumb(Group, Individual),
-      ]}
-      label={'Session History'}
-      className="select-none"
-    >
-      <Card className="w-full">
-        <CardHeader className="flex flex-row justify-between">
-          <div className="flex flex-col gap-1.5 grow">
-            <CardTitle>Session History ({Evaluation})</CardTitle>
-            <CardDescription>Select Individual Sessions to View More</CardDescription>
-          </div>
-          <BackButton />
-        </CardHeader>
+    <Card className="w-full">
+      <CardHeader className="flex flex-row justify-between">
+        <div className="flex flex-col gap-1.5 grow">
+          <CardTitle>Session History ({Evaluation})</CardTitle>
+          <CardDescription>Select Individual Sessions to View More</CardDescription>
+        </div>
+        <BackButton />
+      </CardHeader>
 
-        <CardContent className="flex flex-col gap-2">
-          <p>
-            This page provides a summary of the data currently saved on your machine. You may view behavior recorded
-            from each session in greater detail by using the 'Inspect Session' button.
-          </p>
+      <CardContent className="flex flex-col gap-2">
+        <p>
+          This page provides a summary of the data currently saved on your machine. You may view behavior recorded from
+          each session in greater detail by using the 'Inspect Session' button.
+        </p>
 
-          <DataTable
-            settings={settings}
-            columns={columns}
-            data={data}
-            callback={async (rows) => {
-              const confirm_delete = window.confirm(
-                `Are you sure you want to delete ${rows.length} sessions? This CANNOT be undone.`,
-              );
+        <DataTable
+          settings={Settings}
+          columns={columns}
+          data={Sessions}
+          callback={async (rows) => {
+            const confirm_delete = window.confirm(
+              `Are you sure you want to delete ${rows.length} sessions? This CANNOT be undone.`,
+            );
 
-              if (!confirm_delete) {
-                return;
-              }
+            if (!confirm_delete) {
+              return;
+            }
 
-              toast.promise(
-                async () =>
-                  await mutateSessionOutcomes.mutateAsync({
-                    Handle: handle!,
-                    Group,
-                    Individual,
-                    Evaluation,
-                    Outcomes: rows,
-                    Action: 'Delete',
-                  }),
-                {
-                  loading: 'Deleting specific session files...',
-                  success: () => {
-                    return 'Session files have been deleted successfully!';
-                  },
-                  error: () => {
-                    return 'An error occurred while deleting specific session files.';
-                  },
+            toast.promise(
+              async () =>
+                await mutateSessionOutcomes.mutateAsync({
+                  Handle,
+                  Group,
+                  Individual,
+                  Evaluation,
+                  Outcomes: rows,
+                  Action: 'Delete',
+                }),
+              {
+                loading: 'Deleting specific session files...',
+                success: () => {
+                  return 'Session files have been deleted successfully!';
                 },
-              );
-            }}
-            customCheckboxButton2={<>Rename Conditions</>}
-            callback2={async (rows) => {
-              const new_condition = prompt('Enter new condition name for selected sessions:');
-              if (!new_condition) {
-                return;
-              }
-
-              if (new_condition.trim().length < 3) {
-                return;
-              }
-
-              toast.promise(
-                async () =>
-                  await mutateSessionOutcomes.mutateAsync({
-                    Handle: handle!,
-                    Group,
-                    Individual,
-                    Evaluation,
-                    Outcomes: rows,
-                    Action: 'EditCondition',
-                    ConditionRename: new_condition,
-                  }),
-                {
-                  loading: 'Renaming conditions for selected session files...',
-                  success: () => {
-                    return 'Session files have been renamed successfully!';
-                  },
-                  error: () => {
-                    return 'An error occurred while renaming conditions for selected session files.';
-                  },
+                error: () => {
+                  return 'An error occurred while deleting specific session files.';
                 },
-              );
-            }}
-          />
-        </CardContent>
-      </Card>
-    </PageWrapper>
+              },
+            );
+          }}
+          customCheckboxButton2={<>Rename Conditions</>}
+          callback2={async (rows) => {
+            const new_condition = prompt('Enter new condition name for selected sessions:');
+            if (!new_condition) {
+              return;
+            }
+
+            if (new_condition.trim().length < 3) {
+              return;
+            }
+
+            toast.promise(
+              async () =>
+                await mutateSessionOutcomes.mutateAsync({
+                  Handle,
+                  Group,
+                  Individual,
+                  Evaluation,
+                  Outcomes: rows,
+                  Action: 'EditCondition',
+                  ConditionRename: new_condition,
+                }),
+              {
+                loading: 'Renaming conditions for selected session files...',
+                success: () => {
+                  return 'Session files have been renamed successfully!';
+                },
+                error: () => {
+                  return 'An error occurred while renaming conditions for selected session files.';
+                },
+              },
+            );
+          }}
+        />
+      </CardContent>
+    </Card>
   );
 }

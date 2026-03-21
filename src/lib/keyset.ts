@@ -17,6 +17,7 @@ export function createNewKeySet(Name: string): KeySet {
     id: uuidv4(),
     createdAt: new Date(),
     lastModified: new Date(),
+    DerivedKeys: [],
   };
 }
 
@@ -34,6 +35,7 @@ export function serializeKeySet(keyset: KeySet): string {
     DurationKeys: keyset.DurationKeys,
     createdAt: keyset.createdAt.toJSON(),
     lastModified: keyset.lastModified.toJSON(),
+    DerivedKeys: keyset.DerivedKeys || [],
   };
 
   return JSON.stringify(keyset_serialized);
@@ -55,9 +57,30 @@ export function deserializeKeySet(json: string): KeySet {
     DurationKeys: keyset_json.DurationKeys,
     createdAt: new Date(keyset_json.createdAt),
     lastModified: new Date(keyset_json.lastModified),
+    DerivedKeys: keyset_json.DerivedKeys || [],
   };
 }
 
+/**
+ * Pull the most recent session result from an array of session results
+ *
+ * @param data - An array of session results, which can be either SavedSessionResult or ModifiedSessionResult, both containing a SessionSettings property with a Session number used to determine recency
+ * @returns The most recent session result, determined by the highest SessionSettings.Session value in the input array
+ */
+export function pullMostRecentSession(
+  data: SavedSessionResult[] | ModifiedSessionResult[],
+): SavedSessionResult | ModifiedSessionResult {
+  const latest = data.sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session).slice(-1)[0];
+  return latest;
+}
+
+/**
+ * Pull the most recent key set from an array of session results
+ *
+ * @param data - An array of session results, which can be either SavedSessionResult or ModifiedSessionResult, both containing a Keyset property
+ * @returns The KeySet object from the most recent session result, determined by the highest SessionSettings.Session value in the input array
+ */
 export function pullMostRecentKeySet(data: SavedSessionResult[] | ModifiedSessionResult[]): KeySet {
-  return data.sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session).slice(-1)[0].Keyset;
+  const latest = pullMostRecentSession(data);
+  return latest.Keyset;
 }

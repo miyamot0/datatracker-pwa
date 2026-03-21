@@ -1,6 +1,8 @@
 import { clientQueryOptions } from './query-individuals';
-import { CleanUpString } from '@/lib/strings';
 import { queryClient } from '@/App';
+import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
+import { v4 as uuidv4 } from 'uuid';
+import { MutateIndividualsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**
  * This function is responsible for mutating the individuals associated with a specific group. It takes in the necessary parameters to identify the target group and the individuals to be added or deleted. The function first retrieves the current list of individuals using React Query's `fetchQuery` method. It then performs the specified action (adding or deleting individuals) by interacting with the file system through the provided directory handle. Finally, it returns the updated list of individual names after the mutation is complete.
@@ -27,19 +29,44 @@ export const mutationIndividuals = async ({
     throw new Error('Individuals not found');
   }
 
-  let newIndividualList = individuals;
+  return await mutationIndividualsWorker({ Handle, Group, Individuals, Action });
+};
 
-  const group_dir = await Handle.getDirectoryHandle(CleanUpString(Group));
+export const mutationIndividualsWorker = async ({
+  Handle,
+  Group,
+  Individuals,
+  Action,
+}: {
+  Handle: FileSystemDirectoryHandle;
+  Group: string;
+  Individuals: string[];
+  Action: 'Add' | 'Delete';
+}) => {
+  const worker = new GenericFileWorker();
+  const request = {
+    id: uuidv4(),
+    type: 'MUTATE_INDIVIDUALS',
+    handle: Handle,
+    groupName: Group,
+    individualNames: Individuals,
+    action: Action,
+  } satisfies MutateIndividualsRequest;
 
-  if (Action == 'Add') {
-    await group_dir.getDirectoryHandle(Individuals[0], { create: true });
-    newIndividualList.push(Individuals[0]);
-  } else if (Action == 'Delete') {
-    for (const indiv of Individuals) {
-      await group_dir.removeEntry(indiv, { recursive: true });
-      newIndividualList = newIndividualList.filter((i) => i != indiv);
-    }
-  }
-
-  return newIndividualList;
+  return new Promise<string[]>((resolve) => {
+    worker.onmessage = (event: MessageEvent<MutationResponse>) => {
+      const response = event.data;
+      if (response.success) {
+        const directories = response.data;
+        resolve(directories);
+      } else {
+        resolve([]);
+      }
+    };
+    worker.onerror = (error) => {
+      console.error('Worker error:', error);
+      resolve([]);
+    };
+    worker.postMessage(request);
+  });
 };

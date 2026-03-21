@@ -30,7 +30,6 @@ import {
   generateChartPreparation,
   extractAndDeduplicateKeysets,
   mapKeysWithStoragePreference,
-  createCTBKeyWithPreferences,
   calculateSplitPoints,
   createChartLegends,
   getChartConfiguration,
@@ -53,6 +52,7 @@ describe('graphing utility functions', () => {
   const createMockKeySet = (frequencyKeys: KeySetInstance[] = [], durationKeys: KeySetInstance[] = []): KeySet => ({
     id: 'test-keyset-1',
     Name: 'Test KeySet',
+    DerivedKeys: [],
     FrequencyKeys: frequencyKeys,
     DurationKeys: durationKeys,
     createdAt: new Date('2024-01-01'),
@@ -483,13 +483,15 @@ describe('graphing utility functions', () => {
       const key2: KeySetInstance = { KeyName: 'Key2', KeyDescription: 'Key 2', KeyCode: 66 };
       const key1Duplicate: KeySetInstance = { KeyName: 'Key1', KeyDescription: 'Key 1', KeyCode: 65 };
 
+      const keyset = createMockKeySet([key1, key2], []);
+
       const sessions = [
         createMockModifiedSession(1, [key1, key2]),
         createMockModifiedSession(2, [key1Duplicate]),
         createMockModifiedSession(3, [key2]),
       ];
 
-      const result = extractAndDeduplicateKeysets(sessions);
+      const result = extractAndDeduplicateKeysets(sessions, keyset);
 
       expect(result.frequencyKeys).toHaveLength(2);
       expect(result.frequencyKeys).toEqual([key1, key2]);
@@ -506,7 +508,8 @@ describe('graphing utility functions', () => {
         createMockModifiedSession(3, [], [key2]),
       ];
 
-      const result = extractAndDeduplicateKeysets(sessions);
+      const keyset = createMockKeySet([], [key1, key2]);
+      const result = extractAndDeduplicateKeysets(sessions, keyset);
 
       expect(result.durationKeys).toHaveLength(2);
       expect(result.durationKeys).toEqual([key1, key2]);
@@ -515,14 +518,16 @@ describe('graphing utility functions', () => {
     it('should handle sessions with no keys', () => {
       const sessions = [createMockModifiedSession(1, [], []), createMockModifiedSession(2, [], [])];
 
-      const result = extractAndDeduplicateKeysets(sessions);
+      const keyset = createMockKeySet([], []);
+      const result = extractAndDeduplicateKeysets(sessions, keyset);
 
       expect(result.frequencyKeys).toHaveLength(0);
       expect(result.durationKeys).toHaveLength(0);
     });
 
     it('should handle empty input array', () => {
-      const result = extractAndDeduplicateKeysets([]);
+      const keyset = createMockKeySet([], []);
+      const result = extractAndDeduplicateKeysets([], keyset);
 
       expect(result.frequencyKeys).toHaveLength(0);
       expect(result.durationKeys).toHaveLength(0);
@@ -537,7 +542,8 @@ describe('graphing utility functions', () => {
         createMockModifiedSession(2, [freqKey], [durKey]),
       ];
 
-      const result = extractAndDeduplicateKeysets(sessions);
+      const keyset = createMockKeySet([freqKey], [durKey]);
+      const result = extractAndDeduplicateKeysets(sessions, keyset);
 
       expect(result.frequencyKeys).toHaveLength(1);
       expect(result.durationKeys).toHaveLength(1);
@@ -549,9 +555,9 @@ describe('graphing utility functions', () => {
   describe('mapKeysWithStoragePreference', () => {
     it('should mark keys as invisible when they are in stored preferences', () => {
       const keys: ToggleDisplayKey[] = [
-        { KeyDescription: 'Key1', Visible: true },
-        { KeyDescription: 'Key2', Visible: true },
-        { KeyDescription: 'Key3', Visible: true },
+        { KeyDescription: 'Key1', Visible: true, KeyType: 'Observed', KeyName: 'Key1', KeyCode: 65 },
+        { KeyDescription: 'Key2', Visible: true, KeyType: 'Observed', KeyName: 'Key2', KeyCode: 66 },
+        { KeyDescription: 'Key3', Visible: true, KeyType: 'Observed', KeyName: 'Key3', KeyCode: 67 },
       ];
 
       const storedPreferences = {
@@ -562,15 +568,15 @@ describe('graphing utility functions', () => {
       const result = mapKeysWithStoragePreference(keys, storedPreferences);
 
       expect(result).toHaveLength(3);
-      expect(result[0]).toEqual({ KeyDescription: 'Key1', Visible: false });
-      expect(result[1]).toEqual({ KeyDescription: 'Key2', Visible: true });
-      expect(result[2]).toEqual({ KeyDescription: 'Key3', Visible: false });
+      expect(result[0]).toEqual({ KeyDescription: 'Key1', Visible: false, KeyType: 'Observed', KeyName: 'Key1', KeyCode: 65 });
+      expect(result[1]).toEqual({ KeyDescription: 'Key2', Visible: true, KeyType: 'Observed', KeyName: 'Key2', KeyCode: 66 });
+      expect(result[2]).toEqual({ KeyDescription: 'Key3', Visible: false, KeyType: 'Observed', KeyName: 'Key3', KeyCode: 67 });
     });
 
     it('should keep keys visible when they are not in stored preferences', () => {
       const keys: ToggleDisplayKey[] = [
-        { KeyDescription: 'Key1', Visible: true },
-        { KeyDescription: 'Key2', Visible: true },
+        { KeyDescription: 'Key1', Visible: true, KeyType: 'Observed', KeyName: 'Key1', KeyCode: 65 },
+        { KeyDescription: 'Key2', Visible: true, KeyType: 'Observed', KeyName: 'Key2', KeyCode: 66 },
       ];
 
       const storedPreferences = {
@@ -581,8 +587,20 @@ describe('graphing utility functions', () => {
       const result = mapKeysWithStoragePreference(keys, storedPreferences);
 
       expect(result).toHaveLength(2);
-      expect(result[0]).toEqual({ KeyDescription: 'Key1', Visible: true });
-      expect(result[1]).toEqual({ KeyDescription: 'Key2', Visible: true });
+      expect(result[0]).toEqual({
+        KeyDescription: 'Key1',
+        Visible: true,
+        KeyType: 'Observed',
+        KeyName: 'Key1',
+        KeyCode: 65,
+      });
+      expect(result[1]).toEqual({
+        KeyDescription: 'Key2',
+        Visible: true,
+        KeyType: 'Observed',
+        KeyName: 'Key2',
+        KeyCode: 66,
+      });
     });
 
     it('should handle empty keys array', () => {
@@ -599,8 +617,8 @@ describe('graphing utility functions', () => {
 
     it('should handle keys that start as invisible', () => {
       const keys: ToggleDisplayKey[] = [
-        { KeyDescription: 'Key1', Visible: false },
-        { KeyDescription: 'Key2', Visible: true },
+        { KeyDescription: 'Key1', Visible: false, KeyType: 'Observed', KeyName: 'Key1', KeyCode: 65 },
+        { KeyDescription: 'Key2', Visible: true, KeyType: 'Observed', KeyName: 'Key2', KeyCode: 66 },
       ];
 
       const storedPreferences = {
@@ -610,75 +628,20 @@ describe('graphing utility functions', () => {
 
       const result = mapKeysWithStoragePreference(keys, storedPreferences);
 
-      expect(result[0]).toEqual({ KeyDescription: 'Key1', Visible: false });
-      expect(result[1]).toEqual({ KeyDescription: 'Key2', Visible: false });
-    });
-  });
-
-  describe('createCTBKeyWithPreferences', () => {
-    it('should create CTB entry and mark excluded keys as invisible', () => {
-      const keys: ToggleDisplayKey[] = [
-        { KeyDescription: 'Key1', Visible: true },
-        { KeyDescription: 'Key2', Visible: true },
-        { KeyDescription: 'Key3', Visible: true },
-      ];
-
-      const storedPreferences = {
-        KeyDescription: [],
-        CTBElements: ['Key1', 'Key3'],
-      };
-
-      const result = createCTBKeyWithPreferences(keys, storedPreferences);
-
-      expect(result.ctbEntry).toEqual({
-        KeyDescription: 'CTB',
-        Visible: true,
+      expect(result[0]).toEqual({
+        KeyDescription: 'Key1',
+        Visible: false,
+        KeyType: 'Observed',
+        KeyName: 'Key1',
+        KeyCode: 65,
       });
-
-      expect(result.excludeFromCTB).toHaveLength(3);
-      expect(result.excludeFromCTB[0]).toEqual({ KeyDescription: 'Key1', Visible: false });
-      expect(result.excludeFromCTB[1]).toEqual({ KeyDescription: 'Key2', Visible: true });
-      expect(result.excludeFromCTB[2]).toEqual({ KeyDescription: 'Key3', Visible: false });
-    });
-
-    it('should keep all keys visible when no CTB exclusions', () => {
-      const keys: ToggleDisplayKey[] = [
-        { KeyDescription: 'Key1', Visible: true },
-        { KeyDescription: 'Key2', Visible: true },
-      ];
-
-      const storedPreferences = {
-        KeyDescription: [],
-        CTBElements: [],
-      };
-
-      const result = createCTBKeyWithPreferences(keys, storedPreferences);
-
-      expect(result.ctbEntry).toEqual({
-        KeyDescription: 'CTB',
-        Visible: true,
+      expect(result[1]).toEqual({
+        KeyDescription: 'Key2',
+        Visible: false,
+        KeyType: 'Observed',
+        KeyName: 'Key2',
+        KeyCode: 66,
       });
-
-      expect(result.excludeFromCTB).toHaveLength(2);
-      expect(result.excludeFromCTB[0]).toEqual({ KeyDescription: 'Key1', Visible: true });
-      expect(result.excludeFromCTB[1]).toEqual({ KeyDescription: 'Key2', Visible: true });
-    });
-
-    it('should handle empty keys array', () => {
-      const keys: ToggleDisplayKey[] = [];
-      const storedPreferences = {
-        KeyDescription: [],
-        CTBElements: ['Key1'],
-      };
-
-      const result = createCTBKeyWithPreferences(keys, storedPreferences);
-
-      expect(result.ctbEntry).toEqual({
-        KeyDescription: 'CTB',
-        Visible: true,
-      });
-
-      expect(result.excludeFromCTB).toHaveLength(0);
     });
   });
 
@@ -1048,7 +1011,7 @@ describe('graphing utility functions', () => {
 
       const ctbKeys: ExpandedKeySetInstance[] = [{ KeyDescription: 'Frequency Key 1', Visible: true }];
 
-      const result = prepareRateData(filteredSessions, 'End on Timer #1', ctbKeys);
+      const result = prepareRateData(filteredSessions, 'End on Timer #1', ctbKeys, keyset);
 
       expect(result.preparedData).toHaveLength(1);
       expect(result.preparedData[0]).toMatchObject({
@@ -1056,52 +1019,9 @@ describe('graphing utility functions', () => {
         Condition: 'Baseline',
         SessionTime: 300, // TimerOne in seconds
         'Frequency Key 1': 6, // 30 events / (300/60) minutes = 6 per minute
-        CTB: 6, // Same as the only visible key
       });
 
       expect(result.maxY).toBe(6);
-    });
-
-    it('should calculate CTB rate from visible keys only', () => {
-      const key1: KeySetInstance = { KeyName: 'Key1', KeyDescription: 'Key 1', KeyCode: 65 };
-      const key2: KeySetInstance = { KeyName: 'Key2', KeyDescription: 'Key 2', KeyCode: 66 };
-
-      (walkSessionFrequencyKey as any)
-        .mockReturnValueOnce({ KeyDescription: 'Key 1', Value: 30 })
-        .mockReturnValueOnce({ KeyDescription: 'Key 2', Value: 60 });
-
-      const keyset = createMockKeySet([key1, key2], []);
-      const filteredSessions = [createMockSession(1, 'Primary', 'Baseline', keyset)];
-
-      const ctbKeys: ExpandedKeySetInstance[] = [
-        { KeyDescription: 'Key 1', Visible: true },
-        { KeyDescription: 'Key 2', Visible: false }, // This should be excluded from CTB
-      ];
-
-      const result = prepareRateData(filteredSessions, 'End on Timer #1', ctbKeys);
-
-      expect(result.preparedData[0].CTB).toBe(6); // Only Key 1 (30 / 5 minutes)
-      expect(result.preparedData[0]['Key 1']).toBe(6);
-      expect(result.preparedData[0]['Key 2']).toBe(12);
-      expect(result.maxY).toBe(12); // Key 2 has the highest rate
-    });
-
-    it('should handle CTB keys not found in scores', () => {
-      const key1: KeySetInstance = { KeyName: 'Key1', KeyDescription: 'Key 1', KeyCode: 65 };
-
-      (walkSessionFrequencyKey as any).mockReturnValue({ KeyDescription: 'Key 1', Value: 30 });
-
-      const keyset = createMockKeySet([key1], []);
-      const filteredSessions = [createMockSession(1, 'Primary', 'Baseline', keyset)];
-
-      const ctbKeys: ExpandedKeySetInstance[] = [
-        { KeyDescription: 'Key 1', Visible: true },
-        { KeyDescription: 'NonExistent Key', Visible: true }, // This key doesn't exist in scores
-      ];
-
-      const result = prepareRateData(filteredSessions, 'End on Timer #1', ctbKeys);
-
-      expect(result.preparedData[0].CTB).toBe(6); // Only Key 1 contributes
     });
 
     it('should handle multiple sessions and track maxY correctly', () => {
@@ -1117,7 +1037,7 @@ describe('graphing utility functions', () => {
 
       const ctbKeys: ExpandedKeySetInstance[] = [{ KeyDescription: 'Frequency Key 1', Visible: true }];
 
-      const result = prepareRateData(filteredSessions, 'End on Timer #1', ctbKeys);
+      const result = prepareRateData(filteredSessions, 'End on Timer #1', ctbKeys, keyset);
 
       expect(result.preparedData).toHaveLength(2);
       expect(result.preparedData[0]['Frequency Key 1']).toBe(6); // 30 / 5 minutes

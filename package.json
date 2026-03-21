@@ -30,12 +30,14 @@
     "research software"
   ],
   "license": "Apache-2.0",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "scripts": {
     "dev-island": "vite --mode island",
     "dev": "vite",
     "build-island": "tsc -b && vite build --mode island",
-    "build": "tsc -b && vite build",
+    "build": "tsc --listFiles && vite build",
+    "build:peek": "tsc --showConfig --listFiles",
+    "build:quick": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "check-licenses": "npx license-report --only=prod --output=json > ./src/assets/licenses.json",
