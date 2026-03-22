@@ -165,7 +165,7 @@ export class SessionRecorderCore {
       return { shouldEnd: false };
     }
 
-    // Check if session should end before updating timers
+    // Check if session should end after this update cycle
     const shouldEnd = this.checkSessionEnd();
 
     // Update timers - exclusive logic: only one timer type should be active at a time
@@ -198,7 +198,7 @@ export class SessionRecorderCore {
       specialKeyTimersRecord[key] = value;
     });
 
-    const timerUpdate: TimerUpdatePayload = {
+    let timerUpdate: TimerUpdatePayload = {
       total: this.state.secondsElapsedTotal,
       first: this.state.secondsElapsedFirst,
       second: this.state.secondsElapsedSecond,
@@ -209,38 +209,91 @@ export class SessionRecorderCore {
       activeSpecialKey: this.state.activeSpecialKey,
     };
 
+    if (shouldEnd) {
+      if (this.settings.TimerOption === 'End on Total Time') {
+        timerUpdate = {
+          ...timerUpdate,
+          total: Math.floor(this.state.secondsElapsedTotal),
+        };
+      } else if (this.settings.TimerOption === 'End on Timer #1') {
+        timerUpdate = {
+          ...timerUpdate,
+          first: Math.floor(this.state.secondsElapsedFirst),
+        };
+      } else if (this.settings.TimerOption === 'End on Timer #2') {
+        timerUpdate = {
+          ...timerUpdate,
+          second: Math.floor(this.state.secondsElapsedSecond),
+        };
+      } else if (this.settings.TimerOption === 'End on Timer #3') {
+        timerUpdate = {
+          ...timerUpdate,
+          third: Math.floor(this.state.secondsElapsedThird),
+        };
+      } else if (typeof this.settings.TimerOption === 'number') {
+        const specialKeyName = this.keyset?.SpecialDurationKeys.find(
+          (key) => key.KeyCode === this.settings!.TimerOption,
+        )?.KeyName;
+        if (specialKeyName) {
+          timerUpdate = {
+            ...timerUpdate,
+            specialKeyTimers: {
+              ...timerUpdate.specialKeyTimers,
+              [specialKeyName]: Math.floor(this.state.specialKeyTimers.get(specialKeyName) || 0),
+            },
+          };
+        }
+      }
+    }
+
     return { shouldEnd, timerUpdate };
   }
 
   /**
-   * Checks if the session should end based on timer settings
+   * Checks if the session should end after the next timer increment
    */
   private checkSessionEnd(): boolean {
     if (!this.settings) return false;
 
-    switch (this.settings.TimerOption) {
-      case 'End on Primary Timer':
-        return this.state.secondsElapsedTotal >= this.settings.DurationS;
-      case 'End on Timer #1':
-        return this.state.secondsElapsedFirst >= this.settings.DurationS;
-      case 'End on Timer #2':
-        return this.state.secondsElapsedSecond >= this.settings.DurationS;
-      case 'End on Timer #3':
-        return this.state.secondsElapsedThird >= this.settings.DurationS;
-      default:
-        // Check if the timer option specifies a special duration key
-        if (this.keyset?.SpecialDurationKeys) {
-          const specialKey = this.keyset.SpecialDurationKeys.find((key) => {
-            return this.settings!.TimerOption === key.KeyCode;
-          });
-
-          if (specialKey) {
-            const specialKeyTime = this.state.specialKeyTimers.get(specialKey.KeyName) || 0;
-            return specialKeyTime >= this.settings.DurationS;
-          }
-        }
-        return false;
+    // Primary timer always increments, so check it first
+    if (this.settings.TimerOption === 'End on Primary Timer') {
+      return this.state.secondsElapsedTotal > this.settings.DurationS;
     }
+
+    // For standard timers, only check if the target timer is currently active
+    if (this.settings.TimerOption === 'End on Timer #1' && this.state.activeTimer === 'Primary') {
+      return this.state.secondsElapsedFirst > this.settings.DurationS;
+    }
+
+    if (this.settings.TimerOption === 'End on Timer #2' && this.state.activeTimer === 'Secondary') {
+      return this.state.secondsElapsedSecond > this.settings.DurationS;
+    }
+
+    if (this.settings.TimerOption === 'End on Timer #3' && this.state.activeTimer === 'Tertiary') {
+      return this.state.secondsElapsedThird > this.settings.DurationS;
+    }
+
+    // For special duration keys, check if the target key has reached duration
+    if (this.keyset?.SpecialDurationKeys) {
+      const specialKey = this.keyset.SpecialDurationKeys.find((key) => this.settings!.TimerOption === key.KeyCode);
+      if (specialKey) {
+        const specialKeyTime = this.state.specialKeyTimers.get(specialKey.KeyName) || 0;
+
+        // If this special key is currently active, check with the increment
+        if (this.state.activeSpecialKey === specialKey.KeyName) {
+          const shouldEnd = specialKeyTime > this.settings.DurationS;
+          return shouldEnd;
+        }
+
+        const shouldEnd = specialKeyTime > this.settings.DurationS;
+
+        return shouldEnd;
+      } else {
+        console.log(`No matching special key found for TimerOption: ${this.settings.TimerOption}`);
+      }
+    }
+
+    return false;
   }
 
   /**

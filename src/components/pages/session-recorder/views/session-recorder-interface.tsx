@@ -438,6 +438,14 @@ export default function SessionRecorderInterface({
       return;
     }
 
+    // Allow escape to go back after a successful session completion
+    if (runningState === 'Completed') {
+      if (ev.key === 'Escape') {
+        history.go(-1);
+        return;
+      }
+    }
+
     if (!workerRef.current) return;
 
     if (ev.key === 'Escape') {
