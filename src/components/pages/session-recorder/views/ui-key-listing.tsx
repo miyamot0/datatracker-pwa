@@ -2,8 +2,12 @@ import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components
 import { formatTimeOfDay } from '@/lib/time';
 import { PaddedTimerRow } from './padded-row';
 import { KeyManageType, TimerSetting } from '@/types/timing';
+import { KeySetInstance } from '@/types/keyset';
+import { cn } from '@/lib/utils';
+import { formatTimeSeconds } from '@/lib/time';
 
 type Props = {
+  KeySetSpecialKeys: KeySetInstance[];
   KeysPressed: KeyManageType[];
   SecondsElapsed: number;
   SecondsElapsedFirst: number;
@@ -15,6 +19,7 @@ type Props = {
 };
 
 export default function KeyHistoryListing({
+  KeySetSpecialKeys,
   KeysPressed,
   SecondsElapsed,
   SecondsElapsedFirst,
@@ -61,6 +66,24 @@ export default function KeyHistoryListing({
         SecondsDelta={SecondsElapsedDelta}
         Running={Running}
       />
+
+      {KeySetSpecialKeys.map((key, index) => {
+        return (
+          <div key={index} className="flex flex-row mx-2 text-sm mb-2">
+            <p className={cn('w-[250px] transition-colors bg-transparent font-semibold')}>{key.KeyDescription}</p>
+            <p
+              className={cn('px-2 transition-colors bg-transparent rounded-full', {
+                //'bg-gray-500 text-white': Running && AssignedTimer === undefined,
+                //'bg-green-500 text-white': ActiveTimer === 'Primary' && Running && AssignedTimer === 'Primary',
+                //'bg-orange-500 text-white': ActiveTimer === 'Secondary' && Running && AssignedTimer === 'Secondary',
+                //'bg-red-500 text-white': ActiveTimer === 'Tertiary' && Running && AssignedTimer === 'Tertiary',
+              })}
+            >
+              {formatTimeSeconds(SecondsElapsed)}
+            </p>
+          </div>
+        );
+      })}
 
       <hr />
       <Table>

@@ -424,6 +424,12 @@ export default function SessionDesigner({
                               {role.description}
                             </SelectItem>
                           ))}
+                          {keySet &&
+                            keySet.SpecialDurationKeys.map((key) => (
+                              <SelectItem key={key.KeyDescription} value={key.KeyDescription}>
+                                {`End on ${key.KeyDescription} Time Specifically (When ${key.KeyDescription} > Duration)`}
+                              </SelectItem>
+                            ))}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -483,6 +489,14 @@ export default function SessionDesigner({
                   keySet.DurationKeys.map((key, index) => (
                     <TableRow key={index}>
                       <TableCell>{key.KeyDescription}</TableCell>
+                      <TableCell>{key.KeyName}</TableCell>
+                    </TableRow>
+                  ))}
+
+                {keySet &&
+                  keySet.SpecialDurationKeys.map((key, index) => (
+                    <TableRow key={index} className="bg-muted">
+                      <TableCell>{key.KeyDescription} (Special)</TableCell>
                       <TableCell>{key.KeyName}</TableCell>
                     </TableRow>
                   ))}

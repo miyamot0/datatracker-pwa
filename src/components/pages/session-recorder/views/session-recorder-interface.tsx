@@ -2,7 +2,7 @@ import { useEventListener } from '@/components/elements/event-listeners';
 import { SavedSessionResult, SavedSettings } from '@/lib/dtos';
 import { cn } from '@/lib/utils';
 import { KeySet } from '@/types/keyset';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { KeyManageType, TimerSetting } from '@/types/timing';
 import { toast } from 'sonner';
 import SessionRecorderWorker from '@/workers/timing/session-recorder-worker.ts?worker';
@@ -435,6 +435,11 @@ export default function SessionRecorderInterface({
     workerRef.current.postMessage(message);
   });
 
+  const keySetSpecialKeys = useMemo(() => {
+    const specialKeys = Keyset.SpecialDurationKeys;
+    return specialKeys;
+  }, [Keyset]);
+
   return (
     <div className="flex flex-col w-full gap-4">
       <div className="w-full flex flex-row justify-between select-none">
@@ -452,7 +457,7 @@ export default function SessionRecorderInterface({
           </p>
           <p
             className={cn(
-              'mx-2 transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
+              'mx-2 transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap bg-slate-500 text-white',
               {
                 'bg-gray-600 text-white': Settings.TimerOption === 'End on Primary Timer',
                 'bg-green-400 text-white': Settings.TimerOption === 'End on Timer #1',
@@ -485,6 +490,7 @@ export default function SessionRecorderInterface({
       <div className="grid grid-cols-2 w-full gap-4 select-none">
         <SessionRecorderInstructions {...{ Evaluation, Settings }} />
         <KeyHistoryListing
+          KeySetSpecialKeys={keySetSpecialKeys}
           KeysPressed={keysPressed}
           SecondsElapsed={secondsElapsedTotal.current}
           SecondsElapsedFirst={secondsElapsedFirst.current}

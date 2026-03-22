@@ -11,7 +11,7 @@ export type SavedSettings = {
   Therapist: string;
   Condition: string;
   KeySet: string;
-  TimerOption: SessionTerminationOptionsType;
+  TimerOption: SessionTerminationOptionsType | string;
   Initials: string;
   Role: DataCollectorRolesType;
   Session: number;

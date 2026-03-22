@@ -1,6 +1,5 @@
 import { getValues } from '@/lib/forms';
 import { DataCollectorRoles } from '@/types/roles';
-import { SessionTerminationOptions } from '@/types/terminations';
 import { z } from 'zod';
 
 export const SessionDesignerSchema = z.object({
@@ -15,7 +14,8 @@ export const SessionDesignerSchema = z.object({
     .number()
     .min(10)
     .max(3600 * 24),
-  SessionTerminationOption: z.enum(getValues(SessionTerminationOptions)),
+  // TODO: this needs to be cleaned up now
+  SessionTerminationOption: z.string().min(1, { message: 'You must select a session termination option' }),
   SessionNumber: z.coerce.number().min(1, { message: 'The session number must be greater than 0' }),
   SessionKeySet: z.string().min(1, { message: 'You must specify a KeySet (You may need to create one)' }),
 });
