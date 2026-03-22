@@ -46,6 +46,7 @@ class SessionRecorderWorker {
       payload: {
         events: systemEvents,
         activeTimer: this.core.getState().activeTimer,
+        activeSpecialKey: this.core.getState().activeSpecialKey,
         isRunning: true,
       },
       timestamp: startTime,
@@ -108,6 +109,24 @@ class SessionRecorderWorker {
       payload: {
         events: systemEvents,
         activeTimer: this.core.getState().activeTimer,
+        activeSpecialKey: this.core.getState().activeSpecialKey,
+      },
+    });
+  }
+
+  /**
+   * Switches to a special duration key timer
+   */
+  switchToSpecialKey(keyName: string) {
+    const systemEvents = this.core.switchToSpecialKey(keyName);
+    if (!systemEvents) return;
+
+    this.postMessage({
+      type: 'SYSTEM_EVENT',
+      payload: {
+        events: systemEvents,
+        activeTimer: this.core.getState().activeTimer,
+        activeSpecialKey: this.core.getState().activeSpecialKey,
       },
     });
   }
@@ -201,6 +220,11 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
     case 'SWITCH_TIMER':
       if (payload?.timer) {
         worker.switchTimer(payload.timer);
+      }
+      break;
+    case 'SWITCH_SPECIAL_KEY':
+      if (payload?.specialKeyName) {
+        worker.switchToSpecialKey(payload.specialKeyName);
       }
       break;
     case 'PROCESS_KEY':

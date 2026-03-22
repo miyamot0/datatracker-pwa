@@ -49,8 +49,8 @@ export default function SessionRecorderInterface({
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
 
   const workerRef = useRef<Worker | null>(null);
-
   const messageChannelRef = useRef<MessageChannel | null>(null);
+  
   const animationFrameRef = useRef<number>();
   const lastUpdateTimeRef = useRef<number>(0);
 
@@ -88,6 +88,10 @@ export default function SessionRecorderInterface({
 
   // Pending state for smooth updates
   const pendingTimerUpdate = useRef<TimerUpdatePayload | null>(null);
+
+  // Special key timer state
+  const specialKeyTimers = useRef<Record<string, number>>({});
+  const activeSpecialKey = useRef<string | null>(null);
 
   const wakelockRef = useRef<WakeLockSentinel>();
   const endingProcessedRef = useRef<boolean>(false);
@@ -154,6 +158,13 @@ export default function SessionRecorderInterface({
 
       if (type === 'HIGH_FREQ_UPDATE' && payload) {
         pendingTimerUpdate.current = payload as TimerUpdatePayload;
+        // Update special key timers
+        if (payload.specialKeyTimers) {
+          specialKeyTimers.current = payload.specialKeyTimers;
+        }
+        if (payload.activeSpecialKey !== undefined) {
+          activeSpecialKey.current = payload.activeSpecialKey;
+        }
         scheduleUIUpdate();
       }
     };
@@ -167,6 +178,13 @@ export default function SessionRecorderInterface({
           // Fallback for when MessageChannel isn't available
           if (payload) {
             pendingTimerUpdate.current = payload as TimerUpdatePayload;
+            // Update special key timers
+            if (payload.specialKeyTimers) {
+              specialKeyTimers.current = payload.specialKeyTimers;
+            }
+            if (payload.activeSpecialKey !== undefined) {
+              activeSpecialKey.current = payload.activeSpecialKey;
+            }
             scheduleUIUpdate();
           }
           break;
@@ -186,6 +204,9 @@ export default function SessionRecorderInterface({
           }
           if (systemPayload.activeTimer) {
             activeTimerRef.current = systemPayload.activeTimer;
+          }
+          if (systemPayload.activeSpecialKey !== undefined) {
+            activeSpecialKey.current = systemPayload.activeSpecialKey;
           }
           if (systemPayload.isRunning !== undefined) {
             setRunningState(systemPayload.isRunning ? 'Started' : 'Not Started');
@@ -227,6 +248,7 @@ export default function SessionRecorderInterface({
       keysPressed: finalKeys,
       systemKeysPressed: finalSystemKeys,
       timers,
+      specialKeyTimers,
       startTime: sessionStartTime,
     } = payload;
 
@@ -270,6 +292,7 @@ export default function SessionRecorderInterface({
         TimerOne: timers.first,
         TimerTwo: timers.second,
         TimerThree: timers.third,
+        SpecialKeyTimers: specialKeyTimers || {},
       } satisfies SavedSessionResult;
 
       if (wakelockRef.current) wakelockRef.current.release();
@@ -342,6 +365,16 @@ export default function SessionRecorderInterface({
     workerRef.current.postMessage(message);
   };
 
+  const switchToSpecialKey = (keyName: string) => {
+    if (!workerRef.current) return;
+
+    const message: WorkerMessage = {
+      type: 'SWITCH_SPECIAL_KEY',
+      payload: { specialKeyName: keyName },
+    };
+    workerRef.current.postMessage(message);
+  };
+
   // Note: Z/X/C for Timers 1/2/3
   useEventListener('keydown', (ev: React.KeyboardEvent<HTMLElement>) => {
     if (ev.repeat) {
@@ -399,19 +432,36 @@ export default function SessionRecorderInterface({
       return;
     }
 
-    if (ev.key === 'z' && activeTimerRef.current !== 'Primary') {
+    if (ev.key === 'z') {
+      // Allow switch to Primary from any current state
       switchTimer('Primary');
       return;
     }
 
-    if (ev.key === 'x' && activeTimerRef.current !== 'Secondary') {
+    if (ev.key === 'x') {
+      // Allow switch to Secondary from any current state
       switchTimer('Secondary');
       return;
     }
 
-    if (ev.key === 'c' && activeTimerRef.current !== 'Tertiary') {
+    if (ev.key === 'c') {
+      // Allow switch to Tertiary from any current state
       switchTimer('Tertiary');
       return;
+    }
+
+    // Handle special duration key switches (using actual key names)
+    if (runningState === 'Started') {
+      const specialKeys = Keyset.SpecialDurationKeys;
+      const matchingSpecialKey = specialKeys.find(key => 
+        key.KeyName.toLowerCase() === ev.key.toLowerCase()
+      );
+      
+      if (matchingSpecialKey) {
+        // Switch to special key timer
+        switchToSpecialKey(matchingSpecialKey.KeyName);
+        return;
+      }
     }
 
     if (ev.key === 'Backspace' || ev.key === 'Delete') {
@@ -491,6 +541,7 @@ export default function SessionRecorderInterface({
         <SessionRecorderInstructions {...{ Evaluation, Settings }} />
         <KeyHistoryListing
           KeySetSpecialKeys={keySetSpecialKeys}
+          SpecialKeyTimers={specialKeyTimers.current}
           KeysPressed={keysPressed}
           SecondsElapsed={secondsElapsedTotal.current}
           SecondsElapsedFirst={secondsElapsedFirst.current}
@@ -498,6 +549,7 @@ export default function SessionRecorderInterface({
           SecondsElapsedThird={secondsElapsedThird.current}
           SecondsElapsedDelta={secondsElapsedActive.current}
           ActiveTimer={activeTimerRef.current}
+          ActiveSpecialTimer={activeSpecialKey.current}
           Running={runningState === 'Started'}
         />
       </div>

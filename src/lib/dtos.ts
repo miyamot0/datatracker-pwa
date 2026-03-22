@@ -2,7 +2,7 @@ import { KeyManageType } from '@/types/timing';
 import { SessionDesignerSchemaType } from '@/components/pages/editor-session/views/session-designer-schema';
 import { KeySet } from '@/types/keyset';
 import { DataCollectorRolesType } from '@/types/roles';
-import { SessionTerminationOptionsType } from '@/types/terminations';
+import { SessionTerminationOptions, SessionTerminationOptionsType } from '@/types/terminations';
 
 /**
  * This is the type definition for the HumanReadableResults type
@@ -48,6 +48,7 @@ export type SavedSessionResult = {
   TimerOne: number;
   TimerTwo: number;
   TimerThree: number;
+  SpecialKeyTimers: Record<string, number>;
   Filename?: string;
   Comments?: string;
 };
@@ -69,12 +70,26 @@ export type ExpandedSavedSessionResult = SavedSessionResult & {
  * @returns saved settings object
  */
 export const toSavedSettings = (data: SessionDesignerSchemaType) => {
+  const handleSpecialDurationOption = (option: string): SessionTerminationOptionsType | string => {
+    if (option === 'End on Timer #1') {
+      return SessionTerminationOptions.Timer1;
+    } else if (option === 'End on Timer #2') {
+      return SessionTerminationOptions.Timer2;
+    } else if (option === 'End on Timer #3') {
+      return SessionTerminationOptions.Timer3;
+    } else if (option === 'End on Total Time') {
+      return SessionTerminationOptions.TimerMain;
+    } else {
+      return `End on ${option}`; // Return as-is for custom options
+    }
+  };
+
   return {
     Therapist: data.SessionTherapistID,
     Initials: data.DataCollectorID,
     Role: data.DataCollectorRole,
     DurationS: data.SessionDurationS,
-    TimerOption: data.SessionTerminationOption,
+    TimerOption: handleSpecialDurationOption(data.SessionTerminationOption),
     Session: Math.floor(data.SessionNumber),
     KeySet: data.SessionKeySet,
     Condition: data.SessionCondition,

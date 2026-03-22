@@ -12,3 +12,8 @@ export type KeyManageType = {
 };
 
 export type TimerSetting = 'Primary' | 'Secondary' | 'Tertiary' | 'Stopped';
+
+/**
+ * Extended timer type that supports both standard timers and special duration keys
+ */
+export type ActiveTimerType = TimerSetting | { type: 'Special'; keyName: string };

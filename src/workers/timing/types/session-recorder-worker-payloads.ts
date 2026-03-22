@@ -8,6 +8,9 @@ export type TimerUpdatePayload = {
   third: number;
   active: number;
   activeTimer: TimerSetting;
+  // Special duration key timers
+  specialKeyTimers: Record<string, number>;
+  activeSpecialKey: string | null;
 };
 
 export type KeyProcessedPayload = {
@@ -18,6 +21,7 @@ export type KeyProcessedPayload = {
 export type SystemEventPayload = {
   events?: KeyManageType[];
   activeTimer?: TimerSetting;
+  activeSpecialKey?: string | null;
   isRunning?: boolean;
 };
 
@@ -31,5 +35,6 @@ export type SessionEndedPayload = {
     second: number;
     third: number;
   };
+  specialKeyTimers: Record<string, number>;
   startTime: string | null;
 };

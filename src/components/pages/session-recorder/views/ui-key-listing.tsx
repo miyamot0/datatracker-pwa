@@ -8,6 +8,7 @@ import { formatTimeSeconds } from '@/lib/time';
 
 type Props = {
   KeySetSpecialKeys: KeySetInstance[];
+  SpecialKeyTimers: Record<string, number>;
   KeysPressed: KeyManageType[];
   SecondsElapsed: number;
   SecondsElapsedFirst: number;
@@ -15,11 +16,13 @@ type Props = {
   SecondsElapsedThird: number;
   SecondsElapsedDelta: number;
   ActiveTimer: TimerSetting;
+  ActiveSpecialTimer: string | null;
   Running: boolean;
 };
 
 export default function KeyHistoryListing({
   KeySetSpecialKeys,
+  SpecialKeyTimers,
   KeysPressed,
   SecondsElapsed,
   SecondsElapsedFirst,
@@ -27,6 +30,7 @@ export default function KeyHistoryListing({
   SecondsElapsedThird,
   SecondsElapsedDelta,
   ActiveTimer,
+  ActiveSpecialTimer,
   Running,
 }: Props) {
   return (
@@ -77,9 +81,10 @@ export default function KeyHistoryListing({
                 //'bg-green-500 text-white': ActiveTimer === 'Primary' && Running && AssignedTimer === 'Primary',
                 //'bg-orange-500 text-white': ActiveTimer === 'Secondary' && Running && AssignedTimer === 'Secondary',
                 //'bg-red-500 text-white': ActiveTimer === 'Tertiary' && Running && AssignedTimer === 'Tertiary',
+                'bg-blue-500 text-white': ActiveSpecialTimer === key.KeyName && Running,
               })}
             >
-              {formatTimeSeconds(SecondsElapsed)}
+              {formatTimeSeconds(SpecialKeyTimers[key.KeyName] || 0)}
             </p>
           </div>
         );

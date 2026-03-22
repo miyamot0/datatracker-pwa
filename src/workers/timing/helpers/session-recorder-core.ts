@@ -31,6 +31,9 @@ export interface SessionState {
   activeTimer: TimerSetting;
   startTime: number | null;
   isRunning: boolean;
+  // Special duration key timer tracking
+  specialKeyTimers: Map<string, number>;
+  activeSpecialKey: string | null;
 }
 
 /**
@@ -43,6 +46,8 @@ export interface TimerUpdatePayload {
   third: number;
   active: number;
   activeTimer: TimerSetting;
+  specialKeyTimers: Record<string, number>;
+  activeSpecialKey: string | null;
 }
 
 /**
@@ -58,6 +63,7 @@ export interface SessionEndResult {
     second: number;
     third: number;
   };
+  specialKeyTimers: Record<string, number>;
   startTime: string | null;
 }
 
@@ -89,6 +95,8 @@ export class SessionRecorderCore {
       activeTimer: 'Stopped',
       startTime: null,
       isRunning: false,
+      specialKeyTimers: new Map(),
+      activeSpecialKey: null,
     };
   }
 
@@ -100,6 +108,14 @@ export class SessionRecorderCore {
     this.keyset = keyset;
     this.uiUpdateInterval = SessionPollingIntervals[uiPollingInterval];
     this.resetState();
+
+    // Initialize special key timers
+    if (this.keyset?.SpecialDurationKeys) {
+      this.state.specialKeyTimers.clear();
+      this.keyset.SpecialDurationKeys.forEach((key) => {
+        this.state.specialKeyTimers.set(key.KeyName, 0);
+      });
+    }
   }
 
   /**
@@ -152,22 +168,35 @@ export class SessionRecorderCore {
     // Check if session should end before updating timers
     const shouldEnd = this.checkSessionEnd();
 
-    // Update timers
+    // Update timers - exclusive logic: only one timer type should be active at a time
     this.state.secondsElapsedTotal += INCREMENT;
     this.state.secondsElapsedActive += INCREMENT;
 
-    // Increment the appropriate timer based on the active timer
-    switch (this.state.activeTimer) {
-      case 'Primary':
-        this.state.secondsElapsedFirst += INCREMENT;
-        break;
-      case 'Secondary':
-        this.state.secondsElapsedSecond += INCREMENT;
-        break;
-      case 'Tertiary':
-        this.state.secondsElapsedThird += INCREMENT;
-        break;
+    // Increment timers exclusively based on what's currently active
+    if (this.state.activeSpecialKey) {
+      // Special key timer is active - ONLY increment the special key timer
+      const currentValue = this.state.specialKeyTimers.get(this.state.activeSpecialKey) || 0;
+      this.state.specialKeyTimers.set(this.state.activeSpecialKey, currentValue + INCREMENT);
+    } else {
+      // Standard timer is active - increment the appropriate standard timer
+      switch (this.state.activeTimer) {
+        case 'Primary':
+          this.state.secondsElapsedFirst += INCREMENT;
+          break;
+        case 'Secondary':
+          this.state.secondsElapsedSecond += INCREMENT;
+          break;
+        case 'Tertiary':
+          this.state.secondsElapsedThird += INCREMENT;
+          break;
+      }
     }
+
+    // Convert Map to Record for payload
+    const specialKeyTimersRecord: Record<string, number> = {};
+    this.state.specialKeyTimers.forEach((value, key) => {
+      specialKeyTimersRecord[key] = value;
+    });
 
     const timerUpdate: TimerUpdatePayload = {
       total: this.state.secondsElapsedTotal,
@@ -176,6 +205,8 @@ export class SessionRecorderCore {
       third: this.state.secondsElapsedThird,
       active: this.state.secondsElapsedActive,
       activeTimer: this.state.activeTimer,
+      specialKeyTimers: specialKeyTimersRecord,
+      activeSpecialKey: this.state.activeSpecialKey,
     };
 
     return { shouldEnd, timerUpdate };
@@ -186,17 +217,33 @@ export class SessionRecorderCore {
    */
   private checkSessionEnd(): boolean {
     if (!this.settings) return false;
+    console.log('Checking session end condition:', this.settings.TimerOption);
 
     switch (this.settings.TimerOption) {
       case 'End on Primary Timer':
-        return this.state.secondsElapsedTotal + INCREMENT >= this.settings.DurationS;
+        return this.state.secondsElapsedTotal >= this.settings.DurationS;
       case 'End on Timer #1':
-        return this.state.secondsElapsedFirst + INCREMENT >= this.settings.DurationS;
+        return this.state.secondsElapsedFirst >= this.settings.DurationS;
       case 'End on Timer #2':
-        return this.state.secondsElapsedSecond + INCREMENT >= this.settings.DurationS;
+        return this.state.secondsElapsedSecond >= this.settings.DurationS;
       case 'End on Timer #3':
-        return this.state.secondsElapsedThird + INCREMENT >= this.settings.DurationS;
+        return this.state.secondsElapsedThird >= this.settings.DurationS;
       default:
+        // Check if the timer option specifies a special duration key
+        if (this.keyset?.SpecialDurationKeys) {
+          console.log('Checking session end condition:', this.settings.TimerOption);
+          const specialKey = this.keyset.SpecialDurationKeys.find((key) => {
+            const stringToMatch = `End on ${key.KeyDescription}`;
+
+            console.log(stringToMatch);
+
+            return this.settings!.TimerOption === stringToMatch;
+          });
+          if (specialKey) {
+            const specialKeyTime = this.state.specialKeyTimers.get(specialKey.KeyName) || 0;
+            return specialKeyTime >= this.settings.DurationS;
+          }
+        }
         return false;
     }
   }
@@ -205,16 +252,20 @@ export class SessionRecorderCore {
    * Switches the active timer
    */
   switchTimer(timer: 'Primary' | 'Secondary' | 'Tertiary'): KeyManageType[] | null {
-    if (!this.state.isRunning || this.state.activeTimer === timer) return null;
+    if (!this.state.isRunning) return null;
 
-    // Create end event for previous timer
-    const endEvent = this.createSystemEvent(
-      this.state.activeTimer,
-      0,
-      `End of ${this.state.activeTimer}`,
-      this.state.activeTimer as KeyTiming,
-      'End',
-    );
+    // Don't switch if we're already on the target standard timer AND no special key is active
+    if (this.state.activeTimer === timer && !this.state.activeSpecialKey) {
+      return null;
+    }
+
+    // Create end event for previous timer (standard or special)
+    const endEvent = this.createEndEventForCurrentTimer();
+
+    // Clear active special key if switching from special to standard timer
+    if (this.state.activeSpecialKey) {
+      this.state.activeSpecialKey = null;
+    }
 
     // Switch to new timer
     this.state.activeTimer = timer;
@@ -233,6 +284,62 @@ export class SessionRecorderCore {
     this.systemKeysPressed.push(...systemEvents);
 
     return systemEvents;
+  }
+
+  /**
+   * Switches to a special duration key timer
+   */
+  switchToSpecialKey(keyName: string): KeyManageType[] | null {
+    if (!this.state.isRunning || !this.state.specialKeyTimers.has(keyName) || this.state.activeSpecialKey === keyName) {
+      return null;
+    }
+
+    // Create end event for previous timer (standard or special)
+    const endEvent = this.createEndEventForCurrentTimer();
+
+    // Clear standard timer and switch to special key
+    this.state.activeTimer = 'Stopped';
+    this.state.activeSpecialKey = keyName;
+    this.state.secondsElapsedActive = this.state.specialKeyTimers.get(keyName) || 0;
+
+    // Create start event for special key
+    const startEvent = this.createSystemEvent(
+      keyName,
+      0,
+      `Start of ${keyName}`,
+      'Primary' as KeyTiming, // Special keys use Primary timing for compatibility
+      'Start',
+    );
+
+    const systemEvents = [endEvent, startEvent];
+    this.systemKeysPressed.push(...systemEvents);
+
+    return systemEvents;
+  }
+
+  /**
+   * Creates an end event for the currently active timer
+   */
+  private createEndEventForCurrentTimer(): KeyManageType {
+    if (this.state.activeSpecialKey) {
+      // Currently on a special key
+      return this.createSystemEvent(
+        this.state.activeSpecialKey,
+        0,
+        `End of ${this.state.activeSpecialKey}`,
+        'Primary' as KeyTiming,
+        'End',
+      );
+    } else {
+      // Currently on a standard timer
+      return this.createSystemEvent(
+        this.state.activeTimer,
+        0,
+        `End of ${this.state.activeTimer}`,
+        this.state.activeTimer as KeyTiming,
+        'End',
+      );
+    }
   }
 
   /**
@@ -303,24 +410,18 @@ export class SessionRecorderCore {
   endSession(reason: 'Completed' | 'Cancelled'): SessionEndResult {
     this.state.isRunning = false;
 
-    // Create final system events
-    const endTimerEvent = this.createSystemEvent(
-      this.state.activeTimer,
-      0,
-      `End of ${this.state.activeTimer}`,
-      this.state.activeTimer as KeyTiming,
-      'End',
-    );
+    // Create final system events using the helper method
+    const endTimerEvent = this.createEndEventForCurrentTimer();
 
-    const endSessionEvent = this.createSystemEvent(
-      'Escape',
-      0,
-      'End of Session',
-      this.state.activeTimer as KeyTiming,
-      'End',
-    );
+    const endSessionEvent = this.createSystemEvent('Escape', 0, 'End of Session', 'Primary' as KeyTiming, 'End');
 
     const finalSystemKeys = [...this.systemKeysPressed, endTimerEvent, endSessionEvent];
+
+    // Convert special key timers Map to Record
+    const specialKeyTimersRecord: Record<string, number> = {};
+    this.state.specialKeyTimers.forEach((value, key) => {
+      specialKeyTimersRecord[key] = value;
+    });
 
     const result: SessionEndResult = {
       reason,
@@ -332,6 +433,7 @@ export class SessionRecorderCore {
         second: this.state.secondsElapsedSecond,
         third: this.state.secondsElapsedThird,
       },
+      specialKeyTimers: specialKeyTimersRecord,
       startTime: this.state.startTime ? formatTimestamp(this.state.startTime) : null,
     };
 
