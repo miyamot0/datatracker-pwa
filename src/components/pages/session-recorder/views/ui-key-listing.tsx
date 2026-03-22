@@ -77,10 +77,6 @@ export default function KeyHistoryListing({
             <p className={cn('w-[250px] transition-colors bg-transparent font-semibold')}>{key.KeyDescription}</p>
             <p
               className={cn('px-2 transition-colors bg-transparent rounded-full', {
-                //'bg-gray-500 text-white': Running && AssignedTimer === undefined,
-                //'bg-green-500 text-white': ActiveTimer === 'Primary' && Running && AssignedTimer === 'Primary',
-                //'bg-orange-500 text-white': ActiveTimer === 'Secondary' && Running && AssignedTimer === 'Secondary',
-                //'bg-red-500 text-white': ActiveTimer === 'Tertiary' && Running && AssignedTimer === 'Tertiary',
                 'bg-blue-500 text-white': ActiveSpecialTimer === key.KeyName && Running,
               })}
             >

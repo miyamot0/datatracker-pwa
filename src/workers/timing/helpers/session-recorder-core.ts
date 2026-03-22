@@ -217,7 +217,6 @@ export class SessionRecorderCore {
    */
   private checkSessionEnd(): boolean {
     if (!this.settings) return false;
-    console.log('Checking session end condition:', this.settings.TimerOption);
 
     switch (this.settings.TimerOption) {
       case 'End on Primary Timer':
@@ -231,14 +230,10 @@ export class SessionRecorderCore {
       default:
         // Check if the timer option specifies a special duration key
         if (this.keyset?.SpecialDurationKeys) {
-          console.log('Checking session end condition:', this.settings.TimerOption);
           const specialKey = this.keyset.SpecialDurationKeys.find((key) => {
-            const stringToMatch = `End on ${key.KeyDescription}`;
-
-            console.log(stringToMatch);
-
-            return this.settings!.TimerOption === stringToMatch;
+            return this.settings!.TimerOption === key.KeyCode;
           });
+
           if (specialKey) {
             const specialKeyTime = this.state.specialKeyTimers.get(specialKey.KeyName) || 0;
             return specialKeyTime >= this.settings.DurationS;

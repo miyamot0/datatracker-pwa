@@ -103,6 +103,23 @@ export default function SessionRecorderInterface({
   const activeTimerRef = useRef<TimerSetting>('Stopped');
   const [, forceUpdate] = useState({});
 
+  const timerDisplayMessage = useMemo(() => {
+    if (Settings.TimerOption === 'End on Primary Timer') {
+      return `Primary Timer (${Settings.DurationS}s)`;
+    } else if (Settings.TimerOption === 'End on Timer #1') {
+      return `Timer #1 (${Settings.DurationS}s)`;
+    } else if (Settings.TimerOption === 'End on Timer #2') {
+      return `Timer #2 (${Settings.DurationS}s)`;
+    } else if (Settings.TimerOption === 'End on Timer #3') {
+      return `Timer #3 (${Settings.DurationS}s)`;
+    } else if (typeof Settings.TimerOption === 'number') {
+      const matchingSpecialKey = Keyset.SpecialDurationKeys.find((key) => key.KeyCode === Settings.TimerOption);
+      return matchingSpecialKey ? `${matchingSpecialKey.KeyDescription} (${Settings.DurationS}s)` : '';
+    } else {
+      return 'Error Loading Timer';
+    }
+  }, [Settings.TimerOption, Keyset.SpecialDurationKeys]);
+
   // Optimized UI update function using requestAnimationFrame
   const scheduleUIUpdate = () => {
     if (animationFrameRef.current) return;
@@ -505,7 +522,7 @@ export default function SessionRecorderInterface({
           </p>
           <p
             className={cn(
-              'mx-2 transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap bg-slate-500 text-white',
+              'mx-2 transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap bg-blue-500 text-white',
               {
                 'bg-gray-600 text-white': Settings.TimerOption === 'End on Primary Timer',
                 'bg-green-400 text-white': Settings.TimerOption === 'End on Timer #1',
@@ -514,7 +531,7 @@ export default function SessionRecorderInterface({
               },
             )}
           >
-            {Settings.TimerOption} ({Settings.DurationS}s)
+            {timerDisplayMessage}
           </p>
         </div>
         <div className="flex-1 flex flex-row justify-center items-center text-center font-bold whitespace-nowrap">
