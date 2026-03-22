@@ -50,7 +50,7 @@ export default function SessionRecorderInterface({
 
   const workerRef = useRef<Worker | null>(null);
   const messageChannelRef = useRef<MessageChannel | null>(null);
-  
+
   const animationFrameRef = useRef<number>();
   const lastUpdateTimeRef = useRef<number>(0);
 
@@ -453,10 +453,8 @@ export default function SessionRecorderInterface({
     // Handle special duration key switches (using actual key names)
     if (runningState === 'Started') {
       const specialKeys = Keyset.SpecialDurationKeys;
-      const matchingSpecialKey = specialKeys.find(key => 
-        key.KeyName.toLowerCase() === ev.key.toLowerCase()
-      );
-      
+      const matchingSpecialKey = specialKeys.find((key) => key.KeyName.toLowerCase() === ev.key.toLowerCase());
+
       if (matchingSpecialKey) {
         // Switch to special key timer
         switchToSpecialKey(matchingSpecialKey.KeyName);

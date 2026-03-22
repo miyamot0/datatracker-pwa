@@ -31,4 +31,6 @@ export const SessionTerminationOptionsDescriptions = [
 ];
 
 // Type for session termination options
-export type SessionTerminationOptionsType = (typeof SessionTerminationOptions)[keyof typeof SessionTerminationOptions] | string;
+export type SessionTerminationOptionsType =
+  | (typeof SessionTerminationOptions)[keyof typeof SessionTerminationOptions]
+  | string;

@@ -71,7 +71,7 @@ export default function SessionDesigner({
       SessionTherapistID: SessionSettings.Therapist,
       SessionKeySet: SessionSettings.KeySet,
       SessionDurationS: SessionSettings.DurationS,
-      SessionTerminationOption: SessionSettings.TimerOption,
+      SessionTerminationOption: SessionSettings.TimerOption.toString(),
       SessionNumber: SessionSettings.Session,
       SessionCondition: SessionSettings.Condition,
       DataCollectorID: SessionSettings.Initials,
@@ -425,11 +425,13 @@ export default function SessionDesigner({
                             </SelectItem>
                           ))}
                           {keySet &&
-                            keySet.SpecialDurationKeys.map((key) => (
-                              <SelectItem key={key.KeyDescription} value={key.KeyDescription}>
-                                {`End on ${key.KeyDescription} Time Specifically (When ${key.KeyDescription} > Duration)`}
-                              </SelectItem>
-                            ))}
+                            keySet.SpecialDurationKeys.map((key) => {
+                              return (
+                                <SelectItem key={key.KeyDescription} value={key.KeyCode.toString()}>
+                                  {`End on ${key.KeyDescription} Time Specifically (When ${key.KeyDescription} > Duration)`}
+                                </SelectItem>
+                              );
+                            })}
                         </SelectGroup>
                       </SelectContent>
                     </Select>

@@ -11,7 +11,7 @@ export type SavedSettings = {
   Therapist: string;
   Condition: string;
   KeySet: string;
-  TimerOption: SessionTerminationOptionsType | string;
+  TimerOption: SessionTerminationOptionsType | number;
   Initials: string;
   Role: DataCollectorRolesType;
   Session: number;
@@ -70,7 +70,7 @@ export type ExpandedSavedSessionResult = SavedSessionResult & {
  * @returns saved settings object
  */
 export const toSavedSettings = (data: SessionDesignerSchemaType) => {
-  const handleSpecialDurationOption = (option: string): SessionTerminationOptionsType | string => {
+  const handleSpecialDurationOption = (option: string): SessionTerminationOptionsType | number => {
     if (option === 'End on Timer #1') {
       return SessionTerminationOptions.Timer1;
     } else if (option === 'End on Timer #2') {
@@ -79,8 +79,15 @@ export const toSavedSettings = (data: SessionDesignerSchemaType) => {
       return SessionTerminationOptions.Timer3;
     } else if (option === 'End on Total Time') {
       return SessionTerminationOptions.TimerMain;
+    } else if (option === 'End on Primary Timer') {
+      return SessionTerminationOptions.TimerMain;
     } else {
-      return `End on ${option}`; // Return as-is for custom options
+      const doubleCode = parseInt(option);
+      if (!isNaN(doubleCode)) {
+        return doubleCode; // Return the custom option as-is if it's a valid number (representing a special key code)
+      }
+
+      throw new Error(`Invalid session termination option: ${option}`);
     }
   };
 

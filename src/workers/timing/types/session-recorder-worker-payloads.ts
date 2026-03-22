@@ -1,5 +1,4 @@
-import { KeyManageType, TimerSetting } from "@/types/timing";
-
+import { KeyManageType, TimerSetting } from '@/types/timing';
 
 export type TimerUpdatePayload = {
   total: number;
