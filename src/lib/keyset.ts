@@ -18,6 +18,7 @@ export function createNewKeySet(Name: string): KeySet {
     createdAt: new Date(),
     lastModified: new Date(),
     DerivedKeys: [],
+    SpecialDurationKeys: [],
   };
 }
 
@@ -36,6 +37,7 @@ export function serializeKeySet(keyset: KeySet): string {
     createdAt: keyset.createdAt.toJSON(),
     lastModified: keyset.lastModified.toJSON(),
     DerivedKeys: keyset.DerivedKeys || [],
+    SpecialDurationKeys: keyset.SpecialDurationKeys || [],
   };
 
   return JSON.stringify(keyset_serialized);
@@ -58,6 +60,7 @@ export function deserializeKeySet(json: string): KeySet {
     createdAt: new Date(keyset_json.createdAt),
     lastModified: new Date(keyset_json.lastModified),
     DerivedKeys: keyset_json.DerivedKeys || [],
+    SpecialDurationKeys: keyset_json.SpecialDurationKeys || [],
   };
 }
 

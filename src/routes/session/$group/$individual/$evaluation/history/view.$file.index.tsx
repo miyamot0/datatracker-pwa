@@ -13,7 +13,6 @@ import { ModifiedSessionResult } from '@/types/storage';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { ExpandedSavedSessionResult, SavedSettings } from '@/lib/dtos';
 import { generateTicks } from '@/lib/graphing';
-import { pullMostRecentKeySet } from '@/lib/keyset';
 import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
 import { preparePlotDataCumulative } from '@/lib/summary';
 import { GenerateSavedFileName } from '@/lib/writer';
@@ -116,8 +115,7 @@ function RouteComponent() {
           }
 
           // TODO: The most recent should be the one from the session designer (Fixed)
-          //const keySet = pullMostRecentKeySet(sessions);
-          //const { UnfilteredKeysFrequency } = prepareDataOrganization(Group, Individual, Evaluation, keySet);
+
           const plot_object = preparePlotDataCumulative(relevantSession);
 
           const yValues = plot_object

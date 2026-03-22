@@ -35,7 +35,7 @@ export default function FrequencyDialogKeyCreator({ KeySet, Callback }: Props) {
           className="flex flex-row gap-2 items-center cursor-pointer px-0"
           onClick={() => setShow(true)}
         >
-          <PlusIcon className="w-4 h-4 " /> Add Key
+          <PlusIcon className="w-4 h-4" /> Add Key
         </Button>
       </ToolTipWrapper>
       <DialogContent className="bg-card select-none">

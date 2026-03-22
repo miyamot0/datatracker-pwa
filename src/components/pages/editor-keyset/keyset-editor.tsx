@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { useRouter, useRouterState } from '@tanstack/react-router';
+import SpecialDurationDialogKeyCreator from './dialogs/special-duration-dialog';
 
 export default function KeySetEditor({
   Group,
@@ -91,6 +92,21 @@ export default function KeySetEditor({
       FrequencyKeys: [...KeySetObject.FrequencyKeys],
       DurationKeys: [...KeySetObject.DurationKeys],
       DerivedKeys: [...(KeySetObject.DerivedKeys || []), logic],
+      SpecialDurationKeys: [...(KeySetObject.SpecialDurationKeys || [])],
+      lastModified: new Date(),
+    } satisfies KeySet;
+
+    await mutateKeySet(new_state);
+  };
+
+  const addSpecialDurationKeyCallback = async (base_keyset: KeySet, new_key: KeySetInstance) => {
+    const new_state = {
+      ...base_keyset,
+      // Note: hack to kick off re-render
+      DurationKeys: [...base_keyset.DurationKeys],
+      FrequencyKeys: [...base_keyset.FrequencyKeys],
+      DerivedKeys: [...(base_keyset.DerivedKeys || [])],
+      SpecialDurationKeys: [...(base_keyset.SpecialDurationKeys || []), new_key],
       lastModified: new Date(),
     } satisfies KeySet;
 
@@ -258,7 +274,20 @@ export default function KeySetEditor({
           </div>
 
           <div className="flex flex-row gap-2">
-            <DurationDialogKeyCreator KeySet={KeySetObject} Callback={addKeyCallback} />
+            <div className={cn(btnProps, 'pl-3 pr-0')}>
+              <DurationDialogKeyCreator KeySet={KeySetObject} Callback={addKeyCallback} />
+
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <ChevronDown className="w-fit px-2" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-60" side="bottom" align="end" sideOffset={12}>
+                  <DropdownMenuLabel>Custom Key Types</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <SpecialDurationDialogKeyCreator KeySet={KeySetObject} Callback={addSpecialDurationKeyCallback} />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
             <BackButton />
           </div>
@@ -322,6 +351,37 @@ export default function KeySetEditor({
                           ...KeySetObject,
                           DurationKeys: KeySetObject.DurationKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
                         };
+
+                        await mutateKeySet(new_state);
+                      }}
+                    >
+                      <DeleteIcon size={14} className="mr-2" />
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+
+              {KeySetObject.SpecialDurationKeys?.map((key, index) => (
+                <TableRow key={index} className="bg-muted">
+                  <TableCell>{key.KeyDescription} (Special)</TableCell>
+                  <TableCell>{key.KeyName}</TableCell>
+                  <TableCell className="flex flex-row gap-2 justify-end">
+                    <Button
+                      size={'sm'}
+                      variant={'destructive'}
+                      className="shadow-xl"
+                      onClick={async () => {
+                        const confirmation = window.confirm('Are you sure you want to remove this key?');
+
+                        if (!confirmation) return;
+
+                        const new_state = {
+                          ...KeySetObject,
+                          SpecialDurationKeys: KeySetObject.SpecialDurationKeys?.filter(
+                            (_key) => _key.KeyCode !== key.KeyCode,
+                          ),
+                        } satisfies KeySet;
 
                         await mutateKeySet(new_state);
                       }}
