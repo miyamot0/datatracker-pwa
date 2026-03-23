@@ -1,7 +1,7 @@
 import { useEventListener } from '@/components/elements/event-listeners';
 import { SavedSessionResult, SavedSettings } from '@/lib/dtos';
 import { cn } from '@/lib/utils';
-import { KeySet } from '@/types/keyset';
+import { KeySet, KeySetInstance } from '@/types/keyset';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { KeyManageType, TimerSetting } from '@/types/timing';
 import { toast } from 'sonner';
@@ -23,6 +23,8 @@ import {
 } from '@/workers/timing/types/session-recorder-worker-payloads';
 import { WorkerMessage, WorkerResponse } from '@/workers/timing/types/session-recorder-worker-messaging';
 import { ApplicationSettingsTypes } from '@/types/settings';
+import SessionRecorderFrequencyTallies from './ui-counts-frequency';
+import SessionRecorderDurationTallies from './ui-counts-duration';
 
 type Props = {
   Group: string;
@@ -32,6 +34,58 @@ type Props = {
   Settings: SavedSettings;
   Handle: FileSystemDirectoryHandle;
   ApplicationSettings: ApplicationSettingsTypes;
+};
+
+type RunningStateOptions = 'Not Started' | 'Started' | 'Completed' | 'Cancelled';
+
+const DataCollectorVisual = ({ Settings }: { Settings: SavedSettings }) => {
+  return (
+    <p
+      className={cn(
+        'transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
+        {
+          'bg-green-600 text-white': Settings.Role === 'Primary',
+          'bg-purple-400 text-white': Settings.Role === 'Reliability',
+        },
+      )}
+    >
+      {`${Settings.Role} Data Collector`}
+    </p>
+  );
+};
+
+const TimerDisplayVisual = ({ Settings, TimerString }: { Settings: SavedSettings; TimerString: string }) => {
+  return (
+    <p
+      className={cn(
+        'mx-2 transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap bg-blue-500 text-white',
+        {
+          'bg-gray-600 text-white': Settings.TimerOption === 'End on Primary Timer',
+          'bg-green-400 text-white': Settings.TimerOption === 'End on Timer #1',
+          'bg-orange-400 text-white': Settings.TimerOption === 'End on Timer #2',
+          'bg-red-400 text-white': Settings.TimerOption === 'End on Timer #3',
+        },
+      )}
+    >
+      {TimerString}
+    </p>
+  );
+};
+
+const SessionRunState = ({ RunningState }: { RunningState: RunningStateOptions }) => {
+  return (
+    <div className="flex-1 flex flex-row justify-end whitespace-nowrap">
+      <p
+        className={cn('transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit', {
+          'bg-gray-600 text-white': RunningState === 'Not Started',
+          'bg-blue-400 text-white': RunningState === 'Started',
+          'bg-green-400 text-white': RunningState === 'Completed',
+        })}
+      >
+        {RunningState}
+      </p>
+    </div>
+  );
 };
 
 export default function SessionRecorderInterface({
@@ -96,9 +150,7 @@ export default function SessionRecorderInterface({
   const wakelockRef = useRef<WakeLockSentinel>();
   const endingProcessedRef = useRef<boolean>(false);
 
-  const [runningState, setRunningState] = useState<'Not Started' | 'Started' | 'Completed' | 'Cancelled'>(
-    'Not Started',
-  );
+  const [runningState, setRunningState] = useState<RunningStateOptions>('Not Started');
   const [, setStartTime] = useState<Date | null>(null);
   const activeTimerRef = useRef<TimerSetting>('Stopped');
   const [, forceUpdate] = useState({});
@@ -513,55 +565,48 @@ export default function SessionRecorderInterface({
     return specialKeys;
   }, [Keyset]);
 
-  return (
-    <div className="flex flex-col w-full gap-4">
+  const HeaderComponent = useMemo(() => {
+    return (
       <div className="w-full flex flex-row justify-between select-none">
         <div className="flex-1 flex flex-row">
-          <p
-            className={cn(
-              'transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
-              {
-                'bg-green-600 text-white': Settings.Role === 'Primary',
-                'bg-purple-400 text-white': Settings.Role === 'Reliability',
-              },
-            )}
-          >
-            {`${Settings.Role} Data Collector`}
-          </p>
-          <p
-            className={cn(
-              'mx-2 transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap bg-blue-500 text-white',
-              {
-                'bg-gray-600 text-white': Settings.TimerOption === 'End on Primary Timer',
-                'bg-green-400 text-white': Settings.TimerOption === 'End on Timer #1',
-                'bg-orange-400 text-white': Settings.TimerOption === 'End on Timer #2',
-                'bg-red-400 text-white': Settings.TimerOption === 'End on Timer #3',
-              },
-            )}
-          >
-            {timerDisplayMessage}
-          </p>
+          <DataCollectorVisual Settings={Settings} />
+          <TimerDisplayVisual Settings={Settings} TimerString={timerDisplayMessage} />
         </div>
         <div className="flex-1 flex flex-row justify-center items-center text-center font-bold whitespace-nowrap">
           <p className="flex-1">{`Session #${Settings.Session}`}</p>
         </div>
         <div className="flex-1 flex flex-row justify-end whitespace-nowrap">
-          <p
-            className={cn('transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit', {
-              'bg-gray-600 text-white': runningState === 'Not Started',
-              'bg-blue-400 text-white': runningState === 'Started',
-              'bg-green-400 text-white': runningState === 'Completed',
-            })}
-          >
-            {runningState}
-          </p>
+          <SessionRunState RunningState={runningState} />
         </div>
       </div>
+    );
+  }, [Settings, timerDisplayMessage, runningState]);
 
-      <SessionRecorderTallies KeysPressed={keysPressed} Keyset={Keyset} Settings={ApplicationSettings} />
+  const FrequencyCountsSummary = useMemo(() => {
+    return <SessionRecorderFrequencyTallies Keyset={Keyset} KeysPressed={keysPressed} Settings={ApplicationSettings} />;
+  }, [Keyset, keysPressed, ApplicationSettings]);
+
+  
+  const DurationCountsSummary = useMemo(() => {
+    return <SessionRecorderDurationTallies Keyset={Keyset} KeysPressed={keysPressed} Settings={ApplicationSettings} />;
+  }, [Keyset, keysPressed, ApplicationSettings]);
+
+  const SessionInstructions = useMemo(() => {
+    return <SessionRecorderInstructions {...{ Evaluation, Settings }} KeySetSpecialKeys={keySetSpecialKeys} />;
+  }, [Evaluation, Settings, keySetSpecialKeys]);
+
+  return (
+    <div className="flex flex-col w-full gap-4">
+      {HeaderComponent}
 
       <div className="grid grid-cols-2 w-full gap-4 select-none">
-        <SessionRecorderInstructions {...{ Evaluation, Settings }} />
+        {FrequencyCountsSummary}
+        {DurationCountsSummary}
+      </div>
+
+      <div className="grid grid-cols-2 w-full gap-4 select-none">
+        {SessionInstructions}
+
         <KeyHistoryListing
           KeySetSpecialKeys={keySetSpecialKeys}
           SpecialKeyTimers={specialKeyTimers.current}

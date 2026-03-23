@@ -1,12 +1,14 @@
 import { SavedSettings } from '@/lib/dtos';
 import { PaddedRow } from './padded-row';
+import { KeySetInstance } from '@/types/keyset';
 
 type Props = {
   Evaluation: string;
   Settings: SavedSettings;
+  KeySetSpecialKeys: KeySetInstance[];
 };
 
-export default function SessionRecorderInstructions({ Evaluation, Settings }: Props) {
+export default function SessionRecorderInstructions({ Evaluation, Settings, KeySetSpecialKeys }: Props) {
   return (
     <div className="w-full flex flex-col gap-2 border rounded shadow-xl bg-card">
       <div className="w-full text-center justify-center pt-2 text-sm font-bold">Session Parameters</div>
@@ -27,6 +29,9 @@ export default function SessionRecorderInstructions({ Evaluation, Settings }: Pr
         <PaddedRow label="Z:" value="Switch to Timer #1" />
         <PaddedRow label="X:" value="Switch to Timer #2" />
         <PaddedRow label="C:" value="Switch to Timer #3" />
+        {KeySetSpecialKeys.map((key) => (
+          <PaddedRow key={key.KeyName} label={`${key.KeyName}:`} value={`Switch to ${key.KeyDescription}`} />
+        ))}
       </div>
     </div>
   );

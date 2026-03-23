@@ -346,7 +346,7 @@ export class SessionRecorderCore {
     const endEvent = this.createEndEventForCurrentTimer();
 
     // Clear standard timer and switch to special key
-    this.state.activeTimer = 'Stopped';
+    this.state.activeTimer = 'Special';
     this.state.activeSpecialKey = keyName;
     this.state.secondsElapsedActive = this.state.specialKeyTimers.get(keyName) || 0;
 
@@ -355,7 +355,7 @@ export class SessionRecorderCore {
       keyName,
       0,
       `Start of ${keyName}`,
-      'Primary' as KeyTiming, // Special keys use Primary timing for compatibility
+      'Special' as KeyTiming, // Special keys use Special timing
       'Start',
     );
 
@@ -375,7 +375,7 @@ export class SessionRecorderCore {
         this.state.activeSpecialKey,
         0,
         `End of ${this.state.activeSpecialKey}`,
-        'Primary' as KeyTiming,
+        'Special' as KeyTiming,
         'End',
       );
     } else {
