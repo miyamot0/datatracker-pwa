@@ -1,7 +1,5 @@
-import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
-import { formatTimeOfDay } from '@/lib/time';
 import { PaddedTimerRow } from './padded-row';
-import { KeyManageType, TimerSetting } from '@/types/timing';
+import { TimerSetting } from '@/types/timing';
 import { KeySetInstance } from '@/types/keyset';
 import { cn } from '@/lib/utils';
 import { formatTimeSeconds } from '@/lib/time';
@@ -9,7 +7,6 @@ import { formatTimeSeconds } from '@/lib/time';
 type Props = {
   KeySetSpecialKeys: KeySetInstance[];
   SpecialKeyTimers: Record<string, number>;
-  KeysPressed: KeyManageType[];
   SecondsElapsed: number;
   SecondsElapsedFirst: number;
   SecondsElapsedSecond: number;
@@ -23,7 +20,6 @@ type Props = {
 export default function KeyHistoryListing({
   KeySetSpecialKeys,
   SpecialKeyTimers,
-  KeysPressed,
   SecondsElapsed,
   SecondsElapsedFirst,
   SecondsElapsedSecond,
@@ -34,11 +30,7 @@ export default function KeyHistoryListing({
   Running,
 }: Props) {
   return (
-    <div className="w-full flex flex-col gap-0 border rounded shadow-xl bg-card">
-      <div className="w-full text-center my-2 text-sm font-bold">Session Measurements</div>
-
-      <hr className="mb-2" />
-
+    <>
       <PaddedTimerRow
         AssignedTimer={undefined}
         ActiveTimer={ActiveTimer}
@@ -85,35 +77,6 @@ export default function KeyHistoryListing({
           </div>
         );
       })}
-
-      <hr />
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="h-9">Key</TableHead>
-            <TableHead className="h-9">Description</TableHead>
-            <TableHead className="h-9">Schedule</TableHead>
-            <TableHead className="h-9">Time</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {KeysPressed.slice(-5)
-            .reverse()
-            .map((key, index) => (
-              <TableRow
-                key={`${key.KeyType}-${key.KeyCode}-${key.TimePressed.toUTCString()}-${index}`}
-                className="text-sm"
-              >
-                <TableHead className="h-9">{key.KeyName}</TableHead>
-                <TableHead className="h-9">{key.KeyDescription}</TableHead>
-                <TableHead className="h-9">{key.KeyScheduleRecording}</TableHead>
-                <TableHead className="h-9">
-                  {formatTimeOfDay(key.TimePressed)} ({key.TimeIntoSession.toFixed(2)}s)
-                </TableHead>
-              </TableRow>
-            ))}
-        </TableBody>
-      </Table>
-    </div>
+    </>
   );
 }
