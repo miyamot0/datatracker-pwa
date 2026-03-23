@@ -3,6 +3,7 @@ import { TimerSetting } from '@/types/timing';
 import { KeySetInstance } from '@/types/keyset';
 import { cn } from '@/lib/utils';
 import { formatTimeSeconds } from '@/lib/time';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 type Props = {
   KeySetSpecialKeys: KeySetInstance[];
@@ -15,6 +16,7 @@ type Props = {
   ActiveTimer: TimerSetting;
   ActiveSpecialTimer: string | null;
   Running: boolean;
+  AppSettings: ApplicationSettingsTypes;
 };
 
 export default function KeyHistoryListing({
@@ -28,6 +30,7 @@ export default function KeyHistoryListing({
   ActiveTimer,
   ActiveSpecialTimer,
   Running,
+  AppSettings,
 }: Props) {
   return (
     <>
@@ -47,21 +50,25 @@ export default function KeyHistoryListing({
         Running={Running}
       />
 
-      <PaddedTimerRow
-        AssignedTimer="Secondary"
-        ActiveTimer={ActiveTimer}
-        SecondsElapsed={SecondsElapsedSecond}
-        SecondsDelta={SecondsElapsedDelta}
-        Running={Running}
-      />
+      {AppSettings.TimerTwoDisplay === 'show' && (
+        <PaddedTimerRow
+          AssignedTimer="Secondary"
+          ActiveTimer={ActiveTimer}
+          SecondsElapsed={SecondsElapsedSecond}
+          SecondsDelta={SecondsElapsedDelta}
+          Running={Running}
+        />
+      )}
 
-      <PaddedTimerRow
-        AssignedTimer="Tertiary"
-        ActiveTimer={ActiveTimer}
-        SecondsElapsed={SecondsElapsedThird}
-        SecondsDelta={SecondsElapsedDelta}
-        Running={Running}
-      />
+      {AppSettings.TimerThreeDisplay === 'show' && (
+        <PaddedTimerRow
+          AssignedTimer="Tertiary"
+          ActiveTimer={ActiveTimer}
+          SecondsElapsed={SecondsElapsedThird}
+          SecondsDelta={SecondsElapsedDelta}
+          Running={Running}
+        />
+      )}
 
       {KeySetSpecialKeys.map((key, index) => {
         return (

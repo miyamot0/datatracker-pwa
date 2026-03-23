@@ -219,6 +219,70 @@ export function SettingsTabDisplay() {
             </SelectContent>
           </Select>
         </SettingsFormItemWrapper>
+
+        <SettingsFormItemWrapper
+          Label="Disable Timer #2"
+          Description="Disable Timer #2 functionality and hide from displays (e.g., if only using one timer)"
+        >
+          <Select
+            value={settings.TimerTwoDisplay}
+            onValueChange={(value: 'hide' | 'show') => {
+              const newSettings = {
+                ...settings,
+                TimerTwoDisplay: value,
+              } satisfies ApplicationSettingsTypes;
+              setSettings(newSettings);
+              saveSettings(newSettings);
+
+              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+            }}
+          >
+            <SelectTrigger className="w-full md:max-w-[250px]">
+              <SelectValue placeholder="Select Timer Two Display" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {['hide', 'show'].map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {option === 'hide' ? 'Hide Timer Two' : 'Show Timer Two'}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </SettingsFormItemWrapper>
+
+        <SettingsFormItemWrapper
+          Label="Disable Timer #3"
+          Description="Disable Timer #3 functionality and hide from displays (e.g., if only using one timer)"
+        >
+          <Select
+            value={settings.TimerThreeDisplay}
+            onValueChange={(value: 'hide' | 'show') => {
+              const newSettings = {
+                ...settings,
+                TimerThreeDisplay: value,
+              } satisfies ApplicationSettingsTypes;
+              setSettings(newSettings);
+              saveSettings(newSettings);
+
+              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+            }}
+          >
+            <SelectTrigger className="w-full md:max-w-[250px]">
+              <SelectValue placeholder="Select Timer Three Display" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {['hide', 'show'].map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {option === 'hide' ? 'Hide Timer Three' : 'Show Timer Three'}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </SettingsFormItemWrapper>
       </SettingsTabContainer>
     </TabsContent>
   );

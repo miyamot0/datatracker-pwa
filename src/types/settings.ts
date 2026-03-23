@@ -239,6 +239,8 @@ export type ApplicationSettingsTypes = {
   RecorderPolling: SessionRecorderPolling;
   ApplicationFooterDisplay: ApplicationFooterDisplay;
   SessionDisplay: SessionDisplayOptions;
+  TimerTwoDisplay: 'hide' | 'show';
+  TimerThreeDisplay: 'hide' | 'show';
 };
 
 /**
@@ -258,4 +260,6 @@ export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
   RecorderPolling: 'normal',
   ApplicationFooterDisplay: 'Standard',
   SessionDisplay: 'Standard',
+  TimerTwoDisplay: 'show',
+  TimerThreeDisplay: 'show',
 };

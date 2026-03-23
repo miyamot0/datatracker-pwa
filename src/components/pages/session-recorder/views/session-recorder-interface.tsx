@@ -26,7 +26,6 @@ import SessionRecorderDurationTallies from './ui-counts-duration';
 import SessionHeaderComponent from '../subpanels/header-component';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { formatTimeOfDay } from '@/lib/time';
-import { PaddedTimerRow } from './padded-row';
 
 type Props = {
   Group: string;
@@ -453,13 +452,13 @@ export default function SessionRecorderInterface({
       return;
     }
 
-    if (ev.key === 'x') {
+    if (ev.key === 'x' && ApplicationSettings.TimerTwoDisplay === 'show') {
       // Allow switch to Secondary from any current state
       switchTimer('Secondary');
       return;
     }
 
-    if (ev.key === 'c') {
+    if (ev.key === 'c' && ApplicationSettings.TimerThreeDisplay === 'show') {
       // Allow switch to Tertiary from any current state
       switchTimer('Tertiary');
       return;
@@ -556,8 +555,13 @@ export default function SessionRecorderInterface({
   }, [Keyset, keysPressed, ApplicationSettings, activeDurationKeysCount > 0 ? durationUpdateTimestamp : null]);
 
   const SessionInstructions = useMemo(() => {
-    return <SessionRecorderInstructions {...{ Evaluation, Settings }} KeySetSpecialKeys={keySetSpecialKeys} />;
-  }, [Evaluation, Settings, keySetSpecialKeys]);
+    return (
+      <SessionRecorderInstructions
+        {...{ Evaluation, Settings, AppSettings: ApplicationSettings }}
+        KeySetSpecialKeys={keySetSpecialKeys}
+      />
+    );
+  }, [Evaluation, Settings, keySetSpecialKeys, ApplicationSettings]);
 
   const KeysPressedHistory = useMemo(() => {
     return (
@@ -592,18 +596,6 @@ export default function SessionRecorderInterface({
     );
   }, [keysPressed]);
 
-  const TimerOneUpdates = useMemo(() => {
-    return (
-      <PaddedTimerRow
-        AssignedTimer={'Primary'}
-        ActiveTimer={activeTimerRef.current}
-        SecondsElapsed={secondsElapsedFirst.current}
-        SecondsDelta={secondsElapsedActive.current}
-        Running={runningState === 'Started'}
-      />
-    );
-  }, []);
-
   return (
     <div className="flex flex-col w-full gap-4">
       {HeaderComponent}
@@ -621,8 +613,6 @@ export default function SessionRecorderInterface({
 
           <hr className="mb-2" />
 
-          {TimerOneUpdates}
-
           <KeyHistoryListing
             KeySetSpecialKeys={keySetSpecialKeys}
             SpecialKeyTimers={specialKeyTimers.current}
@@ -634,6 +624,7 @@ export default function SessionRecorderInterface({
             ActiveTimer={activeTimerRef.current}
             ActiveSpecialTimer={activeSpecialKey.current}
             Running={runningState === 'Started'}
+            AppSettings={ApplicationSettings}
           />
 
           <hr />
