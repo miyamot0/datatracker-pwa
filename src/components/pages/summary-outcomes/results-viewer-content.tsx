@@ -1,12 +1,13 @@
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import ViewDurationResults from './view-duration-results';
-import ViewFrequencyResults from './view-frequency-results';
+import ViewDurationResults from './views/view-duration-results';
+import ViewFrequencyResults from './views/view-frequency-results';
 import { useState } from 'react';
 import { ModifiedSessionResult } from '@/types/storage';
 import { KeySet } from '@/types/keyset';
-import { ScheduleMappingOptions, ScheduleMappingOptionsType } from '@/types/schedules';
+import { filteredSessionScoringOptions, ScheduleMappingOptions, ScheduleMappingOptionsType } from '@/types/schedules';
 import { DataCollectorRolesType } from '@/types/roles';
 import { ToggleDisplayKey } from '@/types/visuals';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 type Props = {
   TimerMapping: ScheduleMappingOptionsType;
@@ -17,6 +18,7 @@ type Props = {
   Evaluation: string;
   ShowKeysFreq: ToggleDisplayKey[];
   ShowKeysDuration: ToggleDisplayKey[];
+  Settings: ApplicationSettingsTypes;
 };
 
 export default function ResultsViewerContent({
@@ -28,6 +30,7 @@ export default function ResultsViewerContent({
   Evaluation,
   ShowKeysFreq,
   ShowKeysDuration,
+  Settings,
 }: Props) {
   const [role, setRole] = useState<DataCollectorRolesType>('Primary');
   const [schedule, setSchedule] = useState<ScheduleMappingOptionsType>(TimerMapping);
@@ -75,7 +78,7 @@ export default function ResultsViewerContent({
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {ScheduleMappingOptions.map((option) => (
+                {filteredSessionScoringOptions(Settings).map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>

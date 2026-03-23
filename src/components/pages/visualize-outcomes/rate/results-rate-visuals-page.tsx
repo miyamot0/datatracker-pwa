@@ -21,6 +21,8 @@ import { Link } from '@tanstack/react-router';
 import { Switch } from '@/components/ui/switch';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';
+import { ApplicationSettingsTypes } from '@/types/settings';
+import { filteredSessionScoringOptions } from '@/types/schedules';
 
 export default function ResultsRateVisualsPage({
   Group,
@@ -32,6 +34,7 @@ export default function ResultsRateVisualsPage({
   Schedule,
   MinX,
   MaxX,
+  Settings,
 }: {
   Group: string;
   Individual: string;
@@ -44,6 +47,7 @@ export default function ResultsRateVisualsPage({
   ShowKeys: ToggleDisplayKey[];
   MinX: number;
   MaxX: number;
+  Settings: ApplicationSettingsTypes;
 }) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys.sort((a, b) => b.KeyType.localeCompare(a.KeyType)));
   const [connectAllPoints, setConnectAllPoints] = useState(false);
@@ -141,19 +145,15 @@ export default function ResultsRateVisualsPage({
                 }}
               >
                 <SelectTrigger className="w-fit">
-                  <SelectValue placeholder="Data Collector Type" />
+                  <SelectValue placeholder="Timer to Reference" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectItem value={'End on Timer #1' as SessionTerminationOptionsType}>
-                      Score on Timer #1 Time
-                    </SelectItem>
-                    <SelectItem value={'End on Timer #2' as SessionTerminationOptionsType}>
-                      Score on Timer #2 Time
-                    </SelectItem>
-                    <SelectItem value={'End on Timer #3' as SessionTerminationOptionsType}>
-                      Score on Timer #3 Time
-                    </SelectItem>
+                    {filteredSessionScoringOptions(Settings, true).map((option) => (
+                      <SelectItem key={option.value} value={option.value as SessionTerminationOptionsType}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectGroup>
                 </SelectContent>
               </Select>

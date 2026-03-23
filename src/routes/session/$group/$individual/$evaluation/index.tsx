@@ -1,5 +1,5 @@
 import PageWrapper from '@/components/elements/page-wrapper';
-import { SessionDesignerPage } from '@/components/pages/editor-session/session-designer';
+import SessionDesignerForm from '@/components/pages/editor-session/session-designer-form';
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import {
   BuildGroupBreadcrumb,
@@ -90,13 +90,13 @@ function RouteComponent() {
             const [conditions, keysets, sessionParams] = clients;
 
             return (
-              <SessionDesignerPage
+              <SessionDesignerForm
                 Group={Group}
                 Individual={Individual}
                 Evaluation={Evaluation}
                 Conditions={conditions}
                 Keysets={keysets}
-                SessionParams={sessionParams}
+                SessionSettings={sessionParams}
                 Settings={Settings}
                 Handle={CleanHandle}
               />

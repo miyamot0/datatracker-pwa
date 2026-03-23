@@ -148,6 +148,7 @@ function RouteComponent() {
                 DynamicKeySet={dynamicKeyset}
                 Schedule={storedPreferences.Schedule ?? 'End on Timer #1'}
                 ShowKeys={showKeysBase}
+                Settings={Settings}
               />
             );
           }

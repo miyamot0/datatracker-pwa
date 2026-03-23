@@ -1,5 +1,5 @@
 import { KeyManageType } from '@/types/timing';
-import { SessionDesignerSchemaType } from '@/components/pages/editor-session/views/session-designer-schema';
+import { SessionDesignerSchemaType } from '@/components/pages/editor-session/session-designer-schema';
 import { KeySet } from '@/types/keyset';
 import { DataCollectorRolesType } from '@/types/roles';
 import { SessionTerminationOptions, SessionTerminationOptionsType } from '@/types/terminations';

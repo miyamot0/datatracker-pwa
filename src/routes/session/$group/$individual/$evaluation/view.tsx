@@ -1,6 +1,5 @@
 import { CleanUpString } from '@/lib/strings';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
-import ResultsViewerPage from '@/components/pages/summary-outcomes/results-viewer-page';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { pullMostRecentSession } from '@/lib/keyset';
@@ -17,6 +16,8 @@ import {
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { ModifiedSessionResult } from '@/types/storage';
 import { ErrorDisplay } from '@/components/suspense/error-display';
+import ResultsViewerContent from '@/components/pages/summary-outcomes/results-viewer-content';
+import { prepareDataOrganization } from '@/lib/summary';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/view')({
   beforeLoad: ({ context, params }) => {
@@ -150,15 +151,19 @@ function RouteComponent() {
             const storedPreferencesD = getLocalCachedPrefs(Group, Individual, Evaluation, 'Duration');
             const showKeysDuration = mapKeysWithStoragePreference([...keyDurationObserved], storedPreferencesD);
 
+            const { TimerMapping } = prepareDataOrganization(Group, Individual, Evaluation, dynamicKeyset);
+
             return (
-              <ResultsViewerPage
+              <ResultsViewerContent
+                TimerMapping={TimerMapping}
+                Results={sessionOutcomes}
+                Keyset={dynamicKeyset}
+                ShowKeysFreq={showKeysFreq}
+                ShowKeysDuration={showKeysDuration}
                 Group={Group}
                 Individual={Individual}
                 Evaluation={Evaluation}
-                Sessions={sessionOutcomes}
-                LatestKeySet={dynamicKeyset}
-                ShowKeysFreq={showKeysFreq}
-                ShowKeysDuration={showKeysDuration}
+                Settings={Settings}
               />
             );
           }

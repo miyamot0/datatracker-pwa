@@ -76,7 +76,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
 });
 
 function RouteComponent() {
-  const { Group, Individual, Evaluation, Handle, totalQuery } = Route.useLoaderData();
+  const { Group, Individual, Evaluation, Handle, totalQuery, Settings } = Route.useLoaderData();
 
   return (
     <PageWrapper
@@ -165,6 +165,7 @@ function RouteComponent() {
                 ShowKeys={showKeysFreq}
                 MinX={minX}
                 MaxX={maxX}
+                Settings={Settings}
               />
             );
           }

@@ -1,3 +1,4 @@
+import { ApplicationSettingsTypes } from './settings';
 import { SessionTerminationOptions } from './terminations';
 
 /**
@@ -26,3 +27,23 @@ export const ScheduleMappingOptions = [
  * Type for schedule mapping options, derived from the ScheduleMappingOptions constant. This type ensures that any variable of this type can only take on one of the specified values defined in the `ScheduleMappingOptions` array, providing type safety and preventing invalid assignments when configuring session evaluation settings in the application.
  */
 export type ScheduleMappingOptionsType = (typeof ScheduleMappingOptions)[number];
+
+// TODO: Map special keys here too
+export function filteredSessionScoringOptions(appSettings: ApplicationSettingsTypes, filterMain = false) {
+  const options = Object.values(ScheduleMappingOptions);
+
+  return options.filter((option) => {
+    if (filterMain && option.value === SessionTerminationOptions.TimerMain) {
+      return false;
+    }
+
+    if (option.value === SessionTerminationOptions.Timer2 && appSettings.TimerTwoDisplay !== 'show') {
+      return false;
+    }
+    if (option.value === SessionTerminationOptions.Timer3 && appSettings.TimerThreeDisplay !== 'show') {
+      return false;
+    }
+
+    return true;
+  });
+}

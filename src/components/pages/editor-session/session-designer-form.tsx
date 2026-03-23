@@ -13,7 +13,7 @@ import {
 import {
   SessionDesignerSchema,
   SessionDesignerSchemaType,
-} from '@/components/pages/editor-session/views/session-designer-schema';
+} from '@/components/pages/editor-session/session-designer-schema';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,7 +33,7 @@ import { queryClient } from '@/App';
 import { useNavigate, useRouter, useRouterState } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { DataCollectorRoles } from '@/types/roles';
-import { SessionTerminationOptionsDescriptions } from '@/types/terminations';
+import { filteredSessionTerminationOptions, SessionTerminationOptionsDescriptions } from '@/types/terminations';
 import { ApplicationSettingsTypes } from '@/types/settings';
 
 type Props = {
@@ -419,11 +419,16 @@ export default function SessionDesigner({
                       <SelectContent>
                         <SelectGroup>
                           <SelectLabel>Session Timers</SelectLabel>
-                          {SessionTerminationOptionsDescriptions.map((role) => (
-                            <SelectItem key={role.value} value={role.value}>
-                              {role.description}
-                            </SelectItem>
-                          ))}
+                          {filteredSessionTerminationOptions(Settings).map((option) => {
+                            const description =
+                              SessionTerminationOptionsDescriptions.find((o) => o.value === option)?.description ||
+                              option;
+                            return (
+                              <SelectItem key={option} value={option}>
+                                {description}
+                              </SelectItem>
+                            );
+                          })}
                           {keySet &&
                             keySet.SpecialDurationKeys.map((key) => {
                               return (
