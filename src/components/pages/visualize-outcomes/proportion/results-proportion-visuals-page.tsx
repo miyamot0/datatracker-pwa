@@ -142,7 +142,7 @@ export default function ResultsProportionVisualsPage({
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  {filteredSessionScoringOptions(Settings, true).map((option) => (
+                  {filteredSessionScoringOptions(Settings, DynamicKeySet, true).map((option) => (
                     <SelectItem key={option.value} value={option.value as SessionTerminationOptionsType}>
                       {option.label}
                     </SelectItem>

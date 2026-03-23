@@ -1,3 +1,4 @@
+import { KeySet } from './keyset';
 import { ApplicationSettingsTypes } from './settings';
 import { SessionTerminationOptions } from './terminations';
 
@@ -29,10 +30,14 @@ export const ScheduleMappingOptions = [
 export type ScheduleMappingOptionsType = (typeof ScheduleMappingOptions)[number];
 
 // TODO: Map special keys here too
-export function filteredSessionScoringOptions(appSettings: ApplicationSettingsTypes, filterMain = false) {
+export function filteredSessionScoringOptions(
+  appSettings: ApplicationSettingsTypes,
+  keySet: KeySet,
+  filterMain = false,
+) {
   const options = Object.values(ScheduleMappingOptions);
 
-  return options.filter((option) => {
+  const scoringOptions = options.filter((option) => {
     if (filterMain && option.value === SessionTerminationOptions.TimerMain) {
       return false;
     }
@@ -46,4 +51,11 @@ export function filteredSessionScoringOptions(appSettings: ApplicationSettingsTy
 
     return true;
   });
+
+  const specialKeyScoringOptions = keySet.SpecialDurationKeys.map((key) => ({
+    value: key.KeyCode,
+    label: `Score ${key.KeyDescription}`,
+  }));
+
+  return [...scoringOptions, ...specialKeyScoringOptions];
 }
