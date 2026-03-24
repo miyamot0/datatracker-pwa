@@ -261,5 +261,5 @@ export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
   ApplicationFooterDisplay: 'Standard',
   SessionDisplay: 'Standard',
   TimerTwoDisplay: 'show',
-  TimerThreeDisplay: 'show',
+  TimerThreeDisplay: 'hide',
 };

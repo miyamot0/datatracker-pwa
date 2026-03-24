@@ -140,6 +140,7 @@ export function extractAndDeduplicateKeysets(results: ModifiedSessionResult[], l
   const allFKeys = [...allKeysets, latestKeyset].map((keyset) => keyset.FrequencyKeys).flat();
   const allDKeys = [...allKeysets, latestKeyset].map((keyset) => keyset.DurationKeys).flat();
   const allDerivedKeys = [...allKeysets, latestKeyset].map((keyset) => keyset.DerivedKeys || []).flat();
+  const allSpecialDurationKeys = [...allKeysets, latestKeyset].map((keyset) => keyset.SpecialDurationKeys || []).flat();
 
   const targetedFKeys: KeySetInstance[] = [];
   allFKeys.forEach((key) => {
@@ -162,10 +163,18 @@ export function extractAndDeduplicateKeysets(results: ModifiedSessionResult[], l
     }
   });
 
+  const targetedSpecialDurationKeys: KeySetInstance[] = [];
+  allSpecialDurationKeys.forEach((key) => {
+    if (!targetedSpecialDurationKeys.some((k) => k.KeyCode === key.KeyCode)) {
+      targetedSpecialDurationKeys.push(key);
+    }
+  });
+
   return {
     frequencyKeys: targetedFKeys,
     durationKeys: targetedDKeys,
     derivedKeys: targetedDerivedKeys,
+    specialDurationKeys: targetedSpecialDurationKeys,
   };
 }
 

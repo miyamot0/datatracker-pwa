@@ -221,6 +221,9 @@ export default function SessionManagerContent({
 
                           const prompt_message = `Current Key: "${key.KeyName} (${key.KeyDescription})"\n\nAvailable Keys: ${allKeysString}\n\nPlease enter the Key you want to replace it with:`;
                           const new_key_name = window.prompt(prompt_message);
+
+                          if (!new_key_name) return;
+
                           const check_if_valid = allKeys.find((k) => k.KeyName === new_key_name);
 
                           if (!new_key_name || !check_if_valid) {

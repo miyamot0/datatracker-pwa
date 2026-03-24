@@ -93,24 +93,36 @@ function RouteComponent() {
             const keyboards: KeySet[] = results[0];
             const sessionOutcomes: ModifiedSessionResult[] = results[1];
             const recentKeysetName = pullMostRecentSession(sessionOutcomes);
-            const latestKeyset = keyboards.find((kb) => kb.Name === recentKeysetName.SessionSettings.KeySet);
 
-            // TODO: The latest keyset should be the last one in the session designer
-            if (!latestKeyset) {
-              return <ErrorDisplay Text={'KeySet not found.'} />;
+            const sessionKeySet = recentKeysetName.Keyset;
+            const designerKeySet = keyboards.find((k: KeySet) => k.Name == recentKeysetName.SessionSettings.KeySet);
+
+            if (!sessionKeySet) {
+              return <ErrorDisplay Text={'Relevant keyset not found.'} />;
             }
 
             const {
               frequencyKeys: targetedFKeys,
               durationKeys: targetedDKeys,
               derivedKeys: targetedDerivedKeys,
-            } = extractAndDeduplicateKeysets(sessionOutcomes, latestKeyset);
+              specialDurationKeys,
+            } = extractAndDeduplicateKeysets(sessionOutcomes, {
+              ...sessionKeySet,
+              FrequencyKeys: [...sessionKeySet.FrequencyKeys, ...(designerKeySet?.FrequencyKeys || [])],
+              DurationKeys: [...sessionKeySet.DurationKeys, ...(designerKeySet?.DurationKeys || [])],
+              DerivedKeys: [...(sessionKeySet.DerivedKeys || []), ...(designerKeySet?.DerivedKeys || [])],
+              SpecialDurationKeys: [
+                ...(sessionKeySet.SpecialDurationKeys || []),
+                ...(designerKeySet?.SpecialDurationKeys || []),
+              ],
+            });
 
             const dynamicKeyset = {
-              ...latestKeyset,
+              ...sessionKeySet,
               FrequencyKeys: targetedFKeys,
               DurationKeys: targetedDKeys,
               DerivedKeys: targetedDerivedKeys,
+              SpecialDurationKeys: specialDurationKeys,
             } satisfies KeySet;
 
             const keysFreqObserved: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map(

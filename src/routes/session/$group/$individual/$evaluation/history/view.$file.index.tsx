@@ -12,11 +12,11 @@ import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-ou
 import { ModifiedSessionResult } from '@/types/storage';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { ExpandedSavedSessionResult, SavedSettings } from '@/lib/dtos';
-import { generateTicks } from '@/lib/graphing';
+import { extractAndDeduplicateKeysets, generateTicks, mapKeysWithStoragePreference } from '@/lib/graphing';
 import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
 import { preparePlotDataCumulative } from '@/lib/summary';
 import { GenerateSavedFileName } from '@/lib/writer';
-import { EnhancedKeySetInstance, KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
 import SessionViewerContent from '@/components/pages/editor-session-outcome/views/session-viewer-content';
 import { ToggleDisplayKey } from '@/types/visuals';
@@ -108,15 +108,43 @@ function RouteComponent() {
             return <ErrorDisplay Text={'Session parameters not found.'} />;
           }
 
-          const keySet = keysets.find((k: KeySet) => k.Name == sessionParams.KeySet);
+          const sessionKeySet = keysets.find((k: KeySet) => k.Name == relevantSession.Keyset.Name);
+          const designerKeySet = keysets.find((k: KeySet) => k.Name == sessionParams.KeySet);
 
-          if (!keySet) {
+          if (!sessionKeySet) {
             return <ErrorDisplay Text={'Relevant keyset not found.'} />;
           }
 
-          // TODO: The most recent should be the one from the session designer (Fixed)
+          const {
+            frequencyKeys: targetedFKeys,
+            durationKeys: targetedDKeys,
+            derivedKeys: targetedDerivedKeys,
+            specialDurationKeys,
+          } = extractAndDeduplicateKeysets(sessions, {
+            ...sessionKeySet,
+            FrequencyKeys: [...sessionKeySet.FrequencyKeys, ...(designerKeySet?.FrequencyKeys || [])],
+            DurationKeys: [...sessionKeySet.DurationKeys, ...(designerKeySet?.DurationKeys || [])],
+            DerivedKeys: [...sessionKeySet.DerivedKeys, ...(designerKeySet?.DerivedKeys || [])],
+            SpecialDurationKeys: [
+              ...(sessionKeySet.SpecialDurationKeys || []),
+              ...(designerKeySet?.SpecialDurationKeys || []),
+            ],
+          });
 
-          const plot_object = preparePlotDataCumulative(relevantSession);
+          const dynamicKeyset = {
+            ...sessionKeySet,
+            FrequencyKeys: targetedFKeys,
+            DurationKeys: targetedDKeys,
+            DerivedKeys: targetedDerivedKeys,
+            SpecialDurationKeys: specialDurationKeys,
+          } satisfies KeySet;
+
+          const revisedSession = {
+            ...relevantSession,
+            Keyset: dynamicKeyset,
+          };
+
+          const plot_object = preparePlotDataCumulative(revisedSession);
 
           const yValues = plot_object
             .map((point) => {
@@ -130,57 +158,33 @@ function RouteComponent() {
           const yTicks = generateTicks(maxYValue, 0);
 
           const expandedSessionData = {
-            ...relevantSession,
-            Filename: GenerateSavedFileName(relevantSession.SessionSettings),
+            ...revisedSession,
+            Keyset: dynamicKeyset,
+            Filename: GenerateSavedFileName(revisedSession.SessionSettings),
             MaxY: maxYValue,
             YTicks: yTicks,
-            PlottedKeys: combineAndSortKeyPresses(relevantSession),
+            PlottedKeys: combineAndSortKeyPresses(revisedSession),
           } satisfies ExpandedSavedSessionResult;
 
           // Note: All visible by default, then apply user preferences to hide keys as needed
-          const enhancedKeySetF: EnhancedKeySetInstance[] = keySet.FrequencyKeys.map((key) => ({
-            ...key,
-            Visible: true,
-            Type: 'Key',
-          }));
-
-          // Pull stored preferences for both frequency and duration keys
-          const stored_prefs_F = getLocalCachedPrefs(Group, Individual, Evaluation, 'Rate');
-
-          // Conditionally set these to false based on user preferences for both frequency and duration keys
-          const baseUnfilteredKeysF = [...enhancedKeySetF].map((key) => {
-            const should_disable = stored_prefs_F.KeyDescription.includes(key.KeyDescription);
-
-            if (should_disable) {
-              return {
+          const keysFreqObserved: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map(
+            (key) =>
+              ({
                 ...key,
-                Visible: false,
-              } satisfies EnhancedKeySetInstance;
-            }
+                Visible: true,
+                KeyType: 'Observed',
+              }) satisfies ToggleDisplayKey,
+          );
 
-            return key;
-          });
-
-          // Note: No CTB here
-          const showKeysBase = baseUnfilteredKeysF
-            .filter((k) => k.Type !== 'Summary')
-            .map(
-              (key) =>
-                ({
-                  KeyName: key.KeyName,
-                  KeyCode: key.KeyCode,
-                  KeyDescription: key.KeyDescription,
-                  Visible: key.Visible,
-                  KeyType: 'Observed' as 'Observed' | 'Derived',
-                }) satisfies ToggleDisplayKey,
-            );
+          const storedPreferences = getLocalCachedPrefs(Group, Individual, Evaluation, 'Rate');
+          const showKeysFreq = mapKeysWithStoragePreference([...keysFreqObserved], storedPreferences);
 
           return (
             <SessionViewerContent
               Group={Group}
               Individual={Individual}
               Evaluation={Evaluation}
-              ShowKeys={showKeysBase}
+              ShowKeys={showKeysFreq}
               ExpandedSession={expandedSessionData}
               PlotObject={plot_object}
               Settings={Settings}

@@ -45,6 +45,201 @@
       "KeyCode": 69
     }
   ],
+  "DerivedKeys": [
+    {
+      "initial": {
+        "type": "field",
+        "field": {
+          "KeyName": "1",
+          "KeyDescription": "SIB",
+          "KeyCode": 49,
+          "Value": 0,
+          "Tag": "field.SIB"
+        }
+      },
+      "steps": [
+        {
+          "id": "step1",
+          "operation": "add",
+          "operand": {
+            "type": "field",
+            "field": {
+              "KeyName": "3",
+              "KeyDescription": "AGG",
+              "KeyCode": 51,
+              "Value": 0,
+              "Tag": "field.AGG"
+            }
+          }
+        },
+        {
+          "id": "step2",
+          "operation": "add",
+          "operand": {
+            "type": "field",
+            "field": {
+              "KeyName": "2",
+              "KeyDescription": "DIS",
+              "KeyCode": 50,
+              "Value": 0,
+              "Tag": "field.DIS"
+            }
+          }
+        }
+      ],
+      "fields": [
+        {
+          "KeyName": "1",
+          "KeyDescription": "SIB",
+          "KeyCode": 49,
+          "Value": 0,
+          "Tag": "field.SIB"
+        },
+        {
+          "KeyName": "2",
+          "KeyDescription": "DIS",
+          "KeyCode": 50,
+          "Value": 0,
+          "Tag": "field.DIS"
+        },
+        {
+          "KeyName": "3",
+          "KeyDescription": "AGG",
+          "KeyCode": 51,
+          "Value": 0,
+          "Tag": "field.AGG"
+        },
+        {
+          "KeyName": "8",
+          "KeyDescription": "Prompt",
+          "KeyCode": 56,
+          "Value": 0,
+          "Tag": "field.Prompt"
+        },
+        {
+          "KeyName": "9",
+          "KeyDescription": "Compliance",
+          "KeyCode": 57,
+          "Value": 0,
+          "Tag": "field.Compliance"
+        },
+        {
+          "KeyName": "r",
+          "KeyDescription": "SR",
+          "KeyCode": 82,
+          "Value": 0,
+          "Tag": "field.SR"
+        },
+        {
+          "KeyName": "e",
+          "KeyDescription": "Tantrum",
+          "KeyCode": 69,
+          "Value": 0,
+          "Tag": "field.Tantrum"
+        }
+      ],
+      "value": 0,
+      "name": "CTB",
+      "id": "3c12b975-2d57-43d2-aaa3-6cfe72c53faf"
+    },
+    {
+      "initial": {
+        "type": "field",
+        "field": {
+          "KeyName": "9",
+          "KeyDescription": "Compliance",
+          "KeyCode": 57,
+          "Value": 0,
+          "Tag": "field.Compliance"
+        }
+      },
+      "steps": [
+        {
+          "id": "step1",
+          "operation": "divide",
+          "operand": {
+            "type": "field",
+            "field": {
+              "KeyName": "8",
+              "KeyDescription": "Prompt",
+              "KeyCode": 56,
+              "Value": 0,
+              "Tag": "field.Prompt"
+            }
+          }
+        },
+        {
+          "id": "step2",
+          "operation": "multiply",
+          "operand": {
+            "type": "constant",
+            "value": 100
+          }
+        }
+      ],
+      "fields": [
+        {
+          "KeyName": "1",
+          "KeyDescription": "SIB",
+          "KeyCode": 49,
+          "Value": 0,
+          "Tag": "field.SIB"
+        },
+        {
+          "KeyName": "2",
+          "KeyDescription": "DIS",
+          "KeyCode": 50,
+          "Value": 0,
+          "Tag": "field.DIS"
+        },
+        {
+          "KeyName": "3",
+          "KeyDescription": "AGG",
+          "KeyCode": 51,
+          "Value": 0,
+          "Tag": "field.AGG"
+        },
+        {
+          "KeyName": "8",
+          "KeyDescription": "Prompt",
+          "KeyCode": 56,
+          "Value": 0,
+          "Tag": "field.Prompt"
+        },
+        {
+          "KeyName": "9",
+          "KeyDescription": "Compliance",
+          "KeyCode": 57,
+          "Value": 0,
+          "Tag": "field.Compliance"
+        },
+        {
+          "KeyName": "r",
+          "KeyDescription": "SR",
+          "KeyCode": 82,
+          "Value": 0,
+          "Tag": "field.SR"
+        },
+        {
+          "KeyName": "e",
+          "KeyDescription": "Tantrum",
+          "KeyCode": 69,
+          "Value": 0,
+          "Tag": "field.Tantrum"
+        }
+      ],
+      "value": 0,
+      "name": "Comply PCT",
+      "id": "69c33b48-6bbe-4026-89e1-fcb67834bbb8"
+    }
+  ],
+  "SpecialDurationKeys": [
+    {
+      "KeyName": "p",
+      "KeyDescription": "Pause Time",
+      "KeyCode": 80
+    }
+  ],
   "createdAt": "2025-05-11T23:28:12.502Z",
   "lastModified": "2025-05-11T23:29:08.350Z"
 }

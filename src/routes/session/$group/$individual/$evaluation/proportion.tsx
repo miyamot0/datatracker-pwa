@@ -99,10 +99,11 @@ function RouteComponent() {
             const resultsFiltered = filterSessionsByPrimaryRole(sessionOutcomes);
 
             const recentKeysetName = pullMostRecentSession(sessionOutcomes);
-            const latestKeyset = keyboards.find((kb) => kb.Name === recentKeysetName.SessionSettings.KeySet);
 
-            // TODO: The latest keyset should be the last one in the session designer
-            if (!latestKeyset) {
+            const sessionKeySet = recentKeysetName.Keyset;
+            const designerKeySet = keyboards.find((k: KeySet) => k.Name == recentKeysetName.SessionSettings.KeySet);
+
+            if (!sessionKeySet) {
               return <ErrorDisplay Text={'KeySet not found.'} />;
             }
 
@@ -110,13 +111,22 @@ function RouteComponent() {
               frequencyKeys: targetedFKeys,
               durationKeys: targetedDKeys,
               derivedKeys: targetedDerivedKeys,
-            } = extractAndDeduplicateKeysets(sessionOutcomes, latestKeyset);
+              specialDurationKeys,
+            } = extractAndDeduplicateKeysets(sessionOutcomes, {
+              ...sessionKeySet,
+              FrequencyKeys: [],
+              DurationKeys: [...sessionKeySet.DurationKeys, ...(designerKeySet?.DurationKeys || [])],
+              DerivedKeys: [...(sessionKeySet.DerivedKeys || []), ...(designerKeySet?.DerivedKeys || [])],
+              // Note: No need for these here for now
+              SpecialDurationKeys: [],
+            });
 
             const dynamicKeyset = {
-              ...latestKeyset,
+              ...sessionKeySet,
               FrequencyKeys: targetedFKeys,
               DurationKeys: targetedDKeys,
               DerivedKeys: targetedDerivedKeys,
+              SpecialDurationKeys: specialDurationKeys,
             } satisfies KeySet;
 
             const keys: ToggleDisplayKey[] = dynamicKeyset.DurationKeys.map((key) => ({
