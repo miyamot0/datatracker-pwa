@@ -9,7 +9,8 @@ export default defineConfig({
   },
   test: {
     include: ['./src/lib/**/*.test.{ts,tsx}', './src/workers/**/*.test.{ts,tsx}'],
-    exclude: [...configDefaults.exclude], // Exclude specific test files
+    exclude: [...configDefaults.exclude],
+    //setupFiles: ['@vitest/web-worker'],
     reporters: ['default'],
     environment: 'jsdom',
     globals: true,
