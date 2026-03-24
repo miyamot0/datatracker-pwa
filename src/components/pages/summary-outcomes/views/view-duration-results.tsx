@@ -2,8 +2,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SavedSessionResult } from '@/lib/dtos';
 import { Code2Icon, KeyboardIcon, TableIcon } from 'lucide-react';
-import { exportHumanReadableToCSV } from '@/lib/download';
-import { HumanReadableResults, HumanReadableResultsRow } from '@/types/export';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import Spreadsheet from 'react-spreadsheet';
 import {
@@ -20,7 +18,7 @@ import { KeySet } from '@/types/keyset';
 import BackButton from '@/components/ui/back-button';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';
-import { buildDurationColumnLabels, buildSpreadsheetData, processDurationKeys } from '@/lib/summary';
+import { convertLegacyTimerType, formatForSpreadsheet, processMultipleSessionDataWithKeys } from '@/lib/calculations';
 
 type Props = {
   SessionTimer: SessionTerminationOptionsType;
@@ -36,54 +34,36 @@ export default function ViewDurationResults({
   SessionTimer,
   Results,
   ShowKeysDuration,
+  LatestKeyset,
   Group,
   Individual,
   Evaluation,
 }: Props) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeysDuration);
 
-  // Build human-readable results
-  const hr_results: HumanReadableResults = {
-    type: 'Duration',
-    keys: filteredKeys
-      .filter((key) => key.Visible === true)
-      .map((key) => ({
-        Key: key.KeyDescription,
-        KeyCode: key.KeyCode,
-        Value: key.KeyDescription,
-        Visible: key.Visible,
-      })),
-    results: Results.map((result) => {
-      const systemEvents = result.SystemKeyPresses.map((press) => new Date(press.TimePressed)).sort(
-        (a, b) => a.getTime() - b.getTime(),
-      );
+  // TODO: Special Timer Keys
+  const durationResults = processMultipleSessionDataWithKeys(
+    Results,
+    convertLegacyTimerType(SessionTimer),
+    {
+      frequencyKeys: LatestKeyset.FrequencyKeys,
+      durationKeys: LatestKeyset.DurationKeys,
+      derivedKeys: LatestKeyset.DerivedKeys,
+    },
+    'SPREADSHEET_ALL',
+    {
+      frequencyKeys: LatestKeyset.FrequencyKeys,
+      durationKeys: LatestKeyset.DurationKeys.filter((key) => {
+        const showKey = filteredKeys.find((k) => k.KeyName === key.KeyName);
 
-      if (systemEvents.length === 0) {
-        throw new Error('No system events found');
-      }
+        return showKey ? !showKey.Visible : false;
+      }),
+      derivedKeys: LatestKeyset.DerivedKeys,
+    },
+  );
 
-      const sessionRow: HumanReadableResultsRow = {
-        Session: result.SessionSettings.Session,
-        Date: systemEvents[0],
-        Condition: result.SessionSettings.Condition,
-        DataCollector: result.SessionSettings.Initials,
-        Therapist: result.SessionSettings.Therapist,
-        duration: result.TimerMain / 60,
-        Timer1: result.TimerOne / 60,
-        Timer2: result.TimerTwo / 60,
-        Timer3: result.TimerThree / 60,
-        values: [],
-      };
-
-      // Process duration keys
-      sessionRow.values = processDurationKeys(result, SessionTimer, filteredKeys);
-      return sessionRow;
-    }),
-  };
-
-  const csv_string = exportHumanReadableToCSV(hr_results);
-  const columnLabels = buildDurationColumnLabels(SessionTimer, filteredKeys);
-  const data = buildSpreadsheetData(hr_results.results, SessionTimer);
+  const matrix = formatForSpreadsheet(durationResults);
+  const csvString = matrix.map((row) => row.join(',')).join('\r\n');
 
   return (
     <Card className="w-full">
@@ -141,7 +121,7 @@ export default function ViewDurationResults({
               variant={'outline'}
               onClick={() => {
                 const link = document.createElement('a');
-                const csvData = new Blob([csv_string], {
+                const csvData = new Blob([csvString], {
                   type: 'text/csv',
                 });
                 const csvURL = URL.createObjectURL(csvData);
@@ -164,7 +144,7 @@ export default function ViewDurationResults({
               variant={'outline'}
               onClick={() => {
                 const link = document.createElement('a');
-                const jsonData = new Blob([JSON.stringify(hr_results)], {
+                const jsonData = new Blob([JSON.stringify(durationResults)], {
                   type: 'text/json',
                 });
                 const jsonURL = URL.createObjectURL(jsonData);
@@ -186,8 +166,8 @@ export default function ViewDurationResults({
       </CardHeader>
       <CardContent className="overflow-x-auto">
         <Spreadsheet
-          data={data}
-          columnLabels={columnLabels}
+          data={matrix.slice(1).map((row) => row.map((cell) => ({ value: cell.toString(), readOnly: true })))}
+          columnLabels={matrix[0]}
           onKeyDown={(ev) => {
             if (ev.key.toLocaleLowerCase() === 'v') ev.preventDefault();
           }}

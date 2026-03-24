@@ -10,7 +10,14 @@ import { evaluateLogic } from './logic';
 import { EntryHolder, HumanReadableResultsRow } from '@/types/export';
 import { Matrix, CellBase } from 'react-spreadsheet';
 
-// Build spreadsheet data matrix
+/**
+ * Builds spreadsheet data for export based on session results and timer configuration
+ *
+ * @param results
+ * @param sessionTimer
+ * @returns
+ * @deprecated
+ */
 export const buildSpreadsheetData = (
   results: HumanReadableResultsRow[],
   sessionTimer: SessionTerminationOptionsType,
@@ -133,7 +140,15 @@ export const processDerivedKeys = (
   return entries;
 };
 
-// Build column labels for the spreadsheet
+/**
+ * Build column labels for the spreadsheet
+ *
+ * @param sessionTimer
+ * @param observedKeys
+ * @param derivedKeys
+ * @returns
+ * @deprecated
+ */
 export const buildColumnLabels = (
   sessionTimer: SessionTerminationOptionsType,
   observedKeys: ToggleDisplayKey[],
@@ -326,6 +341,15 @@ export function preparePlotDataCumulative(relevantSession: ModifiedSessionResult
 }
 
 // Process duration keys for a session
+/**
+ * Processes duration keys for a session based on timer configuration and user preferences
+ *
+ * @param result
+ * @param sessionTimer
+ * @param filteredKeys
+ * @returns
+ * @deprecated
+ */
 export const processDurationKeys = (
   result: SavedSessionResult,
   sessionTimer: SessionTerminationOptionsType,
@@ -402,7 +426,14 @@ export const processDurationKeys = (
   return entries;
 };
 
-// Build column labels for duration spreadsheet
+/**
+ * Builds column labels for duration spreadsheet based on timer configuration and visible keys
+ *
+ * @param sessionTimer
+ * @param filteredKeys
+ * @returns
+ * @deprecated
+ */
 export const buildDurationColumnLabels = (
   sessionTimer: SessionTerminationOptionsType,
   filteredKeys: ToggleDisplayKey[],

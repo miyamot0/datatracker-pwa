@@ -5,6 +5,7 @@ import { HumanReadableResults } from '@/types/export';
  *
  * @param results human readable results
  * @returns CSV string
+ * @deprecated
  */
 export function exportHumanReadableToCSV(results: HumanReadableResults) {
   const header_row = [
