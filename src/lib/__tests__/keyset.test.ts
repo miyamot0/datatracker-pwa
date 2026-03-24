@@ -23,6 +23,7 @@ describe('KeySet Functions', () => {
     createdAt: new Date('2024-01-01'),
     lastModified: new Date('2024-01-01'),
     DerivedKeys: [],
+    SpecialDurationKeys: [],
   });
 
   // Helper function to create a mock SavedSessionResult
@@ -87,6 +88,7 @@ describe('KeySet Functions', () => {
         createdAt: new Date('2024-09-07T12:00:00Z'),
         lastModified: new Date('2024-09-07T13:00:00Z'),
         DerivedKeys: [],
+        SpecialDurationKeys: [],
       };
 
       const expectedSerialization = JSON.stringify({
@@ -97,6 +99,7 @@ describe('KeySet Functions', () => {
         createdAt: '2024-09-07T12:00:00.000Z',
         lastModified: '2024-09-07T13:00:00.000Z',
         DerivedKeys: [],
+        SpecialDurationKeys: [],
       });
 
       const result = serializeKeySet(keySet);
@@ -114,6 +117,7 @@ describe('KeySet Functions', () => {
         createdAt: '2024-09-07T12:00:00.000Z',
         lastModified: '2024-09-07T13:00:00.000Z',
         DerivedKeys: [],
+        SpecialDurationKeys: [],
       });
 
       const expectedKeySet: KeySet = {
@@ -124,6 +128,7 @@ describe('KeySet Functions', () => {
         createdAt: new Date('2024-09-07T12:00:00Z'),
         lastModified: new Date('2024-09-07T13:00:00Z'),
         DerivedKeys: [],
+        SpecialDurationKeys: [],
       };
 
       const result = deserializeKeySet(serializedKeySet);
@@ -345,6 +350,7 @@ describe('KeySet Functions', () => {
           createdAt: new Date('2024-01-01T10:00:00Z'),
           lastModified: new Date('2024-01-02T15:30:00Z'),
           DerivedKeys: [],
+          SpecialDurationKeys: [],
         };
 
         const session = createMockSavedSession(1, 'Complex');
@@ -357,6 +363,7 @@ describe('KeySet Functions', () => {
         expect(result).toEqual(complexKeyset);
         expect(result.FrequencyKeys).toHaveLength(2);
         expect(result.DurationKeys).toHaveLength(3);
+        expect(result.SpecialDurationKeys).toHaveLength(0);
       });
 
       it('should throw error for empty arrays', () => {

@@ -1,8 +1,8 @@
 import { KeyManageType } from '@/types/timing';
-import { SessionDesignerSchemaType } from '@/components/pages/editor-session/views/session-designer-schema';
+import { SessionDesignerSchemaType } from '@/components/pages/editor-session/session-designer-schema';
 import { KeySet } from '@/types/keyset';
 import { DataCollectorRolesType } from '@/types/roles';
-import { SessionTerminationOptionsType } from '@/types/terminations';
+import { SessionTerminationOptions, SessionTerminationOptionsType } from '@/types/terminations';
 
 /**
  * This is the type definition for the HumanReadableResults type
@@ -11,7 +11,7 @@ export type SavedSettings = {
   Therapist: string;
   Condition: string;
   KeySet: string;
-  TimerOption: SessionTerminationOptionsType;
+  TimerOption: SessionTerminationOptionsType | number;
   Initials: string;
   Role: DataCollectorRolesType;
   Session: number;
@@ -48,6 +48,7 @@ export type SavedSessionResult = {
   TimerOne: number;
   TimerTwo: number;
   TimerThree: number;
+  SpecialKeyTimers: Record<string, number>;
   Filename?: string;
   Comments?: string;
 };
@@ -69,12 +70,33 @@ export type ExpandedSavedSessionResult = SavedSessionResult & {
  * @returns saved settings object
  */
 export const toSavedSettings = (data: SessionDesignerSchemaType) => {
+  const handleSpecialDurationOption = (option: string): SessionTerminationOptionsType | number => {
+    if (option === 'End on Timer #1') {
+      return SessionTerminationOptions.Timer1;
+    } else if (option === 'End on Timer #2') {
+      return SessionTerminationOptions.Timer2;
+    } else if (option === 'End on Timer #3') {
+      return SessionTerminationOptions.Timer3;
+    } else if (option === 'End on Total Time') {
+      return SessionTerminationOptions.TimerMain;
+    } else if (option === 'End on Primary Timer') {
+      return SessionTerminationOptions.TimerMain;
+    } else {
+      const doubleCode = parseInt(option);
+      if (!isNaN(doubleCode)) {
+        return doubleCode; // Return the custom option as-is if it's a valid number (representing a special key code)
+      }
+
+      throw new Error(`Invalid session termination option: ${option}`);
+    }
+  };
+
   return {
     Therapist: data.SessionTherapistID,
     Initials: data.DataCollectorID,
     Role: data.DataCollectorRole,
     DurationS: data.SessionDurationS,
-    TimerOption: data.SessionTerminationOption,
+    TimerOption: handleSpecialDurationOption(data.SessionTerminationOption),
     Session: Math.floor(data.SessionNumber),
     KeySet: data.SessionKeySet,
     Condition: data.SessionCondition,

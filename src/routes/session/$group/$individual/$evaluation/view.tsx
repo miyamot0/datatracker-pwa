@@ -1,6 +1,5 @@
 import { CleanUpString } from '@/lib/strings';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
-import ResultsViewerPage from '@/components/pages/summary-outcomes/results-viewer-page';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { pullMostRecentSession } from '@/lib/keyset';
@@ -17,6 +16,8 @@ import {
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { ModifiedSessionResult } from '@/types/storage';
 import { ErrorDisplay } from '@/components/suspense/error-display';
+import ResultsViewerContent from '@/components/pages/summary-outcomes/results-viewer-content';
+import { ScheduleMappingOptions } from '@/types/schedules';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/view')({
   beforeLoad: ({ context, params }) => {
@@ -92,24 +93,36 @@ function RouteComponent() {
             const keyboards: KeySet[] = results[0];
             const sessionOutcomes: ModifiedSessionResult[] = results[1];
             const recentKeysetName = pullMostRecentSession(sessionOutcomes);
-            const latestKeyset = keyboards.find((kb) => kb.Name === recentKeysetName.SessionSettings.KeySet);
 
-            // TODO: The latest keyset should be the last one in the session designer
-            if (!latestKeyset) {
-              return <ErrorDisplay Text={'KeySet not found.'} />;
+            const sessionKeySet = recentKeysetName.Keyset;
+            const designerKeySet = keyboards.find((k: KeySet) => k.Name == recentKeysetName.SessionSettings.KeySet);
+
+            if (!sessionKeySet) {
+              return <ErrorDisplay Text={'Relevant keyset not found.'} />;
             }
 
             const {
               frequencyKeys: targetedFKeys,
               durationKeys: targetedDKeys,
               derivedKeys: targetedDerivedKeys,
-            } = extractAndDeduplicateKeysets(sessionOutcomes, latestKeyset);
+              specialDurationKeys,
+            } = extractAndDeduplicateKeysets(sessionOutcomes, {
+              ...sessionKeySet,
+              FrequencyKeys: [...sessionKeySet.FrequencyKeys, ...(designerKeySet?.FrequencyKeys || [])],
+              DurationKeys: [...sessionKeySet.DurationKeys, ...(designerKeySet?.DurationKeys || [])],
+              DerivedKeys: [...(sessionKeySet.DerivedKeys || []), ...(designerKeySet?.DerivedKeys || [])],
+              SpecialDurationKeys: [
+                ...(sessionKeySet.SpecialDurationKeys || []),
+                ...(designerKeySet?.SpecialDurationKeys || []),
+              ],
+            });
 
             const dynamicKeyset = {
-              ...latestKeyset,
+              ...sessionKeySet,
               FrequencyKeys: targetedFKeys,
               DurationKeys: targetedDKeys,
               DerivedKeys: targetedDerivedKeys,
+              SpecialDurationKeys: specialDurationKeys,
             } satisfies KeySet;
 
             const keysFreqObserved: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map(
@@ -150,15 +163,20 @@ function RouteComponent() {
             const storedPreferencesD = getLocalCachedPrefs(Group, Individual, Evaluation, 'Duration');
             const showKeysDuration = mapKeysWithStoragePreference([...keyDurationObserved], storedPreferencesD);
 
+            const timerMapping =
+              ScheduleMappingOptions.find((i) => i.value === storedPreferences?.Schedule) ?? ScheduleMappingOptions[0];
+
             return (
-              <ResultsViewerPage
+              <ResultsViewerContent
+                TimerMapping={timerMapping}
+                Results={sessionOutcomes}
+                Keyset={dynamicKeyset}
+                ShowKeysFreq={showKeysFreq}
+                ShowKeysDuration={showKeysDuration}
                 Group={Group}
                 Individual={Individual}
                 Evaluation={Evaluation}
-                Sessions={sessionOutcomes}
-                LatestKeySet={dynamicKeyset}
-                ShowKeysFreq={showKeysFreq}
-                ShowKeysDuration={showKeysDuration}
+                Settings={Settings}
               />
             );
           }

@@ -1,12 +1,16 @@
 import { SavedSettings } from '@/lib/dtos';
 import { PaddedRow } from './padded-row';
+import { KeySetInstance } from '@/types/keyset';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 type Props = {
   Evaluation: string;
   Settings: SavedSettings;
+  KeySetSpecialKeys: KeySetInstance[];
+  AppSettings: ApplicationSettingsTypes;
 };
 
-export default function SessionRecorderInstructions({ Evaluation, Settings }: Props) {
+export default function SessionRecorderInstructions({ Evaluation, Settings, KeySetSpecialKeys, AppSettings }: Props) {
   return (
     <div className="w-full flex flex-col gap-2 border rounded shadow-xl bg-card">
       <div className="w-full text-center justify-center pt-2 text-sm font-bold">Session Parameters</div>
@@ -25,8 +29,14 @@ export default function SessionRecorderInstructions({ Evaluation, Settings }: Pr
         <PaddedRow label="Backspace:" value="Remove the last key entered" />
         <PaddedRow label="Escape:" value="End the current session" />
         <PaddedRow label="Z:" value="Switch to Timer #1" />
-        <PaddedRow label="X:" value="Switch to Timer #2" />
-        <PaddedRow label="C:" value="Switch to Timer #3" />
+
+        {AppSettings.TimerTwoDisplay === 'show' && <PaddedRow label="X:" value="Switch to Timer #2" />}
+
+        {AppSettings.TimerThreeDisplay === 'show' && <PaddedRow label="C:" value="Switch to Timer #3" />}
+
+        {KeySetSpecialKeys.map((key) => (
+          <PaddedRow key={key.KeyName} label={`${key.KeyName}:`} value={`Switch to ${key.KeyDescription}`} />
+        ))}
       </div>
     </div>
   );

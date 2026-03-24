@@ -34,6 +34,41 @@ declare module '@tanstack/react-router' {
 // Initialize the query client for React Query
 export const queryClient = new QueryClient();
 
+if (import.meta.env.DEV) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prevStates = new Map<string, any>();
+
+  queryClient.getQueryCache().subscribe((event) => {
+    if (event?.type !== 'updated') return;
+
+    const query = event.query;
+    const key = JSON.stringify(query.queryKey);
+
+    const prev = prevStates.get(key);
+    const curr = query.state;
+
+    if (curr.fetchStatus === 'fetching' && prev?.fetchStatus !== 'fetching') {
+      console.log('[FETCH START]', query.queryKey);
+    }
+
+    if (prev && curr.dataUpdatedAt !== prev.dataUpdatedAt && prev.fetchStatus === 'fetching') {
+      console.log('[FETCH SUCCESS]', query.queryKey);
+    }
+
+    if (
+      curr.status === 'success' &&
+      curr.fetchStatus === 'idle' &&
+      prev &&
+      prev.fetchStatus === 'idle' &&
+      curr.dataUpdatedAt === prev.dataUpdatedAt
+    ) {
+      console.log('[CACHE HIT]', query.queryKey);
+    }
+
+    prevStates.set(key, curr);
+  });
+}
+
 /**
  * InnerApp component that sets up the RouterProvider with the customized context. This component retrieves the folder handle context using the `useFolderHandleContext` hook and passes it along with the query client to the RouterProvider. The RouterProvider is responsible for rendering the appropriate components based on the defined routes and managing navigation within the application. By providing the customized context, we ensure that all components rendered by the router have access to both the query client and the folder handle context, allowing for seamless integration of data fetching and folder management functionalities throughout the application.
  *

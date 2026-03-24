@@ -21,7 +21,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["vite-plugin-pwa/client", "vitest/globals", "@types/wicg-file-system-access"],
+    "typeRoots": ["./node_modules/@types", "./node_modules"],
+    "types": ["vite-plugin-pwa/client", "vitest/globals", "@types/wicg-file-system-access", "node"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

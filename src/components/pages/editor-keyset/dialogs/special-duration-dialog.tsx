@@ -1,20 +1,28 @@
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContext } from '@/context/folder-context';
 import { DEFAULT_ENTRY, is_key_already_assigned, PROTECTED_KEY_ENTRIES } from '@/lib/keys';
 import { displayConditionalNotification } from '@/lib/notifications';
 import { KeySet, KeySetInstance } from '@/types/keyset';
 import { PlusIcon } from 'lucide-react';
 import { createRef, useContext, useState } from 'react';
+import { cn } from '@/lib/utils';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 type Props = {
   KeySet: KeySet;
-  Callback: (KeySet: KeySet, key: KeySetInstance, type: 'Duration' | 'Frequency') => void;
+  Callback: (KeySet: KeySet, key: KeySetInstance) => void;
 };
 
-export default function DurationDialogKeyCreator({ KeySet, Callback }: Props) {
+export default function SpecialDurationDialogKeyCreator({ KeySet, Callback }: Props) {
   const { settings } = useContext(FolderHandleContext);
   const [keyInstance, setKeyInstance] = useState<KeySetInstance>(DEFAULT_ENTRY);
   const [show, setShow] = useState(false);
@@ -28,25 +36,21 @@ export default function DurationDialogKeyCreator({ KeySet, Callback }: Props) {
         setKeyInstance(DEFAULT_ENTRY);
       }}
     >
-      <div>
-        <ToolTipWrapper Label="Add a new Duration Key">
-          <Button
-            variant={'ghost'}
-            size={'sm'}
-            className="flex flex-row gap-2 items-center cursor-pointer px-0"
-            onClick={() => setShow(true)}
-          >
-            <PlusIcon className="w-4 h-4" /> Add Key
-          </Button>
-        </ToolTipWrapper>
-      </div>
+      <DialogTrigger asChild>
+        <DropdownMenuItem
+          onSelect={(e) => e.preventDefault()}
+          className={cn('flex flex-row gap-2 items-center cursor-pointer px-2')}
+        >
+          <PlusIcon className="w-4 h-4" /> Add Special Duration Key
+        </DropdownMenuItem>
+      </DialogTrigger>
       <DialogContent className="bg-card select-none">
         <DialogHeader>
-          <DialogTitle>Duration Key Creator</DialogTitle>
+          <DialogTitle>Special Duration Key Creator</DialogTitle>
           <DialogDescription>Set key and relevant description</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-1.5">
-          <p>Event to Record (e.g., Reinforcement):</p>
+          <p>Period to Record (e.g., Pause Timer):</p>
           <Input
             className="mb-2"
             value={keyInstance.KeyDescription}
@@ -144,7 +148,7 @@ export default function DurationDialogKeyCreator({ KeySet, Callback }: Props) {
               return;
             }
 
-            Callback(KeySet, keyInstance, 'Duration');
+            Callback(KeySet, keyInstance);
 
             setShow(false);
             setKeyInstance(DEFAULT_ENTRY);

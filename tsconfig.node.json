@@ -18,7 +18,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["vite-plugin-pwa/client", "vitest/globals", "@types/wicg-file-system-access"]
+    "typeRoots": ["./node_modules/@types", "./node_modules"],
+    "types": ["vite-plugin-pwa/client", "vitest/globals", "@types/wicg-file-system-access", "node"]
   },
   "include": ["vite.config.ts"],
   "exclude": ["node_modules", "./src/**/*.test.{ts,tsx}", "**/*.test.{ts,tsx}"]

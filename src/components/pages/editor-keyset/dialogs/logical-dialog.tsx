@@ -98,7 +98,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
           onSelect={(e) => e.preventDefault()}
           className={cn('flex flex-row gap-2 items-center cursor-pointer px-2')}
         >
-          <PlusIcon className="w-4 h-4" /> Add Derived
+          <PlusIcon className="w-4 h-4" /> Add Derived Key
         </DropdownMenuItem>
       </DialogTrigger>
 
@@ -137,12 +137,8 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
                   } else {
                     const selectedField = logicState.fields.find((field) => field.Tag === value);
 
-                    console.log('Selected field:', selectedField);
-
                     if (selectedField) {
                       const valueSource: ValueSourceField = { type: 'field', field: selectedField };
-
-                      console.log('Value source:', valueSource);
 
                       const updatedState: LogicState = {
                         ...logicState,

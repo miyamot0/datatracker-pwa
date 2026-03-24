@@ -12,6 +12,7 @@ export interface WorkerMessage {
     | 'START_SESSION'
     | 'STOP_SESSION'
     | 'SWITCH_TIMER'
+    | 'SWITCH_SPECIAL_KEY'
     | 'PROCESS_KEY'
     | 'DELETE_LAST_KEY'
     | 'SETUP_CHANNEL';
@@ -21,6 +22,7 @@ export interface WorkerMessage {
     uiPollingInterval?: SessionRecorderPolling;
     reason?: 'Completed' | 'Cancelled';
     timer?: 'Primary' | 'Secondary' | 'Tertiary';
+    specialKeyName?: string;
     keyName?: string;
     keyCode?: number;
   };
@@ -40,6 +42,8 @@ export interface WorkerResponse {
     third?: number;
     active?: number;
     activeTimer?: TimerSetting;
+    specialKeyTimers?: Record<string, number>;
+    activeSpecialKey?: string | null;
 
     // Key processed payload
     key?: KeyManageType;

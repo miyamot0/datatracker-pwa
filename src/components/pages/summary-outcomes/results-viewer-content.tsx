@@ -1,12 +1,13 @@
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import ViewDurationResults from './view-duration-results';
-import ViewFrequencyResults from './view-frequency-results';
+import ViewDurationResults from './views/view-duration-results';
+import ViewFrequencyResults from './views/view-frequency-results';
 import { useState } from 'react';
 import { ModifiedSessionResult } from '@/types/storage';
 import { KeySet } from '@/types/keyset';
-import { ScheduleMappingOptions, ScheduleMappingOptionsType } from '@/types/schedules';
+import { filteredSessionScoringOptions, ScheduleMappingOptions, ScheduleMappingOptionsType } from '@/types/schedules';
 import { DataCollectorRolesType } from '@/types/roles';
 import { ToggleDisplayKey } from '@/types/visuals';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 type Props = {
   TimerMapping: ScheduleMappingOptionsType;
@@ -17,6 +18,7 @@ type Props = {
   Evaluation: string;
   ShowKeysFreq: ToggleDisplayKey[];
   ShowKeysDuration: ToggleDisplayKey[];
+  Settings: ApplicationSettingsTypes;
 };
 
 export default function ResultsViewerContent({
@@ -28,13 +30,17 @@ export default function ResultsViewerContent({
   Evaluation,
   ShowKeysFreq,
   ShowKeysDuration,
+  Settings,
 }: Props) {
   const [role, setRole] = useState<DataCollectorRolesType>('Primary');
-  const [schedule, setSchedule] = useState<ScheduleMappingOptionsType>(TimerMapping);
+  const [schedule, setSchedule] = useState<ScheduleMappingOptionsType | { value: string; label: string }>(TimerMapping);
 
   const filteredResults = Results.sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session).filter(
     (result) => result.SessionSettings.Role === role,
   );
+
+  // TODO: Potentially support later, but problematic for now
+  const showDuration = ScheduleMappingOptions.find((option) => option.value === schedule.value) ? true : false;
 
   return (
     <div className="flex flex-col w-full gap-4">
@@ -64,9 +70,23 @@ export default function ResultsViewerContent({
           <Select
             value={schedule.value}
             onValueChange={(value: ScheduleMappingOptionsType['value']) => {
-              const selectedOption = ScheduleMappingOptions.find((option) => option.value === value);
-              if (selectedOption) {
-                setSchedule(selectedOption);
+              const selectedOptionFixed = ScheduleMappingOptions.find((option) => option.value === value);
+
+              if (selectedOptionFixed) {
+                // Note: A pre-made but filter option
+                setSchedule(selectedOptionFixed);
+              }
+
+              const specialKeyOption = filteredSessionScoringOptions(Settings, Keyset).find(
+                (option) => option.value === value,
+              );
+
+              if (specialKeyOption) {
+                // Note: A special key option
+                setSchedule({
+                  value: specialKeyOption.value,
+                  label: specialKeyOption.label,
+                });
               }
             }}
           >
@@ -75,8 +95,8 @@ export default function ResultsViewerContent({
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {ScheduleMappingOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
+                {filteredSessionScoringOptions(Settings, Keyset).map((option) => (
+                  <SelectItem key={option.value} value={option.value.toString()}>
                     {option.label}
                   </SelectItem>
                 ))}
@@ -98,7 +118,7 @@ export default function ResultsViewerContent({
         />
       )}
 
-      {Keyset.DurationKeys.length > 0 && (
+      {showDuration && Keyset.DurationKeys.length > 0 && (
         <ViewDurationResults
           SessionTimer={schedule.value}
           Results={filteredResults}

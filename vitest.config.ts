@@ -9,10 +9,20 @@ export default defineConfig({
   },
   test: {
     include: ['./src/lib/**/*.test.{ts,tsx}', './src/workers/**/*.test.{ts,tsx}'],
-    exclude: [...configDefaults.exclude], // Exclude specific test files
+    exclude: [...configDefaults.exclude],
+    //setupFiles: ['@vitest/web-worker'],
     reporters: ['default'],
     environment: 'jsdom',
     globals: true,
+    onConsoleLog(log: string, type: 'stdout' | 'stderr') {
+      // Note: Let things fail silently when expected
+      if (type === 'stderr') return false;
+
+      // Note: Simply output
+      if (type === 'stdout') return false;
+
+      return true;
+    },
     coverage: {
       provider: 'v8',
       reporter: ['json', 'lcov', 'text', 'clover', 'json-summary'],

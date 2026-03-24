@@ -20,7 +20,9 @@ export type KeySet = {
   createdAt: Date;
   lastModified: Date;
 
+  // Note: These are derived on-the-fly based on logic states
   DerivedKeys: LogicState[];
+  SpecialDurationKeys: KeySetInstance[];
 };
 
 /**
@@ -48,9 +50,15 @@ export type KeySetSerialize = {
   DurationKeys: KeySetInstance[];
   createdAt: string;
   lastModified: string;
+
+  // Note: Special keys
   DerivedKeys: LogicState[];
+  SpecialDurationKeys: KeySetInstance[];
 };
 
+/**
+ * Keysets representation for toggles/display
+ */
 export type ExpandedKeySetInstance = {
   KeyDescription: string;
   Visible: boolean;

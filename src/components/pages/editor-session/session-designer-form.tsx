@@ -13,7 +13,7 @@ import {
 import {
   SessionDesignerSchema,
   SessionDesignerSchemaType,
-} from '@/components/pages/editor-session/views/session-designer-schema';
+} from '@/components/pages/editor-session/session-designer-schema';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,7 +33,7 @@ import { queryClient } from '@/App';
 import { useNavigate, useRouter, useRouterState } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { DataCollectorRoles } from '@/types/roles';
-import { SessionTerminationOptionsDescriptions } from '@/types/terminations';
+import { filteredSessionTerminationOptions, SessionTerminationOptionsDescriptions } from '@/types/terminations';
 import { ApplicationSettingsTypes } from '@/types/settings';
 
 type Props = {
@@ -57,7 +57,6 @@ export default function SessionDesigner({
   Settings,
   Handle,
 }: Props) {
-  // TODO: Try to pre-fetch of possible
   const router = useRouter();
   const routerState = useRouterState();
   const currentRouteId = routerState.matches[routerState.matches.length - 1]?.routeId;
@@ -72,7 +71,7 @@ export default function SessionDesigner({
       SessionTherapistID: SessionSettings.Therapist,
       SessionKeySet: SessionSettings.KeySet,
       SessionDurationS: SessionSettings.DurationS,
-      SessionTerminationOption: SessionSettings.TimerOption,
+      SessionTerminationOption: SessionSettings.TimerOption.toString(),
       SessionNumber: SessionSettings.Session,
       SessionCondition: SessionSettings.Condition,
       DataCollectorID: SessionSettings.Initials,
@@ -420,11 +419,24 @@ export default function SessionDesigner({
                       <SelectContent>
                         <SelectGroup>
                           <SelectLabel>Session Timers</SelectLabel>
-                          {SessionTerminationOptionsDescriptions.map((role) => (
-                            <SelectItem key={role.value} value={role.value}>
-                              {role.description}
-                            </SelectItem>
-                          ))}
+                          {filteredSessionTerminationOptions(Settings).map((option) => {
+                            const description =
+                              SessionTerminationOptionsDescriptions.find((o) => o.value === option)?.description ||
+                              option;
+                            return (
+                              <SelectItem key={option} value={option}>
+                                {description}
+                              </SelectItem>
+                            );
+                          })}
+                          {keySet &&
+                            keySet.SpecialDurationKeys.map((key) => {
+                              return (
+                                <SelectItem key={key.KeyDescription} value={key.KeyCode.toString()}>
+                                  {`End on ${key.KeyDescription} Time Specifically (When ${key.KeyDescription} > Duration)`}
+                                </SelectItem>
+                              );
+                            })}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -484,6 +496,14 @@ export default function SessionDesigner({
                   keySet.DurationKeys.map((key, index) => (
                     <TableRow key={index}>
                       <TableCell>{key.KeyDescription}</TableCell>
+                      <TableCell>{key.KeyName}</TableCell>
+                    </TableRow>
+                  ))}
+
+                {keySet &&
+                  keySet.SpecialDurationKeys.map((key, index) => (
+                    <TableRow key={index} className="bg-muted">
+                      <TableCell>{key.KeyDescription} (Special)</TableCell>
                       <TableCell>{key.KeyName}</TableCell>
                     </TableRow>
                   ))}

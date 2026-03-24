@@ -1,5 +1,5 @@
 import { SavedSettings, toSavedSettings } from '../dtos';
-import { SessionDesignerSchemaType } from '../../components/pages/editor-session/views/session-designer-schema';
+import { SessionDesignerSchemaType } from '../../components/pages/editor-session/session-designer-schema';
 import { DataCollectorRolesType } from '@/types/roles';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 
@@ -112,5 +112,122 @@ describe('toSavedSettings', () => {
 
     const result = toSavedSettings(input);
     expect(result).toEqual(expectedOutput);
+  });
+
+  it('Should correctly return string and custom objects for SessionTerminationOption', () => {
+    const input: SessionDesignerSchemaType = {
+      SessionTherapistID: 'Therapist4',
+      DataCollectorID: 'DC3',
+      DataCollectorRole: 'Primary',
+      SessionDurationS: 900,
+      SessionTerminationOption: 'End on Timer #2',
+      SessionNumber: 4,
+      SessionKeySet: DEFAULT_KEY_SET,
+      SessionCondition: 'Condition4',
+    };
+
+    const expectedOutput: SavedSettings = {
+      Therapist: 'Therapist4',
+      Initials: 'DC3',
+      Role: 'Primary',
+      DurationS: 900,
+      TimerOption: 'End on Timer #2',
+      Session: 4,
+      KeySet: DEFAULT_KEY_SET,
+      Condition: 'Condition4',
+    };
+
+    const result = toSavedSettings(input);
+    expect(result).toEqual(expectedOutput);
+
+    const input3: SessionDesignerSchemaType = {
+      SessionTherapistID: 'Therapist4',
+      DataCollectorID: 'DC3',
+      DataCollectorRole: 'Primary',
+      SessionDurationS: 900,
+      SessionTerminationOption: 'End on Timer #3',
+      SessionNumber: 4,
+      SessionKeySet: DEFAULT_KEY_SET,
+      SessionCondition: 'Condition4',
+    };
+
+    const expectedOutput3: SavedSettings = {
+      Therapist: 'Therapist4',
+      Initials: 'DC3',
+      Role: 'Primary',
+      DurationS: 900,
+      TimerOption: 'End on Timer #3',
+      Session: 4,
+      KeySet: DEFAULT_KEY_SET,
+      Condition: 'Condition4',
+    };
+
+    const result3 = toSavedSettings(input3);
+    expect(result3).toEqual(expectedOutput3);
+
+    const inputTotal: SessionDesignerSchemaType = {
+      SessionTherapistID: 'Therapist4',
+      DataCollectorID: 'DC3',
+      DataCollectorRole: 'Primary',
+      SessionDurationS: 900,
+      SessionTerminationOption: 'End on Total Time',
+      SessionNumber: 4,
+      SessionKeySet: DEFAULT_KEY_SET,
+      SessionCondition: 'Condition4',
+    };
+
+    const expectedOutputTotal: SavedSettings = {
+      Therapist: 'Therapist4',
+      Initials: 'DC3',
+      Role: 'Primary',
+      DurationS: 900,
+      TimerOption: 'End on Primary Timer', // Should map 'End on Total Time' to 'End on Primary Timer'
+      Session: 4,
+      KeySet: DEFAULT_KEY_SET,
+      Condition: 'Condition4',
+    };
+
+    const resultTotal = toSavedSettings(inputTotal);
+    expect(resultTotal).toEqual(expectedOutputTotal);
+
+    // Test with a custom numeric option
+    const customInput: SessionDesignerSchemaType = {
+      SessionTherapistID: 'Therapist5',
+      DataCollectorID: 'DC4',
+      DataCollectorRole: 'Primary',
+      SessionDurationS: 900,
+      SessionTerminationOption: '300', // Custom numeric option as string
+      SessionNumber: 5,
+      SessionKeySet: DEFAULT_KEY_SET,
+      SessionCondition: 'Condition5',
+    };
+
+    const customExpectedOutput: SavedSettings = {
+      Therapist: 'Therapist5',
+      Initials: 'DC4',
+      Role: 'Primary',
+      DurationS: 900,
+      TimerOption: 300, // Should be converted to number
+      Session: 5,
+      KeySet: DEFAULT_KEY_SET,
+      Condition: 'Condition5',
+    };
+
+    const customResult = toSavedSettings(customInput);
+    expect(customResult).toEqual(customExpectedOutput);
+
+    // Test with an invalid option
+    const invalidInput: SessionDesignerSchemaType = {
+      SessionTherapistID: 'Therapist6',
+      DataCollectorID: 'DC5',
+      DataCollectorRole: 'Primary',
+      SessionDurationS: 900,
+      SessionTerminationOption: 'Invalid Option',
+      SessionNumber: 6,
+      SessionKeySet: DEFAULT_KEY_SET,
+      SessionCondition: 'Condition6',
+    };
+
+    expect(() => toSavedSettings(invalidInput)).toThrowError('Invalid session termination option: Invalid Option');
   });
 });

@@ -1,3 +1,5 @@
+import { ApplicationSettingsTypes } from './settings';
+
 // Session termination options
 export const SessionTerminationOptions = {
   TimerMain: 'End on Primary Timer',
@@ -31,4 +33,23 @@ export const SessionTerminationOptionsDescriptions = [
 ];
 
 // Type for session termination options
-export type SessionTerminationOptionsType = (typeof SessionTerminationOptions)[keyof typeof SessionTerminationOptions];
+export type SessionTerminationOptionsType =
+  | (typeof SessionTerminationOptions)[keyof typeof SessionTerminationOptions]
+  | string;
+
+// More general way of accessing keys
+export type SessionTerminationKeysType = keyof typeof SessionTerminationOptions;
+
+export function filteredSessionTerminationOptions(appSettings: ApplicationSettingsTypes) {
+  const options = Object.values(SessionTerminationOptions);
+
+  return options.filter((option) => {
+    if (option === SessionTerminationOptions.Timer2 && appSettings.TimerTwoDisplay !== 'show') {
+      return false;
+    }
+    if (option === SessionTerminationOptions.Timer3 && appSettings.TimerThreeDisplay !== 'show') {
+      return false;
+    }
+    return true;
+  });
+}

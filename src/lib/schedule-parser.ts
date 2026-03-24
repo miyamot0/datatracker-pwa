@@ -11,10 +11,19 @@ import { ModifiedSessionResult } from '@/types/storage';
  * @param Key - The key set instance representing the specific key to calculate the count for.
  * @returns An object containing the key name, description, schedule, total count of key presses, and the number of bouts (schedule changes).
  */
-export function walkSessionFrequencyKey(SessionSettings: SavedSessionResult, Schedule: KeyTiming, Key: KeySetInstance) {
+export function walkSessionFrequencyKey(
+  SessionSettings: SavedSessionResult,
+  Schedule: KeyTiming,
+  Key: KeySetInstance,
+  SpecialKey?: string,
+) {
   const { SystemKeyPresses, FrequencyKeyPresses } = SessionSettings;
 
-  const relevantScheduleChanges = SystemKeyPresses.filter((k) => k.KeyName === Schedule);
+  const relevantScheduleChanges =
+    Schedule === 'Special' && SpecialKey
+      ? SystemKeyPresses.filter((k) => k.KeyName === SpecialKey)
+      : SystemKeyPresses.filter((k) => k.KeyName === Schedule);
+
   const isEven = relevantScheduleChanges.length % 2 === 0;
 
   if (!isEven) throw new Error('Schedule changes must be even');
@@ -103,6 +112,33 @@ export function walkSessionDurationKey(SessionSettings: SavedSessionResult, Sche
     Value: workingDuration,
     Bouts: bouts,
   };
+}
+
+/**
+ * Calculates the total duration of time that a specific special key was active during a session. It identifies all the system key presses corresponding to the special key and sums up the durations between each pair of presses, assuming that each press represents a toggle (e.g., on/off) of the key's state. The function also checks to ensure that there is an even number of presses, as each activation should have a corresponding deactivation.
+ *
+ * @param SessionSettings - The session result object containing the key presses to analyze.
+ * @param SpecialKeyName - The name of the specific special key to calculate the duration for.
+ * @returns The total active duration in seconds for the specified special key.
+ */
+export function sumDurationSpecialKey(SessionSettings: SavedSessionResult, SpecialKeyName: string) {
+  const { SystemKeyPresses } = SessionSettings;
+
+  const relevantScheduleChanges = SystemKeyPresses.filter((k) => k.KeyName === SpecialKeyName);
+  const isEven = relevantScheduleChanges.length % 2 === 0;
+
+  if (!isEven) throw new Error('Schedule changes must be even');
+
+  let workingDuration = 0;
+
+  for (let i = 0; i < relevantScheduleChanges.length - 1; i += 2) {
+    const t1 = relevantScheduleChanges[i].TimePressed;
+    const t2 = relevantScheduleChanges[i + 1].TimePressed;
+
+    workingDuration += (new Date(t2).getTime() - new Date(t1).getTime()) / 1000;
+  }
+
+  return workingDuration;
 }
 
 /**

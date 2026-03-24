@@ -36,7 +36,7 @@ export default function PageWrapper({
       className={cn('flex min-h-screen flex-col items-center w-full py-4 mx-2 max-w-7xl self-center', className, {
         'max-w-[90rem]': settings.DisplaySize === 'wide',
         'max-w-[106rem]': settings.DisplaySize === 'extra-wide',
-        // TODO: Even further for full-screen mode?
+        'max-w-full w-full': settings.SessionDisplay === 'FullScreen',
       })}
     >
       {!HideNavbar && <NavigationBar breadcrumbs={breadcrumbs} label={label} />}

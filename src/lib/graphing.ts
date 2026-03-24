@@ -7,6 +7,7 @@ import { ModifiedSessionResult } from '@/types/storage';
 import { FIGURE_PATH_COLORS } from './colors';
 import { getShape } from './shapes';
 import { evaluateLogic, LogicState } from './logic';
+import { ProcessedSessionData } from './calculations';
 
 export function filterSessionsByPrimaryRole(results: SavedSessionResult[]) {
   return results
@@ -139,6 +140,7 @@ export function extractAndDeduplicateKeysets(results: ModifiedSessionResult[], l
   const allFKeys = [...allKeysets, latestKeyset].map((keyset) => keyset.FrequencyKeys).flat();
   const allDKeys = [...allKeysets, latestKeyset].map((keyset) => keyset.DurationKeys).flat();
   const allDerivedKeys = [...allKeysets, latestKeyset].map((keyset) => keyset.DerivedKeys || []).flat();
+  const allSpecialDurationKeys = [...allKeysets, latestKeyset].map((keyset) => keyset.SpecialDurationKeys || []).flat();
 
   const targetedFKeys: KeySetInstance[] = [];
   allFKeys.forEach((key) => {
@@ -161,10 +163,18 @@ export function extractAndDeduplicateKeysets(results: ModifiedSessionResult[], l
     }
   });
 
+  const targetedSpecialDurationKeys: KeySetInstance[] = [];
+  allSpecialDurationKeys.forEach((key) => {
+    if (!targetedSpecialDurationKeys.some((k) => k.KeyCode === key.KeyCode)) {
+      targetedSpecialDurationKeys.push(key);
+    }
+  });
+
   return {
     frequencyKeys: targetedFKeys,
     durationKeys: targetedDKeys,
     derivedKeys: targetedDerivedKeys,
+    specialDurationKeys: targetedSpecialDurationKeys,
   };
 }
 
@@ -184,38 +194,6 @@ export function mapKeysWithStoragePreference(keys: ToggleDisplayKey[], storedPre
 
     return key;
   });
-}
-
-/**
- * Creates CTB key with preferences and handling for exclusions
- */
-export function createCTBKeyWithPreferences(keys: ToggleDisplayKey[], storedPreferences: any) {
-  const ctbEntry = {
-    KeyDescription: 'CTB',
-    KeyName: 'CTB',
-    KeyType: 'Derived',
-    Visible: true,
-    KeyCode: -999,
-  } satisfies ToggleDisplayKey;
-
-  // Map CTB exclusions
-  const excludeFromCTB = keys.map((key) => {
-    const shouldDisable = storedPreferences.CTBElements.includes(key.KeyDescription);
-
-    if (shouldDisable) {
-      return {
-        ...key,
-        Visible: false,
-      } satisfies ToggleDisplayKey;
-    }
-
-    return key;
-  });
-
-  return {
-    ctbEntry,
-    excludeFromCTB,
-  };
 }
 
 /**
@@ -341,25 +319,17 @@ export function createNavigationHandler(navigate: any, group: string, individual
   };
 }
 
-/**
- * Prepares data for proportion visualization (percentage of session time)
- */
-export function prepareProportionData(
-  filteredSessions: SavedSessionResult[],
-  scheduleOption: SessionTerminationOptionsType,
-) {
-  const data = generateChartPreparation(filteredSessions, scheduleOption, 'Duration');
-
-  const preparedData = data.map((data) => {
+export function prepareProportionDataUniversal(ScoredSessions: ProcessedSessionData[]) {
+  const preparedData = ScoredSessions.map((data) => {
     const temp_obj = {} as any;
-    temp_obj.session = data.Session;
-    temp_obj.Condition = data.Condition;
-    temp_obj.SessionTime = data.SessionTime;
+    temp_obj.session = data.session;
+    temp_obj.Condition = data.condition;
+    temp_obj.SessionTime = data.timerDuration;
 
-    data.Scores.map((key) => {
-      temp_obj[`${key.KeyDescription}`] = (key.Value / data.SessionTime) * 100;
-      temp_obj[`${key.KeyDescription}-Bouts`] = key.Bouts;
-      temp_obj[`${key.KeyDescription}-Bout-Ave`] = key.Bouts > 0 ? (key.Value / key.Bouts).toFixed(2) : 0;
+    data.durationKeys.map((key) => {
+      temp_obj[`${key.keyDescription}`] = key.percentage;
+      temp_obj[`${key.keyDescription}-Bouts`] = key.bouts;
+      temp_obj[`${key.keyDescription}-Bout-Ave`] = key.averageBout;
     });
 
     return temp_obj;
@@ -369,36 +339,37 @@ export function prepareProportionData(
 }
 
 /**
- * Prepares data for rate visualization (counts per minute)
+ * Prepares data for rate visualization using universal approach.
+ *
+ * @param ScoredSessions - Array of processed session data with frequency keys and derived keys already calculated
+ * @returns An object containing the prepared data for visualization and the maximum Y value for scaling the chart
  */
-export function prepareRateData(
-  filteredSessions: SavedSessionResult[],
-  scheduleOption: SessionTerminationOptionsType,
-  KeySetFull: ExpandedKeySetInstance[],
-  DynamicKeySet: KeySet,
-) {
-  const data = generateChartPreparation(filteredSessions, scheduleOption, 'Frequency', KeySetFull, DynamicKeySet);
-
+export function prepareRateDataUniversal(ScoredSessions: ProcessedSessionData[]) {
   let maxY = 0;
 
   // Note: this is session-by-session grouping
-  const preparedData = data.map((data) => {
+  const preparedData = ScoredSessions.map((data) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const temp_obj = {} as any;
 
-    temp_obj.session = data.Session;
-    temp_obj.Condition = data.Condition;
-    temp_obj.SessionTime = data.SessionTime;
+    temp_obj.session = data.session;
+    temp_obj.Condition = data.condition;
+    temp_obj.SessionTime = data.timerDuration;
 
-    const min_in_session = data.SessionTime / 60;
-
-    data.Scores.map((key) => {
-      const rate_calc = key.Value / min_in_session;
-      temp_obj[`${key.KeyDescription}`] = rate_calc;
-
-      if (maxY < rate_calc) {
-        maxY = rate_calc;
+    data.frequencyKeys.map((key) => {
+      if (key.rate && maxY < key.rate) {
+        maxY = key.rate;
       }
+
+      temp_obj[`${key.keyDescription}`] = key.rate;
+    });
+
+    data.derivedKeys.map((key) => {
+      if (key.rate && maxY < key.rate) {
+        maxY = key.rate;
+      }
+
+      temp_obj[`${key.keyDescription}`] = key.rate;
     });
 
     return temp_obj;

@@ -12,12 +12,12 @@ export const DEFAULT_ENTRY = {
  *
  * @param KeySet The current key set
  * @param code The key code
- * @returns true if the key code is already assigned in either FrequencyKeys or DurationKeys, false otherwise
+ * @returns true if the key code is already assigned in either FrequencyKeys, DurationKeys, or SpecialDurationKeys, false otherwise
  */
 export function is_key_already_assigned(KeySet: KeySet, code: number) {
-  return (
-    KeySet.FrequencyKeys.find((key) => key.KeyCode === code) || KeySet.DurationKeys.find((key) => key.KeyCode === code)
-  );
+  const allKeys = [...KeySet.FrequencyKeys, ...KeySet.DurationKeys, ...KeySet.SpecialDurationKeys];
+
+  return allKeys.find((key) => key.KeyCode === code) !== undefined;
 }
 
 // Check if the key is protected

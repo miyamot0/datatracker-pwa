@@ -7,9 +7,14 @@ export class SyncWorkerHandler {
    */
   async handleListLocalFiles(data: Extract<WorkerMessage, { type: 'LIST_FILES_LOCAL' }>): Promise<WorkerResponse> {
     console.log('Listing local files...');
-    const files = await listFilesInDirectory(data.localHandle);
-    console.log('Found local files:', files.length);
-    return { type: 'FILES_LISTED_LOCAL', files };
+    try {
+      const files = await listFilesInDirectory(data.localHandle);
+      console.log('Found local files:', files.length);
+      return { type: 'FILES_LISTED_LOCAL', files };
+    } catch (error) {
+      console.error('Error listing local files:', error);
+      throw error;
+    }
   }
 
   /**

@@ -21,6 +21,8 @@ import { Link } from '@tanstack/react-router';
 import { Switch } from '@/components/ui/switch';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';
+import { filteredSessionScoringOptions } from '@/types/schedules';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 export default function ResultsProportionVisualsPage({
   Group,
@@ -32,6 +34,7 @@ export default function ResultsProportionVisualsPage({
   ResultsFiltered,
   MinX,
   MaxX,
+  Settings,
 }: {
   Group: string;
   Individual: string;
@@ -43,6 +46,7 @@ export default function ResultsProportionVisualsPage({
   ResultsFiltered: SavedSessionResult[];
   MinX: number;
   MaxX: number;
+  Settings: ApplicationSettingsTypes;
 }) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
   const [connectAllPoints, setConnectAllPoints] = useState(false);
@@ -134,19 +138,15 @@ export default function ResultsProportionVisualsPage({
               }}
             >
               <SelectTrigger className="w-fit">
-                <SelectValue placeholder="Data Collector Type" />
+                <SelectValue placeholder="Timer to Reference" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value={'End on Timer #1' as SessionTerminationOptionsType}>
-                    Score on Timer #1 Time
-                  </SelectItem>
-                  <SelectItem value={'End on Timer #2' as SessionTerminationOptionsType}>
-                    Score on Timer #2 Time
-                  </SelectItem>
-                  <SelectItem value={'End on Timer #3' as SessionTerminationOptionsType}>
-                    Score on Timer #3 Time
-                  </SelectItem>
+                  {filteredSessionScoringOptions(Settings, DynamicKeySet, true).map((option) => (
+                    <SelectItem key={option.value} value={option.value as SessionTerminationOptionsType}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -195,6 +195,7 @@ export default function ResultsProportionVisualsPage({
             Individual={Individual}
             Evaluation={Evaluation}
             FilteredSessions={ResultsFiltered}
+            DynamicKeySet={DynamicKeySet}
             MinX={MinX}
             MaxX={MaxX}
             ScheduleOption={schedule}

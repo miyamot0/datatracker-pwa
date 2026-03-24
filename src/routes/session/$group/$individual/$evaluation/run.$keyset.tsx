@@ -49,7 +49,6 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ru
     const { Group, Individual, Evaluation, Keyset, Settings, CleanHandle } = context;
 
     const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
-
     const fetchSessionParams = context.queryClient.fetchQuery(
       sessionQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );

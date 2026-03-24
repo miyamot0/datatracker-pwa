@@ -1,14 +1,12 @@
 import { useEventListener } from '@/components/elements/event-listeners';
 import { SavedSessionResult, SavedSettings } from '@/lib/dtos';
-import { cn } from '@/lib/utils';
 import { KeySet } from '@/types/keyset';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { KeyManageType, TimerSetting } from '@/types/timing';
 import { toast } from 'sonner';
 import SessionRecorderWorker from '@/workers/timing/session-recorder-worker.ts?worker';
 import SessionRecorderInstructions from './ui-instructions';
 import KeyHistoryListing from './ui-key-listing';
-import SessionRecorderTallies from './ui-counts';
 import { displayConditionalNotification } from '@/lib/notifications';
 import { useMutation } from '@tanstack/react-query';
 import { mutationSettingsParams } from '@/queries/session/mutate-session-params';
@@ -22,7 +20,12 @@ import {
   TimerUpdatePayload,
 } from '@/workers/timing/types/session-recorder-worker-payloads';
 import { WorkerMessage, WorkerResponse } from '@/workers/timing/types/session-recorder-worker-messaging';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes, SessionPollingIntervals } from '@/types/settings';
+import SessionRecorderFrequencyTallies from './ui-counts-frequency';
+import SessionRecorderDurationTallies from './ui-counts-duration';
+import SessionHeaderComponent from '../subpanels/header-component';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { formatTimeOfDay } from '@/lib/time';
 
 type Props = {
   Group: string;
@@ -33,6 +36,8 @@ type Props = {
   Handle: FileSystemDirectoryHandle;
   ApplicationSettings: ApplicationSettingsTypes;
 };
+
+export type RunningStateOptions = 'Not Started' | 'Started' | 'Completed' | 'Cancelled';
 
 export default function SessionRecorderInterface({
   Group,
@@ -46,11 +51,13 @@ export default function SessionRecorderInterface({
   const { history } = useRouter();
   const router = useRouter();
 
+  const UI_POLL_INTERVAL = SessionPollingIntervals[ApplicationSettings.RecorderPolling] || 100;
+
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
 
   const workerRef = useRef<Worker | null>(null);
-
   const messageChannelRef = useRef<MessageChannel | null>(null);
+
   const animationFrameRef = useRef<number>();
   const lastUpdateTimeRef = useRef<number>(0);
 
@@ -86,18 +93,21 @@ export default function SessionRecorderInterface({
   const secondsElapsedThird = useRef<number>(0);
   const secondsElapsedActive = useRef<number>(0);
 
-  // Pending state for smooth updates
+  // Pending state for updates
   const pendingTimerUpdate = useRef<TimerUpdatePayload | null>(null);
+
+  // Special key timer state
+  const specialKeyTimers = useRef<Record<string, number>>({});
+  const activeSpecialKey = useRef<string | null>(null);
 
   const wakelockRef = useRef<WakeLockSentinel>();
   const endingProcessedRef = useRef<boolean>(false);
 
-  const [runningState, setRunningState] = useState<'Not Started' | 'Started' | 'Completed' | 'Cancelled'>(
-    'Not Started',
-  );
+  const [runningState, setRunningState] = useState<RunningStateOptions>('Not Started');
   const [, setStartTime] = useState<Date | null>(null);
   const activeTimerRef = useRef<TimerSetting>('Stopped');
   const [, forceUpdate] = useState({});
+  const [activeDurationKeysCount, setActiveDurationKeysCount] = useState<number>(0);
 
   // Optimized UI update function using requestAnimationFrame
   const scheduleUIUpdate = () => {
@@ -154,6 +164,13 @@ export default function SessionRecorderInterface({
 
       if (type === 'HIGH_FREQ_UPDATE' && payload) {
         pendingTimerUpdate.current = payload as TimerUpdatePayload;
+        // Update special key timers
+        if (payload.specialKeyTimers) {
+          specialKeyTimers.current = payload.specialKeyTimers;
+        }
+        if (payload.activeSpecialKey !== undefined) {
+          activeSpecialKey.current = payload.activeSpecialKey;
+        }
         scheduleUIUpdate();
       }
     };
@@ -167,6 +184,13 @@ export default function SessionRecorderInterface({
           // Fallback for when MessageChannel isn't available
           if (payload) {
             pendingTimerUpdate.current = payload as TimerUpdatePayload;
+            // Update special key timers
+            if (payload.specialKeyTimers) {
+              specialKeyTimers.current = payload.specialKeyTimers;
+            }
+            if (payload.activeSpecialKey !== undefined) {
+              activeSpecialKey.current = payload.activeSpecialKey;
+            }
             scheduleUIUpdate();
           }
           break;
@@ -186,6 +210,9 @@ export default function SessionRecorderInterface({
           }
           if (systemPayload.activeTimer) {
             activeTimerRef.current = systemPayload.activeTimer;
+          }
+          if (systemPayload.activeSpecialKey !== undefined) {
+            activeSpecialKey.current = systemPayload.activeSpecialKey;
           }
           if (systemPayload.isRunning !== undefined) {
             setRunningState(systemPayload.isRunning ? 'Started' : 'Not Started');
@@ -227,6 +254,7 @@ export default function SessionRecorderInterface({
       keysPressed: finalKeys,
       systemKeysPressed: finalSystemKeys,
       timers,
+      specialKeyTimers,
       startTime: sessionStartTime,
     } = payload;
 
@@ -270,6 +298,7 @@ export default function SessionRecorderInterface({
         TimerOne: timers.first,
         TimerTwo: timers.second,
         TimerThree: timers.third,
+        SpecialKeyTimers: specialKeyTimers || {},
       } satisfies SavedSessionResult;
 
       if (wakelockRef.current) wakelockRef.current.release();
@@ -342,6 +371,16 @@ export default function SessionRecorderInterface({
     workerRef.current.postMessage(message);
   };
 
+  const switchToSpecialKey = (keyName: string) => {
+    if (!workerRef.current) return;
+
+    const message: WorkerMessage = {
+      type: 'SWITCH_SPECIAL_KEY',
+      payload: { specialKeyName: keyName },
+    };
+    workerRef.current.postMessage(message);
+  };
+
   // Note: Z/X/C for Timers 1/2/3
   useEventListener('keydown', (ev: React.KeyboardEvent<HTMLElement>) => {
     if (ev.repeat) {
@@ -388,6 +427,14 @@ export default function SessionRecorderInterface({
       return;
     }
 
+    // Allow escape to go back after a successful session completion
+    if (runningState === 'Completed') {
+      if (ev.key === 'Escape') {
+        history.go(-1);
+        return;
+      }
+    }
+
     if (!workerRef.current) return;
 
     if (ev.key === 'Escape') {
@@ -399,19 +446,34 @@ export default function SessionRecorderInterface({
       return;
     }
 
-    if (ev.key === 'z' && activeTimerRef.current !== 'Primary') {
+    if (ev.key === 'z') {
+      // Allow switch to Primary from any current state
       switchTimer('Primary');
       return;
     }
 
-    if (ev.key === 'x' && activeTimerRef.current !== 'Secondary') {
+    if (ev.key === 'x' && ApplicationSettings.TimerTwoDisplay === 'show') {
+      // Allow switch to Secondary from any current state
       switchTimer('Secondary');
       return;
     }
 
-    if (ev.key === 'c' && activeTimerRef.current !== 'Tertiary') {
+    if (ev.key === 'c' && ApplicationSettings.TimerThreeDisplay === 'show') {
+      // Allow switch to Tertiary from any current state
       switchTimer('Tertiary');
       return;
+    }
+
+    // Handle special duration key switches (using actual key names)
+    if (runningState === 'Started') {
+      const specialKeys = Keyset.SpecialDurationKeys;
+      const matchingSpecialKey = specialKeys.find((key) => key.KeyName.toLowerCase() === ev.key.toLowerCase());
+
+      if (matchingSpecialKey) {
+        // Switch to special key timer
+        switchToSpecialKey(matchingSpecialKey.KeyName);
+        return;
+      }
     }
 
     if (ev.key === 'Backspace' || ev.key === 'Delete') {
@@ -435,65 +497,139 @@ export default function SessionRecorderInterface({
     workerRef.current.postMessage(message);
   });
 
+  // Note: Potentially not worth complexity
+  const keySetSpecialKeys = useMemo(() => {
+    const specialKeys = Keyset.SpecialDurationKeys;
+    return specialKeys;
+  }, [Keyset]);
+
+  // Note: Potentially not worth complexity
+  const keySetDurationKeys = useMemo(() => {
+    const durationKeys = Keyset.DurationKeys;
+    return durationKeys;
+  }, [Keyset]);
+
+  // Calculate count of active duration keys (keys with odd press counts)
+  const activeDurationKeysCountMemo = useMemo(() => {
+    return keySetDurationKeys.filter((key) => {
+      const matchingKeys = keysPressed.filter((pressedKey) => pressedKey.KeyCode === key.KeyCode);
+      return matchingKeys.length % 2 === 1; // Odd count means key is active
+    }).length;
+  }, [keySetDurationKeys, keysPressed]);
+
+  // Update active duration keys count state
+  useEffect(() => {
+    setActiveDurationKeysCount(activeDurationKeysCountMemo);
+  }, [activeDurationKeysCountMemo]);
+
+  const HeaderComponent = useMemo(() => {
+    return <SessionHeaderComponent Settings={Settings} RunningState={runningState} KeySet={Keyset} />;
+  }, [Settings, runningState, Keyset]);
+
+  const FrequencyCountsSummary = useMemo(() => {
+    return <SessionRecorderFrequencyTallies Keyset={Keyset} KeysPressed={keysPressed} Settings={ApplicationSettings} />;
+  }, [Keyset, keysPressed, ApplicationSettings]);
+
+  // Use a timestamp state to force re-renders when duration keys are active
+  const [durationUpdateTimestamp, setDurationUpdateTimestamp] = useState<number>(0);
+
+  // Note: Hate this, but it works
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
+    if (activeDurationKeysCount > 0 && runningState === 'Started') {
+      intervalId = setInterval(() => {
+        setDurationUpdateTimestamp(Date.now());
+      }, UI_POLL_INTERVAL);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [activeDurationKeysCount, runningState]);
+
+  const DurationCountsSummary = useMemo(() => {
+    return <SessionRecorderDurationTallies Keyset={Keyset} KeysPressed={keysPressed} Settings={ApplicationSettings} />;
+  }, [Keyset, keysPressed, ApplicationSettings, activeDurationKeysCount > 0 ? durationUpdateTimestamp : null]);
+
+  const SessionInstructions = useMemo(() => {
+    return (
+      <SessionRecorderInstructions
+        {...{ Evaluation, Settings, AppSettings: ApplicationSettings }}
+        KeySetSpecialKeys={keySetSpecialKeys}
+      />
+    );
+  }, [Evaluation, Settings, keySetSpecialKeys, ApplicationSettings]);
+
+  const KeysPressedHistory = useMemo(() => {
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="h-9">Key</TableHead>
+            <TableHead className="h-9">Description</TableHead>
+            <TableHead className="h-9">Schedule</TableHead>
+            <TableHead className="h-9">Time</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {keysPressed
+            .slice(-5)
+            .reverse()
+            .map((key, index) => (
+              <TableRow
+                key={`${key.KeyType}-${key.KeyCode}-${key.TimePressed.toUTCString()}-${index}`}
+                className="text-sm"
+              >
+                <TableHead className="h-9">{key.KeyName}</TableHead>
+                <TableHead className="h-9">{key.KeyDescription}</TableHead>
+                <TableHead className="h-9">{key.KeyScheduleRecording}</TableHead>
+                <TableHead className="h-9">
+                  {formatTimeOfDay(key.TimePressed)} ({key.TimeIntoSession.toFixed(2)}s)
+                </TableHead>
+              </TableRow>
+            ))}
+        </TableBody>
+      </Table>
+    );
+  }, [keysPressed]);
+
   return (
     <div className="flex flex-col w-full gap-4">
-      <div className="w-full flex flex-row justify-between select-none">
-        <div className="flex-1 flex flex-row">
-          <p
-            className={cn(
-              'transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
-              {
-                'bg-green-600 text-white': Settings.Role === 'Primary',
-                'bg-purple-400 text-white': Settings.Role === 'Reliability',
-              },
-            )}
-          >
-            {`${Settings.Role} Data Collector`}
-          </p>
-          <p
-            className={cn(
-              'mx-2 transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit whitespace-nowrap',
-              {
-                'bg-gray-600 text-white': Settings.TimerOption === 'End on Primary Timer',
-                'bg-green-400 text-white': Settings.TimerOption === 'End on Timer #1',
-                'bg-orange-400 text-white': Settings.TimerOption === 'End on Timer #2',
-                'bg-red-400 text-white': Settings.TimerOption === 'End on Timer #3',
-              },
-            )}
-          >
-            {Settings.TimerOption} ({Settings.DurationS}s)
-          </p>
-        </div>
-        <div className="flex-1 flex flex-row justify-center items-center text-center font-bold whitespace-nowrap">
-          <p className="flex-1">{`Session #${Settings.Session}`}</p>
-        </div>
-        <div className="flex-1 flex flex-row justify-end whitespace-nowrap">
-          <p
-            className={cn('transition-colors bg-transparent rounded-full px-2 text-sm flex items-center w-fit', {
-              'bg-gray-600 text-white': runningState === 'Not Started',
-              'bg-blue-400 text-white': runningState === 'Started',
-              'bg-green-400 text-white': runningState === 'Completed',
-            })}
-          >
-            {runningState}
-          </p>
-        </div>
-      </div>
-
-      <SessionRecorderTallies KeysPressed={keysPressed} Keyset={Keyset} Settings={ApplicationSettings} />
+      {HeaderComponent}
 
       <div className="grid grid-cols-2 w-full gap-4 select-none">
-        <SessionRecorderInstructions {...{ Evaluation, Settings }} />
-        <KeyHistoryListing
-          KeysPressed={keysPressed}
-          SecondsElapsed={secondsElapsedTotal.current}
-          SecondsElapsedFirst={secondsElapsedFirst.current}
-          SecondsElapsedSecond={secondsElapsedSecond.current}
-          SecondsElapsedThird={secondsElapsedThird.current}
-          SecondsElapsedDelta={secondsElapsedActive.current}
-          ActiveTimer={activeTimerRef.current}
-          Running={runningState === 'Started'}
-        />
+        {FrequencyCountsSummary}
+        {DurationCountsSummary}
+      </div>
+
+      <div className="grid grid-cols-2 w-full gap-4 select-none">
+        {SessionInstructions}
+
+        <div className="w-full flex flex-col gap-0 border rounded shadow-xl bg-card">
+          <div className="w-full text-center my-2 text-sm font-bold">Session Measurements</div>
+
+          <hr className="mb-2" />
+
+          <KeyHistoryListing
+            KeySetSpecialKeys={keySetSpecialKeys}
+            SpecialKeyTimers={specialKeyTimers.current}
+            SecondsElapsed={secondsElapsedTotal.current}
+            SecondsElapsedFirst={secondsElapsedFirst.current}
+            SecondsElapsedSecond={secondsElapsedSecond.current}
+            SecondsElapsedThird={secondsElapsedThird.current}
+            SecondsElapsedDelta={secondsElapsedActive.current}
+            ActiveTimer={activeTimerRef.current}
+            ActiveSpecialTimer={activeSpecialKey.current}
+            Running={runningState === 'Started'}
+            AppSettings={ApplicationSettings}
+          />
+
+          <hr />
+          {KeysPressedHistory}
+        </div>
       </div>
     </div>
   );

@@ -1,22 +1,13 @@
-import { generateKeywordColors } from '@/lib/colors';
-import { DocumentationObjects } from '@/lib/docs';
-import { KeywordColors } from '@/types/colors';
-import { FrontMatterUniversalType } from '@/types/mdx';
+import { AllFrontMatter, AllKeywordsArray } from '@/lib/docs';
 import { createFileRoute } from '@tanstack/react-router';
 import DocumentationListingPage from '../../components/pages/documentation/documentation-listing-page';
 import PageWrapper from '@/components/elements/page-wrapper';
 
 export const Route = createFileRoute('/documentation/')({
   loader: ({ context }) => {
-    const FrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(
-      (entry) => entry.matter as FrontMatterUniversalType,
-    );
-
-    const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
-
     return {
-      FrontMatter,
-      KeywordArray,
+      FrontMatter: AllFrontMatter,
+      KeywordArray: AllKeywordsArray,
       Settings: context.folderHandleContext.settings,
     };
   },

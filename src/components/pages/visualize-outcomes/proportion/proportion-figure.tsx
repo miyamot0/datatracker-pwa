@@ -3,11 +3,17 @@ import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
 import { FigureVisualSizing } from '@/types/accessibility';
 import { useNavigate } from '@tanstack/react-router';
-import { ExpandedKeySetInstance } from '@/types/keyset';
-import { generateTicks, createChartLegends, createNavigationHandler, prepareProportionData } from '@/lib/graphing';
+import { ExpandedKeySetInstance, KeySet } from '@/types/keyset';
+import {
+  generateTicks,
+  createChartLegends,
+  createNavigationHandler,
+  prepareProportionDataUniversal,
+} from '@/lib/graphing';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { BaseChart } from '@/components/pages/visualize-outcomes/shared/base-chart';
 import { ProportionTooltip } from './proportion-elements';
+import { convertLegacyTimerType, processMultipleSessionDataWithKeys } from '@/lib/calculations';
 
 type Props = {
   Group: string;
@@ -15,6 +21,7 @@ type Props = {
   Evaluation: string;
   FilteredSessions: SavedSessionResult[];
   ScheduleOption: SessionTerminationOptionsType;
+  DynamicKeySet: KeySet;
   KeySetFull: ExpandedKeySetInstance[];
   FigureTextSize: FigureVisualSizing;
   ConnectSpans: boolean;
@@ -28,6 +35,7 @@ export default function ProportionFigureVisualization({
   Evaluation,
   FilteredSessions,
   ScheduleOption,
+  DynamicKeySet,
   KeySetFull,
   FigureTextSize,
   ConnectSpans,
@@ -39,7 +47,7 @@ export default function ProportionFigureVisualization({
     from: `/session/$group/$individual/$evaluation/proportion`,
   });
 
-  const { preparedData } = prepareProportionData(FilteredSessions, ScheduleOption);
+  //const { preparedData } = prepareProportionData(FilteredSessions, ScheduleOption);
 
   const x_ticks = generateTicks(MaxX, MinX);
   const legends = createChartLegends(FilteredSessions, KeySetFull);
@@ -52,6 +60,24 @@ export default function ProportionFigureVisualization({
     label: 'Percentage of Session',
     padding: { bottom: 10 },
   };
+
+  const durationCalculations = processMultipleSessionDataWithKeys(
+    FilteredSessions,
+    convertLegacyTimerType(ScheduleOption, DynamicKeySet),
+    {
+      frequencyKeys: DynamicKeySet.FrequencyKeys,
+      durationKeys: DynamicKeySet.DurationKeys,
+      derivedKeys: DynamicKeySet.DerivedKeys,
+    },
+    'CHART_ALL',
+    {
+      frequencyKeys: DynamicKeySet.FrequencyKeys,
+      durationKeys: [],
+      derivedKeys: DynamicKeySet.DerivedKeys,
+    },
+  );
+
+  const { preparedData } = prepareProportionDataUniversal(durationCalculations);
 
   return (
     <div className="flex flex-col gap-4 w-full">

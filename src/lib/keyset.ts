@@ -18,6 +18,7 @@ export function createNewKeySet(Name: string): KeySet {
     createdAt: new Date(),
     lastModified: new Date(),
     DerivedKeys: [],
+    SpecialDurationKeys: [],
   };
 }
 
@@ -36,6 +37,7 @@ export function serializeKeySet(keyset: KeySet): string {
     createdAt: keyset.createdAt.toJSON(),
     lastModified: keyset.lastModified.toJSON(),
     DerivedKeys: keyset.DerivedKeys || [],
+    SpecialDurationKeys: keyset.SpecialDurationKeys || [],
   };
 
   return JSON.stringify(keyset_serialized);
@@ -58,6 +60,7 @@ export function deserializeKeySet(json: string): KeySet {
     createdAt: new Date(keyset_json.createdAt),
     lastModified: new Date(keyset_json.lastModified),
     DerivedKeys: keyset_json.DerivedKeys || [],
+    SpecialDurationKeys: keyset_json.SpecialDurationKeys || [],
   };
 }
 
@@ -79,6 +82,7 @@ export function pullMostRecentSession(
  *
  * @param data - An array of session results, which can be either SavedSessionResult or ModifiedSessionResult, both containing a Keyset property
  * @returns The KeySet object from the most recent session result, determined by the highest SessionSettings.Session value in the input array
+ * @deprecated Need to pull from session params for latest
  */
 export function pullMostRecentKeySet(data: SavedSessionResult[] | ModifiedSessionResult[]): KeySet {
   const latest = pullMostRecentSession(data);
