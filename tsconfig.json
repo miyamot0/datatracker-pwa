@@ -1,6 +1,7 @@
 {
   "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
   "compilerOptions": {
+    "typeRoots": ["./node_modules/@types", "./node_modules"],
     "types": ["vite-plugin-pwa/client", "vitest/globals", "@types/wicg-file-system-access"],
     "lib": ["ES2021.String", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
     "strict": true,

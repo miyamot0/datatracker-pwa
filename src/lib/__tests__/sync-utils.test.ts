@@ -3,7 +3,7 @@
  * Run with: npm test or yarn test
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, } from 'vitest';
 import {
   validateFilePath,
   normalizeFilePath,
@@ -25,7 +25,13 @@ const createMockFileHandle = (name: string, content: string = 'test content') =>
     write: vi.fn().mockResolvedValue(undefined),
     close: vi.fn().mockResolvedValue(undefined),
   }),
-});
+  // Required FileSystemHandle methods
+  isFile: vi.fn().mockResolvedValue(true),
+  isDirectory: vi.fn().mockResolvedValue(false),
+  isSameEntry: vi.fn().mockResolvedValue(false),
+  queryPermission: vi.fn().mockResolvedValue('granted' as const),
+  requestPermission: vi.fn().mockResolvedValue('granted' as const),
+} as any);
 
 const createMockDirectoryHandle = (name: string, children: any[] = []) => {
   const handle = {
@@ -40,7 +46,30 @@ const createMockDirectoryHandle = (name: string, children: any[] = []) => {
     }),
     getDirectoryHandle: vi.fn(),
     getFileHandle: vi.fn(),
-  };
+    // Required FileSystemHandle methods
+    isFile: vi.fn().mockResolvedValue(false),
+    isDirectory: vi.fn().mockResolvedValue(true),
+    isSameEntry: vi.fn().mockResolvedValue(false),
+    queryPermission: vi.fn().mockResolvedValue('granted' as const),
+    requestPermission: vi.fn().mockResolvedValue('granted' as const),
+    // Required FileSystemDirectoryHandle methods
+    removeEntry: vi.fn().mockResolvedValue(undefined),
+    resolve: vi.fn().mockResolvedValue(null),
+    entries: vi.fn().mockReturnValue({
+      async *[Symbol.asyncIterator]() {
+        for (const child of children) {
+          yield [child.name, child];
+        }
+      },
+    }),
+    keys: vi.fn().mockReturnValue({
+      async *[Symbol.asyncIterator]() {
+        for (const child of children) {
+          yield child.name;
+        }
+      },
+    }),
+  } as any;
 
   // Set up getDirectoryHandle mock
   handle.getDirectoryHandle.mockImplementation((dirName: string) => {
@@ -67,13 +96,32 @@ const createMockDirectoryHandle = (name: string, children: any[] = []) => {
   return handle;
 };
 
-// Mock FileReader
-global.FileReader = vi.fn().mockImplementation(() => ({
+// Mock FileReader with proper constructor for Vitest 4+
+const mockFileReaderInstance = {
   readAsText: vi.fn(),
-  onload: null,
-  onerror: null,
-  result: null,
-}));
+  onload: null as (() => void) | null,  
+  onerror: null as ((error: any) => void) | null,
+  result: null as string | null,
+};
+
+class MockFileReader {
+  readAsText = mockFileReaderInstance.readAsText;
+  onload = null as (() => void) | null;
+  onerror = null as ((error: any) => void) | null;
+  result = null as string | null;
+  
+  constructor() {
+    // Reset properties for each instance
+    this.onload = null;
+    this.onerror = null;
+    this.result = null;
+    // Share the mock function 
+    this.readAsText = mockFileReaderInstance.readAsText;
+  }
+}
+
+// Direct assignment of the mock class
+globalThis.FileReader = MockFileReader as any;
 
 describe('Sync Utilities', () => {
   describe('validateFilePath', () => {
@@ -151,50 +199,41 @@ describe('Sync Utilities', () => {
   });
 
   describe('readFileAsync', () => {
+    beforeEach(() => {
+      // Reset the mock before each test
+      vi.clearAllMocks();
+    });
+
     it('should resolve with file content on successful read', async () => {
       const testContent = 'Hello, world!';
       const testFile = new File([testContent], 'test.txt', { type: 'text/plain' });
 
-      const mockFileReader = {
-        readAsText: vi.fn().mockImplementation(() => {
-          // Trigger onload asynchronously after readAsText is called
-          setTimeout(() => {
-            if (mockFileReader.onload) {
-              mockFileReader.result = testContent;
-              mockFileReader.onload();
-            }
-          }, 0);
-        }),
-        onload: null,
-        onerror: null,
-        result: null,
-      };
-
-      (global.FileReader as any).mockImplementation(() => mockFileReader);
+      // Set up the mock behavior - this will apply to all new instances
+      mockFileReaderInstance.readAsText.mockImplementation(function(this: any) {
+        this.result = testContent;
+        setTimeout(() => {
+          if (this.onload) {
+            this.onload();
+          }
+        }, 0);
+      });
 
       const result = await readFileAsync(testFile);
       expect(result).toBe(testContent);
-      expect(mockFileReader.readAsText).toHaveBeenCalledWith(testFile);
+      expect(mockFileReaderInstance.readAsText).toHaveBeenCalledWith(testFile);
     });
 
     it('should reject on FileReader error', async () => {
       const testFile = new File(['content'], 'test.txt', { type: 'text/plain' });
       const testError = new Error('Read failed');
 
-      const mockFileReader = {
-        readAsText: vi.fn().mockImplementation(() => {
-          setTimeout(() => {
-            if (mockFileReader.onerror) {
-              mockFileReader.onerror(testError);
-            }
-          }, 0);
-        }),
-        onload: null,
-        onerror: null,
-        result: null,
-      };
-
-      (global.FileReader as any).mockImplementation(() => mockFileReader);
+      mockFileReaderInstance.readAsText.mockImplementation(function(this: any) {
+        setTimeout(() => {
+          if (this.onerror) {
+            this.onerror(testError);
+          }
+        }, 0);
+      });
 
       await expect(readFileAsync(testFile)).rejects.toEqual(testError);
     });
@@ -202,21 +241,14 @@ describe('Sync Utilities', () => {
     it('should handle empty files', async () => {
       const testFile = new File([''], 'empty.txt', { type: 'text/plain' });
 
-      const mockFileReader = {
-        readAsText: vi.fn().mockImplementation(() => {
-          setTimeout(() => {
-            if (mockFileReader.onload) {
-              mockFileReader.result = '';
-              mockFileReader.onload();
-            }
-          }, 0);
-        }),
-        onload: null,
-        onerror: null,
-        result: '',
-      };
-
-      (global.FileReader as any).mockImplementation(() => mockFileReader);
+      mockFileReaderInstance.readAsText.mockImplementation(function(this: any) {
+        this.result = '';
+        setTimeout(() => {
+          if (this.onload) {
+            this.onload();
+          }
+        }, 0);
+      });
 
       const result = await readFileAsync(testFile);
       expect(result).toBe('');

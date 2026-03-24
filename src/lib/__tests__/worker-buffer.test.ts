@@ -372,8 +372,8 @@ describe('worker-buffers', () => {
       const mockView = new Float64Array(8);
 
       const MockFloat64Array = vi.fn(() => mockView);
-      const originalFloat64Array = global.Float64Array;
-      global.Float64Array = MockFloat64Array as any;
+      const originalFloat64Array = globalThis.Float64Array;
+      globalThis.Float64Array = MockFloat64Array as any;
 
       try {
         const view = getSharedTimerView(mockBuffer as SharedArrayBuffer);
@@ -381,7 +381,7 @@ describe('worker-buffers', () => {
         expect(MockFloat64Array).toHaveBeenCalledWith(mockBuffer);
         expect(view).toBe(mockView);
       } finally {
-        global.Float64Array = originalFloat64Array;
+        globalThis.Float64Array = originalFloat64Array;
       }
     });
   });
