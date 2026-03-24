@@ -39,6 +39,9 @@ export default function ResultsViewerContent({
     (result) => result.SessionSettings.Role === role,
   );
 
+  // TODO: Potentially support later, but problematic for now
+  const showDuration = ScheduleMappingOptions.find((option) => option.value === schedule.value) ? true : false;
+
   return (
     <div className="flex flex-col w-full gap-4">
       <div className="flex flex-row items-center justify-between">
@@ -115,7 +118,7 @@ export default function ResultsViewerContent({
         />
       )}
 
-      {Keyset.DurationKeys.length > 0 && (
+      {showDuration && Keyset.DurationKeys.length > 0 && (
         <ViewDurationResults
           SessionTimer={schedule.value}
           Results={filteredResults}
