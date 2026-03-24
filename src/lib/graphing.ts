@@ -188,38 +188,6 @@ export function mapKeysWithStoragePreference(keys: ToggleDisplayKey[], storedPre
 }
 
 /**
- * Creates CTB key with preferences and handling for exclusions
- */
-export function createCTBKeyWithPreferences(keys: ToggleDisplayKey[], storedPreferences: any) {
-  const ctbEntry = {
-    KeyDescription: 'CTB',
-    KeyName: 'CTB',
-    KeyType: 'Derived',
-    Visible: true,
-    KeyCode: -999,
-  } satisfies ToggleDisplayKey;
-
-  // Map CTB exclusions
-  const excludeFromCTB = keys.map((key) => {
-    const shouldDisable = storedPreferences.CTBElements.includes(key.KeyDescription);
-
-    if (shouldDisable) {
-      return {
-        ...key,
-        Visible: false,
-      } satisfies ToggleDisplayKey;
-    }
-
-    return key;
-  });
-
-  return {
-    ctbEntry,
-    excludeFromCTB,
-  };
-}
-
-/**
  * Creates split points for line charts to handle condition changes
  */
 export function calculateSplitPoints(
@@ -342,34 +310,6 @@ export function createNavigationHandler(navigate: any, group: string, individual
   };
 }
 
-/**
- * Prepares data for proportion visualization (percentage of session time)
- * @deprecated
- */
-export function prepareProportionData(
-  filteredSessions: SavedSessionResult[],
-  scheduleOption: SessionTerminationOptionsType,
-) {
-  const data = generateChartPreparation(filteredSessions, scheduleOption, 'Duration');
-
-  const preparedData = data.map((data) => {
-    const temp_obj = {} as any;
-    temp_obj.session = data.Session;
-    temp_obj.Condition = data.Condition;
-    temp_obj.SessionTime = data.SessionTime;
-
-    data.Scores.map((key) => {
-      temp_obj[`${key.KeyDescription}`] = (key.Value / data.SessionTime) * 100;
-      temp_obj[`${key.KeyDescription}-Bouts`] = key.Bouts;
-      temp_obj[`${key.KeyDescription}-Bout-Ave`] = key.Bouts > 0 ? (key.Value / key.Bouts).toFixed(2) : 0;
-    });
-
-    return temp_obj;
-  });
-
-  return { preparedData };
-}
-
 export function prepareProportionDataUniversal(ScoredSessions: ProcessedSessionData[]) {
   const preparedData = ScoredSessions.map((data) => {
     const temp_obj = {} as any;
@@ -387,46 +327,6 @@ export function prepareProportionDataUniversal(ScoredSessions: ProcessedSessionD
   });
 
   return { preparedData };
-}
-
-/**
- * Prepares data for rate visualization (counts per minute)
- * @deprecated
- */
-export function prepareRateData(
-  filteredSessions: SavedSessionResult[],
-  scheduleOption: SessionTerminationOptionsType,
-  KeySetFull: ExpandedKeySetInstance[],
-  DynamicKeySet: KeySet,
-) {
-  const data = generateChartPreparation(filteredSessions, scheduleOption, 'Frequency', KeySetFull, DynamicKeySet);
-
-  let maxY = 0;
-
-  // Note: this is session-by-session grouping
-  const preparedData = data.map((data) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const temp_obj = {} as any;
-
-    temp_obj.session = data.Session;
-    temp_obj.Condition = data.Condition;
-    temp_obj.SessionTime = data.SessionTime;
-
-    const min_in_session = data.SessionTime / 60;
-
-    data.Scores.map((key) => {
-      const rate_calc = key.Value / min_in_session;
-      temp_obj[`${key.KeyDescription}`] = rate_calc;
-
-      if (maxY < rate_calc) {
-        maxY = rate_calc;
-      }
-    });
-
-    return temp_obj;
-  });
-
-  return { preparedData, maxY };
 }
 
 /**

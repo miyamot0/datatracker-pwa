@@ -13,6 +13,13 @@ export default defineConfig({
     reporters: ['default'],
     environment: 'jsdom',
     globals: true,
+    onConsoleLog(log: string, type: 'stdout' | 'stderr') {
+      // Note: Let things fail silently when expected
+
+      if (type === 'stderr') return false;
+
+      return true;
+    },
     coverage: {
       provider: 'v8',
       reporter: ['json', 'lcov', 'text', 'clover', 'json-summary'],

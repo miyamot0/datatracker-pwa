@@ -34,8 +34,6 @@ import {
   createChartLegends,
   getChartConfiguration,
   createNavigationHandler,
-  prepareProportionData,
-  prepareRateData,
 } from '../graphing';
 
 // Import the mocked functions for use in tests
@@ -57,6 +55,7 @@ describe('graphing utility functions', () => {
     DurationKeys: durationKeys,
     createdAt: new Date('2024-01-01'),
     lastModified: new Date('2024-01-01'),
+    SpecialDurationKeys: [],
   });
 
   // Helper function to create mock SavedSessionResult
@@ -87,6 +86,7 @@ describe('graphing utility functions', () => {
     TimerOne: 300,
     TimerTwo: 450,
     TimerThree: 500,
+    SpecialKeyTimers: {},
   });
 
   describe('filterSessionsByPrimaryRole', () => {
@@ -568,9 +568,27 @@ describe('graphing utility functions', () => {
       const result = mapKeysWithStoragePreference(keys, storedPreferences);
 
       expect(result).toHaveLength(3);
-      expect(result[0]).toEqual({ KeyDescription: 'Key1', Visible: false, KeyType: 'Observed', KeyName: 'Key1', KeyCode: 65 });
-      expect(result[1]).toEqual({ KeyDescription: 'Key2', Visible: true, KeyType: 'Observed', KeyName: 'Key2', KeyCode: 66 });
-      expect(result[2]).toEqual({ KeyDescription: 'Key3', Visible: false, KeyType: 'Observed', KeyName: 'Key3', KeyCode: 67 });
+      expect(result[0]).toEqual({
+        KeyDescription: 'Key1',
+        Visible: false,
+        KeyType: 'Observed',
+        KeyName: 'Key1',
+        KeyCode: 65,
+      });
+      expect(result[1]).toEqual({
+        KeyDescription: 'Key2',
+        Visible: true,
+        KeyType: 'Observed',
+        KeyName: 'Key2',
+        KeyCode: 66,
+      });
+      expect(result[2]).toEqual({
+        KeyDescription: 'Key3',
+        Visible: false,
+        KeyType: 'Observed',
+        KeyName: 'Key3',
+        KeyCode: 67,
+      });
     });
 
     it('should keep keys visible when they are not in stored preferences', () => {
@@ -919,130 +937,6 @@ describe('graphing utility functions', () => {
           file: '10_Treatment_Primary',
         },
       });
-    });
-  });
-
-  describe('prepareProportionData', () => {
-    const mockFrequencyKey: KeySetInstance = {
-      KeyName: 'FreqKey1',
-      KeyDescription: 'Frequency Key 1',
-      KeyCode: 65,
-    };
-
-    beforeEach(() => {
-      (walkSessionDurationKey as any).mockReturnValue({
-        KeyName: 'FreqKey1',
-        KeyDescription: 'Frequency Key 1',
-        Schedule: 'Primary',
-        Value: 180, // 3 minutes
-        Bouts: 2,
-      });
-    });
-
-    it('should prepare proportion data with percentage calculations', () => {
-      const keyset = createMockKeySet([], [mockFrequencyKey]);
-      const filteredSessions = [createMockSession(1, 'Primary', 'Baseline', keyset)];
-
-      const result = prepareProportionData(filteredSessions, 'End on Timer #1');
-
-      expect(result.preparedData).toHaveLength(1);
-      expect(result.preparedData[0]).toMatchObject({
-        session: 1,
-        Condition: 'Baseline',
-        SessionTime: 300, // TimerOne
-        'Frequency Key 1': 60, // (180 / 300) * 100
-        'Frequency Key 1-Bouts': 2,
-        'Frequency Key 1-Bout-Ave': '90.00', // (180 / 2).toFixed(2)
-      });
-    });
-
-    it('should handle zero bouts correctly', () => {
-      (walkSessionDurationKey as any).mockReturnValue({
-        KeyName: 'FreqKey1',
-        KeyDescription: 'Frequency Key 1',
-        Schedule: 'Primary',
-        Value: 100,
-        Bouts: 0,
-      });
-
-      const keyset = createMockKeySet([], [mockFrequencyKey]);
-      const filteredSessions = [createMockSession(1, 'Primary', 'Baseline', keyset)];
-
-      const result = prepareProportionData(filteredSessions, 'End on Timer #1');
-
-      expect(result.preparedData[0]['Frequency Key 1-Bout-Ave']).toBe(0);
-    });
-
-    it('should handle multiple sessions', () => {
-      const keyset = createMockKeySet([], [mockFrequencyKey]);
-      const filteredSessions = [
-        createMockSession(1, 'Primary', 'Baseline', keyset),
-        createMockSession(2, 'Primary', 'Treatment', keyset),
-      ];
-
-      const result = prepareProportionData(filteredSessions, 'End on Timer #1');
-
-      expect(result.preparedData).toHaveLength(2);
-      expect(result.preparedData[0].session).toBe(1);
-      expect(result.preparedData[1].session).toBe(2);
-    });
-  });
-
-  describe('prepareRateData', () => {
-    const mockFrequencyKey: KeySetInstance = {
-      KeyName: 'FreqKey1',
-      KeyDescription: 'Frequency Key 1',
-      KeyCode: 65,
-    };
-
-    beforeEach(() => {
-      (walkSessionFrequencyKey as any).mockReturnValue({
-        KeyName: 'FreqKey1',
-        KeyDescription: 'Frequency Key 1',
-        Schedule: 'Primary',
-        Value: 30, // 30 frequency events
-        Bouts: -1,
-      });
-    });
-
-    it('should prepare rate data with per-minute calculations', () => {
-      const keyset = createMockKeySet([mockFrequencyKey], []);
-      const filteredSessions = [createMockSession(1, 'Primary', 'Baseline', keyset)];
-
-      const ctbKeys: ExpandedKeySetInstance[] = [{ KeyDescription: 'Frequency Key 1', Visible: true }];
-
-      const result = prepareRateData(filteredSessions, 'End on Timer #1', ctbKeys, keyset);
-
-      expect(result.preparedData).toHaveLength(1);
-      expect(result.preparedData[0]).toMatchObject({
-        session: 1,
-        Condition: 'Baseline',
-        SessionTime: 300, // TimerOne in seconds
-        'Frequency Key 1': 6, // 30 events / (300/60) minutes = 6 per minute
-      });
-
-      expect(result.maxY).toBe(6);
-    });
-
-    it('should handle multiple sessions and track maxY correctly', () => {
-      (walkSessionFrequencyKey as any)
-        .mockReturnValueOnce({ KeyDescription: 'Frequency Key 1', Value: 30 })
-        .mockReturnValueOnce({ KeyDescription: 'Frequency Key 1', Value: 90 }); // Higher rate
-
-      const keyset = createMockKeySet([mockFrequencyKey], []);
-      const filteredSessions = [
-        createMockSession(1, 'Primary', 'Baseline', keyset),
-        createMockSession(2, 'Primary', 'Treatment', keyset),
-      ];
-
-      const ctbKeys: ExpandedKeySetInstance[] = [{ KeyDescription: 'Frequency Key 1', Visible: true }];
-
-      const result = prepareRateData(filteredSessions, 'End on Timer #1', ctbKeys, keyset);
-
-      expect(result.preparedData).toHaveLength(2);
-      expect(result.preparedData[0]['Frequency Key 1']).toBe(6); // 30 / 5 minutes
-      expect(result.preparedData[1]['Frequency Key 1']).toBe(18); // 90 / 5 minutes
-      expect(result.maxY).toBe(18); // Highest rate across all sessions
     });
   });
 });

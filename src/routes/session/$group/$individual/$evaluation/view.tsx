@@ -17,7 +17,7 @@ import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { ModifiedSessionResult } from '@/types/storage';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import ResultsViewerContent from '@/components/pages/summary-outcomes/results-viewer-content';
-import { prepareDataOrganization } from '@/lib/summary';
+import { ScheduleMappingOptions } from '@/types/schedules';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/view')({
   beforeLoad: ({ context, params }) => {
@@ -151,11 +151,12 @@ function RouteComponent() {
             const storedPreferencesD = getLocalCachedPrefs(Group, Individual, Evaluation, 'Duration');
             const showKeysDuration = mapKeysWithStoragePreference([...keyDurationObserved], storedPreferencesD);
 
-            const { TimerMapping } = prepareDataOrganization(Group, Individual, Evaluation, dynamicKeyset);
+            const timerMapping =
+              ScheduleMappingOptions.find((i) => i.value === storedPreferences?.Schedule) ?? ScheduleMappingOptions[0];
 
             return (
               <ResultsViewerContent
-                TimerMapping={TimerMapping}
+                TimerMapping={timerMapping}
                 Results={sessionOutcomes}
                 Keyset={dynamicKeyset}
                 ShowKeysFreq={showKeysFreq}

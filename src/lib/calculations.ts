@@ -45,7 +45,7 @@ export interface SessionProcessingOptions {
  * @param timerType - The unified timer type
  * @return The timer value in seconds
  */
-export function getUnifiedTimerValue(result: SavedSessionResult, timerType: UnifiedTimerType): number {
+function getUnifiedTimerValue(result: SavedSessionResult, timerType: UnifiedTimerType): number {
   if (typeof timerType === 'object' && timerType.type === 'Special') {
     return sumDurationSpecialKey(result, timerType.keyName);
   }
@@ -71,7 +71,7 @@ export function getUnifiedTimerValue(result: SavedSessionResult, timerType: Unif
  * @param timerType - The unified timer type
  * @return The timer value in minutes
  */
-export function getUnifiedTimerMinutes(result: SavedSessionResult, timerType: UnifiedTimerType): number {
+function getUnifiedTimerMinutes(result: SavedSessionResult, timerType: UnifiedTimerType): number {
   if (typeof timerType === 'object' && timerType.type === 'Special') {
     return sumDurationSpecialKey(result, timerType.keyName) / 60;
   }
@@ -85,7 +85,7 @@ export function getUnifiedTimerMinutes(result: SavedSessionResult, timerType: Un
  * @param timerType - The unified timer type
  * @return A string label to display for this timer type
  */
-export function getUnifiedTimerLabel(timerType: UnifiedTimerType): string {
+function getUnifiedTimerLabel(timerType: UnifiedTimerType): string {
   if (typeof timerType === 'object' && timerType.type === 'Special') {
     return timerType.keyName;
   }
@@ -110,7 +110,7 @@ export function getUnifiedTimerLabel(timerType: UnifiedTimerType): string {
  * @param timerType - The unified timer type
  * @return The schedule key to use for processing frequency/duration keys
  */
-export function getTimerSchedule(timerType: UnifiedTimerType): KeyTiming {
+function getTimerSchedule(timerType: UnifiedTimerType): KeyTiming {
   if (typeof timerType === 'object' && timerType.type === 'Special') {
     return 'Special';
   }
@@ -158,7 +158,7 @@ export interface ProcessedKeyResult {
  * @param config - Timer configuration for calculations
  * @return An array of processed frequency key results
  */
-export function processFrequencyKeys(
+function processFrequencyKeys(
   result: SavedSessionResult,
   keys: KeySetInstance[],
   config: TimerConfig,
@@ -212,7 +212,7 @@ export function processFrequencyKeys(
  * @param config - Timer configuration for calculations
  * @return An array of processed duration key results
  */
-export function processDurationKeys(
+function processDurationKeys(
   result: SavedSessionResult,
   keys: KeySetInstance[],
   config: TimerConfig,
@@ -271,7 +271,7 @@ export function processDurationKeys(
  * @param config - Timer configuration for calculations
  * @return An array of processed derived key results
  */
-export function processDerivedKeys(
+function processDerivedKeys(
   result: SavedSessionResult,
   derivedKeys: LogicState[],
   frequencyKeys: KeySetInstance[],
@@ -348,7 +348,7 @@ export interface ProcessedSessionData {
 /**
  * Processes a single session with unified system
  */
-export function processSessionData(
+function processSessionData(
   result: SavedSessionResult,
   options: SessionProcessingOptions,
   hidden?: {
@@ -457,7 +457,7 @@ export function convertLegacyTimerType(legacyType: SessionTerminationOptionsType
  * @param keyName - The name of the special duration key to use as timer
  * @return A UnifiedTimerType representing this special key timer
  */
-export function createSpecialTimerType(keyName: string): UnifiedTimerType {
+function createSpecialTimerType(keyName: string): UnifiedTimerType {
   return { type: 'Special', keyName };
 }
 
@@ -554,35 +554,6 @@ export interface ChartDataPoint {
   [key: string]: string | number; // Dynamic properties for key values
 }
 
-/**
- * Formats processed data for chart display
- * TODO: get rid of this, not very necessary
- */
-export function formatForChart(data: ProcessedSessionData[]): ChartDataPoint[] {
-  return data.map((sessionData) => {
-    const chartPoint: ChartDataPoint = {
-      session: sessionData.session,
-      condition: sessionData.condition,
-      sessionTime: sessionData.timerDuration * 60, // Convert back to seconds for compatibility
-    };
-
-    // Add all processed key data as named properties (all are already visible)
-    sessionData.frequencyKeys.forEach((key) => {
-      chartPoint[key.keyDescription] = key.rate || key.rawValue;
-    });
-
-    sessionData.durationKeys.forEach((key) => {
-      chartPoint[key.keyDescription] = key.percentage || key.rawValue;
-    });
-
-    sessionData.derivedKeys.forEach((key) => {
-      chartPoint[key.keyDescription] = key.rate || key.rawValue;
-    });
-
-    return chartPoint;
-  });
-}
-
 // ============================================================================
 // PRE-BUILT PROCESSING TEMPLATES
 // ============================================================================
@@ -619,33 +590,6 @@ export const PROCESSING_TEMPLATES = {
 // ============================================================================
 // CONVENIENCE HELPER FUNCTIONS
 // ============================================================================
-
-/**
- * Convenience function for processing single session with filtered keys
- */
-export function processSessionDataWithKeys(
-  result: SavedSessionResult,
-  timerType: UnifiedTimerType,
-  frequencyKeys: KeySetInstance[],
-  durationKeys: KeySetInstance[],
-  derivedKeys: LogicState[],
-  template: CalculationTemplate,
-): ProcessedSessionData {
-  const options = PROCESSING_TEMPLATES[template](timerType);
-
-  // Create a modified result with the filtered keys for processing
-  const modifiedResult = {
-    ...result,
-    Keyset: {
-      ...result.Keyset,
-      FrequencyKeys: frequencyKeys,
-      DurationKeys: durationKeys,
-      DerivedKeys: derivedKeys,
-    },
-  };
-
-  return processSessionData(modifiedResult, options);
-}
 
 export type CalculationTemplate = 'FREQUENCY_RATES' | 'DURATION_PERCENTAGES' | 'SPREADSHEET_ALL' | 'CHART_ALL';
 
