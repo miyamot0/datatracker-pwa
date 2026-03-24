@@ -33,7 +33,7 @@ export default function ResultsViewerContent({
   Settings,
 }: Props) {
   const [role, setRole] = useState<DataCollectorRolesType>('Primary');
-  const [schedule, setSchedule] = useState<ScheduleMappingOptionsType>(TimerMapping);
+  const [schedule, setSchedule] = useState<ScheduleMappingOptionsType | { value: string; label: string }>(TimerMapping);
 
   const filteredResults = Results.sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session).filter(
     (result) => result.SessionSettings.Role === role,
@@ -67,9 +67,23 @@ export default function ResultsViewerContent({
           <Select
             value={schedule.value}
             onValueChange={(value: ScheduleMappingOptionsType['value']) => {
-              const selectedOption = ScheduleMappingOptions.find((option) => option.value === value);
-              if (selectedOption) {
-                setSchedule(selectedOption);
+              const selectedOptionFixed = ScheduleMappingOptions.find((option) => option.value === value);
+
+              if (selectedOptionFixed) {
+                // Note: A pre-made but filter option
+                setSchedule(selectedOptionFixed);
+              }
+
+              const specialKeyOption = filteredSessionScoringOptions(Settings, Keyset).find(
+                (option) => option.value === value,
+              );
+
+              if (specialKeyOption) {
+                // Note: A special key option
+                setSchedule({
+                  value: specialKeyOption.value,
+                  label: specialKeyOption.label,
+                });
               }
             }}
           >

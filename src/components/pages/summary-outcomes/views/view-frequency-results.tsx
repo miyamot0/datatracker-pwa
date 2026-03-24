@@ -41,9 +41,11 @@ export default function ViewFrequencyResults({
 }: Props) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeysFreq);
 
+  console.log(SessionTimer);
+
   const frequencyRates = processMultipleSessionDataWithKeys(
     Results,
-    convertLegacyTimerType(SessionTimer),
+    convertLegacyTimerType(SessionTimer, LatestKeyset),
     {
       frequencyKeys: LatestKeyset.FrequencyKeys,
       durationKeys: LatestKeyset.DurationKeys,

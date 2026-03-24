@@ -44,7 +44,7 @@ export default function ViewDurationResults({
   // TODO: Special Timer Keys
   const durationResults = processMultipleSessionDataWithKeys(
     Results,
-    convertLegacyTimerType(SessionTimer),
+    convertLegacyTimerType(SessionTimer, LatestKeyset),
     {
       frequencyKeys: LatestKeyset.FrequencyKeys,
       durationKeys: LatestKeyset.DurationKeys,

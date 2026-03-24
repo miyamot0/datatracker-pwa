@@ -53,7 +53,7 @@ export function filteredSessionScoringOptions(
   });
 
   const specialKeyScoringOptions = keySet.SpecialDurationKeys.map((key) => ({
-    value: key.KeyCode,
+    value: `End on ${key.KeyDescription}`,
     label: `Score ${key.KeyDescription}`,
   }));
 
