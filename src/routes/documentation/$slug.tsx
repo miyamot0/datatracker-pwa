@@ -9,6 +9,7 @@ import { FrontMatterUniversalType } from '@/types/mdx';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/documentation/$slug')({
+  
   beforeLoad({ params }) {
     const entry = DocumentationObjects.find((entry) => entry.matter.filename.replaceAll('.md', '') === params.slug);
 

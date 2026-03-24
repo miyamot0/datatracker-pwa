@@ -1,4 +1,6 @@
-import { ParsedFrontMatterType } from '@/types/mdx';
+import { KeywordColors } from '@/types/colors';
+import { FrontMatterUniversalType, ParsedFrontMatterType } from '@/types/mdx';
+import { generateKeywordColors } from './colors';
 
 /**
  * Generate an array of documentation objects by parsing the front matter and content of markdown files in the specified directory
@@ -31,3 +33,9 @@ export const DocumentationObjects: ParsedFrontMatterType[] = Object.entries(all_
     value: content[2],
   } satisfies ParsedFrontMatterType;
 });
+
+export const AllFrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(
+  (entry) => entry.matter as FrontMatterUniversalType,
+);
+
+export const AllKeywordsArray: KeywordColors[] = generateKeywordColors(AllFrontMatter);
