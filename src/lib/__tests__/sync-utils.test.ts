@@ -3,7 +3,7 @@
  * Run with: npm test or yarn test
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach, } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   validateFilePath,
   normalizeFilePath,
@@ -17,21 +17,22 @@ import {
 import { SyncWorkerHandler } from '../../workers/sync/helpers/sync-handler';
 
 // Mock FileSystemDirectoryHandle and FileSystemFileHandle with proper async handling
-const createMockFileHandle = (name: string, content: string = 'test content') => ({
-  name,
-  kind: 'file' as const,
-  getFile: vi.fn().mockResolvedValue(new File([content], name, { type: 'text/plain' })),
-  createWritable: vi.fn().mockResolvedValue({
-    write: vi.fn().mockResolvedValue(undefined),
-    close: vi.fn().mockResolvedValue(undefined),
-  }),
-  // Required FileSystemHandle methods
-  isFile: vi.fn().mockResolvedValue(true),
-  isDirectory: vi.fn().mockResolvedValue(false),
-  isSameEntry: vi.fn().mockResolvedValue(false),
-  queryPermission: vi.fn().mockResolvedValue('granted' as const),
-  requestPermission: vi.fn().mockResolvedValue('granted' as const),
-} as any);
+const createMockFileHandle = (name: string, content: string = 'test content') =>
+  ({
+    name,
+    kind: 'file' as const,
+    getFile: vi.fn().mockResolvedValue(new File([content], name, { type: 'text/plain' })),
+    createWritable: vi.fn().mockResolvedValue({
+      write: vi.fn().mockResolvedValue(undefined),
+      close: vi.fn().mockResolvedValue(undefined),
+    }),
+    // Required FileSystemHandle methods
+    isFile: vi.fn().mockResolvedValue(true),
+    isDirectory: vi.fn().mockResolvedValue(false),
+    isSameEntry: vi.fn().mockResolvedValue(false),
+    queryPermission: vi.fn().mockResolvedValue('granted' as const),
+    requestPermission: vi.fn().mockResolvedValue('granted' as const),
+  }) as any;
 
 const createMockDirectoryHandle = (name: string, children: any[] = []) => {
   const handle = {
@@ -99,7 +100,7 @@ const createMockDirectoryHandle = (name: string, children: any[] = []) => {
 // Mock FileReader with proper constructor for Vitest 4+
 const mockFileReaderInstance = {
   readAsText: vi.fn(),
-  onload: null as (() => void) | null,  
+  onload: null as (() => void) | null,
   onerror: null as ((error: any) => void) | null,
   result: null as string | null,
 };
@@ -109,13 +110,13 @@ class MockFileReader {
   onload = null as (() => void) | null;
   onerror = null as ((error: any) => void) | null;
   result = null as string | null;
-  
+
   constructor() {
     // Reset properties for each instance
     this.onload = null;
     this.onerror = null;
     this.result = null;
-    // Share the mock function 
+    // Share the mock function
     this.readAsText = mockFileReaderInstance.readAsText;
   }
 }
@@ -209,7 +210,7 @@ describe('Sync Utilities', () => {
       const testFile = new File([testContent], 'test.txt', { type: 'text/plain' });
 
       // Set up the mock behavior - this will apply to all new instances
-      mockFileReaderInstance.readAsText.mockImplementation(function(this: any) {
+      mockFileReaderInstance.readAsText.mockImplementation(function (this: any) {
         this.result = testContent;
         setTimeout(() => {
           if (this.onload) {
@@ -227,7 +228,7 @@ describe('Sync Utilities', () => {
       const testFile = new File(['content'], 'test.txt', { type: 'text/plain' });
       const testError = new Error('Read failed');
 
-      mockFileReaderInstance.readAsText.mockImplementation(function(this: any) {
+      mockFileReaderInstance.readAsText.mockImplementation(function (this: any) {
         setTimeout(() => {
           if (this.onerror) {
             this.onerror(testError);
@@ -241,7 +242,7 @@ describe('Sync Utilities', () => {
     it('should handle empty files', async () => {
       const testFile = new File([''], 'empty.txt', { type: 'text/plain' });
 
-      mockFileReaderInstance.readAsText.mockImplementation(function(this: any) {
+      mockFileReaderInstance.readAsText.mockImplementation(function (this: any) {
         this.result = '';
         setTimeout(() => {
           if (this.onload) {

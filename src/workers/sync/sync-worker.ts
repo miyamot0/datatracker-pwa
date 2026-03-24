@@ -13,6 +13,17 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
   const { data } = event;
 
   try {
+    // Validate data exists and has required properties
+    if (!data || typeof data !== 'object' || !data.type) {
+      const errorResponse: WorkerResponse = {
+        type: 'ERROR',
+        message: 'Invalid message format: missing type or data',
+        operation: 'UNKNOWN',
+      };
+      self.postMessage(errorResponse);
+      return;
+    }
+
     const response = await handler.processMessage(data);
     self.postMessage(response);
   } catch (error) {
@@ -20,7 +31,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
     const errorResponse: WorkerResponse = {
       type: 'ERROR',
       message: error instanceof Error ? error.message : 'Unknown error occurred',
-      operation: data.type,
+      operation: data?.type || 'UNKNOWN',
     };
     self.postMessage(errorResponse);
   }

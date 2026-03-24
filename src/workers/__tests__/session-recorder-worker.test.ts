@@ -1,38 +1,45 @@
-// @ts-nocheck
-
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { SavedSettings } from '@/lib/dtos';
 import { KeySet } from '@/types/keyset';
 import { WorkerMessage } from '../timing/types/session-recorder-worker-messaging';
 
-// Mock the core module - keep simple for worker integration tests
-vi.mock('../timing/helpers/session-recorder-core', () => ({
-  SessionRecorderCore: vi.fn().mockImplementation(() => ({
-    init: vi.fn(),
-    startSession: vi.fn(() => ({
+// Create mock class using vi.hoisted for proper constructor support in Vitest 4+
+const MockSessionRecorderCore = vi.hoisted(() => {
+  return class MockSessionRecorderCore {
+    init = vi.fn();
+    startSession = vi.fn(() => ({
       systemEvents: [{ KeyName: 'Start', KeyType: 'System' }],
       startTime: 123456,
-    })),
-    getState: vi.fn(() => ({
+    }));
+    getState = vi.fn(() => ({
       activeTimer: 'Primary',
       isRunning: false,
-    })),
-    getUiUpdateInterval: vi.fn(() => 50),
-    updateTimers: vi.fn(() => ({
+    }));
+    getUiUpdateInterval = vi.fn(() => 50);
+    updateTimers = vi.fn(() => ({
       shouldEnd: false,
       timerUpdate: { total: 1, first: 1, second: 0, third: 0, active: 1, activeTimer: 'Primary' },
-    })),
-    switchTimer: vi.fn(() => [{ KeyName: 'Switch', KeyType: 'System' }]),
-    processKey: vi.fn(() => ({ key: { KeyName: 'A' }, totalKeys: 1 })),
-    deleteLastKey: vi.fn(() => ({ deletedKey: { KeyName: 'A' }, totalKeys: 0 })),
-    endSession: vi.fn(() => ({
+    }));
+    switchTimer = vi.fn(() => [{ KeyName: 'Switch', KeyType: 'System' }]);
+    switchToSpecialKey = vi.fn(() => [{ KeyName: 'SpecialSwitch', KeyType: 'System' }]);
+    processKey = vi.fn(() => ({ key: { KeyName: 'A' }, totalKeys: 1 }));
+    deleteLastKey = vi.fn(() => ({ deletedKey: { KeyName: 'A' }, totalKeys: 0 }));
+    endSession = vi.fn(() => ({
       reason: 'Completed',
       keysPressed: [],
       systemKeysPressed: [],
       timers: { total: 0, first: 0, second: 0, third: 0 },
       startTime: null,
-    })),
-  })),
+    }));
+
+    // @ts-ignore
+    static getTimerConstants = vi.fn(() => ({ TIME_DELTA: 10, TIME_UNIT: 1000, INCREMENT: 0.01 }));
+  };
+});
+
+// Mock the core module - keep simple for worker integration tests
+vi.mock('../timing/helpers/session-recorder-core', () => ({
+  SessionRecorderCore: MockSessionRecorderCore,
   getTimerConstants: vi.fn(() => ({ TIME_DELTA: 10, TIME_UNIT: 1000, INCREMENT: 0.01 })),
   getHighResTime: vi.fn(() => performance.now()),
 }));
@@ -167,6 +174,17 @@ describe('SessionRecorderWorker', () => {
       expect(() => mockSelf.onmessage?.(event)).not.toThrow();
     });
 
+    it('should handle SWITCH_SPECIAL_KEY message', () => {
+      const message: WorkerMessage = {
+        type: 'SWITCH_SPECIAL_KEY',
+        payload: { specialKeyName: 'Duration1' },
+      };
+
+      const event = new MessageEvent('message', { data: message });
+
+      expect(() => mockSelf.onmessage?.(event)).not.toThrow();
+    });
+
     it('should handle PROCESS_KEY message', () => {
       const message: WorkerMessage = {
         type: 'PROCESS_KEY',
@@ -191,6 +209,7 @@ describe('SessionRecorderWorker', () => {
     it('should ignore messages with missing required payload fields', () => {
       const messages: WorkerMessage[] = [
         { type: 'SWITCH_TIMER' }, // Missing timer
+        { type: 'SWITCH_SPECIAL_KEY' }, // Missing specialKeyName
         { type: 'PROCESS_KEY', payload: { keyName: 'A' } }, // Missing keyCode
         { type: 'PROCESS_KEY', payload: { keyCode: 65 } }, // Missing keyName
         { type: 'STOP_SESSION' }, // Missing reason
@@ -313,6 +332,7 @@ describe('SessionRecorderWorker', () => {
     it('should integrate with core for all operations', () => {
       const operations = [
         { type: 'SWITCH_TIMER', payload: { timer: 'Secondary' } },
+        { type: 'SWITCH_SPECIAL_KEY', payload: { specialKeyName: 'Duration1' } },
         { type: 'PROCESS_KEY', payload: { keyName: 'A', keyCode: 65 } },
         { type: 'DELETE_LAST_KEY' },
       ] as WorkerMessage[];
@@ -326,6 +346,7 @@ describe('SessionRecorderWorker', () => {
       const messages: WorkerMessage[] = [
         { type: 'START_SESSION' },
         { type: 'SWITCH_TIMER', payload: { timer: 'Secondary' } },
+        { type: 'SWITCH_SPECIAL_KEY', payload: { specialKeyName: 'Duration1' } },
         { type: 'PROCESS_KEY', payload: { keyName: 'A', keyCode: 65 } },
         { type: 'DELETE_LAST_KEY' },
       ];
@@ -346,6 +367,7 @@ describe('SessionRecorderWorker', () => {
       ];
 
       malformedEvents.forEach((event) => {
+        // @ts-ignore
         expect(() => mockSelf.onmessage?.(event)).not.toThrow();
       });
     });
@@ -389,6 +411,7 @@ describe('SessionRecorderWorker', () => {
     it('should handle operations when session not running', () => {
       const operations = [
         { type: 'SWITCH_TIMER', payload: { timer: 'Secondary' } },
+        { type: 'SWITCH_SPECIAL_KEY', payload: { specialKeyName: 'Duration1' } },
         { type: 'PROCESS_KEY', payload: { keyName: 'A', keyCode: 65 } },
         { type: 'DELETE_LAST_KEY' },
       ] as WorkerMessage[];

@@ -7,8 +7,19 @@ const mockHandler = vi.hoisted(() => ({
   processMessage: vi.fn(),
 }));
 
+// Create mock class using vi.hoisted for Vitest 4+ compatibility
+const MockSyncWorkerHandler = vi.hoisted(() => {
+  return class MockSyncWorkerHandler {
+    processMessage = mockHandler.processMessage;
+
+    constructor() {
+      return mockHandler as any;
+    }
+  };
+});
+
 vi.mock('../sync/helpers/sync-handler', () => ({
-  SyncWorkerHandler: vi.fn().mockImplementation(() => mockHandler),
+  SyncWorkerHandler: MockSyncWorkerHandler,
 }));
 
 // Mock dependencies that the worker might need

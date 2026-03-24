@@ -342,7 +342,15 @@ describe('worker-buffers', () => {
     it('should create SharedArrayBuffer when supported', () => {
       // Mock SharedArrayBuffer support
       const mockBuffer = { byteLength: SHARED_TIMER_STATE_SIZE };
-      const MockSharedArrayBuffer = vi.fn(() => mockBuffer);
+
+      class MockSharedArrayBuffer {
+        static lastConstructorCall: number | undefined;
+
+        constructor(size: number) {
+          MockSharedArrayBuffer.lastConstructorCall = size;
+          return mockBuffer as any;
+        }
+      }
 
       mockGlobal.SharedArrayBuffer = MockSharedArrayBuffer;
       mockGlobal.Atomics = {};
@@ -350,19 +358,27 @@ describe('worker-buffers', () => {
 
       const buffer = createSharedTimerBuffer();
 
-      expect(MockSharedArrayBuffer).toHaveBeenCalledWith(SHARED_TIMER_STATE_SIZE);
+      expect(MockSharedArrayBuffer.lastConstructorCall).toBe(SHARED_TIMER_STATE_SIZE);
       expect(buffer).toBe(mockBuffer);
     });
 
     it('should create buffer with correct size', () => {
-      const MockSharedArrayBuffer = vi.fn();
+      class MockSharedArrayBuffer {
+        static lastConstructorCall: number | undefined;
+
+        constructor(size: number) {
+          MockSharedArrayBuffer.lastConstructorCall = size;
+          return { byteLength: size } as any;
+        }
+      }
+
       mockGlobal.SharedArrayBuffer = MockSharedArrayBuffer;
       mockGlobal.Atomics = {};
       mockGlobal.self = { crossOriginIsolated: true };
 
       createSharedTimerBuffer();
 
-      expect(MockSharedArrayBuffer).toHaveBeenCalledWith(64); // 8 * 8 = 64 bytes
+      expect(MockSharedArrayBuffer.lastConstructorCall).toBe(64); // 8 * 8 = 64 bytes
     });
   });
 
@@ -371,14 +387,22 @@ describe('worker-buffers', () => {
       const mockBuffer = { byteLength: SHARED_TIMER_STATE_SIZE };
       const mockView = new Float64Array(8);
 
-      const MockFloat64Array = vi.fn(() => mockView);
+      class MockFloat64Array {
+        static lastConstructorCall: any;
+
+        constructor(buffer: any) {
+          MockFloat64Array.lastConstructorCall = buffer;
+          return mockView as any;
+        }
+      }
+
       const originalFloat64Array = globalThis.Float64Array;
       globalThis.Float64Array = MockFloat64Array as any;
 
       try {
         const view = getSharedTimerView(mockBuffer as SharedArrayBuffer);
 
-        expect(MockFloat64Array).toHaveBeenCalledWith(mockBuffer);
+        expect(MockFloat64Array.lastConstructorCall).toBe(mockBuffer);
         expect(view).toBe(mockView);
       } finally {
         globalThis.Float64Array = originalFloat64Array;
