@@ -556,8 +556,9 @@ export interface ChartDataPoint {
 
 /**
  * Formats processed data for chart display
+ * TODO: get rid of this, not very necessary
  */
-export function formatForChart(data: ProcessedSessionData[], respectVisibility: boolean = true): ChartDataPoint[] {
+export function formatForChart(data: ProcessedSessionData[]): ChartDataPoint[] {
   return data.map((sessionData) => {
     const chartPoint: ChartDataPoint = {
       session: sessionData.session,
@@ -609,7 +610,7 @@ export const PROCESSING_TEMPLATES = {
   }),
 
   CHART_ALL: (timerType: UnifiedTimerType): SessionProcessingOptions => ({
-    timer: { timerType, includeRates: true, includePercentages: true },
+    timer: { timerType, includeRates: true, includePercentages: true, includeBouts: true },
     keyTypes: { frequency: true, duration: true, derived: true },
     outputFormat: 'chart',
   }),

@@ -3,6 +3,11 @@ import { FIGURE_TEXT_OPTIONS } from '@/types/accessibility';
 
 /**
  * Rate-specific tooltip component
+ *
+ * @param active - Indicates if the tooltip is active (visible)
+ * @param payload - The data payload provided by the chart for the hovered point
+ * @param figureTextSize - The current text size setting for the figure, used to adjust tooltip text size
+ * @returns A JSX element representing the tooltip content, or null if not active
  */
 export function RateTooltip({ active, payload, figureTextSize }: any) {
   if (active && payload && payload.length) {
@@ -27,14 +32,14 @@ export function RateTooltip({ active, payload, figureTextSize }: any) {
         })}
       >
         <p className="font-bold">{`Session #${main_payload.session} (${Condition})`}</p>
-        <p className="font-semibold mb-2">{`Session Time: ${(main_payload.SessionTime / 60).toPrecision(2)} min`}</p>
+        <p className="font-semibold mb-2">{`Session Time: ${main_payload.SessionTime.toPrecision(2)} min`}</p>
 
         <div className="flex flex-col ">
           {relevant_payloads_unique.map((entry: any, index: number) => {
             const cleaned_up_tag = entry.dataKey.toString().replace(payload[0].payload.Condition, '').replace('-', '');
 
             const rate_per_min = entry.value;
-            const total_count = (rate_per_min * main_payload.SessionTime) / 60;
+            const total_count = rate_per_min * main_payload.SessionTime;
 
             return (
               <div key={index} className="flex flex-col mb-1">

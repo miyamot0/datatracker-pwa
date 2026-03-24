@@ -195,6 +195,7 @@ export default function ResultsProportionVisualsPage({
             Individual={Individual}
             Evaluation={Evaluation}
             FilteredSessions={ResultsFiltered}
+            DynamicKeySet={DynamicKeySet}
             MinX={MinX}
             MaxX={MaxX}
             ScheduleOption={schedule}

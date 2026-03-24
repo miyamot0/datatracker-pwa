@@ -27,7 +27,7 @@ function OutputDisplay({ payloads }: { payloads: any[] }) {
           <div key={index} className="flex flex-col mb-1">
             <div className="flex flex-row justify-between text-sm">
               <span className="font-semibold mr-2">{`${cleaned_up_tag} Total`}</span>
-              <p className="text-sm">{get_seconds(entry.value)}</p>
+              <p className="text-sm">{get_seconds(entry.value * 60)}</p>
             </div>
             <div className="flex flex-row justify-between text-sm">
               <span className="font-semibold mr-2">{`${cleaned_up_tag} %`}</span>
@@ -40,7 +40,7 @@ function OutputDisplay({ payloads }: { payloads: any[] }) {
             <div className="flex flex-row justify-between text-sm">
               <span className="font-semibold mr-2">{`${cleaned_up_tag} Ave`}</span>
               <p key={`item-${index}`} className="text-sm">
-                {bout_ave !== undefined && bout_ave !== 0 ? `${bout_ave}s` : 'N/A'}
+                {bout_ave !== undefined && bout_ave !== 0 ? `${bout_ave.toFixed(2)}s` : 'N/A'}
               </p>
             </div>
           </div>
@@ -76,7 +76,7 @@ export function ProportionTooltip({ active, payload, figureTextSize }: any) {
         })}
       >
         <p className="font-bold">{`Session #${main_payload.session} (${Condition})`}</p>
-        <p className="font-semibold mb-2">{`Session Time: ${(main_payload.SessionTime / 60).toPrecision(2)} min`}</p>
+        <p className="font-semibold mb-2">{`Session Time: ${main_payload.SessionTime.toPrecision(2)} min`}</p>
 
         <OutputDisplay payloads={relevant_payloads_unique} />
       </div>

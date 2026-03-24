@@ -7,6 +7,7 @@ import { ModifiedSessionResult } from '@/types/storage';
 import { FIGURE_PATH_COLORS } from './colors';
 import { getShape } from './shapes';
 import { evaluateLogic, LogicState } from './logic';
+import { ProcessedSessionData } from './calculations';
 
 export function filterSessionsByPrimaryRole(results: SavedSessionResult[]) {
   return results
@@ -343,6 +344,7 @@ export function createNavigationHandler(navigate: any, group: string, individual
 
 /**
  * Prepares data for proportion visualization (percentage of session time)
+ * @deprecated
  */
 export function prepareProportionData(
   filteredSessions: SavedSessionResult[],
@@ -368,8 +370,28 @@ export function prepareProportionData(
   return { preparedData };
 }
 
+export function prepareProportionDataUniversal(ScoredSessions: ProcessedSessionData[]) {
+  const preparedData = ScoredSessions.map((data) => {
+    const temp_obj = {} as any;
+    temp_obj.session = data.session;
+    temp_obj.Condition = data.condition;
+    temp_obj.SessionTime = data.timerDuration;
+
+    data.durationKeys.map((key) => {
+      temp_obj[`${key.keyDescription}`] = key.percentage;
+      temp_obj[`${key.keyDescription}-Bouts`] = key.bouts;
+      temp_obj[`${key.keyDescription}-Bout-Ave`] = key.averageBout;
+    });
+
+    return temp_obj;
+  });
+
+  return { preparedData };
+}
+
 /**
  * Prepares data for rate visualization (counts per minute)
+ * @deprecated
  */
 export function prepareRateData(
   filteredSessions: SavedSessionResult[],
@@ -399,6 +421,46 @@ export function prepareRateData(
       if (maxY < rate_calc) {
         maxY = rate_calc;
       }
+    });
+
+    return temp_obj;
+  });
+
+  return { preparedData, maxY };
+}
+
+/**
+ * Prepares data for rate visualization using universal approach.
+ *
+ * @param ScoredSessions - Array of processed session data with frequency keys and derived keys already calculated
+ * @returns An object containing the prepared data for visualization and the maximum Y value for scaling the chart
+ */
+export function prepareRateDataUniversal(ScoredSessions: ProcessedSessionData[]) {
+  let maxY = 0;
+
+  // Note: this is session-by-session grouping
+  const preparedData = ScoredSessions.map((data) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const temp_obj = {} as any;
+
+    temp_obj.session = data.session;
+    temp_obj.Condition = data.condition;
+    temp_obj.SessionTime = data.timerDuration;
+
+    data.frequencyKeys.map((key) => {
+      if (key.rate && maxY < key.rate) {
+        maxY = key.rate;
+      }
+
+      temp_obj[`${key.keyDescription}`] = key.rate;
+    });
+
+    data.derivedKeys.map((key) => {
+      if (key.rate && maxY < key.rate) {
+        maxY = key.rate;
+      }
+
+      temp_obj[`${key.keyDescription}`] = key.rate;
     });
 
     return temp_obj;

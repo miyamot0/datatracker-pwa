@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { type FigureVisualSizing } from '@/types/accessibility';
 import { useNavigate } from '@tanstack/react-router';
 import { ExpandedKeySetInstance, KeySet } from '@/types/keyset';
-import { generateTicks, createChartLegends, createNavigationHandler, prepareRateData } from '@/lib/graphing';
+import { generateTicks, createChartLegends, createNavigationHandler, prepareRateDataUniversal } from '@/lib/graphing';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { BaseChart } from '@/components/pages/visualize-outcomes/shared/base-chart';
 import { RateTooltip } from './rate-elements';
+import { convertLegacyTimerType, processMultipleSessionDataWithKeys } from '@/lib/calculations';
 
 type Props = {
   Group: string;
@@ -41,8 +42,6 @@ export default function RateFigureVisualization({
     from: `/session/$group/$individual/$evaluation/rate`,
   });
 
-  const { preparedData } = prepareRateData(FilteredSessions, ScheduleOption, KeySetFull, DynamicKeySet);
-
   const x_ticks = generateTicks(MaxX, MinX);
   const legends = createChartLegends(FilteredSessions, KeySetFull);
   const onNavigate = createNavigationHandler(navigate, Group, Individual, Evaluation);
@@ -52,6 +51,24 @@ export default function RateFigureVisualization({
     label: 'Responses per Min',
     padding: { bottom: 10 },
   };
+
+  const frequencyRates = processMultipleSessionDataWithKeys(
+    FilteredSessions,
+    convertLegacyTimerType(ScheduleOption, DynamicKeySet),
+    {
+      frequencyKeys: DynamicKeySet.FrequencyKeys,
+      durationKeys: DynamicKeySet.DurationKeys,
+      derivedKeys: DynamicKeySet.DerivedKeys,
+    },
+    'CHART_ALL',
+    {
+      frequencyKeys: [],
+      durationKeys: DynamicKeySet.DurationKeys,
+      derivedKeys: [],
+    },
+  );
+
+  const { preparedData } = prepareRateDataUniversal(frequencyRates);
 
   return (
     <div className="flex flex-col gap-4 w-full nuke-view-transition">
