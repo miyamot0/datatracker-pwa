@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import '@vitest/web-worker';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import SyncWorker from '../sync/sync-worker?worker';

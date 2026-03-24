@@ -16,8 +16,10 @@ export default defineConfig({
     globals: true,
     onConsoleLog(log: string, type: 'stdout' | 'stderr') {
       // Note: Let things fail silently when expected
-
       if (type === 'stderr') return false;
+
+      // Note: Simply output
+      if (type === 'stdout') return false;
 
       return true;
     },
