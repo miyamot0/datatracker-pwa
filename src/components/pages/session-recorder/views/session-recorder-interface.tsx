@@ -63,15 +63,8 @@ export default function SessionRecorderInterface({
 
   const mutateSessionOutcomes = useMutation({
     mutationFn: mutationSettingsOutcomes,
-    onSuccess: (data) => {
-      queryClient.setQueryData(['/', Group, Individual, Evaluation, 'outcomes'], data);
-    },
-  });
-
-  const mutateSettings = useMutation({
-    mutationFn: mutationSettingsParams,
     onSuccess: async (data) => {
-      queryClient.setQueryData(['/', Group, Individual, Evaluation, 'settings'], data);
+      queryClient.setQueryData(['/', Group, Individual, Evaluation, 'outcomes'], data);
 
       // Invalidate other routes with results
       await router.invalidate({
@@ -83,6 +76,13 @@ export default function SessionRecorderInterface({
           match.routeId === '/session/$group/$individual/$evaluation/view',
         sync: false,
       });
+    },
+  });
+
+  const mutateSettings = useMutation({
+    mutationFn: mutationSettingsParams,
+    onSuccess: (data) => {
+      queryClient.setQueryData(['/', Group, Individual, Evaluation, 'settings'], data);
     },
   });
 
