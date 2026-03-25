@@ -52,7 +52,16 @@ export interface SessionProcessingOptions {
  */
 function getUnifiedTimerValue(result: SavedSessionResult, keyset: KeySet, timerType: UnifiedTimerType): number {
   if (typeof timerType === 'object' && timerType.type === 'Special') {
-    return sumDurationSpecialKey(result, timerType.keyName);
+    const checkSpecialKey = keyset.SpecialDurationKeys.find((key) => key.KeyName === timerType.keyName);
+    if (checkSpecialKey) {
+      return sumDurationSpecialKey(result, timerType.keyName);
+    }
+
+    // Pull from duration presses
+    const checkScoringKey = keyset.ScorableDurationKeys.find((key) => key.KeyName === timerType.keyName);
+    if (checkScoringKey) {
+      return sumDurationScoringKey(result, timerType.keyName);
+    }
   }
 
   switch (timerType) {
@@ -77,20 +86,6 @@ function getUnifiedTimerValue(result: SavedSessionResult, keyset: KeySet, timerT
  * @return The timer value in minutes
  */
 function getUnifiedTimerMinutes(result: SavedSessionResult, keyset: KeySet, timerType: UnifiedTimerType): number {
-  if (typeof timerType === 'object' && timerType.type === 'Special') {
-    // Pull from system presses
-    const checkSpecialKey = keyset.SpecialDurationKeys.find((key) => key.KeyName === timerType.keyName);
-    if (checkSpecialKey) {
-      return sumDurationSpecialKey(result, timerType.keyName) / 60;
-    }
-
-    // Pull from duration presses
-    const checkScoringKey = keyset.ScorableDurationKeys.find((key) => key.KeyName === timerType.keyName);
-    if (checkScoringKey) {
-      return sumDurationScoringKey(result, timerType.keyName) / 60;
-    }
-  }
-
   return getUnifiedTimerValue(result, keyset, timerType) / 60;
 }
 
@@ -100,9 +95,18 @@ function getUnifiedTimerMinutes(result: SavedSessionResult, keyset: KeySet, time
  * @param timerType - The unified timer type
  * @return A string label to display for this timer type
  */
-function getUnifiedTimerLabel(timerType: UnifiedTimerType): string {
+function getUnifiedTimerLabel(timerType: UnifiedTimerType, keyset: KeySet): string {
   if (typeof timerType === 'object' && timerType.type === 'Special') {
-    return timerType.keyName;
+    const checkSpecialKey = keyset.SpecialDurationKeys.find((key) => key.KeyName === timerType.keyName);
+    if (checkSpecialKey) {
+      return `${timerType.keyName} (Timing)`;
+    }
+
+    // Pull from duration presses
+    const checkScoringKey = keyset.ScorableDurationKeys.find((key) => key.KeyName === timerType.keyName);
+    if (checkScoringKey) {
+      return `${timerType.keyName} (Scoring)`;
+    }
   }
 
   switch (timerType) {
@@ -370,7 +374,7 @@ function processSessionData(
     collector: result.SessionSettings.Initials,
     therapist: result.SessionSettings.Therapist,
     timerType: options.timer.timerType,
-    timerLabel: getUnifiedTimerLabel(options.timer.timerType),
+    timerLabel: getUnifiedTimerLabel(options.timer.timerType, keyset),
     timerDuration: getUnifiedTimerMinutes(result, keyset, options.timer.timerType),
     frequencyKeys: [],
     durationKeys: [],
@@ -615,6 +619,40 @@ export function processMultipleSessionDataWithKeys(
   },
 ): ProcessedSessionData[] {
   const processOptions = PROCESSING_TEMPLATES[template](timerType);
+
+  const identifyStrategy: () => { special: boolean; schedule?: 'system' | 'duration' } = () => {
+    const isSpecialScoring = typeof timerType === 'object' && timerType.type === 'Special';
+
+    if (isSpecialScoring) {
+      const keyValue = timerType.keyName;
+
+      const checkSpecialKey = keyset.SpecialDurationKeys.find((key) => key.KeyName === keyValue);
+      if (checkSpecialKey) {
+        return {
+          special: true,
+          schedule: 'system',
+        };
+      }
+
+      const checkScoringKey = keyset.ScorableDurationKeys.find((key) => key.KeyName === keyValue);
+      if (checkScoringKey) {
+        return {
+          special: true,
+          schedule: 'duration',
+        };
+      }
+
+      throw new Error(
+        `Timer key "${keyValue}" not found in either SpecialDurationKeys or ScorableDurationKeys of the keyset.`,
+      );
+    }
+
+    return {
+      special: false,
+    };
+  };
+
+  const strategy = identifyStrategy();
 
   return results.map((result) => {
     const modifiedResult = {
