@@ -1,19 +1,13 @@
-import PageWrapper from '@/components/elements/page-wrapper';
-import DocumentationEntryPage from '@/components/pages/documentation/documentation-entry-page';
-import { BuildDocumentationBreadcrumb } from '@/components/ui/breadcrumb-entries';
-import { generateKeywordColors } from '@/lib/colors';
-import { DocumentationObjects } from '@/lib/docs';
+import { AllFrontMatter, AllKeywordsArray, DocumentationObjects } from '@/lib/docs';
 import createHref from '@/lib/links';
-import { KeywordColors } from '@/types/colors';
-import { FrontMatterUniversalType } from '@/types/mdx';
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { FrontMatterUniversalType, ParsedFrontMatterType } from '@/types/mdx';
+import { redirect, createFileRoute, lazyRouteComponent } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/documentation/$slug')({
-  
   beforeLoad({ params }) {
-    const entry = DocumentationObjects.find((entry) => entry.matter.filename.replaceAll('.md', '') === params.slug);
+    const entry = DocumentationObjects.find((entry) => entry.filename.replaceAll('.md', '') === params.slug);
 
-    if (!entry || !entry.matter) {
+    if (!entry) {
       throw redirect({
         href: createHref({ type: 'Documentation' }),
       });
@@ -23,46 +17,50 @@ export const Route = createFileRoute('/documentation/$slug')({
       entry: entry,
     };
   },
-  loader: ({ context }) => {
-    const { entry } = context;
+  loader: async ({ context, params }) => {
+    const filename = `${params.slug}.md`;
 
-    const FrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(
-      (entry) => entry.matter as FrontMatterUniversalType,
-    );
-    const KeywordArray: KeywordColors[] = generateKeywordColors(FrontMatter);
+    const response = await fetch(`/content/${filename}`);
 
-    const PreviousEntry = DocumentationObjects.find((e) => e.matter.index === entry.matter.index - 1);
-    const NextEntry = DocumentationObjects.find((e) => e.matter.index === entry.matter.index + 1);
+    if (!response.ok) {
+      throw new Error(`Failed to load documentation content for slug: ${params.slug}`);
+    }
+
+    const body = await response.text();
+    const content = (body as string).split('---');
+
+    const preMatter = {
+      filename,
+      slug: params.slug,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+
+    const entries = content[1].split('\n').filter((str: string) => str.trim() !== '');
+
+    entries.forEach((entry) => {
+      const [keyString, value] = entry.split(':');
+      const key = keyString.trim();
+      preMatter[key] = value.trim().replaceAll("'", '');
+    });
+
+    const matter = { ...preMatter, index: parseInt(preMatter.index) } as FrontMatterUniversalType;
+
+    const result = {
+      matter,
+      value: content[2],
+    } satisfies ParsedFrontMatterType;
+
+    const PreviousEntry = AllFrontMatter.find((e) => e.index === result.matter.index - 1);
+    const NextEntry = AllFrontMatter.find((e) => e.index === result.matter.index + 1);
 
     return {
-      FrontMatter,
-      KeywordArray,
+      FrontMatter: result.matter as FrontMatterUniversalType,
+      KeywordArray: AllKeywordsArray,
       PreviousEntry,
       NextEntry,
-      Entry: entry,
+      Entry: result,
       Settings: context.folderHandleContext.settings,
     };
   },
-  component: RouteComponent,
+  component: lazyRouteComponent(() => import('@/components/pages/documentation/documentation-entry-page')),
 });
-
-function RouteComponent() {
-  const { FrontMatter, KeywordArray, PreviousEntry, NextEntry, Entry, Settings } = Route.useLoaderData();
-
-  return (
-    <PageWrapper
-      breadcrumbs={[BuildDocumentationBreadcrumb()]}
-      label={Entry.matter.title}
-      className="select-none"
-      Settings={Settings}
-    >
-      <DocumentationEntryPage
-        FrontMatter={FrontMatter}
-        KeywordArray={KeywordArray}
-        PreviousEntry={PreviousEntry}
-        NextEntry={NextEntry}
-        Entry={Entry}
-      />
-    </PageWrapper>
-  );
-}

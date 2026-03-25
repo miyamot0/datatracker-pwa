@@ -1,7 +1,5 @@
-import { FrontMatterUniversalType, ParsedFrontMatterType } from '@/types/mdx';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { KeywordColors } from '@/types/colors';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -11,19 +9,13 @@ import { MdViewer } from './views/md-viewer';
 import { useContext } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
 import { TRANSITION_CLASSES } from '@/types/transitions';
+import PageWrapper from '@/components/elements/page-wrapper';
+import { BuildDocumentationBreadcrumb } from '@/components/ui/breadcrumb-entries';
+import { Route } from '@/routes/documentation/$slug';
 
-export default function DocumentationEntryPage({
-  KeywordArray,
-  PreviousEntry,
-  NextEntry,
-  Entry,
-}: {
-  FrontMatter: FrontMatterUniversalType[];
-  KeywordArray: KeywordColors[];
-  PreviousEntry?: ParsedFrontMatterType;
-  NextEntry?: ParsedFrontMatterType;
-  Entry: ParsedFrontMatterType;
-}) {
+export default function DocumentationEntryPage() {
+  const { KeywordArray, PreviousEntry, NextEntry, Entry, Settings } = Route.useLoaderData();
+
   const { settings } = useContext(FolderHandleContext);
 
   const animTypes = TRANSITION_CLASSES[settings.TransitionBehavior];
@@ -32,61 +24,68 @@ export default function DocumentationEntryPage({
   const animRight = animTypes.length > 0 ? [animTypes[0]] : [];
 
   return (
-    <Card className="w-full max-w-screen-2xl">
-      <CardHeader className="flex flex-col md:flex-row md:justify-between">
-        <div className="flex flex-col gap-1.5">
-          <CardTitle>{Entry.matter.title}</CardTitle>
-          <CardDescription>
-            Written {Entry.matter.date} by {Entry.matter.author}
-          </CardDescription>
-          <div className="flex flex-row gap-2 items-start pt-1">
-            <span>Tags: </span>
-            {Entry.matter.keywords.split(',').map((kw: string, index: number) => {
-              const keyword_obj = KeywordArray.find((obj) => obj.Keyword === kw.trim());
-              const color_str = keyword_obj ? keyword_obj.Color : 'bg-gray-500';
+    <PageWrapper
+      breadcrumbs={[BuildDocumentationBreadcrumb()]}
+      label={Entry.matter.title}
+      className="select-none"
+      Settings={Settings}
+    >
+      <Card className="w-full max-w-screen-2xl">
+        <CardHeader className="flex flex-col md:flex-row md:justify-between">
+          <div className="flex flex-col gap-1.5">
+            <CardTitle>{Entry.matter.title}</CardTitle>
+            <CardDescription>
+              Written {Entry.matter.date} by {Entry.matter.author}
+            </CardDescription>
+            <div className="flex flex-row gap-2 items-start pt-1">
+              <span>Tags: </span>
+              {Entry.matter.keywords.split(',').map((kw: string, index: number) => {
+                const keyword_obj = KeywordArray.find((obj) => obj.Keyword === kw.trim());
+                const color_str = keyword_obj ? keyword_obj.Color : 'bg-gray-500';
 
-              return (
-                <Badge key={index} className={cn(color_str, 'select-none text-white whitespace-nowrap')}>
-                  {kw}
-                </Badge>
-              );
-            })}
+                return (
+                  <Badge key={index} className={cn(color_str, 'select-none text-white whitespace-nowrap')}>
+                    {kw}
+                  </Badge>
+                );
+              })}
+            </div>
           </div>
-        </div>
-        <BackButton />
-      </CardHeader>
-      <CardContent className="prose dark:prose-invert !max-w-none">
-        <MdViewer source={Entry.value} />
-      </CardContent>
-      <CardFooter className="flex flex-row justify-between">
-        <Link
-          to={`/documentation/$slug`}
-          params={{ slug: PreviousEntry?.matter.filename.replaceAll('.md', '') ?? '/documentation' }}
-          className={cn('flex flex-row', {
-            'pointer-events-none disabled': !PreviousEntry,
-          })}
-          viewTransition={{ types: animLeft }}
-        >
-          <Button disabled={!PreviousEntry} className="w-full shadow-xl">
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            Read Previous
-          </Button>
-        </Link>
+          <BackButton />
+        </CardHeader>
+        <CardContent className="prose dark:prose-invert !max-w-none">
+          <MdViewer source={Entry.value} />
+        </CardContent>
+        <CardFooter className="flex flex-row justify-between">
+          <Link
+            to={`/documentation/$slug`}
+            params={{ slug: PreviousEntry?.filename.replaceAll('.md', '') ?? '/documentation' }}
+            className={cn('flex flex-row', {
+              'pointer-events-none disabled': !PreviousEntry,
+            })}
+            viewTransition={{ types: animLeft }}
+          >
+            <Button disabled={!PreviousEntry} className="w-full shadow-xl">
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Read Previous
+            </Button>
+          </Link>
 
-        <Link
-          to={`/documentation/$slug`}
-          params={{ slug: NextEntry?.matter.filename.replaceAll('.md', '') ?? '/documentation' }}
-          className={cn('flex flex-row', {
-            'pointer-events-none disabled': !NextEntry,
-          })}
-          viewTransition={{ types: animRight }}
-        >
-          <Button disabled={!NextEntry} className="w-full shadow-xl">
-            Read Next
-            <ChevronRight className="w-4 h-4 ml-2" />
-          </Button>
-        </Link>
-      </CardFooter>
-    </Card>
+          <Link
+            to={`/documentation/$slug`}
+            params={{ slug: NextEntry?.filename.replaceAll('.md', '') ?? '/documentation' }}
+            className={cn('flex flex-row', {
+              'pointer-events-none disabled': !NextEntry,
+            })}
+            viewTransition={{ types: animRight }}
+          >
+            <Button disabled={!NextEntry} className="w-full shadow-xl">
+              Read Next
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
+        </CardFooter>
+      </Card>
+    </PageWrapper>
   );
 }

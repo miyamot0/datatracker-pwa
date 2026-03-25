@@ -1,6 +1,6 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-91.22_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-79.60_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-92.71_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-91.49_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-79.97_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-92.78_Percent-green>)
 
-![Static Badge Version](https://img.shields.io/badge/Version-0.5.5-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge Version](https://img.shields.io/badge/Version-0.5.6-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 # DataTracker (Installable PWA Build)
 
@@ -124,6 +124,8 @@ cmdk (1.1.1). Copyright Paco https://github.com/pacocoursey -- MIT Licensed: [Re
  
 embla-carousel-react (8.2.1). Copyright David Jerleke -- MIT Licensed: [Repo](https://github.com/davidjerleke/embla-carousel) 
  
+idb (8.0.3). Copyright Jake Archibald -- ISC Licensed: [Repo](git://github.com/jakearchibald/idb.git) 
+ 
 lucide-react (0.577.0). Copyright Eric Fennis -- ISC Licensed: [Repo](https://github.com/lucide-icons/lucide.git) 
  
 react (18.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/facebook/react.git) 
@@ -160,4 +162,4 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Current Version
 
-0.5.5
+0.5.6

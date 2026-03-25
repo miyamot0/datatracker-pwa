@@ -12,10 +12,12 @@ import SettingsFormItemWrapper from './settings-form-item-wrapper';
 import { TabsContent } from '../../../ui/tabs';
 import { SettingsTabContainer } from './settings-tab-container';
 import { FolderHandleContext } from '@/context/folder-context';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
+import { AnalyticsConsent, getConsent, setConsent } from '@/analytics/analytics-consent';
 
 export function SettingsTabAdministrative() {
   const { settings, setSettings, saveSettings } = useContext(FolderHandleContext);
+  const [consentState, setConsentState] = useState(getConsent());
 
   return (
     <TabsContent value={SettingsDisplayEnum.Admin}>
@@ -79,6 +81,31 @@ export function SettingsTabAdministrative() {
                     {option.label}
                   </SelectItem>
                 ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </SettingsFormItemWrapper>
+
+        <SettingsFormItemWrapper
+          Label="Contribute Anonymous Error Logging"
+          Description="Select whether to allow anonymous error logging"
+        >
+          <Select
+            value={consentState}
+            onValueChange={(value: AnalyticsConsent) => {
+              setConsentState(value);
+              setConsent(value);
+
+              displayConditionalNotification(settings, 'Settings updated.', 'Settings have been saved.');
+            }}
+          >
+            <SelectTrigger className="w-full md:max-w-[250px]">
+              <SelectValue placeholder="Set Anonymous Error Logging" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value={'granted'}>Allow anonymous error logs</SelectItem>
+                <SelectItem value={'denied'}>Deny anonymous error logs</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>

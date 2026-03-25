@@ -4,6 +4,7 @@
 export type FrontMatterUniversalType = {
   title: string;
   filename: string;
+  slug: string;
   date: string;
   keywords: string;
   author: string;
