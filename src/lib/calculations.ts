@@ -73,6 +73,8 @@ function getUnifiedTimerValue(result: SavedSessionResult, timerType: UnifiedTime
  */
 function getUnifiedTimerMinutes(result: SavedSessionResult, timerType: UnifiedTimerType): number {
   if (typeof timerType === 'object' && timerType.type === 'Special') {
+    console.log(result);
+    console.log(timerType);
     return sumDurationSpecialKey(result, timerType.keyName) / 60;
   }
 
@@ -604,6 +606,7 @@ export type CalculationTemplate = 'FREQUENCY_RATES' | 'DURATION_PERCENTAGES' | '
  */
 export function processMultipleSessionDataWithKeys(
   results: SavedSessionResult[],
+  // TODO: Need uniform keyset here
   timerType: UnifiedTimerType,
   options: {
     frequencyKeys: KeySetInstance[];

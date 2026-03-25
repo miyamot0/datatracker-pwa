@@ -18,7 +18,7 @@ export default function SessionRecorderDurationTallies({ Keyset, KeysPressed, Se
   const { DurationKeyChunks, TablesD } = generateChunkedVisuals(
     Keyset,
     Keyset.FrequencyKeys,
-    Keyset.DurationKeys,
+    [...Keyset.DurationKeys, ...Keyset.ScorableDurationKeys],
     isDense,
     displaySize,
   );

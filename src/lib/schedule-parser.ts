@@ -125,6 +125,36 @@ export function sumDurationSpecialKey(SessionSettings: SavedSessionResult, Speci
   const { SystemKeyPresses } = SessionSettings;
 
   const relevantScheduleChanges = SystemKeyPresses.filter((k) => k.KeyName === SpecialKeyName);
+
+  const isEven = relevantScheduleChanges.length % 2 === 0;
+
+  if (!isEven) throw new Error('Schedule changes must be even');
+
+  let workingDuration = 0;
+
+  for (let i = 0; i < relevantScheduleChanges.length - 1; i += 2) {
+    const t1 = relevantScheduleChanges[i].TimePressed;
+    const t2 = relevantScheduleChanges[i + 1].TimePressed;
+
+    workingDuration += (new Date(t2).getTime() - new Date(t1).getTime()) / 1000;
+  }
+
+  return workingDuration;
+}
+
+/**
+ * Calculates the total duration of time that a specific special key was active during the periods defined by a given schedule key. It identifies all the system key presses corresponding to the special key and sums up the durations between each pair of presses that occur within the schedule periods, assuming that each press represents a toggle (e.g., on/off) of the key's state. The function also checks to ensure that there is an even number of presses, as each activation should have a corresponding deactivation.
+ *
+ * @param SessionSettings - The session result object containing the key presses to analyze.
+ * @param Schedule - The name of the schedule key that defines the periods to analyze.
+ * @param SpecialKeyName - The name of the specific special key to calculate the duration for.
+ * @returns The total active duration in seconds for the specified special key within the defined schedule periods.
+ */
+export function sumDurationScoringKey(SessionSettings: SavedSessionResult, SpecialKeyName: string) {
+  const { DurationKeyPresses } = SessionSettings;
+
+  const relevantScheduleChanges = DurationKeyPresses.filter((k) => k.KeyName === SpecialKeyName);
+
   const isEven = relevantScheduleChanges.length % 2 === 0;
 
   if (!isEven) throw new Error('Schedule changes must be even');
