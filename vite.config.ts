@@ -26,7 +26,7 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
           registerType: 'autoUpdate',
           showMaximumFileSizeToCacheInBytesWarning: false,
           devOptions: {
-            enabled: false,
+            enabled: true,
           },
           workbox: {
             disableDevLogs: true,
@@ -64,18 +64,6 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
                 src: '/favicon.ico',
                 type: 'image/x-icon',
                 sizes: '32x32',
-              },
-              {
-                src: '/icon-144-maskable.png',
-                type: 'image/png',
-                sizes: '144x144',
-                purpose: 'any',
-              },
-              {
-                src: '/icon-144-maskable.png',
-                type: 'image/png',
-                sizes: '144x144',
-                purpose: 'maskable',
               },
               {
                 src: '/icon-192-maskable.png',
