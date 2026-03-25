@@ -43,13 +43,14 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
             ],
             runtimeCaching: [
               {
-                urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-                handler: 'CacheFirst',
+                urlPattern: /https:\/\/www\.google-analytics\.com/,
+                handler: 'NetworkOnly',
                 options: {
-                  cacheName: 'google-fonts-cache',
-                  expiration: {
-                    maxEntries: 10,
-                    maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+                  backgroundSync: {
+                    name: 'ga-queue',
+                    options: {
+                      maxRetentionTime: 24 * 60, // retry for 24 hours
+                    },
                   },
                 },
               },
