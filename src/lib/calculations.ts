@@ -445,6 +445,12 @@ export function convertLegacyTimerType(legacyType: SessionTerminationOptionsType
           return createSpecialTimerType(findSpecialKey.KeyName);
         }
 
+        const findScoringKey = keyset.ScorableDurationKeys.find((key) => legacyType.endsWith(key.KeyDescription));
+
+        if (findScoringKey) {
+          return createSpecialTimerType(findScoringKey.KeyName);
+        }
+
         return 'Total';
       }
       return 'Total';

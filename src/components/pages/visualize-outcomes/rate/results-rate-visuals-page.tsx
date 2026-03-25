@@ -22,7 +22,12 @@ import { Switch } from '@/components/ui/switch';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';
 import { ApplicationSettingsTypes } from '@/types/settings';
-import { filteredSessionScoringOptions } from '@/types/schedules';
+import {
+  filteredSessionScoringOptions,
+  ScheduleMappingOptions,
+  ScheduleMappingOptionsType,
+  ScoringOptionsMapType,
+} from '@/types/schedules';
 
 export default function ResultsRateVisualsPage({
   Group,
@@ -31,7 +36,7 @@ export default function ResultsRateVisualsPage({
   ShowKeys,
   DynamicKeySet,
   ResultsFiltered,
-  Schedule,
+  TimerMapping,
   MinX,
   MaxX,
   Settings,
@@ -43,7 +48,7 @@ export default function ResultsRateVisualsPage({
   Results: SavedSessionResult[];
   ResultsFiltered: SavedSessionResult[];
   DynamicKeySet: KeySet;
-  Schedule: SessionTerminationOptionsType;
+  TimerMapping: ScoringOptionsMapType;
   ShowKeys: ToggleDisplayKey[];
   MinX: number;
   MaxX: number;
@@ -51,7 +56,7 @@ export default function ResultsRateVisualsPage({
 }) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys.sort((a, b) => b.KeyType.localeCompare(a.KeyType)));
   const [connectAllPoints, setConnectAllPoints] = useState(false);
-  const [schedule, setSchedule] = useState<SessionTerminationOptionsType>(Schedule);
+  const [schedule, setSchedule] = useState<ScheduleMappingOptionsType | { value: string; label: string }>(TimerMapping);
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
 
   return (
@@ -117,7 +122,7 @@ export default function ResultsRateVisualsPage({
 
                       setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
                         KeyDescription: hidden_keys,
-                        Schedule: schedule,
+                        Schedule: schedule.value,
                       });
                     }}
                   >
@@ -133,15 +138,26 @@ export default function ResultsRateVisualsPage({
             <div className="flex flex-row items-center gap-2 w-fit">
               <p>Timer to Reference:</p>
               <Select
-                value={schedule}
+                value={schedule.value}
                 onValueChange={(value: SessionTerminationOptionsType) => {
-                  setSchedule(value);
-                  const hidden_keys = filteredKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+                  const selectedOptionFixed = ScheduleMappingOptions.find((option) => option.value === value);
 
-                  setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
-                    KeyDescription: hidden_keys,
-                    Schedule: value,
-                  });
+                  if (selectedOptionFixed) {
+                    // Note: A pre-made but filter option
+                    setSchedule(selectedOptionFixed);
+                  }
+
+                  const specialKeyOption = filteredSessionScoringOptions(Settings, DynamicKeySet, false, true).find(
+                    (option) => option.value === value,
+                  );
+
+                  if (specialKeyOption) {
+                    // Note: A special key option
+                    setSchedule({
+                      value: specialKeyOption.value,
+                      label: specialKeyOption.label,
+                    });
+                  }
                 }}
               >
                 <SelectTrigger className="w-fit">
@@ -149,7 +165,7 @@ export default function ResultsRateVisualsPage({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {filteredSessionScoringOptions(Settings, DynamicKeySet, true).map((option) => (
+                    {filteredSessionScoringOptions(Settings, DynamicKeySet, true, true).map((option) => (
                       <SelectItem key={option.value} value={option.value as SessionTerminationOptionsType}>
                         {option.label}
                       </SelectItem>
@@ -201,7 +217,7 @@ export default function ResultsRateVisualsPage({
         {DynamicKeySet && (
           <RateFigureVisualization
             FilteredSessions={ResultsFiltered}
-            ScheduleOption={schedule}
+            ScheduleOption={schedule.value}
             KeySetFull={filteredKeys}
             DynamicKeySet={DynamicKeySet}
             Group={Group}
