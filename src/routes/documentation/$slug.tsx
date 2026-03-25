@@ -8,8 +8,14 @@ import { KeywordColors } from '@/types/colors';
 import { FrontMatterUniversalType } from '@/types/mdx';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
+// TODO: try to make this more static/specific rather than loading ALL md in all potential paths
+const embeddedMDFiles = import.meta.glob('/src/assets/content/*.md', {
+  query: '?raw',
+  eager: true, // Try for lazy
+  import: 'default',
+});
+
 export const Route = createFileRoute('/documentation/$slug')({
-  
   beforeLoad({ params }) {
     const entry = DocumentationObjects.find((entry) => entry.matter.filename.replaceAll('.md', '') === params.slug);
 
