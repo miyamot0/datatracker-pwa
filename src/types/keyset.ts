@@ -23,6 +23,7 @@ export type KeySet = {
   // Note: These are derived on-the-fly based on logic states
   DerivedKeys: LogicState[];
   SpecialDurationKeys: KeySetInstance[];
+  ScorableDurationKeys: KeySetInstance[];
 };
 
 /**
@@ -54,6 +55,7 @@ export type KeySetSerialize = {
   // Note: Special keys
   DerivedKeys: LogicState[];
   SpecialDurationKeys: KeySetInstance[];
+  ScorableDurationKeys: KeySetInstance[];
 };
 
 /**

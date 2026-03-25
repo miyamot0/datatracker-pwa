@@ -22,7 +22,7 @@ type Props = {
   Callback: (KeySet: KeySet, key: KeySetInstance) => void;
 };
 
-export default function SpecialDurationDialogKeyCreator({ KeySet, Callback }: Props) {
+export default function ScoredDurationDialogKeyCreator({ KeySet, Callback }: Props) {
   const { settings } = useContext(FolderHandleContext);
   const [keyInstance, setKeyInstance] = useState<KeySetInstance>(DEFAULT_ENTRY);
   const [show, setShow] = useState(false);
@@ -41,16 +41,16 @@ export default function SpecialDurationDialogKeyCreator({ KeySet, Callback }: Pr
           onSelect={(e) => e.preventDefault()}
           className={cn('flex flex-row gap-2 items-center cursor-pointer px-2')}
         >
-          <PlusIcon className="w-4 h-4" /> Add Special Timing Key
+          <PlusIcon className="w-4 h-4" /> Add Scored Duration Key
         </DropdownMenuItem>
       </DialogTrigger>
       <DialogContent className="bg-card select-none">
         <DialogHeader>
-          <DialogTitle>Special Duration Key Creator</DialogTitle>
+          <DialogTitle>Scored Duration Key Creator</DialogTitle>
           <DialogDescription>Set key and relevant description</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-1.5">
-          <p>Period to Record (e.g., Pause Timer):</p>
+          <p>Period to Record (e.g., Work Period):</p>
           <Input
             className="mb-2"
             value={keyInstance.KeyDescription}

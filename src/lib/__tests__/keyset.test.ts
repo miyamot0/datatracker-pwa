@@ -24,6 +24,7 @@ describe('KeySet Functions', () => {
     lastModified: new Date('2024-01-01'),
     DerivedKeys: [],
     SpecialDurationKeys: [],
+    ScorableDurationKeys: [],
   });
 
   // Helper function to create a mock SavedSessionResult
@@ -44,6 +45,7 @@ describe('KeySet Functions', () => {
     DurationKeyPresses: [],
     SessionStart: '2024-01-01T10:00:00Z',
     SessionEnd: '2024-01-01T10:10:00Z',
+    SpecialKeyTimers: {},
     EndedEarly: false,
     TimerMain: 600,
     TimerOne: 300,
@@ -89,6 +91,7 @@ describe('KeySet Functions', () => {
         lastModified: new Date('2024-09-07T13:00:00Z'),
         DerivedKeys: [],
         SpecialDurationKeys: [],
+        ScorableDurationKeys: [],
       };
 
       const expectedSerialization = JSON.stringify({
@@ -100,6 +103,7 @@ describe('KeySet Functions', () => {
         lastModified: '2024-09-07T13:00:00.000Z',
         DerivedKeys: [],
         SpecialDurationKeys: [],
+        ScorableDurationKeys: [],
       });
 
       const result = serializeKeySet(keySet);
@@ -129,6 +133,7 @@ describe('KeySet Functions', () => {
         lastModified: new Date('2024-09-07T13:00:00Z'),
         DerivedKeys: [],
         SpecialDurationKeys: [],
+        ScorableDurationKeys: [],
       };
 
       const result = deserializeKeySet(serializedKeySet);
@@ -351,6 +356,7 @@ describe('KeySet Functions', () => {
           lastModified: new Date('2024-01-02T15:30:00Z'),
           DerivedKeys: [],
           SpecialDurationKeys: [],
+          ScorableDurationKeys: [],
         };
 
         const session = createMockSavedSession(1, 'Complex');
