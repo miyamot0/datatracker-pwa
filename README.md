@@ -1,4 +1,4 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-91.44_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-80.06_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-93.41_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-91.22_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-79.60_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-92.71_Percent-green>)
 
 ![Static Badge Version](https://img.shields.io/badge/Version-0.5.5-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
@@ -113,6 +113,8 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
 @tanstack/react-router (1.166.7). Copyright Tanner Linsley -- MIT Licensed: [Repo](https://github.com/TanStack/router.git) 
  
 @tanstack/react-table (8.21.3). Copyright Tanner Linsley -- MIT Licensed: [Repo](https://github.com/TanStack/table.git) 
+ 
+@typescript/native-preview (7.0.0-dev.20260324.1). Copyright Microsoft Corp. -- Apache-2.0 Licensed: [Repo](https://github.com/microsoft/typescript-go.git) 
  
 class-variance-authority (0.7.0). Copyright Joe Bell (https://joebell.co.uk) -- Apache-2.0 Licensed: [Repo](https://github.com/joe-bell/cva.git) 
  

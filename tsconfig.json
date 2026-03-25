@@ -6,7 +6,7 @@
     "lib": ["ES2021.String", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
     "strict": true,
     "noImplicitAny": true,
-    "baseUrl": ".",
+    //"baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
