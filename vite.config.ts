@@ -183,7 +183,7 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
               let content = await fs.readFile(filePath, 'utf-8');
 
               // Replace .png with .webp in markdown content
-              content = content.replace(/!\[([^\]]*)\]\(([^)]+)\.png\)/g, '![\$1](\$2.webp)');
+              content = content.replaceAll('.png', '.webp');
 
               await fs.writeFile(filePath, content, 'utf-8');
             }
