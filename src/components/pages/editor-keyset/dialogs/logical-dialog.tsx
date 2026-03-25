@@ -127,8 +127,6 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
               <Select
                 defaultValue={logicState.initial.type}
                 onValueChange={(value) => {
-                  console.log('Selected initial value type:', value);
-
                   if (value === 'constant') {
                     setLogicState((prev) => ({
                       ...prev,
