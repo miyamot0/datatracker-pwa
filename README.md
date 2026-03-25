@@ -1,6 +1,6 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-82.39_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-81.00_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-88.44_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-91.49_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-79.97_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-92.78_Percent-green>)
 
-![Static Badge Version](https://img.shields.io/badge/Version-0.5.5-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge Version](https://img.shields.io/badge/Version-0.5.6-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 # DataTracker (Installable PWA Build)
 
@@ -162,4 +162,4 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Current Version
 
-0.5.5
+0.5.6

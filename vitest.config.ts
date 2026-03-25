@@ -8,6 +8,7 @@ export default defineConfig({
     },
   },
   test: {
+    maxWorkers: 1,
     include: ['./src/lib/**/*.test.{ts,tsx}', './src/analytics/**/*.test.ts', './src/workers/**/*.test.{ts,tsx}'],
     exclude: [...configDefaults.exclude],
     reporters: ['default'],
