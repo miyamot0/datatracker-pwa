@@ -40,20 +40,29 @@ async function iterativeRead(
  * Lists all files in a directory handle with UI responsiveness
  */
 async function listFilesInDirectory(handle: FileSystemDirectoryHandle): Promise<string[]> {
-  const pathArray: string[] = [];
-  const processedCount = { count: 0 };
-  const groups = handle.values();
+  try {
+    const pathArray: string[] = [];
+    const processedCount = { count: 0 };
+    const entries = handle.values();
 
-  for await (const group of groups) {
-    if (group.kind === 'directory') {
-      await iterativeRead(group, `/${group.name}`, pathArray, processedCount);
+    for await (const entry of entries) {
+      if (entry.kind === 'file') {
+        // Handle root-level files
+        pathArray.push(`/${entry.name}`);
+      } else if (entry.kind === 'directory') {
+        // Handle directories recursively
+        await iterativeRead(entry, `/${entry.name}`, pathArray, processedCount);
+      }
+
+      // Yield after each top-level entry
+      await yieldToEventLoop();
     }
 
-    // Yield after each top-level directory
-    await yieldToEventLoop();
+    return pathArray;
+  } catch (error) {
+    console.error('Error listing files:', error);
+    return [];
   }
-
-  return pathArray;
 }
 
 /**
@@ -69,9 +78,9 @@ function readFileAsync(file: File): Promise<string> {
 }
 
 /**
- * Gets or creates a file handle from a directory handle and path
+ * Gets an existing file handle from a directory handle and path
  */
-async function getFileHandle(
+async function getExistingFileHandle(
   localHandle: FileSystemDirectoryHandle,
   path: string,
 ): Promise<FileSystemFileHandle | undefined> {
@@ -86,11 +95,52 @@ async function getFileHandle(
     const isFile = i === pathParts.length - 1;
 
     if (isFile) {
-      const fileHandleRem = await handleRem.getFileHandle(pathParts[i], { create: true });
-      return fileHandleRem;
+      try {
+        const fileHandleRem = await handleRem.getFileHandle(pathParts[i]);
+        return fileHandleRem;
+      } catch (error) {
+        console.error(`File not found: ${pathParts[i]} in path ${path}`);
+        return undefined;
+      }
     } else {
-      handleRem = await handleRem.getDirectoryHandle(pathParts[i], { create: true });
+      try {
+        handleRem = await handleRem.getDirectoryHandle(pathParts[i]);
+      } catch (error) {
+        console.error(`Directory not found: ${pathParts[i]} in path ${path}`);
+        return undefined;
+      }
     }
+  }
+}
+
+/**
+ * Gets or creates a file handle from a directory handle and path
+ */
+async function getOrCreateFileHandle(
+  localHandle: FileSystemDirectoryHandle,
+  path: string,
+): Promise<FileSystemFileHandle | undefined> {
+  if (!localHandle) return;
+
+  const pathParts = path.split('/').filter((part) => part.trim().length > 0);
+  if (pathParts.length === 0) throw new Error('Invalid Path');
+
+  let handleRem = localHandle;
+
+  try {
+    for (let i = 0; i < pathParts.length; i++) {
+      const isFile = i === pathParts.length - 1;
+
+      if (isFile) {
+        const fileHandleRem = await handleRem.getFileHandle(pathParts[i], { create: true });
+        return fileHandleRem;
+      } else {
+        handleRem = await handleRem.getDirectoryHandle(pathParts[i], { create: true });
+      }
+    }
+  } catch (error) {
+    console.error(`Error creating/accessing target file handle for ${path}:`, error);
+    return undefined;
   }
 }
 
@@ -107,28 +157,57 @@ async function writeFileToTarget(
   const pathParts = filePath.split('/').filter((part) => part.trim().length > 0);
   if (pathParts.length === 0) return;
 
-  const sourceFile = await getFileHandle(sourceDirectory, filePath);
-  const sourceFileContents = await sourceFile?.getFile();
+  try {
+    // Get existing file from source (don't create)
+    const sourceFile = await getExistingFileHandle(sourceDirectory, filePath);
+    if (!sourceFile) {
+      console.error(`Source file not found: ${filePath}`);
+      throw new Error(`Source file not found: ${filePath}`);
+    }
 
-  if (!sourceFileContents) return;
+    const sourceFileContents = await sourceFile.getFile();
+    if (!sourceFileContents) {
+      console.error(`Could not read source file contents: ${filePath}`);
+      throw new Error(`Could not read source file contents: ${filePath}`);
+    }
 
-  const text = await readFileAsync(sourceFileContents);
+    const text = await readFileAsync(sourceFileContents);
 
-  const targetFileHandle = await getFileHandle(targetDirectory, filePath);
-  const writer = await targetFileHandle?.createWritable();
-  await writer?.write(new Blob([text]));
-  await writer?.close();
+    // Create or get target file handle (can create)
+    const targetFileHandle = await getOrCreateFileHandle(targetDirectory, filePath);
+    if (!targetFileHandle) {
+      console.error(`Could not create target file: ${filePath}`);
+      throw new Error(`Could not create target file: ${filePath}`);
+    }
+
+    const writer = await targetFileHandle.createWritable();
+    await writer.write(new Blob([text]));
+    await writer.close();
+  } catch (error) {
+    console.error(`Error in writeFileToTarget for ${filePath}:`, error);
+    throw error;
+  }
 }
 
 export function useMainThreadSync() {
   const listLocalFiles = useCallback(async (handle: FileSystemDirectoryHandle): Promise<string[]> => {
     console.log('Listing local files on main thread...');
-    return await listFilesInDirectory(handle);
+    try {
+      return await listFilesInDirectory(handle);
+    } catch (error) {
+      console.error('Error listing local files:', error);
+      return [];
+    }
   }, []);
 
   const listRemoteFiles = useCallback(async (handle: FileSystemDirectoryHandle): Promise<string[]> => {
     console.log('Listing remote files on main thread...');
-    return await listFilesInDirectory(handle);
+    try {
+      return await listFilesInDirectory(handle);
+    } catch (error) {
+      console.error('Error listing remote files:', error);
+      return [];
+    }
   }, []);
 
   const listBothFiles = useCallback(
@@ -136,14 +215,19 @@ export function useMainThreadSync() {
       localHandle: FileSystemDirectoryHandle,
       remoteHandle: FileSystemDirectoryHandle,
     ): Promise<{ localFiles: string[]; remoteFiles: string[] }> => {
-      console.log('Listing both files on main thread...');
-      const [localFiles, remoteFiles] = await Promise.all([
-        listFilesInDirectory(localHandle),
-        listFilesInDirectory(remoteHandle),
-      ]);
+      console.log('Listing both local and remote files on main thread...');
+      try {
+        const [localFiles, remoteFiles] = await Promise.all([
+          listFilesInDirectory(localHandle),
+          listFilesInDirectory(remoteHandle),
+        ]);
 
-      console.log('Files listed - local:', localFiles.length, 'remote:', remoteFiles.length);
-      return { localFiles, remoteFiles };
+        console.log('Files listed - local:', localFiles.length, 'remote:', remoteFiles.length);
+        return { localFiles, remoteFiles };
+      } catch (error) {
+        console.error('Error listing both files:', error);
+        return { localFiles: [], remoteFiles: [] };
+      }
     },
     [],
   );
@@ -168,7 +252,7 @@ export function useMainThreadSync() {
             await yieldToEventLoop();
           }
         } catch (error) {
-          console.error(`Failed to sync file ${row.file}:`, error);
+          console.error(`Error syncing file ${row.file}:`, error);
           // Continue with other files even if one fails
         }
       }

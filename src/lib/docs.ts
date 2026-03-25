@@ -1,5 +1,5 @@
 import { KeywordColors } from '@/types/colors';
-import { FrontMatterUniversalType, ParsedFrontMatterType } from '@/types/mdx';
+import { FrontMatterUniversalType } from '@/types/mdx';
 import { generateKeywordColors } from './colors';
 
 /**
@@ -12,7 +12,7 @@ const all_md_files = import.meta.glob('/src/assets/content/*.md', { query: '?raw
  *
  * @returns an array of documentation objects with parsed front matter and content
  */
-export const DocumentationObjects: ParsedFrontMatterType[] = Object.entries(all_md_files).map(([key, value], index) => {
+export const DocumentationObjects: FrontMatterUniversalType[] = Object.entries(all_md_files).map(([key, value]) => {
   const filename = key.split('/').pop();
   const content = (value as string).split('---');
 
@@ -25,17 +25,13 @@ export const DocumentationObjects: ParsedFrontMatterType[] = Object.entries(all_
     matter[key.trim()] = value.trim().replaceAll("'", '');
   });
 
-  matter.index = index;
-  matter.filename = filename;
+  matter.index = parseInt(matter.index);
+  matter.filename = filename?.trim();
+  matter.slug = filename?.replace('.md', '').trim();
 
-  return {
-    matter,
-    value: content[2],
-  } satisfies ParsedFrontMatterType;
+  return matter as FrontMatterUniversalType;
 });
 
-export const AllFrontMatter = DocumentationObjects.sort((a, b) => a.matter.index - b.matter.index).map(
-  (entry) => entry.matter as FrontMatterUniversalType,
-);
+export const AllFrontMatter = DocumentationObjects.sort((a, b) => a.index - b.index);
 
 export const AllKeywordsArray: KeywordColors[] = generateKeywordColors(AllFrontMatter);

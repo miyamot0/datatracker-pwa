@@ -3,7 +3,7 @@ import { ThemeProvider } from './components/ui/theme-provider';
 import { routeTree } from './routeTree.gen';
 import { RouterProvider, createHashHistory, createRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useFolderHandleContext } from './context/use-folder-context';
+import { useFolderHandleContext } from '@/hooks/use-folder-context';
 
 export interface CustomizedRouterContext {
   queryClient: QueryClient;

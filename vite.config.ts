@@ -6,6 +6,8 @@ import package_json from './package.json';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import fs from 'node:fs/promises';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
+import imagemin from 'imagemin';
+import imageminWebp from 'imagemin-webp';
 
 const common_screenshot_params = {
   sizes: '1148x969',
@@ -31,7 +33,7 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
           workbox: {
             disableDevLogs: true,
             globPatterns: ['**/*.{js,css,html,ico,png,svg,md,woff2}'],
-            globIgnores: ['**/*.map', 'sw.js', 'workbox-*.js'],
+            globIgnores: ['**/*.map', 'sw.js', 'workbox-*.js', '/docs/*.png'],
             cleanupOutdatedCaches: true,
             sourcemap: false,
             maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
@@ -143,6 +145,58 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
           },
         }),
       );
+      plugins.push({
+        name: 'convert-base-png-docs',
+        async writeBundle() {
+          // Pull relevant PNGs
+          const pngFiles = await fs.readdir(`${PROD_OUT_DIR}/docs`);
+
+          const prePng = performance.now();
+          console.log(`Found ${pngFiles.length} PNG files in docs, starting optimization and conversion...`);
+
+          for (const file of pngFiles) {
+            if (file.endsWith('.png')) {
+              // Convert old
+              await imagemin([`${PROD_OUT_DIR}/docs/${file}`], {
+                destination: `${PROD_OUT_DIR}/docs`,
+                plugins: [imageminWebp({ quality: 75 })],
+              });
+
+              // Trash old
+              await fs.rm(`${PROD_OUT_DIR}/docs/${file}`);
+            }
+          }
+
+          const postPng = performance.now();
+          console.log('Docs images optimized and converted!', ((postPng - prePng) / 1000).toFixed(2), 'seconds');
+          console.log();
+
+          // Pull relevant MDs
+          const mdFiles = await fs.readdir(`${PROD_OUT_DIR}/content`);
+
+          console.log(`Found ${mdFiles.length} Markdown files, starting update...`);
+          const preMd = performance.now();
+
+          for (const file of mdFiles) {
+            if (file.endsWith('.md')) {
+              const filePath = `${PROD_OUT_DIR}/content/${file}`;
+              let content = await fs.readFile(filePath, 'utf-8');
+
+              // Replace .png with .webp in markdown content
+              content = content.replace(/!\[([^\]]*)\]\(([^)]+)\.png\)/g, '![\$1](\$2.webp)');
+
+              await fs.writeFile(filePath, content, 'utf-8');
+            }
+          }
+          const postMd = performance.now();
+          console.log(
+            'Markdown files updated with new image formats!',
+            ((postMd - preMd) / 1000).toFixed(2),
+            'seconds',
+          );
+          console.log();
+        },
+      });
       break;
 
     default:
@@ -189,7 +243,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins,
-    assetsInclude: ['**/*.md'],
+    //assetsInclude: ['**/*.md'],
     base: MODALITY === 'island' ? '/' : './',
     define: {
       BUILD_DATE: JSON.stringify(new Date().toLocaleDateString('en-US')),
@@ -219,7 +273,7 @@ export default defineConfig(({ mode }) => {
       minify: true,
       outDir: MODALITY === 'island' ? ISLAND_OUT_DIR : PROD_OUT_DIR,
       rollupOptions: {
-        external: [/\.test\.(js|ts|tsx)$/, '**/__tests__/**/*', '**/*.test.{ts,tsx}'],
+        external: [/\.test\.(js|ts|tsx)$/, '**/__tests__/**/*', '**/*.test.{ts,tsx}', '/docs/*.png'],
       },
     },
   };
