@@ -8,7 +8,12 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['./src/lib/**/*.test.{ts,tsx}', './src/analytics/**/*.test.ts', './src/workers/**/*.test.{ts,tsx}'],
+    include: [
+      './src/lib/**/*.test.{ts,tsx}',
+      './src/analytics/**/*.test.ts',
+      './src/hooks/**/*.test.{ts,tsx}',
+      './src/workers/**/*.test.{ts,tsx}',
+    ],
     exclude: [...configDefaults.exclude],
     reporters: ['default'],
     environment: 'jsdom',
@@ -22,7 +27,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['json', 'lcov', 'text', 'clover', 'json-summary'],
       reportsDirectory: './coverage',
-      include: ['src/lib/**/*.{ts,tsx}', 'src/workers/**/*.{ts,tsx}', 'src/analytics/**/*.ts'],
+      include: [
+        'src/lib/**/*.{ts,tsx}',
+        'src/workers/**/*.{ts,tsx}',
+        'src/hooks/**/*.{ts,tsx}',
+        'src/analytics/**/*.ts',
+      ],
       exclude: ['**/__tests__/**/*', '**/types/**/*', 'src/lib/utils.ts'],
     },
   },

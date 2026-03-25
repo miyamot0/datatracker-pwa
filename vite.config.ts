@@ -30,17 +30,12 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
           },
           workbox: {
             disableDevLogs: true,
-            globPatterns: ['**/*'],
+            globPatterns: ['**/*.{js,css,html,ico,png,svg,md,woff2}'],
+            globIgnores: ['**/*.map', 'sw.js', 'workbox-*.js'],
             cleanupOutdatedCaches: true,
             sourcemap: false,
             maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
             // Ensure SharedArrayBuffer support in service worker
-            additionalManifestEntries: [
-              {
-                url: '/manifest.json',
-                revision: null,
-              },
-            ],
             runtimeCaching: [
               {
                 urlPattern: /https:\/\/www\.google-analytics\.com/,
@@ -66,40 +61,35 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
                 sizes: '32x32',
               },
               {
-                src: '/icon-192-maskable.png',
+                src: '/icon-128.png',
                 type: 'image/png',
-                sizes: '192x192',
-                purpose: 'maskable',
+                sizes: '128x128',
+              },
+              {
+                src: '/icon-144.png',
+                type: 'image/png',
+                sizes: '144x144',
               },
               {
                 src: '/icon-192.png',
                 type: 'image/png',
                 sizes: '192x192',
-                purpose: 'any',
               },
               {
-                src: '/icon-256-maskable.png',
+                src: '/icon-256.png',
                 type: 'image/png',
                 sizes: '256x256',
-                purpose: 'maskable',
               },
               {
-                src: '/icon-256-maskable.png',
+                src: '/icon-512.png',
                 type: 'image/png',
-                sizes: '256x256',
-                purpose: 'any',
+                sizes: '512x512',
               },
               {
                 src: '/icon-512-maskable.png',
                 type: 'image/png',
                 sizes: '512x512',
                 purpose: 'maskable',
-              },
-              {
-                src: '/icon-512.png',
-                type: 'image/png',
-                sizes: '512x512',
-                purpose: 'any',
               },
             ],
             orientation: 'any',
