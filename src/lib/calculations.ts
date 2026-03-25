@@ -1,5 +1,10 @@
 import { SavedSessionResult } from './dtos';
-import { walkSessionFrequencyKey, walkSessionDurationKey, sumDurationSpecialKey } from './schedule-parser';
+import {
+  walkSessionFrequencyKey,
+  walkSessionDurationKey,
+  sumDurationSpecialKey,
+  sumDurationScoringKey,
+} from './schedule-parser';
 import { SessionTerminationOptionsType, SessionTerminationOptions } from '@/types/terminations';
 import { KeyTiming } from '@/types/timing';
 import { KeySet, KeySetInstance } from '@/types/keyset';
@@ -45,7 +50,7 @@ export interface SessionProcessingOptions {
  * @param timerType - The unified timer type
  * @return The timer value in seconds
  */
-function getUnifiedTimerValue(result: SavedSessionResult, timerType: UnifiedTimerType): number {
+function getUnifiedTimerValue(result: SavedSessionResult, keyset: KeySet, timerType: UnifiedTimerType): number {
   if (typeof timerType === 'object' && timerType.type === 'Special') {
     return sumDurationSpecialKey(result, timerType.keyName);
   }
@@ -71,14 +76,22 @@ function getUnifiedTimerValue(result: SavedSessionResult, timerType: UnifiedTime
  * @param timerType - The unified timer type
  * @return The timer value in minutes
  */
-function getUnifiedTimerMinutes(result: SavedSessionResult, timerType: UnifiedTimerType): number {
+function getUnifiedTimerMinutes(result: SavedSessionResult, keyset: KeySet, timerType: UnifiedTimerType): number {
   if (typeof timerType === 'object' && timerType.type === 'Special') {
-    console.log(result);
-    console.log(timerType);
-    return sumDurationSpecialKey(result, timerType.keyName) / 60;
+    // Pull from system presses
+    const checkSpecialKey = keyset.SpecialDurationKeys.find((key) => key.KeyName === timerType.keyName);
+    if (checkSpecialKey) {
+      return sumDurationSpecialKey(result, timerType.keyName) / 60;
+    }
+
+    // Pull from duration presses
+    const checkScoringKey = keyset.ScorableDurationKeys.find((key) => key.KeyName === timerType.keyName);
+    if (checkScoringKey) {
+      return sumDurationScoringKey(result, timerType.keyName) / 60;
+    }
   }
 
-  return getUnifiedTimerValue(result, timerType) / 60;
+  return getUnifiedTimerValue(result, keyset, timerType) / 60;
 }
 
 /**
@@ -160,16 +173,12 @@ export interface ProcessedKeyResult {
  * @param config - Timer configuration for calculations
  * @return An array of processed frequency key results
  */
-function processFrequencyKeys(
-  result: SavedSessionResult,
-  keys: KeySetInstance[],
-  config: TimerConfig,
-): ProcessedKeyResult[] {
-  if (keys.length === 0) return [];
+function processFrequencyKeys(result: SavedSessionResult, keyset: KeySet, config: TimerConfig): ProcessedKeyResult[] {
+  if (keyset.FrequencyKeys.length === 0) return [];
 
-  const timerMinutes = getUnifiedTimerMinutes(result, config.timerType);
+  const timerMinutes = getUnifiedTimerMinutes(result, keyset, config.timerType);
 
-  return keys.map((key) => {
+  return keyset.FrequencyKeys.map((key) => {
     let rawValue: number;
 
     if (config.timerType === 'Total') {
@@ -214,16 +223,12 @@ function processFrequencyKeys(
  * @param config - Timer configuration for calculations
  * @return An array of processed duration key results
  */
-function processDurationKeys(
-  result: SavedSessionResult,
-  keys: KeySetInstance[],
-  config: TimerConfig,
-): ProcessedKeyResult[] {
-  if (keys.length === 0) return [];
+function processDurationKeys(result: SavedSessionResult, keyset: KeySet, config: TimerConfig): ProcessedKeyResult[] {
+  if (keyset.DurationKeys.length === 0) return [];
 
-  const timerSeconds = getUnifiedTimerValue(result, config.timerType);
+  const timerSeconds = getUnifiedTimerValue(result, keyset, config.timerType);
 
-  return keys.map((key) => {
+  return keyset.DurationKeys.map((key) => {
     let rawValue: number;
     let bouts: number;
 
@@ -273,20 +278,18 @@ function processDurationKeys(
  * @param config - Timer configuration for calculations
  * @return An array of processed derived key results
  */
-function processDerivedKeys(
-  result: SavedSessionResult,
-  derivedKeys: LogicState[],
-  frequencyKeys: KeySetInstance[],
-  config: TimerConfig,
-): ProcessedKeyResult[] {
-  if (derivedKeys.length === 0) return [];
+function processDerivedKeys(result: SavedSessionResult, keyset: KeySet, config: TimerConfig): ProcessedKeyResult[] {
+  const derivedKeyset = keyset.DerivedKeys || [];
+  const frequencyKeyset = keyset.FrequencyKeys || [];
 
-  const timerMinutes = getUnifiedTimerMinutes(result, config.timerType);
+  if (derivedKeyset.length === 0) return [];
 
-  return derivedKeys.map((derived) => {
+  const timerMinutes = getUnifiedTimerMinutes(result, keyset, config.timerType);
+
+  return derivedKeyset.map((derived) => {
     // First get the base frequency values for the derived key calculation
     const fieldValues = derived.fields.map((field) => {
-      const foundKey = frequencyKeys.find((key) => key.KeyCode === field.KeyCode);
+      const foundKey = frequencyKeyset.find((key) => key.KeyCode === field.KeyCode);
       if (!foundKey) return { ...field, Value: NaN, Minutes: timerMinutes };
 
       let value: number;
@@ -353,6 +356,7 @@ export interface ProcessedSessionData {
 function processSessionData(
   result: SavedSessionResult,
   options: SessionProcessingOptions,
+  keyset: KeySet,
   hidden?: {
     frequencyKeys: KeySetInstance[];
     durationKeys: KeySetInstance[];
@@ -367,28 +371,23 @@ function processSessionData(
     therapist: result.SessionSettings.Therapist,
     timerType: options.timer.timerType,
     timerLabel: getUnifiedTimerLabel(options.timer.timerType),
-    timerDuration: getUnifiedTimerMinutes(result, options.timer.timerType),
+    timerDuration: getUnifiedTimerMinutes(result, keyset, options.timer.timerType),
     frequencyKeys: [],
     durationKeys: [],
     derivedKeys: [],
   };
 
-  if (options.keyTypes.frequency && result.Keyset.FrequencyKeys.length > 0) {
-    processed.frequencyKeys = processFrequencyKeys(result, result.Keyset.FrequencyKeys, options.timer);
+  if (options.keyTypes.frequency && keyset.FrequencyKeys.length > 0) {
+    processed.frequencyKeys = processFrequencyKeys(result, keyset, options.timer);
   }
 
-  if (options.keyTypes.duration && result.Keyset.DurationKeys.length > 0) {
-    processed.durationKeys = processDurationKeys(result, result.Keyset.DurationKeys, options.timer);
+  if (options.keyTypes.duration && keyset.DurationKeys.length > 0) {
+    processed.durationKeys = processDurationKeys(result, keyset, options.timer);
   }
 
   // Note: We need all keys here even if not displaying, because derived keys may depend on any of the frequency keys
   if (options.keyTypes.derived) {
-    processed.derivedKeys = processDerivedKeys(
-      result,
-      result.Keyset.DerivedKeys || [],
-      result.Keyset.FrequencyKeys,
-      options.timer,
-    );
+    processed.derivedKeys = processDerivedKeys(result, keyset, options.timer);
   }
 
   // TODO: Handle this more cleanly in initial proc?
@@ -409,13 +408,13 @@ function processSessionData(
 
 /**
  * Processes multiple sessions with unified system
- */
 export function processMultipleSessionData(
   results: SavedSessionResult[],
   options: SessionProcessingOptions,
 ): ProcessedSessionData[] {
   return results.map((result) => processSessionData(result, options));
 }
+ */
 
 // ============================================================================
 // COMPATIBILITY HELPERS (LEGACY SUPPORT)
@@ -606,13 +605,8 @@ export type CalculationTemplate = 'FREQUENCY_RATES' | 'DURATION_PERCENTAGES' | '
  */
 export function processMultipleSessionDataWithKeys(
   results: SavedSessionResult[],
-  // TODO: Need uniform keyset here
+  keyset: KeySet,
   timerType: UnifiedTimerType,
-  options: {
-    frequencyKeys: KeySetInstance[];
-    durationKeys: KeySetInstance[];
-    derivedKeys: LogicState[];
-  },
   template: CalculationTemplate = 'SPREADSHEET_ALL',
   hidden?: {
     frequencyKeys: KeySetInstance[];
@@ -625,188 +619,9 @@ export function processMultipleSessionDataWithKeys(
   return results.map((result) => {
     const modifiedResult = {
       ...result,
-      Keyset: {
-        ...result.Keyset,
-        FrequencyKeys: options.frequencyKeys,
-        DurationKeys: options.durationKeys,
-        DerivedKeys: options.derivedKeys,
-      },
+      Keyset: keyset,
     };
 
-    return processSessionData(modifiedResult, processOptions, hidden);
+    return processSessionData(modifiedResult, processOptions, keyset, hidden);
   });
 }
-
-/**
- * Comprehensive demonstration of unified system capabilities
- * This function shows how the unified system handles all timer types and use cases
-
-export function demonstrateUnifiedSystem(results: SavedSessionResult[]) {
-  console.log('=== UNIFIED CALCULATION SYSTEM DEMONSTRATION ===\n');
-
-  if (results.length === 0) {
-    console.log('No session results provided for demonstration');
-    return;
-  }
-
-  const sampleResult = results[0];
-  console.log(`Demonstrating with ${results.length} sessions`);
-  console.log(`Sample session: #${sampleResult.SessionSettings.Session} - ${sampleResult.SessionSettings.Condition}\n`);
-
-  // ========================================
-  // 1. STANDARD TIMER TYPES
-  // ========================================
-  console.log('1. STANDARD TIMER TYPES:');
-
-  const standardTimers: UnifiedTimerType[] = ['Total', 'Timer1', 'Timer2', 'Timer3'];
-
-  standardTimers.forEach((timerType) => {
-    const timerValue = getUnifiedTimerValue(sampleResult, timerType);
-    const timerMinutes = getUnifiedTimerMinutes(sampleResult, timerType);
-    const timerLabel = getUnifiedTimerLabel(timerType);
-
-    console.log(`  ${timerLabel}: ${timerMinutes.toFixed(2)} min (${timerValue}s)`);
-  });
-
-  console.log();
-
-  // ========================================
-  // 2. SPECIAL DURATION KEY TIMERS
-  // ========================================
-  console.log('2. SPECIAL DURATION KEY TIMERS:');
-
-  if (Object.keys(sampleResult.SpecialKeyTimers).length > 0) {
-    Object.entries(sampleResult.SpecialKeyTimers).forEach(([keyName, value]) => {
-      const specialTimer = createSpecialTimerType(keyName);
-      const timerMinutes = getUnifiedTimerMinutes(sampleResult, specialTimer);
-      console.log(`  ${keyName}: ${timerMinutes.toFixed(2)} min (${value}s)`);
-    });
-  } else {
-    console.log('  No special duration key timers found in sample');
-  }
-
-  console.log();
-
-  // ========================================
-  // 3. UNIFIED KEY PROCESSING
-  // ========================================
-  console.log('3. UNIFIED KEY PROCESSING:');
-
-  // Process all key types with Timer1
-  const processedData = processSessionData(sampleResult, {
-    timer: { timerType: 'Timer1', includeRates: true, includePercentages: true, includeBouts: true },
-    keyTypes: { frequency: true, duration: true, derived: true },
-    outputFormat: 'raw',
-  });
-
-  console.log(`  Frequency Keys (${processedData.frequencyKeys.length}):`);
-  processedData.frequencyKeys.slice(0, 3).forEach((key) => {
-    console.log(`    ${key.keyDescription}: ${key.rawValue} count${key.rate ? `, ${key.rate.toFixed(2)}/min` : ''}`);
-  });
-
-  console.log(`  Duration Keys (${processedData.durationKeys.length}):`);
-  processedData.durationKeys.slice(0, 3).forEach((key) => {
-    console.log(
-      `    ${key.keyDescription}: ${key.rawValue.toFixed(2)}s${key.percentage ? `, ${key.percentage.toFixed(2)}%` : ''}${key.bouts ? `, ${key.bouts} bouts` : ''}`,
-    );
-  });
-
-  console.log(`  Derived Keys (${processedData.derivedKeys.length}):`);
-  processedData.derivedKeys.slice(0, 3).forEach((key) => {
-    console.log(
-      `    ${key.keyDescription}: ${key.rawValue.toFixed(2)}${key.rate ? `, ${key.rate.toFixed(2)}/min` : ''}`,
-    );
-  });
-
-  console.log();
-
-  // ========================================
-  // 4. OUTPUT FORMATTING
-  // ========================================
-  console.log('4. OUTPUT FORMATTING:');
-
-  // Spreadsheet format
-  const multipleProcessed = processMultipleSessionData(
-    results.slice(0, 3),
-    PROCESSING_TEMPLATES.SPREADSHEET_ALL('Timer1'),
-  );
-  const spreadsheetData = formatForSpreadsheet(multipleProcessed);
-  console.log(`  Spreadsheet format: ${spreadsheetData.length} rows x ${spreadsheetData[0]?.length || 0} columns`);
-
-  // Chart format
-  const chartData = formatForChart(multipleProcessed);
-  console.log(
-    `  Chart format: ${chartData.length} data points with ${Object.keys(chartData[0] || {}).length} properties`,
-  );
-
-  console.log();
-
-  // ========================================
-  // 5. TEMPLATE USAGE
-  // ========================================
-  console.log('5. PRE-BUILT TEMPLATES:');
-
-  const templates = [
-    { name: 'Frequency Rates', template: PROCESSING_TEMPLATES.FREQUENCY_RATES('Timer1') },
-    { name: 'Duration Percentages', template: PROCESSING_TEMPLATES.DURATION_PERCENTAGES('Total') },
-    { name: 'Spreadsheet All', template: PROCESSING_TEMPLATES.SPREADSHEET_ALL('Timer2') },
-    { name: 'Chart All', template: PROCESSING_TEMPLATES.CHART_ALL('Timer3') },
-  ];
-
-  templates.forEach(({ name, template }) => {
-    const processed = processSessionData(sampleResult, template);
-    const keyCount = processed.frequencyKeys.length + processed.durationKeys.length + processed.derivedKeys.length;
-    console.log(`  ${name}: ${keyCount} keys processed for ${processed.timerLabel}`);
-  });
-
-  console.log();
-
-  // ========================================
-  // 6. LEGACY COMPATIBILITY
-  // ========================================
-  console.log('6. LEGACY COMPATIBILITY:');
-
-  const legacyTypes = [
-    SessionTerminationOptions.TimerMain,
-    SessionTerminationOptions.Timer1,
-    SessionTerminationOptions.Timer2,
-    SessionTerminationOptions.Timer3,
-  ];
-
-  legacyTypes.forEach((legacyType) => {
-    const converted = convertLegacyTimerType(legacyType);
-    console.log(`  ${legacyType} → ${typeof converted === 'object' ? converted.keyName : converted}`);
-  });
-
-  console.log('\n=== DEMONSTRATION COMPLETE ===');
-}
-
-/**
- * Validates that the unified system produces equivalent results to legacy functions
-export function validateUnifiedSystem(result: SavedSessionResult, legacyTimer: SessionTerminationOptionsType): boolean {
-  console.log('=== VALIDATION: Unified vs Legacy Results ===\n');
-
-  const unifiedTimer = convertLegacyTimerType(legacyTimer);
-
-  // Test timer value consistency
-  const unifiedTimerValue = getUnifiedTimerMinutes(result, unifiedTimer);
-
-  // For legacy compatibility, we'd need to import the old functions to compare
-  // This is a structural validation showing the unified system covers all cases
-  console.log(`Timer: ${getUnifiedTimerLabel(unifiedTimer)} = ${unifiedTimerValue.toFixed(2)} min`);
-
-  // Test key processing consistency
-  const processedData = processSessionData(result, {
-    timer: { timerType: unifiedTimer, includeRates: true, includePercentages: true, includeBouts: true },
-    keyTypes: { frequency: true, duration: true, derived: true },
-    outputFormat: 'raw',
-  });
-
-  console.log(`Processed ${processedData.frequencyKeys.length} frequency keys`);
-  console.log(`Processed ${processedData.durationKeys.length} duration keys`);
-  console.log(`Processed ${processedData.derivedKeys.length} derived keys`);
-
-  console.log('\n=== VALIDATION COMPLETE ===');
-  return true;
-}
-*/

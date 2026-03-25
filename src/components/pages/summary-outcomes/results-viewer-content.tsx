@@ -123,7 +123,7 @@ export default function ResultsViewerContent({
         />
       )}
 
-      {showDuration && Keyset.DurationKeys.length > 0 && (
+      {false && showDuration && Keyset.DurationKeys.length > 0 && (
         <ViewDurationResults
           SessionTimer={schedule.value}
           Results={filteredResults}

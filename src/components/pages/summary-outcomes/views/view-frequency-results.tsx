@@ -41,14 +41,12 @@ export default function ViewFrequencyResults({
 }: Props) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeysFreq);
 
+  // Keyset
+
   const frequencyRates = processMultipleSessionDataWithKeys(
     Results,
+    LatestKeyset,
     convertLegacyTimerType(SessionTimer, LatestKeyset),
-    {
-      frequencyKeys: LatestKeyset.FrequencyKeys,
-      durationKeys: LatestKeyset.DurationKeys,
-      derivedKeys: LatestKeyset.DerivedKeys,
-    },
     'SPREADSHEET_ALL',
     {
       frequencyKeys: LatestKeyset.FrequencyKeys.filter((key) => {
