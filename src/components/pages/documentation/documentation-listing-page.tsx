@@ -36,7 +36,7 @@ export default function DocumentationListingPage({
             <div key={index} className="flex flex-col md:flex-row md:justify-between md:items-center py-5 gap-2">
               <div className="flex flex-col gap-2">
                 <div className="flex flex-row gap-1 flex-1 items-end font-semibold">
-                  <span>{`${entry.index + 1}. ${entry.title}`}</span>
+                  <span>{`${entry.index}. ${entry.title}`}</span>
                 </div>
                 <span className="text-sm text-muted-foreground">{entry.description}</span>
                 <span className="text-sm text-muted-foreground">
