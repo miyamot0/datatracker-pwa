@@ -289,7 +289,7 @@ export class SessionRecorderCore {
 
         return shouldEnd;
       } else {
-        console.log(`No matching special key found for TimerOption: ${this.settings.TimerOption}`);
+        console.error(`No matching special key found for TimerOption: ${this.settings.TimerOption}`);
       }
     }
 

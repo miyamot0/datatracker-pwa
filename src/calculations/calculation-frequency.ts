@@ -35,17 +35,12 @@ export function processFrequencyKeys(
 
     if (options.strategy.special && options.strategy.schedule === 'duration') {
       // Duration special
-      // TODO: Not done
-      console.error('Not implemented yet: Special schedule with duration-based timer for frequency key processing');
-      rawValue = 0;
+      const keyResult = walkSessionFrequencyKey(result, 'Special', key, options.strategy);
+
+      rawValue = keyResult.Value;
     } else if (options.strategy.special && options.strategy.schedule === 'system') {
       // Timer special
-      const keyResult = walkSessionFrequencyKey(
-        result,
-        'Special',
-        key,
-        (options.strategy.timerType as { type: 'Special'; keyName: string }).keyName,
-      );
+      const keyResult = walkSessionFrequencyKey(result, 'Special', key, options.strategy);
 
       rawValue = keyResult.Value;
     } else {

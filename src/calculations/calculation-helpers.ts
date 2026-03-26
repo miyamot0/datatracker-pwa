@@ -182,6 +182,7 @@ export function identifyStrategyTimingStrategy(keyset: KeySet, timerType: Unifie
         schedule: 'system',
         keyset,
         timerType,
+        specialKeyName: keyValue,
       };
     }
 
@@ -192,6 +193,7 @@ export function identifyStrategyTimingStrategy(keyset: KeySet, timerType: Unifie
         schedule: 'duration',
         keyset,
         timerType,
+        specialKeyName: keyValue,
       };
     }
 

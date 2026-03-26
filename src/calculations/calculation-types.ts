@@ -25,6 +25,7 @@ export type ScoringStrategy = {
   schedule: 'system' | 'duration';
   keyset: KeySet;
   timerType: UnifiedTimerType;
+  specialKeyName?: string;
 };
 
 /**

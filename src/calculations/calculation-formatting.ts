@@ -25,8 +25,6 @@ export function formatForSpreadsheet(data: ProcessedSessionData[]): string[][] {
   const sampleData = data[0];
   const headers = [...baseHeaders];
 
-  console.log(data);
-
   //const timerEnd = sampleData.timerLabel;
 
   sampleData.frequencyKeys.forEach((key) => {

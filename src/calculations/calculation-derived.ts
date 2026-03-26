@@ -44,14 +44,8 @@ export function processDerivedKeys(
       };
     });
 
-    //console.log();
-    //console.log(`Session: ${result.SessionSettings.Session}, Derived Key: ${derived.name}`);
-    //console.log(fieldValues);
-
     const updatedLogicState = { ...derived, fields: fieldValues };
     const rawValue = evaluateLogic(updatedLogicState);
-
-    //console.log(updatedLogicState);
 
     const processed: ProcessedKeyResult = {
       keyName: derived.name,

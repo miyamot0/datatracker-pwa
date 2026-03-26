@@ -2,6 +2,7 @@ import { KeyTiming } from '@/types/timing';
 import { SavedSessionResult } from '@/lib/dtos';
 import { KeySetInstance } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';
+import { ScoringStrategy } from '@/calculations/calculation-types';
 
 /**
  * Calculates the total count of key presses for a specific key that occurred during the periods defined by a given schedule key. It iterates through the system key presses to identify the relevant schedule changes and then counts the number of times the specified key was pressed within those periods.
@@ -15,14 +16,22 @@ export function walkSessionFrequencyKey(
   SessionSettings: SavedSessionResult,
   Schedule: KeyTiming,
   Key: KeySetInstance,
-  SpecialKey?: string,
+  Strategy?: ScoringStrategy,
 ) {
-  const { SystemKeyPresses, FrequencyKeyPresses } = SessionSettings;
+  const { SystemKeyPresses, FrequencyKeyPresses, DurationKeyPresses } = SessionSettings;
 
-  const relevantScheduleChanges =
-    Schedule === 'Special' && SpecialKey
-      ? SystemKeyPresses.filter((k) => k.KeyName === SpecialKey)
-      : SystemKeyPresses.filter((k) => k.KeyName === Schedule);
+  const relevantScheduleChanges = [];
+
+  if (Strategy?.special && Strategy.schedule === 'system') {
+    // Note: Querying the system (timer) events
+    relevantScheduleChanges.push(...SystemKeyPresses.filter((k) => k.KeyName === Strategy.specialKeyName));
+  } else if (Strategy?.special && Strategy.schedule === 'duration') {
+    // Note: Querying the duration-based events
+    relevantScheduleChanges.push(...DurationKeyPresses.filter((k) => k.KeyName === Strategy.specialKeyName));
+  } else {
+    // Normal behavior for timers
+    relevantScheduleChanges.push(...SystemKeyPresses.filter((k) => k.KeyName === Schedule));
+  }
 
   const isEven = relevantScheduleChanges.length % 2 === 0;
 

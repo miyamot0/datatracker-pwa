@@ -6,10 +6,8 @@ export class SyncWorkerHandler {
    * Handles LIST_FILES_LOCAL message
    */
   async handleListLocalFiles(data: Extract<WorkerMessage, { type: 'LIST_FILES_LOCAL' }>): Promise<WorkerResponse> {
-    console.log('Listing local files...');
     try {
       const files = await listFilesInDirectory(data.localHandle);
-      console.log('Found local files:', files.length);
       return { type: 'FILES_LISTED_LOCAL', files };
     } catch (error) {
       console.error('Error listing local files:', error);
@@ -21,9 +19,7 @@ export class SyncWorkerHandler {
    * Handles LIST_FILES_REMOTE message
    */
   async handleListRemoteFiles(data: Extract<WorkerMessage, { type: 'LIST_FILES_REMOTE' }>): Promise<WorkerResponse> {
-    console.log('Listing remote files...');
     const files = await listFilesInDirectory(data.remoteHandle);
-    console.log('Found remote files:', files.length);
     return { type: 'FILES_LISTED_REMOTE', files };
   }
 
@@ -31,12 +27,10 @@ export class SyncWorkerHandler {
    * Handles LIST_FILES_BOTH message
    */
   async handleListBothFiles(data: Extract<WorkerMessage, { type: 'LIST_FILES_BOTH' }>): Promise<WorkerResponse> {
-    console.log('Listing both local and remote files...');
     const [localFiles, remoteFiles] = await Promise.all([
       listFilesInDirectory(data.localHandle),
       listFilesInDirectory(data.remoteHandle),
     ]);
-    console.log('Found files - local:', localFiles.length, 'remote:', remoteFiles.length);
     return {
       type: 'FILES_LISTED_BOTH',
       localFiles,
@@ -48,9 +42,7 @@ export class SyncWorkerHandler {
    * Handles SYNC_FILES message
    */
   async handleSyncFiles(data: Extract<WorkerMessage, { type: 'SYNC_FILES' }>): Promise<WorkerResponse> {
-    console.log('Syncing files...');
     const syncedFiles = await syncFiles(data.rows, data.sourceHandle, data.targetHandle);
-    console.log('Synced files:', syncedFiles.length);
     return {
       type: 'FILES_SYNCED',
       syncedFiles,
