@@ -54,6 +54,60 @@ describe('SessionRecorderCore', () => {
       expect(state.activeTimer).toBe('Stopped');
       expect(core.getUiUpdateInterval()).toBe(50); // 'normal' polling interval
     });
+
+    it('should set course polling interval', () => {
+      core.init(mockSettings, mockKeyset, 'course');
+      expect(core.getUiUpdateInterval()).toBe(100);
+    });
+
+    it('should set precise polling interval', () => {
+      core.init(mockSettings, mockKeyset, 'precise');
+      expect(core.getUiUpdateInterval()).toBe(25);
+    });
+
+    it('should set extreme polling interval', () => {
+      core.init(mockSettings, mockKeyset, 'extreme');
+      expect(core.getUiUpdateInterval()).toBe(10);
+    });
+
+    it('should initialize special key timers when keyset has SpecialDurationKeys', () => {
+      const keysetWithSpecial: KeySet = {
+        ...mockKeyset,
+        SpecialDurationKeys: [
+          { KeyName: 'SpecialA', KeyCode: 300, KeyDescription: 'Special A' },
+          { KeyName: 'SpecialB', KeyCode: 301, KeyDescription: 'Special B' },
+        ],
+      };
+      core.init(mockSettings, keysetWithSpecial, 'normal');
+
+      const state = core.getState();
+      expect(state.specialKeyTimers.has('SpecialA')).toBe(true);
+      expect(state.specialKeyTimers.has('SpecialB')).toBe(true);
+      expect(state.specialKeyTimers.get('SpecialA')).toBe(0);
+    });
+
+    it('should return null from startSession when not initialized', () => {
+      const uninitCore = new SessionRecorderCore();
+      const result = uninitCore.startSession();
+      expect(result).toBeNull();
+    });
+
+    it('should return false shouldEnd from updateTimers when not initialized', () => {
+      const uninitCore = new SessionRecorderCore();
+      const result = uninitCore.updateTimers();
+      expect(result.shouldEnd).toBe(false);
+      expect(result.timerUpdate).toBeUndefined();
+    });
+
+    it('should reset state when init is called again', () => {
+      core.init(mockSettings, mockKeyset, 'normal');
+      core.startSession();
+      expect(core.getState().isRunning).toBe(true);
+
+      core.init(mockSettings, mockKeyset, 'normal');
+      expect(core.getState().isRunning).toBe(false);
+      expect(core.getState().secondsElapsedTotal).toBe(0);
+    });
   });
 
   describe('Session Management', () => {
@@ -87,6 +141,31 @@ describe('SessionRecorderCore', () => {
       expect(result.timers.total).toBeGreaterThanOrEqual(0);
       expect(core.getState().isRunning).toBe(false);
     });
+
+    it('should end a session with Cancelled reason', () => {
+      core.startSession();
+      const result = core.endSession('Cancelled');
+
+      expect(result.reason).toBe('Cancelled');
+      expect(core.getState().isRunning).toBe(false);
+    });
+
+    it('should include keys pressed in end session result', () => {
+      core.startSession();
+      core.processKey('A', 65);
+      core.processKey('B', 66);
+      const result = core.endSession('Completed');
+
+      expect(result.keysPressed).toHaveLength(2);
+    });
+
+    it('should include startTime as formatted string in end result', () => {
+      core.startSession();
+      const result = core.endSession('Completed');
+
+      expect(result.startTime).not.toBeNull();
+      expect(result.startTime).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
+    });
   });
 
   describe('Timer Management', () => {
@@ -105,6 +184,31 @@ describe('SessionRecorderCore', () => {
       expect(timerUpdate?.activeTimer).toBe('Primary');
     });
 
+    it('should return false shouldEnd when not running', () => {
+      core.endSession('Completed');
+      const result = core.updateTimers();
+      expect(result.shouldEnd).toBe(false);
+      expect(result.timerUpdate).toBeUndefined();
+    });
+
+    it('should increment secondary timer when Secondary is active', () => {
+      core.switchTimer('Secondary');
+      const { timerUpdate } = core.updateTimers();
+
+      expect(timerUpdate?.second).toBeGreaterThan(0);
+      expect(timerUpdate?.first).toBe(0);
+      expect(timerUpdate?.activeTimer).toBe('Secondary');
+    });
+
+    it('should increment tertiary timer when Tertiary is active', () => {
+      core.switchTimer('Tertiary');
+      const { timerUpdate } = core.updateTimers();
+
+      expect(timerUpdate?.third).toBeGreaterThan(0);
+      expect(timerUpdate?.first).toBe(0);
+      expect(timerUpdate?.second).toBe(0);
+    });
+
     it('should switch timers correctly', () => {
       const systemEvents = core.switchTimer('Secondary');
 
@@ -113,10 +217,109 @@ describe('SessionRecorderCore', () => {
       expect(core.getState().secondsElapsedActive).toBe(0); // Should reset active timer
     });
 
+    it('should switch to Tertiary timer', () => {
+      const systemEvents = core.switchTimer('Tertiary');
+
+      expect(systemEvents).toHaveLength(2);
+      expect(core.getState().activeTimer).toBe('Tertiary');
+      expect(core.getState().secondsElapsedActive).toBe(0);
+    });
+
     it('should not switch to same timer', () => {
       const systemEvents = core.switchTimer('Primary'); // Already on Primary
 
       expect(systemEvents).toBeNull();
+    });
+
+    it('should return null from switchTimer when not running', () => {
+      core.endSession('Completed');
+      const freshCore = new SessionRecorderCore();
+      freshCore.init(mockSettings, mockKeyset, 'normal');
+      const result = freshCore.switchTimer('Secondary');
+      expect(result).toBeNull();
+    });
+
+    it('should end session when End on Primary Timer duration is exceeded', () => {
+      const endSettings = { DurationS: 1, TimerOption: 'End on Primary Timer' } as SavedSettings;
+      core.init(endSettings, mockKeyset, 'normal');
+      core.startSession();
+
+      let shouldEnd = false;
+      for (let i = 0; i < 150; i++) {
+        const result = core.updateTimers();
+        shouldEnd = result.shouldEnd;
+        if (shouldEnd) break;
+      }
+      expect(shouldEnd).toBe(true);
+    });
+
+    it('should end session with End on Timer #1 when Primary is active', () => {
+      const endSettings = { DurationS: 1, TimerOption: 'End on Timer #1' } as SavedSettings;
+      core.init(endSettings, mockKeyset, 'normal');
+      core.startSession(); // starts on Primary
+
+      let shouldEnd = false;
+      let timerUpdate;
+      for (let i = 0; i < 150; i++) {
+        const result = core.updateTimers();
+        shouldEnd = result.shouldEnd;
+        timerUpdate = result.timerUpdate;
+        if (shouldEnd) break;
+      }
+
+      expect(shouldEnd).toBe(true);
+      // timerUpdate.first should be floored
+      expect(timerUpdate?.first).toBe(Math.floor(timerUpdate!.first));
+    });
+
+    it('should not end session with End on Timer #1 when Secondary is active', () => {
+      const endSettings = { DurationS: 0, TimerOption: 'End on Timer #1' } as SavedSettings;
+      core.init(endSettings, mockKeyset, 'normal');
+      core.startSession();
+      core.switchTimer('Secondary');
+
+      // With DurationS=0 and 'End on Timer #1', should not trigger since active timer is Secondary
+      core.updateTimers();
+      const { shouldEnd } = core.updateTimers();
+      expect(shouldEnd).toBe(false);
+    });
+
+    it('should end session with End on Timer #2 when Secondary is active', () => {
+      const endSettings = { DurationS: 1, TimerOption: 'End on Timer #2' } as SavedSettings;
+      core.init(endSettings, mockKeyset, 'normal');
+      core.startSession();
+      core.switchTimer('Secondary');
+
+      let shouldEnd = false;
+      let timerUpdate;
+      for (let i = 0; i < 150; i++) {
+        const result = core.updateTimers();
+        shouldEnd = result.shouldEnd;
+        timerUpdate = result.timerUpdate;
+        if (shouldEnd) break;
+      }
+
+      expect(shouldEnd).toBe(true);
+      expect(timerUpdate?.second).toBe(Math.floor(timerUpdate!.second));
+    });
+
+    it('should end session with End on Timer #3 when Tertiary is active', () => {
+      const endSettings = { DurationS: 1, TimerOption: 'End on Timer #3' } as SavedSettings;
+      core.init(endSettings, mockKeyset, 'normal');
+      core.startSession();
+      core.switchTimer('Tertiary');
+
+      let shouldEnd = false;
+      let timerUpdate;
+      for (let i = 0; i < 150; i++) {
+        const result = core.updateTimers();
+        shouldEnd = result.shouldEnd;
+        timerUpdate = result.timerUpdate;
+        if (shouldEnd) break;
+      }
+
+      expect(shouldEnd).toBe(true);
+      expect(timerUpdate?.third).toBe(Math.floor(timerUpdate!.third));
     });
   });
 
@@ -149,6 +352,37 @@ describe('SessionRecorderCore', () => {
 
       expect(result).toBeNull();
       expect(core.getKeysPressed()).toHaveLength(0);
+    });
+
+    it('should return null from processKey when not running', () => {
+      core.endSession('Completed');
+      const freshCore = new SessionRecorderCore();
+      freshCore.init(mockSettings, mockKeyset, 'normal');
+
+      const result = freshCore.processKey('A', 65);
+      expect(result).toBeNull();
+    });
+
+    it('should process keys found only in ScorableDurationKeys', () => {
+      const keysetScorableOnly: KeySet = {
+        ...mockKeyset,
+        DurationKeys: [],
+        ScorableDurationKeys: [{ KeyName: 'ScorableOnly', KeyCode: 200, KeyDescription: 'Scorable Only Key' }],
+      };
+      core.init(mockSettings, keysetScorableOnly, 'normal');
+      core.startSession();
+
+      const result = core.processKey('ScorableOnly', 200);
+      expect(result).toBeTruthy();
+      expect(result?.key.KeyName).toBe('ScorableOnly');
+      expect(result?.key.KeyType).toBe('Duration');
+    });
+
+    it('should record KeyScheduleRecording from active timer', () => {
+      core.switchTimer('Secondary');
+      const result = core.processKey('A', 65);
+
+      expect(result?.key.KeyScheduleRecording).toBe('Secondary');
     });
 
     it('should delete last key correctly', () => {
@@ -215,6 +449,118 @@ describe('SessionRecorderCore', () => {
 
       expect(keys1).not.toBe(keys2); // Different arrays
       expect(keys1).toEqual(keys2); // Same content
+    });
+  });
+
+  describe('Special Key Management', () => {
+    let mockKeysetWithSpecial: KeySet;
+
+    beforeEach(() => {
+      mockKeysetWithSpecial = {
+        ...mockKeyset,
+        SpecialDurationKeys: [{ KeyName: 'SpecialTimer', KeyCode: 999, KeyDescription: 'Special Timer Key' }],
+      };
+      core.init(mockSettings, mockKeysetWithSpecial, 'normal');
+    });
+
+    it('should switch to a special key timer', () => {
+      core.startSession();
+      const systemEvents = core.switchToSpecialKey('SpecialTimer');
+
+      expect(systemEvents).toHaveLength(2);
+      expect(core.getState().activeSpecialKey).toBe('SpecialTimer');
+      expect(core.getState().activeTimer).toBe('Special');
+    });
+
+    it('should return null from switchToSpecialKey when not running', () => {
+      const result = core.switchToSpecialKey('SpecialTimer');
+      expect(result).toBeNull();
+    });
+
+    it('should return null when switching to a non-existent special key', () => {
+      core.startSession();
+      const result = core.switchToSpecialKey('NonExistent');
+      expect(result).toBeNull();
+    });
+
+    it('should return null when already on the active special key', () => {
+      core.startSession();
+      core.switchToSpecialKey('SpecialTimer');
+      const result = core.switchToSpecialKey('SpecialTimer');
+      expect(result).toBeNull();
+    });
+
+    it('should increment special key timer when special key is active', () => {
+      core.startSession();
+      core.switchToSpecialKey('SpecialTimer');
+
+      const { timerUpdate } = core.updateTimers();
+      const specialTimerValue = timerUpdate?.specialKeyTimers['SpecialTimer'] ?? 0;
+
+      expect(specialTimerValue).toBeGreaterThan(0);
+      // Standard first timer should NOT increment after switching to special key
+      expect(timerUpdate?.first).toBe(0);
+    });
+
+    it('should switch from special key back to standard timer', () => {
+      core.startSession();
+      core.switchToSpecialKey('SpecialTimer');
+      expect(core.getState().activeSpecialKey).toBe('SpecialTimer');
+
+      const systemEvents = core.switchTimer('Primary');
+      expect(systemEvents).toHaveLength(2);
+      expect(core.getState().activeSpecialKey).toBeNull();
+      expect(core.getState().activeTimer).toBe('Primary');
+    });
+
+    it('should end session while special key is active and include correct system events', () => {
+      core.startSession();
+      core.switchToSpecialKey('SpecialTimer');
+
+      const result = core.endSession('Completed');
+      // Start session, start primary, end primary, start special, end special, end session
+      expect(result.systemKeysPressed).toHaveLength(6);
+    });
+
+    it('should end session when special key duration is exceeded', () => {
+      const specialKeyCode = 999;
+      const endSettings = { DurationS: 1, TimerOption: specialKeyCode } as unknown as SavedSettings;
+      core.init(endSettings, mockKeysetWithSpecial, 'normal');
+      core.startSession();
+      core.switchToSpecialKey('SpecialTimer');
+
+      let shouldEnd = false;
+      for (let i = 0; i < 150; i++) {
+        const result = core.updateTimers();
+        shouldEnd = result.shouldEnd;
+        if (shouldEnd) break;
+      }
+
+      expect(shouldEnd).toBe(true);
+    });
+
+    it('should detect special key end condition even when special key is not active', () => {
+      const specialKeyCode = 999;
+      // With DurationS=-1, the initial 0 seconds exceeds -1 even without activating
+      const endSettings = { DurationS: -1, TimerOption: specialKeyCode } as unknown as SavedSettings;
+      core.init(endSettings, mockKeysetWithSpecial, 'normal');
+      core.startSession();
+      // Do NOT switch to special key - stay on Primary
+      // The special key timer is at 0, 0 > -1 is true
+
+      const { shouldEnd } = core.updateTimers();
+      expect(shouldEnd).toBe(true);
+    });
+
+    it('should return false when numeric TimerOption does not match any SpecialDurationKey', () => {
+      const unknownKeyCode = 12345; // does not match KeyCode 999
+      const endSettings = { DurationS: 10, TimerOption: unknownKeyCode } as unknown as SavedSettings;
+      core.init(endSettings, mockKeysetWithSpecial, 'normal');
+      core.startSession();
+
+      // shouldEnd should be false since key is not found; console.error path is hit
+      const { shouldEnd } = core.updateTimers();
+      expect(shouldEnd).toBe(false);
     });
   });
 });
