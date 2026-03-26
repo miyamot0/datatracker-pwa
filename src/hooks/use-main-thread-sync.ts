@@ -99,14 +99,14 @@ async function getExistingFileHandle(
         const fileHandleRem = await handleRem.getFileHandle(pathParts[i]);
         return fileHandleRem;
       } catch (error) {
-        console.error(`File not found: ${pathParts[i]} in path ${path}`);
+        console.error(`File not found: ${pathParts[i]} in path ${path} - ${error}`);
         return undefined;
       }
     } else {
       try {
         handleRem = await handleRem.getDirectoryHandle(pathParts[i]);
       } catch (error) {
-        console.error(`Directory not found: ${pathParts[i]} in path ${path}`);
+        console.error(`Directory not found: ${pathParts[i]} in path ${path} - ${error}`);
         return undefined;
       }
     }

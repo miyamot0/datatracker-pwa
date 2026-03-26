@@ -25,7 +25,7 @@ export function processDurationKeys(
 
   return allRelevantKeys.map((key) => {
     let rawValue: number = NaN;
-    let bouts: number | undefined = undefined;
+    let bouts: number | undefined;
 
     let processed: ProcessedKeyResult = {
       keyName: key.KeyName,
@@ -39,50 +39,37 @@ export function processDurationKeys(
     if (options.strategy.special && options.strategy.schedule === 'system') {
       // Timer special
       const keyResult = walkSessionDurationKey(result, 'Special', key, options.strategy);
-      // TODO: This needs to walk to correct key press list
       rawValue = keyResult.Value;
       bouts = keyResult.Bouts;
     } else if (options.strategy.special && options.strategy.schedule === 'duration') {
-      // TODO: This needs to walk to correct key press list
+      // Duration special - just sum the scoring key as duration
       const keyResult = walkSessionDurationKey(result, 'Special', key, options.strategy);
       rawValue = keyResult.Value;
       bouts = keyResult.Bouts;
-      // Duration special - just sum the scoring key as duration
     } else {
       switch (options.timer.timerType) {
         case 'Total':
-          const keyResult = walkSessionDurationKey(result, 'Primary', key);
+          {
+            const keyResult = walkSessionDurationKey(result, 'Primary', key);
 
-          rawValue = keyResult.Value;
-          bouts = keyResult.Bouts;
+            rawValue = keyResult.Value;
+            bouts = keyResult.Bouts;
+          }
           break;
         case 'Timer1':
         case 'Timer2':
         case 'Timer3':
-          const schedule = getTimerSchedule(options.timer.timerType);
-          const keyResult2 = walkSessionDurationKey(result, schedule, key);
-          rawValue = keyResult2.Value;
-          bouts = keyResult2.Bouts;
+          {
+            const schedule = getTimerSchedule(options.timer.timerType);
+            const keyResult2 = walkSessionDurationKey(result, schedule, key);
+            rawValue = keyResult2.Value;
+            bouts = keyResult2.Bouts;
+          }
           break;
         default:
           throw new Error('Invalid timer type for duration key processing');
       }
     }
-    /**
-    if (options.timer.timerType === 'Total') {
-      // For total timer, sum across all schedules
-      const primary = walkSessionDurationKey(result, 'Primary', key);
-      const secondary = walkSessionDurationKey(result, 'Secondary', key);
-      const tertiary = walkSessionDurationKey(result, 'Tertiary', key);
-      rawValue = primary.Value + secondary.Value + tertiary.Value;
-      bouts = Math.max(primary.Bouts, secondary.Bouts, tertiary.Bouts, 0);
-    } else {
-      const schedule = getTimerSchedule(options.timer.timerType);
-      const keyResult = walkSessionDurationKey(result, schedule, key);
-      rawValue = keyResult.Value;
-      bouts = keyResult.Bouts;
-    }
- */
 
     processed = {
       ...processed,
