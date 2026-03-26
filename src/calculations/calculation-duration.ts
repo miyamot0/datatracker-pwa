@@ -1,0 +1,97 @@
+import { SavedSessionResult } from '@/lib/dtos';
+import { walkSessionDurationKey } from '@/lib/schedule-parser';
+import { KeySet } from '@/types/keyset';
+import { getUnifiedTimerValue, getTimerSchedule } from './calculation-helpers';
+import { SessionProcessingOptions, ProcessedKeyResult } from './calculation-types';
+
+/**
+ * Processes duration keys with unified timer system
+ *
+ * @param result - The session result to process
+ * @param keys - The duration keys to process
+ * @param config - Timer configuration for calculations
+ * @return An array of processed duration key results
+ */
+export function processDurationKeys(
+  result: SavedSessionResult,
+  keyset: KeySet,
+  options: SessionProcessingOptions,
+): ProcessedKeyResult[] {
+  if (keyset.DurationKeys.length === 0) return [];
+
+  const timerSeconds = getUnifiedTimerValue(result, options);
+
+  return keyset.DurationKeys.map((key) => {
+    let rawValue: number = NaN;
+    let bouts: number | undefined = undefined;
+
+    let processed: ProcessedKeyResult = {
+      keyName: key.KeyName,
+      keyDescription: key.KeyDescription,
+      keyCode: key.KeyCode,
+      keyType: 'Duration',
+      rawValue,
+      visible: true, // TODO: Handle conditional display better
+    };
+
+    if (options.strategy.special && options.strategy.schedule === 'system') {
+      // Timer special
+      const keyResult = walkSessionDurationKey(result, 'Special', key);
+      // TODO: This needs to walk to correct key press list
+      rawValue = keyResult.Value;
+      bouts = keyResult.Bouts;
+    } else if (options.strategy.special && options.strategy.schedule === 'duration') {
+      // TODO: This needs to walk to correct key press list
+      const keyResult = walkSessionDurationKey(result, 'Special', key);
+      rawValue = keyResult.Value;
+      bouts = keyResult.Bouts;
+      // Duration special - just sum the scoring key as duration
+    } else {
+      switch (options.timer.timerType) {
+        case 'Total':
+          const keyResult = walkSessionDurationKey(result, 'Primary', key);
+
+          rawValue = keyResult.Value;
+          bouts = keyResult.Bouts;
+          break;
+        case 'Timer1':
+        case 'Timer2':
+        case 'Timer3':
+          const schedule = getTimerSchedule(options.timer.timerType);
+          const keyResult2 = walkSessionDurationKey(result, schedule, key);
+          rawValue = keyResult2.Value;
+          bouts = keyResult2.Bouts;
+          break;
+        default:
+          throw new Error('Invalid timer type for duration key processing');
+      }
+    }
+    /**
+    if (options.timer.timerType === 'Total') {
+      // For total timer, sum across all schedules
+      const primary = walkSessionDurationKey(result, 'Primary', key);
+      const secondary = walkSessionDurationKey(result, 'Secondary', key);
+      const tertiary = walkSessionDurationKey(result, 'Tertiary', key);
+      rawValue = primary.Value + secondary.Value + tertiary.Value;
+      bouts = Math.max(primary.Bouts, secondary.Bouts, tertiary.Bouts, 0);
+    } else {
+      const schedule = getTimerSchedule(options.timer.timerType);
+      const keyResult = walkSessionDurationKey(result, schedule, key);
+      rawValue = keyResult.Value;
+      bouts = keyResult.Bouts;
+    }
+ */
+
+    // Add calculated values based on options
+    if (options.timer.includePercentages && timerSeconds > 0) {
+      processed.percentage = (rawValue / timerSeconds) * 100;
+    }
+
+    if (options.timer.includeBouts && bouts !== undefined) {
+      processed.bouts = bouts;
+      processed.averageBout = bouts > 0 ? rawValue / bouts : 0;
+    }
+
+    return processed;
+  });
+}

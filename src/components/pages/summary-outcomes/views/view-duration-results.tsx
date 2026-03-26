@@ -18,7 +18,9 @@ import { KeySet } from '@/types/keyset';
 import BackButton from '@/components/ui/back-button';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';
-import { convertLegacyTimerType, formatForSpreadsheet, processMultipleSessionDataWithKeys } from '@/lib/calculations';
+import { processMultipleSessionDataWithKeys } from '@/lib/calculations';
+import { convertLegacyTimerType } from '@/calculations/calculation-helpers';
+import { formatForSpreadsheet } from '@/calculations/calculation-formatting';
 
 type Props = {
   SessionTimer: SessionTerminationOptionsType;
@@ -44,12 +46,8 @@ export default function ViewDurationResults({
   // TODO: Special Timer Keys
   const durationResults = processMultipleSessionDataWithKeys(
     Results,
+    LatestKeyset,
     convertLegacyTimerType(SessionTimer, LatestKeyset),
-    {
-      frequencyKeys: LatestKeyset.FrequencyKeys,
-      durationKeys: LatestKeyset.DurationKeys,
-      derivedKeys: LatestKeyset.DerivedKeys,
-    },
     'SPREADSHEET_ALL',
     {
       frequencyKeys: LatestKeyset.FrequencyKeys,
