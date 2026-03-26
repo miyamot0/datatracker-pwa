@@ -165,8 +165,20 @@ function RouteComponent() {
                 }) satisfies ToggleDisplayKey,
             );
 
+            const keyDurationScoring: ToggleDisplayKey[] = dynamicKeyset.ScorableDurationKeys?.map(
+              (key) =>
+                ({
+                  ...key,
+                  Visible: true,
+                  KeyType: 'Observed',
+                }) satisfies ToggleDisplayKey,
+            );
+
             const storedPreferencesD = getLocalCachedPrefs(Group, Individual, Evaluation, 'Duration');
-            const showKeysDuration = mapKeysWithStoragePreference([...keyDurationObserved], storedPreferencesD);
+            const showKeysDuration = mapKeysWithStoragePreference(
+              [...keyDurationObserved, ...keyDurationScoring],
+              storedPreferencesD,
+            );
 
             const scoringOptions = filteredSessionScoringOptions(Settings, dynamicKeyset, true, true);
             const timerMapping =

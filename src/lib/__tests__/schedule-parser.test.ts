@@ -25,6 +25,7 @@ describe('walkSessionFrequencyKey', () => {
       lastModified: new Date('2023-01-02'),
       DerivedKeys: [],
       SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
     },
     SpecialKeyTimers: {},
     SessionSettings: {} as any,
@@ -432,7 +433,23 @@ describe('walkSessionFrequencyKey', () => {
       ],
     };
 
-    const result = walkSessionFrequencyKey(sessionWithSpecialSchedule, 'Special', mockKey, 'CustomSpecialKey');
+    const result = walkSessionFrequencyKey(sessionWithSpecialSchedule, 'Special', mockKey, {
+      special: true,
+      schedule: 'system',
+      specialKeyName: 'CustomSpecialKey',
+      keyset: {
+        id: 'test-keyset',
+        Name: 'Test KeySet',
+        FrequencyKeys: [mockKey],
+        DurationKeys: [],
+        createdAt: new Date('2023-01-01'),
+        lastModified: new Date('2023-01-02'),
+        SpecialDurationKeys: [],
+        ScorableDurationKeys: [],
+        DerivedKeys: [],
+      },
+      timerType: 'Total',
+    });
 
     expect(result).toEqual({
       KeyName: 'TestKey',
@@ -519,6 +536,7 @@ describe('walkSessionDurationKey', () => {
       createdAt: new Date('2023-01-01'),
       lastModified: new Date('2023-01-02'),
       SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
     },
     SessionSettings: {} as any,
     SpecialKeyTimers: {},
@@ -1028,6 +1046,7 @@ describe('sumDurationSpecialKey', () => {
       lastModified: new Date('2023-01-02'),
       DerivedKeys: [],
       SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
     },
     SessionSettings: {} as any,
     SpecialKeyTimers: {},
@@ -1336,6 +1355,7 @@ describe('combineAndSortKeyPresses', () => {
       lastModified: new Date('2023-01-02'),
       DerivedKeys: [],
       SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
     },
     SessionSettings: {} as any,
     SpecialKeyTimers: {},

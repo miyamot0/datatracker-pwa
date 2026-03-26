@@ -1,4 +1,4 @@
-import { ProcessedSessionData } from './calculation-types';
+import { ProcessedSessionData } from '../types/calculation';
 
 /**
  * Formats processed data for spreadsheet display
@@ -24,8 +24,6 @@ export function formatForSpreadsheet(data: ProcessedSessionData[]): string[][] {
   // Add dynamic headers based on processed keys (already filtered)
   const sampleData = data[0];
   const headers = [...baseHeaders];
-
-  //const timerEnd = sampleData.timerLabel;
 
   sampleData.frequencyKeys.forEach((key) => {
     headers.push(`${key.keyDescription} (Count)`);

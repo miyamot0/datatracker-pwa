@@ -26,6 +26,10 @@ describe('SessionRecorderCore', () => {
         { KeyName: '1', KeyCode: 49, KeyDescription: 'Number 1' },
         { KeyName: '2', KeyCode: 50, KeyDescription: 'Number 2' },
       ],
+      ScorableDurationKeys: [
+        { KeyName: '1', KeyCode: 49, KeyDescription: 'Number 1' },
+        { KeyName: '2', KeyCode: 50, KeyDescription: 'Number 2' },
+      ],
     } as KeySet;
   });
 

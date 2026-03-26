@@ -43,7 +43,6 @@ export default function ViewDurationResults({
 }: Props) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeysDuration);
 
-  // TODO: Special Timer Keys
   const durationResults = processMultipleSessionDataWithKeys(
     Results,
     LatestKeyset,

@@ -110,7 +110,6 @@ export default function ResultsViewerContent({
           </Select>
         </div>
       </div>
-
       {Keyset.FrequencyKeys.length > 0 && (
         <ViewFrequencyResults
           SessionTimer={schedule.value}
@@ -122,8 +121,7 @@ export default function ResultsViewerContent({
           Evaluation={Evaluation}
         />
       )}
-
-      {false && showDuration && Keyset.DurationKeys.length > 0 && (
+      {showDuration && Keyset.DurationKeys.length > 0 && (
         <ViewDurationResults
           SessionTimer={schedule.value}
           Results={filteredResults}

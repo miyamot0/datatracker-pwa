@@ -7,7 +7,7 @@ import {
   ScoringStrategy,
   SessionProcessingOptions,
   UnifiedTimerType,
-} from '@/calculations/calculation-types';
+} from '@/types/calculation';
 import {
   getUnifiedTimerMinutes,
   getUnifiedTimerLabel,

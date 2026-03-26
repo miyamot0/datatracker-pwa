@@ -2,7 +2,7 @@ import { SavedSessionResult } from '@/lib/dtos';
 import { walkSessionDurationKey } from '@/lib/schedule-parser';
 import { KeySet } from '@/types/keyset';
 import { getUnifiedTimerValue, getTimerSchedule } from './calculation-helpers';
-import { SessionProcessingOptions, ProcessedKeyResult } from './calculation-types';
+import { SessionProcessingOptions, ProcessedKeyResult } from '../types/calculation';
 
 /**
  * Processes duration keys with unified timer system
@@ -21,7 +21,9 @@ export function processDurationKeys(
 
   const timerSeconds = getUnifiedTimerValue(result, options);
 
-  return keyset.DurationKeys.map((key) => {
+  const allRelevantKeys = [...keyset.DurationKeys, ...keyset.ScorableDurationKeys];
+
+  return allRelevantKeys.map((key) => {
     let rawValue: number = NaN;
     let bouts: number | undefined = undefined;
 
@@ -36,13 +38,13 @@ export function processDurationKeys(
 
     if (options.strategy.special && options.strategy.schedule === 'system') {
       // Timer special
-      const keyResult = walkSessionDurationKey(result, 'Special', key);
+      const keyResult = walkSessionDurationKey(result, 'Special', key, options.strategy);
       // TODO: This needs to walk to correct key press list
       rawValue = keyResult.Value;
       bouts = keyResult.Bouts;
     } else if (options.strategy.special && options.strategy.schedule === 'duration') {
       // TODO: This needs to walk to correct key press list
-      const keyResult = walkSessionDurationKey(result, 'Special', key);
+      const keyResult = walkSessionDurationKey(result, 'Special', key, options.strategy);
       rawValue = keyResult.Value;
       bouts = keyResult.Bouts;
       // Duration special - just sum the scoring key as duration
@@ -81,6 +83,11 @@ export function processDurationKeys(
       bouts = keyResult.Bouts;
     }
  */
+
+    processed = {
+      ...processed,
+      rawValue,
+    };
 
     // Add calculated values based on options
     if (options.timer.includePercentages && timerSeconds > 0) {
