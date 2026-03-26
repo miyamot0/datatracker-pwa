@@ -95,6 +95,7 @@ function RouteComponent() {
       ]}
       label={'Session Viewer'}
       className="select-none"
+      Settings={Settings}
     >
       <Await promise={totalQuery} fallback={<LoadingDisplay />}>
         {([sessions, sessionParams, keysets]: [ModifiedSessionResult[], SavedSettings, KeySet[]]) => {

@@ -72,6 +72,7 @@ function RouteComponent() {
       ]}
       label={'Session History'}
       className="select-none"
+      Settings={Settings}
     >
       <Await promise={fetchSessionOutcomes} fallback={<LoadingDisplay />}>
         {(sessions: ModifiedSessionResult[]) => {
