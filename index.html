@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#F2F2F2" />
     <title>DataTracker PWA</title>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=%VITE_G4A_MEASUREMENT_ID%"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', '%VITE_G4A_MEASUREMENT_ID%', {
+        send_page_view: false, // important for SPA/PWA
+      });
+    </script>
   </head>
 
   <body class="flex flex-col min-h-screen mx-2 light:grainy antialiased [view-transition-name:main-content]">

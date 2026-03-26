@@ -31,6 +31,7 @@ Features include the following:
 - [x] Highly-optimized real-time data recording with millisecond-level fidelity
 - [x] Manual export of data in multiple formats (i.e., JSON, CSV)
 - [x] Support for deriving new keys/targets based on existing keys (e.g., percentage of compliance, multiple targets in a shared response class)
+- [x] Support for duration logging that permits inter-scoring (i.e., events occuring during a respective) period or periods of time (e.g., 30s intervals)
 
 ## Alternative/Islanded Mode for Highly Secure Environments
 
