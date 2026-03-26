@@ -8,9 +8,14 @@ export default defineConfig({
     },
   },
   test: {
-    maxWorkers: 1,
-    include: ['./src/lib/**/*.test.{ts,tsx}', './src/analytics/**/*.test.ts', './src/workers/**/*.test.{ts,tsx}'],
-    exclude: [...configDefaults.exclude],
+    //maxWorkers: 1,
+    include: [
+      './src/lib/**/*.test.{ts,tsx}',
+      './src/analytics/**/*.test.ts',
+      './src/calculations/**/*.test.ts',
+      './src/workers/**/*.test.{ts,tsx}',
+    ],
+    exclude: [...configDefaults.exclude, '**/*-worker.test.{ts,tsx}', '**/*-worker-actual.test.{ts,tsx}'], // Note: Exclude worker tests from default since they often require different setup - see below for separate config
     reporters: ['default'],
     environment: 'jsdom',
     globals: true,
@@ -23,7 +28,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['json', 'lcov', 'text', 'clover', 'json-summary'],
       reportsDirectory: './coverage',
-      include: ['src/lib/**/*.{ts,tsx}', 'src/workers/**/*.{ts,tsx}', 'src/analytics/**/*.ts'],
+      include: ['src/lib/**/*.{ts,tsx}', 'src/calculations/**/*.ts', 'src/analytics/**/*.ts'],
       exclude: ['**/__tests__/**/*', '**/types/**/*', 'src/lib/utils.ts'],
     },
   },

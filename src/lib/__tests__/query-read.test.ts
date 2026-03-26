@@ -11,7 +11,7 @@ import {
   fetchKeysetsAll,
   fetchSessionParams,
   fetchSessionOutcomes,
-} from '../queries/helpers/file-query-read-actions';
+} from '../../lib/query-read';
 import { deserializeKeySet } from '@/lib/keyset';
 import { CleanUpString } from '@/lib/strings';
 import { readKeyboardParameters } from '@/lib/reader';

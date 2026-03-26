@@ -13,7 +13,8 @@ import {
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { BaseChart } from '@/components/pages/visualize-outcomes/shared/base-chart';
 import { ProportionTooltip } from './proportion-elements';
-import { convertLegacyTimerType, processMultipleSessionDataWithKeys } from '@/lib/calculations';
+import { processMultipleSessionDataWithKeys } from '@/lib/calculations';
+import { convertLegacyTimerType } from '@/calculations/calculation-helpers';
 
 type Props = {
   Group: string;
@@ -63,12 +64,8 @@ export default function ProportionFigureVisualization({
 
   const durationCalculations = processMultipleSessionDataWithKeys(
     FilteredSessions,
+    DynamicKeySet,
     convertLegacyTimerType(ScheduleOption, DynamicKeySet),
-    {
-      frequencyKeys: DynamicKeySet.FrequencyKeys,
-      durationKeys: DynamicKeySet.DurationKeys,
-      derivedKeys: DynamicKeySet.DerivedKeys,
-    },
     'CHART_ALL',
     {
       frequencyKeys: DynamicKeySet.FrequencyKeys,

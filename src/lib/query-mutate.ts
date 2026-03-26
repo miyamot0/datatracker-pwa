@@ -431,8 +431,6 @@ export async function mutateKeysets(
 
       case 'Duplicate': {
         const keySetMatch = keysets.find((ks) => ks.Name === keysetNames[0].trim());
-        console.log(keySetMatch);
-        console.log('Duplicate action - keySetMatch:', keysetNames[0], 'renameTo:', renameTo);
 
         if (!keySetMatch) {
           throw new Error('No matching KeySet found.');

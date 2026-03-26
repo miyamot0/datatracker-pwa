@@ -51,6 +51,6 @@ export function generateChunkedVisuals(
     TablesF: nColsF,
     TablesD: nColsD,
     FrequencyKeyChunks: [...chunking(Keyset.FrequencyKeys, freqChunks)],
-    DurationKeyChunks: [...chunking(Keyset.DurationKeys, durChunks)],
+    DurationKeyChunks: [...chunking([...Keyset.DurationKeys, ...Keyset.ScorableDurationKeys], durChunks)],
   };
 }

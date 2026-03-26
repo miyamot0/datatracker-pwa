@@ -17,7 +17,7 @@ import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { ModifiedSessionResult } from '@/types/storage';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import ResultsViewerContent from '@/components/pages/summary-outcomes/results-viewer-content';
-import { ScheduleMappingOptions } from '@/types/schedules';
+import { filteredSessionScoringOptions } from '@/types/schedules';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/view')({
   beforeLoad: ({ context, params }) => {
@@ -53,7 +53,6 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/vi
     const { CleanHandle, Group, Individual, Evaluation, Settings } = context;
 
     const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
-
     const fetchSessionOutcomes = context.queryClient.fetchQuery(
       sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
@@ -106,6 +105,7 @@ function RouteComponent() {
               durationKeys: targetedDKeys,
               derivedKeys: targetedDerivedKeys,
               specialDurationKeys,
+              scorableDurationKeys,
             } = extractAndDeduplicateKeysets(sessionOutcomes, {
               ...sessionKeySet,
               FrequencyKeys: [...sessionKeySet.FrequencyKeys, ...(designerKeySet?.FrequencyKeys || [])],
@@ -115,6 +115,10 @@ function RouteComponent() {
                 ...(sessionKeySet.SpecialDurationKeys || []),
                 ...(designerKeySet?.SpecialDurationKeys || []),
               ],
+              ScorableDurationKeys: [
+                ...(sessionKeySet.ScorableDurationKeys || []),
+                ...(designerKeySet?.ScorableDurationKeys || []),
+              ],
             });
 
             const dynamicKeyset = {
@@ -123,6 +127,7 @@ function RouteComponent() {
               DurationKeys: targetedDKeys,
               DerivedKeys: targetedDerivedKeys,
               SpecialDurationKeys: specialDurationKeys,
+              ScorableDurationKeys: scorableDurationKeys,
             } satisfies KeySet;
 
             const keysFreqObserved: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map(
@@ -160,11 +165,24 @@ function RouteComponent() {
                 }) satisfies ToggleDisplayKey,
             );
 
-            const storedPreferencesD = getLocalCachedPrefs(Group, Individual, Evaluation, 'Duration');
-            const showKeysDuration = mapKeysWithStoragePreference([...keyDurationObserved], storedPreferencesD);
+            const keyDurationScoring: ToggleDisplayKey[] = dynamicKeyset.ScorableDurationKeys?.map(
+              (key) =>
+                ({
+                  ...key,
+                  Visible: true,
+                  KeyType: 'Observed',
+                }) satisfies ToggleDisplayKey,
+            );
 
+            const storedPreferencesD = getLocalCachedPrefs(Group, Individual, Evaluation, 'Duration');
+            const showKeysDuration = mapKeysWithStoragePreference(
+              [...keyDurationObserved, ...keyDurationScoring],
+              storedPreferencesD,
+            );
+
+            const scoringOptions = filteredSessionScoringOptions(Settings, dynamicKeyset, true, true);
             const timerMapping =
-              ScheduleMappingOptions.find((i) => i.value === storedPreferences?.Schedule) ?? ScheduleMappingOptions[0];
+              scoringOptions.find((i) => i.value === storedPreferences?.Schedule) ?? scoringOptions[0];
 
             return (
               <ResultsViewerContent

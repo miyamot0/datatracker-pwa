@@ -289,7 +289,7 @@ export class SessionRecorderCore {
 
         return shouldEnd;
       } else {
-        console.log(`No matching special key found for TimerOption: ${this.settings.TimerOption}`);
+        console.error(`No matching special key found for TimerOption: ${this.settings.TimerOption}`);
       }
     }
 
@@ -397,7 +397,10 @@ export class SessionRecorderCore {
     if (!this.state.isRunning || !this.keyset) return null;
 
     const isFreq = this.keyset.FrequencyKeys.some((key) => key.KeyCode === keyCode);
-    const isDur = this.keyset.DurationKeys.some((key) => key.KeyCode === keyCode);
+    // Note: Multiple duration types
+    const isDur =
+      this.keyset.DurationKeys.some((key) => key.KeyCode === keyCode) ||
+      this.keyset.ScorableDurationKeys.some((key) => key.KeyCode === keyCode);
 
     if (!isFreq && !isDur) return null;
 
@@ -420,7 +423,10 @@ export class SessionRecorderCore {
 
     // Create entry if relevant Duration key found
     if (isDur) {
-      const durKey = this.keyset.DurationKeys.find((key) => key.KeyCode === keyCode);
+      const durKey =
+        this.keyset.DurationKeys.find((key) => key.KeyCode === keyCode) ||
+        this.keyset.ScorableDurationKeys.find((key) => key.KeyCode === keyCode);
+
       if (!durKey) return null;
 
       keyEvent = this.createKeyEvent(durKey.KeyName, durKey.KeyCode, durKey.KeyDescription, 'Duration', keyTimestamp);

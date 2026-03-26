@@ -29,12 +29,17 @@ export const ScheduleMappingOptions = [
  */
 export type ScheduleMappingOptionsType = (typeof ScheduleMappingOptions)[number];
 
-// TODO: Map special keys here too
+export type ScoringOptionsMapType = {
+  value: string;
+  label: string;
+};
+
 export function filteredSessionScoringOptions(
   appSettings: ApplicationSettingsTypes,
   keySet: KeySet,
   filterMain = false,
-) {
+  includeScoring = false,
+): ScoringOptionsMapType[] {
   const options = Object.values(ScheduleMappingOptions);
 
   const scoringOptions = options.filter((option) => {
@@ -56,6 +61,15 @@ export function filteredSessionScoringOptions(
     value: `End on ${key.KeyDescription}`,
     label: `Score ${key.KeyDescription}`,
   }));
+
+  if (includeScoring) {
+    const scorableKeyScoringOptions = keySet.ScorableDurationKeys.map((key) => ({
+      value: `Score by ${key.KeyDescription}`,
+      label: `Score by ${key.KeyDescription}`,
+    }));
+
+    return [...scoringOptions, ...specialKeyScoringOptions, ...scorableKeyScoringOptions];
+  }
 
   return [...scoringOptions, ...specialKeyScoringOptions];
 }

@@ -13,7 +13,7 @@ import {
   mutateSessionOutcomes,
   mutateSessionParams,
   DemoDataFolderName,
-} from '../mutations/helpers/file-query-mutate-actions';
+} from '../query-mutate';
 import { CleanUpString } from '@/lib/strings';
 import { DataExampleFiles } from '@/lib/data';
 import { createNewKeySet, serializeKeySet } from '@/lib/keyset';

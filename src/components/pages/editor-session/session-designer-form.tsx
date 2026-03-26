@@ -503,7 +503,15 @@ export default function SessionDesigner({
                 {keySet &&
                   keySet.SpecialDurationKeys.map((key, index) => (
                     <TableRow key={index} className="bg-muted">
-                      <TableCell>{key.KeyDescription} (Special)</TableCell>
+                      <TableCell>{key.KeyDescription} (Timing Key)</TableCell>
+                      <TableCell>{key.KeyName}</TableCell>
+                    </TableRow>
+                  ))}
+
+                {keySet &&
+                  keySet.ScorableDurationKeys.map((key, index) => (
+                    <TableRow key={index} className="bg-muted">
+                      <TableCell>{key.KeyDescription} (Scoring Key)</TableCell>
                       <TableCell>{key.KeyName}</TableCell>
                     </TableRow>
                   ))}

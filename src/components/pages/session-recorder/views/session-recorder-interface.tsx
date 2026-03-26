@@ -37,6 +37,8 @@ type Props = {
   ApplicationSettings: ApplicationSettingsTypes;
 };
 
+// TODO: Error on loading termination rules
+
 export type RunningStateOptions = 'Not Started' | 'Started' | 'Completed' | 'Cancelled';
 
 export default function SessionRecorderInterface({
@@ -509,13 +511,23 @@ export default function SessionRecorderInterface({
     return durationKeys;
   }, [Keyset]);
 
+  // Note: Potentially not worth complexity
+  const keySetScoredDurationKeys = useMemo(() => {
+    const durationKeys = Keyset.ScorableDurationKeys;
+    return durationKeys;
+  }, [Keyset]);
+
+  const totalDurationKeys = useMemo(() => {
+    return [...keySetDurationKeys, ...keySetScoredDurationKeys];
+  }, [keySetDurationKeys, keySetScoredDurationKeys]);
+
   // Calculate count of active duration keys (keys with odd press counts)
   const activeDurationKeysCountMemo = useMemo(() => {
-    return keySetDurationKeys.filter((key) => {
+    return totalDurationKeys.filter((key) => {
       const matchingKeys = keysPressed.filter((pressedKey) => pressedKey.KeyCode === key.KeyCode);
       return matchingKeys.length % 2 === 1; // Odd count means key is active
     }).length;
-  }, [keySetDurationKeys, keysPressed]);
+  }, [totalDurationKeys, keysPressed]);
 
   // Update active duration keys count state
   useEffect(() => {

@@ -66,7 +66,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
 });
 
 function RouteComponent() {
-  const { Group, Individual, Evaluation, FileString, fetchSessionOutcomes, Handle } = Route.useLoaderData();
+  const { Group, Individual, Evaluation, FileString, fetchSessionOutcomes, Handle, Settings } = Route.useLoaderData();
 
   return (
     <PageWrapper
@@ -78,6 +78,7 @@ function RouteComponent() {
       ]}
       label={'Session Manager'}
       className="select-none"
+      Settings={Settings}
     >
       <Await promise={fetchSessionOutcomes} fallback={<LoadingDisplay />}>
         {(sessions: ModifiedSessionResult[]) => {

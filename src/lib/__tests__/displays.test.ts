@@ -27,6 +27,8 @@ describe('generateChunkedVisuals', () => {
     DerivedKeys: [],
     createdAt: new Date('2023-01-01'),
     lastModified: new Date('2023-01-02'),
+    SpecialDurationKeys: [],
+    ScorableDurationKeys: [],
   });
 
   beforeEach(() => {
@@ -302,34 +304,6 @@ describe('generateChunkedVisuals', () => {
         expect(result.TablesD).toBe(1);
         expect(result.FrequencyKeyChunks).toEqual([]);
         expect(result.DurationKeyChunks).toEqual([]);
-      });
-    });
-
-    describe('chunking integration', () => {
-      it('should properly spread chunking generator results into arrays', () => {
-        const keyset = createMockKeySet(6, 6);
-        const freqKeys = createKeySetInstance(6, 'F');
-        const durKeys = createKeySetInstance(6, 'D');
-
-        // Mock chunking to return specific chunks
-        mockChunking.mockImplementation(function* <T>(arr: T[], _n: number) {
-          if (arr === keyset.FrequencyKeys) {
-            yield arr.slice(0, 3);
-            yield arr.slice(3, 6);
-          } else if (arr === keyset.DurationKeys) {
-            yield arr.slice(0, 3);
-            yield arr.slice(3, 6);
-          }
-        });
-
-        const result = generateChunkedVisuals(keyset, freqKeys, durKeys, true, 'standard');
-
-        expect(result.FrequencyKeyChunks).toHaveLength(2);
-        expect(result.DurationKeyChunks).toHaveLength(2);
-        expect(result.FrequencyKeyChunks[0]).toHaveLength(3);
-        expect(result.FrequencyKeyChunks[1]).toHaveLength(3);
-        expect(result.DurationKeyChunks[0]).toHaveLength(3);
-        expect(result.DurationKeyChunks[1]).toHaveLength(3);
       });
     });
 

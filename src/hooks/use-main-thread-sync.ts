@@ -99,14 +99,14 @@ async function getExistingFileHandle(
         const fileHandleRem = await handleRem.getFileHandle(pathParts[i]);
         return fileHandleRem;
       } catch (error) {
-        console.error(`File not found: ${pathParts[i]} in path ${path}`);
+        console.error(`File not found: ${pathParts[i]} in path ${path} - ${error}`);
         return undefined;
       }
     } else {
       try {
         handleRem = await handleRem.getDirectoryHandle(pathParts[i]);
       } catch (error) {
-        console.error(`Directory not found: ${pathParts[i]} in path ${path}`);
+        console.error(`Directory not found: ${pathParts[i]} in path ${path} - ${error}`);
         return undefined;
       }
     }
@@ -191,7 +191,6 @@ async function writeFileToTarget(
 
 export function useMainThreadSync() {
   const listLocalFiles = useCallback(async (handle: FileSystemDirectoryHandle): Promise<string[]> => {
-    console.log('Listing local files on main thread...');
     try {
       return await listFilesInDirectory(handle);
     } catch (error) {
@@ -201,7 +200,6 @@ export function useMainThreadSync() {
   }, []);
 
   const listRemoteFiles = useCallback(async (handle: FileSystemDirectoryHandle): Promise<string[]> => {
-    console.log('Listing remote files on main thread...');
     try {
       return await listFilesInDirectory(handle);
     } catch (error) {
@@ -215,14 +213,12 @@ export function useMainThreadSync() {
       localHandle: FileSystemDirectoryHandle,
       remoteHandle: FileSystemDirectoryHandle,
     ): Promise<{ localFiles: string[]; remoteFiles: string[] }> => {
-      console.log('Listing both local and remote files on main thread...');
       try {
         const [localFiles, remoteFiles] = await Promise.all([
           listFilesInDirectory(localHandle),
           listFilesInDirectory(remoteHandle),
         ]);
 
-        console.log('Files listed - local:', localFiles.length, 'remote:', remoteFiles.length);
         return { localFiles, remoteFiles };
       } catch (error) {
         console.error('Error listing both files:', error);
@@ -238,7 +234,6 @@ export function useMainThreadSync() {
       sourceHandle: FileSystemDirectoryHandle,
       targetHandle: FileSystemDirectoryHandle,
     ): Promise<string[]> => {
-      console.log('Syncing files on main thread...');
       const syncedFiles: string[] = [];
 
       for (let i = 0; i < rows.length; i++) {
@@ -257,7 +252,6 @@ export function useMainThreadSync() {
         }
       }
 
-      console.log('Files synced on main thread:', syncedFiles.length);
       return syncedFiles;
     },
     [],

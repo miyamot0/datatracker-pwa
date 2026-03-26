@@ -30,7 +30,7 @@ import {
   fetchKeysetsAll,
   fetchSessionParams,
   fetchSessionOutcomes,
-} from '../queries/helpers/file-query-read-actions';
+} from '../../lib/query-read';
 
 describe('FileQueryReadWorker Actual Integration', () => {
   let worker: Worker;

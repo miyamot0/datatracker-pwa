@@ -21,6 +21,7 @@ import {
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { ErrorDisplay } from '@/components/suspense/error-display';
 import { ModifiedSessionResult } from '@/types/storage';
+import { filteredSessionScoringOptions } from '@/types/schedules';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/proportion')({
   beforeLoad: ({ context, params }) => {
@@ -112,13 +113,20 @@ function RouteComponent() {
               durationKeys: targetedDKeys,
               derivedKeys: targetedDerivedKeys,
               specialDurationKeys,
+              scorableDurationKeys,
             } = extractAndDeduplicateKeysets(sessionOutcomes, {
               ...sessionKeySet,
-              FrequencyKeys: [],
+              FrequencyKeys: [...sessionKeySet.FrequencyKeys, ...(designerKeySet?.FrequencyKeys || [])],
               DurationKeys: [...sessionKeySet.DurationKeys, ...(designerKeySet?.DurationKeys || [])],
               DerivedKeys: [...(sessionKeySet.DerivedKeys || []), ...(designerKeySet?.DerivedKeys || [])],
-              // Note: No need for these here for now
-              SpecialDurationKeys: [],
+              SpecialDurationKeys: [
+                ...(sessionKeySet.SpecialDurationKeys || []),
+                ...(designerKeySet?.SpecialDurationKeys || []),
+              ],
+              ScorableDurationKeys: [
+                ...(sessionKeySet.ScorableDurationKeys || []),
+                ...(designerKeySet?.ScorableDurationKeys || []),
+              ],
             });
 
             const dynamicKeyset = {
@@ -127,13 +135,22 @@ function RouteComponent() {
               DurationKeys: targetedDKeys,
               DerivedKeys: targetedDerivedKeys,
               SpecialDurationKeys: specialDurationKeys,
+              ScorableDurationKeys: scorableDurationKeys,
             } satisfies KeySet;
 
-            const keys: ToggleDisplayKey[] = dynamicKeyset.DurationKeys.map((key) => ({
+            const keysObserved: ToggleDisplayKey[] = dynamicKeyset.DurationKeys.map((key) => ({
               ...key,
               Visible: true,
               KeyType: 'Observed',
             }));
+
+            const keysScoring: ToggleDisplayKey[] = dynamicKeyset.ScorableDurationKeys.map((key) => ({
+              ...key,
+              Visible: true,
+              KeyType: 'Observed',
+            }));
+
+            const keys = [...keysObserved, ...keysScoring];
 
             const storedPreferences = getLocalCachedPrefs(Group, Individual, Evaluation, 'Duration');
             const showKeysBase = mapKeysWithStoragePreference(keys, storedPreferences);
@@ -146,6 +163,11 @@ function RouteComponent() {
               maxX = Math.max(...resultsFiltered.map((r) => r.SessionSettings.Session));
             }
 
+            // Note: normal scoring here?
+            const scoringOptions = filteredSessionScoringOptions(Settings, dynamicKeyset, true, false);
+            const timerMapping =
+              scoringOptions.find((i) => i.value === storedPreferences?.Schedule) ?? scoringOptions[0];
+
             return (
               <ResultsProportionVisualsPage
                 Group={Group}
@@ -156,7 +178,7 @@ function RouteComponent() {
                 MinX={minX}
                 MaxX={maxX}
                 DynamicKeySet={dynamicKeyset}
-                Schedule={storedPreferences.Schedule ?? 'End on Timer #1'}
+                TimerMapping={timerMapping}
                 ShowKeys={showKeysBase}
                 Settings={Settings}
               />

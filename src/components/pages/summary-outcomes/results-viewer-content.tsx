@@ -4,13 +4,18 @@ import ViewFrequencyResults from './views/view-frequency-results';
 import { useState } from 'react';
 import { ModifiedSessionResult } from '@/types/storage';
 import { KeySet } from '@/types/keyset';
-import { filteredSessionScoringOptions, ScheduleMappingOptions, ScheduleMappingOptionsType } from '@/types/schedules';
+import {
+  filteredSessionScoringOptions,
+  ScheduleMappingOptions,
+  ScheduleMappingOptionsType,
+  ScoringOptionsMapType,
+} from '@/types/schedules';
 import { DataCollectorRolesType } from '@/types/roles';
 import { ToggleDisplayKey } from '@/types/visuals';
 import { ApplicationSettingsTypes } from '@/types/settings';
 
 type Props = {
-  TimerMapping: ScheduleMappingOptionsType;
+  TimerMapping: ScoringOptionsMapType;
   Results: ModifiedSessionResult[];
   Keyset: KeySet;
   Group: string;
@@ -77,7 +82,7 @@ export default function ResultsViewerContent({
                 setSchedule(selectedOptionFixed);
               }
 
-              const specialKeyOption = filteredSessionScoringOptions(Settings, Keyset).find(
+              const specialKeyOption = filteredSessionScoringOptions(Settings, Keyset, false, true).find(
                 (option) => option.value === value,
               );
 
@@ -95,7 +100,7 @@ export default function ResultsViewerContent({
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {filteredSessionScoringOptions(Settings, Keyset).map((option) => (
+                {filteredSessionScoringOptions(Settings, Keyset, true, true).map((option) => (
                   <SelectItem key={option.value} value={option.value.toString()}>
                     {option.label}
                   </SelectItem>
@@ -105,7 +110,6 @@ export default function ResultsViewerContent({
           </Select>
         </div>
       </div>
-
       {Keyset.FrequencyKeys.length > 0 && (
         <ViewFrequencyResults
           SessionTimer={schedule.value}
@@ -117,7 +121,6 @@ export default function ResultsViewerContent({
           Evaluation={Evaluation}
         />
       )}
-
       {showDuration && Keyset.DurationKeys.length > 0 && (
         <ViewDurationResults
           SessionTimer={schedule.value}

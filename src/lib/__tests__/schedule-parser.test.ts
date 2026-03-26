@@ -3,6 +3,7 @@ import {
   walkSessionDurationKey,
   combineAndSortKeyPresses,
   sumDurationSpecialKey,
+  sumDurationScoringKey,
 } from '../schedule-parser';
 import { SavedSessionResult } from '@/lib/dtos';
 import { KeySetInstance } from '@/types/keyset';
@@ -25,6 +26,7 @@ describe('walkSessionFrequencyKey', () => {
       lastModified: new Date('2023-01-02'),
       DerivedKeys: [],
       SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
     },
     SpecialKeyTimers: {},
     SessionSettings: {} as any,
@@ -432,7 +434,23 @@ describe('walkSessionFrequencyKey', () => {
       ],
     };
 
-    const result = walkSessionFrequencyKey(sessionWithSpecialSchedule, 'Special', mockKey, 'CustomSpecialKey');
+    const result = walkSessionFrequencyKey(sessionWithSpecialSchedule, 'Special', mockKey, {
+      special: true,
+      schedule: 'system',
+      specialKeyName: 'CustomSpecialKey',
+      keyset: {
+        id: 'test-keyset',
+        Name: 'Test KeySet',
+        FrequencyKeys: [mockKey],
+        DurationKeys: [],
+        createdAt: new Date('2023-01-01'),
+        lastModified: new Date('2023-01-02'),
+        SpecialDurationKeys: [],
+        ScorableDurationKeys: [],
+        DerivedKeys: [],
+      },
+      timerType: 'Total',
+    });
 
     expect(result).toEqual({
       KeyName: 'TestKey',
@@ -500,6 +518,117 @@ describe('walkSessionFrequencyKey', () => {
       Bouts: -1,
     });
   });
+
+  it('should handle Special schedule with duration-based strategy', () => {
+    const mockKeyset = {
+      id: 'test-keyset',
+      Name: 'Test KeySet',
+      FrequencyKeys: [mockKey],
+      DurationKeys: [],
+      createdAt: new Date('2023-01-01'),
+      lastModified: new Date('2023-01-02'),
+      SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
+      DerivedKeys: [],
+    };
+    const sessionWithDurationStrategy: SavedSessionResult = {
+      ...baseSessionSettings,
+      DurationKeyPresses: [
+        {
+          KeyName: 'ScheduleKey',
+          KeyCode: 5,
+          KeyDescription: 'Schedule Key Start',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScheduleKey',
+          KeyCode: 5,
+          KeyDescription: 'Schedule Key End',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:15Z'),
+          TimeIntoSession: 15.0,
+          KeyType: 'Duration',
+        },
+      ],
+      FrequencyKeyPresses: [
+        {
+          KeyName: 'TestKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Frequency Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:08Z'),
+          TimeIntoSession: 8.0,
+          KeyType: 'Frequency',
+        },
+        {
+          KeyName: 'TestKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Frequency Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:12Z'),
+          TimeIntoSession: 12.0,
+          KeyType: 'Frequency',
+        },
+      ],
+    };
+
+    const result = walkSessionFrequencyKey(sessionWithDurationStrategy, 'Special', mockKey, {
+      special: true,
+      schedule: 'duration',
+      specialKeyName: 'ScheduleKey',
+      keyset: mockKeyset,
+      timerType: 'Total',
+    });
+
+    expect(result).toEqual({
+      KeyName: 'TestKey',
+      KeyDescription: 'Test Frequency Key',
+      Schedule: 'Special',
+      Value: 2,
+      Bouts: -1,
+    });
+  });
+
+  it('should throw when duration strategy has odd schedule changes', () => {
+    const mockKeyset = {
+      id: 'test-keyset',
+      Name: 'Test KeySet',
+      FrequencyKeys: [mockKey],
+      DurationKeys: [],
+      createdAt: new Date('2023-01-01'),
+      lastModified: new Date('2023-01-02'),
+      SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
+      DerivedKeys: [],
+    };
+    const sessionWithOddDuration: SavedSessionResult = {
+      ...baseSessionSettings,
+      DurationKeyPresses: [
+        {
+          KeyName: 'ScheduleKey',
+          KeyCode: 5,
+          KeyDescription: 'Schedule Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5.0,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    expect(() =>
+      walkSessionFrequencyKey(sessionWithOddDuration, 'Special', mockKey, {
+        special: true,
+        schedule: 'duration',
+        specialKeyName: 'ScheduleKey',
+        keyset: mockKeyset,
+        timerType: 'Total',
+      }),
+    ).toThrow('Schedule changes must be even');
+  });
 });
 
 describe('walkSessionDurationKey', () => {
@@ -519,6 +648,7 @@ describe('walkSessionDurationKey', () => {
       createdAt: new Date('2023-01-01'),
       lastModified: new Date('2023-01-02'),
       SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
     },
     SessionSettings: {} as any,
     SpecialKeyTimers: {},
@@ -1015,6 +1145,195 @@ describe('walkSessionDurationKey', () => {
       Bouts: 1,
     });
   });
+
+  it('should handle Special schedule using system-based strategy', () => {
+    const mockKeyset = {
+      id: 'test-keyset',
+      Name: 'Test KeySet',
+      FrequencyKeys: [],
+      DurationKeys: [mockKey],
+      createdAt: new Date('2023-01-01'),
+      lastModified: new Date('2023-01-02'),
+      SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
+      DerivedKeys: [],
+    };
+    const sessionWithSystemStrategy: SavedSessionResult = {
+      ...baseSessionSettings,
+      SystemKeyPresses: [
+        {
+          KeyName: 'SpecialScheduleKey',
+          KeyCode: -5,
+          KeyDescription: 'Special Schedule Start',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5.0,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'SpecialScheduleKey',
+          KeyCode: -5,
+          KeyDescription: 'Special Schedule End',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20.0,
+          KeyType: 'System',
+        },
+      ],
+      DurationKeyPresses: [
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Duration Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:08Z'),
+          TimeIntoSession: 8.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Duration Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:14Z'),
+          TimeIntoSession: 14.0,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    const result = walkSessionDurationKey(sessionWithSystemStrategy, 'Special', mockKey, {
+      special: true,
+      schedule: 'system',
+      specialKeyName: 'SpecialScheduleKey',
+      keyset: mockKeyset,
+      timerType: 'Total',
+    });
+
+    expect(result).toEqual({
+      KeyName: 'DurationKey',
+      KeyDescription: 'Test Duration Key',
+      Schedule: 'Special',
+      Value: 6, // 14 - 8 = 6 seconds
+      Bouts: 1,
+    });
+  });
+
+  it('should handle Special schedule using duration-based strategy', () => {
+    const mockKeyset = {
+      id: 'test-keyset',
+      Name: 'Test KeySet',
+      FrequencyKeys: [],
+      DurationKeys: [mockKey],
+      createdAt: new Date('2023-01-01'),
+      lastModified: new Date('2023-01-02'),
+      SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
+      DerivedKeys: [],
+    };
+    const scheduleKey: KeySetInstance = {
+      KeyName: 'ScheduleKey',
+      KeyDescription: 'Schedule Duration Key',
+      KeyCode: 99,
+    };
+    const sessionWithDurationStrategy: SavedSessionResult = {
+      ...baseSessionSettings,
+      DurationKeyPresses: [
+        // Schedule changes (ScheduleKey)
+        {
+          KeyName: 'ScheduleKey',
+          KeyCode: 99,
+          KeyDescription: 'Schedule Duration Key Start',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScheduleKey',
+          KeyCode: 99,
+          KeyDescription: 'Schedule Duration Key End',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20.0,
+          KeyType: 'Duration',
+        },
+        // Target key events (DurationKey) - within schedule period
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Duration Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:09Z'),
+          TimeIntoSession: 9.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Duration Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:15Z'),
+          TimeIntoSession: 15.0,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    const result = walkSessionDurationKey(sessionWithDurationStrategy, 'Special', mockKey, {
+      special: true,
+      schedule: 'duration',
+      specialKeyName: 'ScheduleKey',
+      keyset: mockKeyset,
+      timerType: 'Total',
+    });
+
+    expect(result).toEqual({
+      KeyName: 'DurationKey',
+      KeyDescription: 'Test Duration Key',
+      Schedule: 'Special',
+      Value: 6, // 15 - 9 = 6 seconds
+      Bouts: 1,
+    });
+  });
+
+  it('should throw when system strategy has odd schedule changes for duration key', () => {
+    const mockKeyset = {
+      id: 'test-keyset',
+      Name: 'Test KeySet',
+      FrequencyKeys: [],
+      DurationKeys: [mockKey],
+      createdAt: new Date('2023-01-01'),
+      lastModified: new Date('2023-01-02'),
+      SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
+      DerivedKeys: [],
+    };
+    const sessionWithOddSystem: SavedSessionResult = {
+      ...baseSessionSettings,
+      SystemKeyPresses: [
+        {
+          KeyName: 'SpecialScheduleKey',
+          KeyCode: -5,
+          KeyDescription: 'Special Schedule',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5.0,
+          KeyType: 'System',
+        },
+      ],
+    };
+
+    expect(() =>
+      walkSessionDurationKey(sessionWithOddSystem, 'Special', mockKey, {
+        special: true,
+        schedule: 'system',
+        specialKeyName: 'SpecialScheduleKey',
+        keyset: mockKeyset,
+        timerType: 'Total',
+      }),
+    ).toThrow('Schedule changes must be even');
+  });
 });
 
 describe('sumDurationSpecialKey', () => {
@@ -1028,6 +1347,7 @@ describe('sumDurationSpecialKey', () => {
       lastModified: new Date('2023-01-02'),
       DerivedKeys: [],
       SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
     },
     SessionSettings: {} as any,
     SpecialKeyTimers: {},
@@ -1336,6 +1656,7 @@ describe('combineAndSortKeyPresses', () => {
       lastModified: new Date('2023-01-02'),
       DerivedKeys: [],
       SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
     },
     SessionSettings: {} as any,
     SpecialKeyTimers: {},
@@ -1499,5 +1820,209 @@ describe('combineAndSortKeyPresses', () => {
       TimeIntoSession: 5.0,
       KeyType: 'System',
     });
+  });
+});
+
+describe('sumDurationScoringKey', () => {
+  const baseSessionSettings: SavedSessionResult = {
+    Keyset: {
+      id: 'test-keyset',
+      Name: 'Test KeySet',
+      FrequencyKeys: [],
+      DurationKeys: [],
+      createdAt: new Date('2023-01-01'),
+      lastModified: new Date('2023-01-02'),
+      DerivedKeys: [],
+      SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
+    },
+    SessionSettings: {} as any,
+    SpecialKeyTimers: {},
+    SystemKeyPresses: [],
+    FrequencyKeyPresses: [],
+    DurationKeyPresses: [],
+    SessionStart: '2023-01-01T10:00:00Z',
+    SessionEnd: '2023-01-01T10:10:00Z',
+    EndedEarly: false,
+    TimerMain: 600,
+    TimerOne: 0,
+    TimerTwo: 0,
+    TimerThree: 0,
+  };
+
+  it('should throw error when duration key presses are odd number', () => {
+    const sessionWithOdd: SavedSessionResult = {
+      ...baseSessionSettings,
+      DurationKeyPresses: [
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Scoring Key',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5.0,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    expect(() => sumDurationScoringKey(sessionWithOdd, 'ScoringKey')).toThrow('Schedule changes must be even');
+  });
+
+  it('should return zero when no matching duration key presses exist', () => {
+    const result = sumDurationScoringKey(baseSessionSettings, 'NonExistentKey');
+    expect(result).toBe(0);
+  });
+
+  it('should calculate duration for a single pair of duration key presses', () => {
+    const session: SavedSessionResult = {
+      ...baseSessionSettings,
+      DurationKeyPresses: [
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Scoring Key Start',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Scoring Key End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:18Z'),
+          TimeIntoSession: 18.0,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    const result = sumDurationScoringKey(session, 'ScoringKey');
+    expect(result).toBe(13); // 18 - 5 = 13 seconds
+  });
+
+  it('should calculate duration for multiple pairs of duration key presses', () => {
+    const session: SavedSessionResult = {
+      ...baseSessionSettings,
+      DurationKeyPresses: [
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Scoring Key Start 1',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Scoring Key End 1',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Scoring Key Start 2',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Scoring Key End 2',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:30Z'),
+          TimeIntoSession: 30.0,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    const result = sumDurationScoringKey(session, 'ScoringKey');
+    expect(result).toBe(15); // (10-5) + (30-20) = 5 + 10 = 15 seconds
+  });
+
+  it('should only sum durations for the specified key name', () => {
+    const session: SavedSessionResult = {
+      ...baseSessionSettings,
+      DurationKeyPresses: [
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Scoring Key Start',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Scoring Key End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:12Z'),
+          TimeIntoSession: 12.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'OtherKey',
+          KeyCode: 11,
+          KeyDescription: 'Other Key Start',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:15Z'),
+          TimeIntoSession: 15.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'OtherKey',
+          KeyCode: 11,
+          KeyDescription: 'Other Key End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:25Z'),
+          TimeIntoSession: 25.0,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    const result = sumDurationScoringKey(session, 'ScoringKey');
+    expect(result).toBe(7); // Only ScoringKey: 12 - 5 = 7 seconds
+  });
+
+  it('should handle fractional second durations', () => {
+    const session: SavedSessionResult = {
+      ...baseSessionSettings,
+      DurationKeyPresses: [
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Scoring Key Start',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:05.250Z'),
+          TimeIntoSession: 5.25,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Scoring Key End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:10.750Z'),
+          TimeIntoSession: 10.75,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    const result = sumDurationScoringKey(session, 'ScoringKey');
+    expect(result).toBe(5.5); // 10.75 - 5.25 = 5.5 seconds
   });
 });

@@ -4,7 +4,7 @@
  */
 
 import { WorkerMessage, WorkerResponse } from './types/sync-worker-types';
-import { SyncWorkerHandler } from './helpers/sync-handler';
+import { SyncWorkerHandler } from '../../lib/sync-core';
 
 const handler = new SyncWorkerHandler();
 

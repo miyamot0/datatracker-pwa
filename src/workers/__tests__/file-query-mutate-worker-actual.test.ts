@@ -32,7 +32,7 @@ import {
   mutateKeysetsAll,
   mutateSessionOutcomes,
   mutateSessionParams,
-} from '../mutations/helpers/file-query-mutate-actions';
+} from '../../lib/query-mutate';
 
 describe('FileQueryMutateWorker Actual Integration', () => {
   let worker: Worker;

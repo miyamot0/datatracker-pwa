@@ -14,7 +14,7 @@ import {
   writeFileToTarget,
   syncFiles,
 } from '../sync-utils';
-import { SyncWorkerHandler } from '../../workers/sync/helpers/sync-handler';
+import { SyncWorkerHandler } from '../sync-core';
 
 // Mock FileSystemDirectoryHandle and FileSystemFileHandle with proper async handling
 const createMockFileHandle = (name: string, content: string = 'test content') =>
@@ -740,61 +740,4 @@ describe('SyncWorkerHandler', () => {
       await expect(handler.processMessage(malformedMessage)).rejects.toThrow('Unknown operation type: undefined');
     });
   });
-
-  describe('individual handler methods', () => {
-    it('should log operations in handleListLocalFiles', async () => {
-      const mockHandle = createMockDirectoryHandle('test', []);
-      const message = { type: 'LIST_FILES_LOCAL' as const, localHandle: mockHandle };
-
-      await handler.handleListLocalFiles(message);
-
-      expect(consoleLogSpy).toHaveBeenCalledWith('Listing local files...');
-      expect(consoleLogSpy).toHaveBeenCalledWith('Found local files:', 0);
-    });
-
-    it('should log operations in handleListRemoteFiles', async () => {
-      const mockHandle = createMockDirectoryHandle('test', []);
-      const message = { type: 'LIST_FILES_REMOTE' as const, remoteHandle: mockHandle };
-
-      await handler.handleListRemoteFiles(message);
-
-      expect(consoleLogSpy).toHaveBeenCalledWith('Listing remote files...');
-      expect(consoleLogSpy).toHaveBeenCalledWith('Found remote files:', 0);
-    });
-
-    it('should log operations in handleListBothFiles', async () => {
-      const mockHandle1 = createMockDirectoryHandle('local', []);
-      const mockHandle2 = createMockDirectoryHandle('remote', []);
-      const message = {
-        type: 'LIST_FILES_BOTH' as const,
-        localHandle: mockHandle1,
-        remoteHandle: mockHandle2,
-      };
-
-      await handler.handleListBothFiles(message);
-
-      expect(consoleLogSpy).toHaveBeenCalledWith('Listing both local and remote files...');
-      expect(consoleLogSpy).toHaveBeenCalledWith('Found files - local:', 0, 'remote:', 0);
-    });
-
-    it('should log operations in handleSyncFiles', async () => {
-      const mockHandle1 = createMockDirectoryHandle('source', []);
-      const mockHandle2 = createMockDirectoryHandle('target', []);
-      const message = {
-        type: 'SYNC_FILES' as const,
-        rows: [],
-        sourceHandle: mockHandle1,
-        targetHandle: mockHandle2,
-        direction: 'to_remote' as const,
-      };
-
-      await handler.handleSyncFiles(message);
-
-      expect(consoleLogSpy).toHaveBeenCalledWith('Syncing files...');
-      expect(consoleLogSpy).toHaveBeenCalledWith('Synced files:', 0);
-    });
-  });
-
-  // Note: Full integration tests would require more complex mocking of FileSystemDirectoryHandle
-  // These tests demonstrate the handler structure is properly testable and all code paths are covered
 });

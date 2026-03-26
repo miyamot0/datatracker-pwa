@@ -21,6 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useRouter, useRouterState } from '@tanstack/react-router';
 import SpecialDurationDialogKeyCreator from './dialogs/special-duration-dialog';
+import ScoredDurationDialogKeyCreator from './dialogs/scored-duration-dialog';
 
 export default function KeySetEditor({
   Group,
@@ -107,6 +108,22 @@ export default function KeySetEditor({
       FrequencyKeys: [...base_keyset.FrequencyKeys],
       DerivedKeys: [...(base_keyset.DerivedKeys || [])],
       SpecialDurationKeys: [...(base_keyset.SpecialDurationKeys || []), new_key],
+      ScorableDurationKeys: [...(base_keyset.ScorableDurationKeys || [])],
+      lastModified: new Date(),
+    } satisfies KeySet;
+
+    await mutateKeySet(new_state);
+  };
+
+  const addScoredDurationKeyCallback = async (base_keyset: KeySet, new_key: KeySetInstance) => {
+    const new_state = {
+      ...base_keyset,
+      // Note: hack to kick off re-render
+      DurationKeys: [...base_keyset.DurationKeys],
+      FrequencyKeys: [...base_keyset.FrequencyKeys],
+      DerivedKeys: [...(base_keyset.DerivedKeys || [])],
+      SpecialDurationKeys: [...(base_keyset.SpecialDurationKeys || [])],
+      ScorableDurationKeys: [...(base_keyset.ScorableDurationKeys || []), new_key],
       lastModified: new Date(),
     } satisfies KeySet;
 
@@ -285,6 +302,7 @@ export default function KeySetEditor({
                   <DropdownMenuLabel>Custom Key Types</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <SpecialDurationDialogKeyCreator KeySet={KeySetObject} Callback={addSpecialDurationKeyCallback} />
+                  <ScoredDurationDialogKeyCreator KeySet={KeySetObject} Callback={addScoredDurationKeyCallback} />
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -364,7 +382,7 @@ export default function KeySetEditor({
 
               {KeySetObject.SpecialDurationKeys?.map((key, index) => (
                 <TableRow key={index} className="bg-muted">
-                  <TableCell>{key.KeyDescription} (Special)</TableCell>
+                  <TableCell>{key.KeyDescription} (Special Timing)</TableCell>
                   <TableCell>{key.KeyName}</TableCell>
                   <TableCell className="flex flex-row gap-2 justify-end">
                     <Button
@@ -379,6 +397,37 @@ export default function KeySetEditor({
                         const new_state = {
                           ...KeySetObject,
                           SpecialDurationKeys: KeySetObject.SpecialDurationKeys?.filter(
+                            (_key) => _key.KeyCode !== key.KeyCode,
+                          ),
+                        } satisfies KeySet;
+
+                        await mutateKeySet(new_state);
+                      }}
+                    >
+                      <DeleteIcon size={14} className="mr-2" />
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+
+              {KeySetObject.ScorableDurationKeys?.map((key, index) => (
+                <TableRow key={index} className="bg-muted">
+                  <TableCell>{key.KeyDescription} (Scored Duration)</TableCell>
+                  <TableCell>{key.KeyName}</TableCell>
+                  <TableCell className="flex flex-row gap-2 justify-end">
+                    <Button
+                      size={'sm'}
+                      variant={'destructive'}
+                      className="shadow-xl"
+                      onClick={async () => {
+                        const confirmation = window.confirm('Are you sure you want to remove this key?');
+
+                        if (!confirmation) return;
+
+                        const new_state = {
+                          ...KeySetObject,
+                          ScorableDurationKeys: KeySetObject.ScorableDurationKeys?.filter(
                             (_key) => _key.KeyCode !== key.KeyCode,
                           ),
                         } satisfies KeySet;

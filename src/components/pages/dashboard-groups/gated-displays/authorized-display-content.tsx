@@ -9,7 +9,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { mutationGroups } from '@/queries/groups/mutate-groups';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { DataTable } from '@/components/ui/data-table-common';
-import { DemoDataFolderName } from '@/workers/mutations/helpers/file-query-mutate-actions';
+import { DemoDataFolderName } from '@/lib/query-mutate';
 import { ApplicationSettingsTypes } from '@/types/settings';
 
 type Props = {

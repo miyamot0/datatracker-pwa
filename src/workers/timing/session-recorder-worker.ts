@@ -2,7 +2,7 @@ import { KeySet } from '@/types/keyset';
 import { SavedSettings } from '@/lib/dtos';
 import { SessionRecorderPolling } from '@/types/settings';
 import { WorkerMessage, WorkerResponse } from './types/session-recorder-worker-messaging';
-import { SessionRecorderCore, getHighResTime } from './helpers/session-recorder-core';
+import { SessionRecorderCore, getHighResTime } from '../../lib/recorder-core';
 
 let uiUpdateCounter = 0;
 

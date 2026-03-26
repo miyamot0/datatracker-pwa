@@ -21,7 +21,12 @@ import { Link } from '@tanstack/react-router';
 import { Switch } from '@/components/ui/switch';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';
-import { filteredSessionScoringOptions } from '@/types/schedules';
+import {
+  filteredSessionScoringOptions,
+  ScheduleMappingOptions,
+  ScheduleMappingOptionsType,
+  ScoringOptionsMapType,
+} from '@/types/schedules';
 import { ApplicationSettingsTypes } from '@/types/settings';
 
 export default function ResultsProportionVisualsPage({
@@ -29,7 +34,7 @@ export default function ResultsProportionVisualsPage({
   Individual,
   Evaluation,
   DynamicKeySet,
-  Schedule,
+  TimerMapping,
   ShowKeys,
   ResultsFiltered,
   MinX,
@@ -41,7 +46,7 @@ export default function ResultsProportionVisualsPage({
   Evaluation: string;
   Results: SavedSessionResult[];
   DynamicKeySet: KeySet;
-  Schedule: SessionTerminationOptionsType;
+  TimerMapping: ScoringOptionsMapType;
   ShowKeys: ToggleDisplayKey[];
   ResultsFiltered: SavedSessionResult[];
   MinX: number;
@@ -51,7 +56,7 @@ export default function ResultsProportionVisualsPage({
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
   const [connectAllPoints, setConnectAllPoints] = useState(false);
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
-  const [schedule, setSchedule] = useState<SessionTerminationOptionsType>(Schedule);
+  const [schedule, setSchedule] = useState<ScheduleMappingOptionsType | { value: string; label: string }>(TimerMapping);
 
   return (
     <Card className="w-full">
@@ -112,7 +117,7 @@ export default function ResultsProportionVisualsPage({
 
                     setLocalCachedPrefs(Group, Individual, Evaluation, 'Duration', {
                       KeyDescription: hidden_keys,
-                      Schedule: schedule,
+                      Schedule: schedule.value,
                     });
                   }}
                 >
@@ -125,16 +130,26 @@ export default function ResultsProportionVisualsPage({
           <div className="flex flex-row items-center gap-2 w-fit">
             <p>Select Timer to Reference:</p>
             <Select
-              value={schedule}
+              value={schedule.value}
               onValueChange={(value: SessionTerminationOptionsType) => {
-                setSchedule(value);
+                const selectedOptionFixed = ScheduleMappingOptions.find((option) => option.value === value);
 
-                const hidden_keys = filteredKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+                if (selectedOptionFixed) {
+                  // Note: A pre-made but filter option
+                  setSchedule(selectedOptionFixed);
+                }
 
-                setLocalCachedPrefs(Group, Individual, Evaluation, 'Duration', {
-                  KeyDescription: hidden_keys,
-                  Schedule: value,
-                });
+                const specialKeyOption = filteredSessionScoringOptions(Settings, DynamicKeySet, false, true).find(
+                  (option) => option.value === value,
+                );
+
+                if (specialKeyOption) {
+                  // Note: A special key option
+                  setSchedule({
+                    value: specialKeyOption.value,
+                    label: specialKeyOption.label,
+                  });
+                }
               }}
             >
               <SelectTrigger className="w-fit">
@@ -142,7 +157,7 @@ export default function ResultsProportionVisualsPage({
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  {filteredSessionScoringOptions(Settings, DynamicKeySet, true).map((option) => (
+                  {filteredSessionScoringOptions(Settings, DynamicKeySet, true, false).map((option) => (
                     <SelectItem key={option.value} value={option.value as SessionTerminationOptionsType}>
                       {option.label}
                     </SelectItem>
@@ -198,7 +213,7 @@ export default function ResultsProportionVisualsPage({
             DynamicKeySet={DynamicKeySet}
             MinX={MinX}
             MaxX={MaxX}
-            ScheduleOption={schedule}
+            ScheduleOption={schedule.value}
             KeySetFull={filteredKeys}
             FigureTextSize={figureTextSize}
             ConnectSpans={connectAllPoints}

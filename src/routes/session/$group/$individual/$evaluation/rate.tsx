@@ -21,6 +21,7 @@ import {
 import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { ModifiedSessionResult } from '@/types/storage';
 import { ErrorDisplay } from '@/components/suspense/error-display';
+import { filteredSessionScoringOptions } from '@/types/schedules';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/rate')({
   beforeLoad: ({ context, params }) => {
@@ -111,6 +112,7 @@ function RouteComponent() {
               durationKeys: targetedDKeys,
               derivedKeys: targetedDerivedKeys,
               specialDurationKeys,
+              scorableDurationKeys,
             } = extractAndDeduplicateKeysets(sessionOutcomes, {
               ...sessionKeySet,
               FrequencyKeys: [...sessionKeySet.FrequencyKeys, ...(designerKeySet?.FrequencyKeys || [])],
@@ -120,6 +122,10 @@ function RouteComponent() {
                 ...(sessionKeySet.SpecialDurationKeys || []),
                 ...(designerKeySet?.SpecialDurationKeys || []),
               ],
+              ScorableDurationKeys: [
+                ...(sessionKeySet.ScorableDurationKeys || []),
+                ...(designerKeySet?.ScorableDurationKeys || []),
+              ],
             });
 
             const dynamicKeyset = {
@@ -128,6 +134,7 @@ function RouteComponent() {
               DurationKeys: targetedDKeys,
               DerivedKeys: targetedDerivedKeys,
               SpecialDurationKeys: specialDurationKeys,
+              ScorableDurationKeys: scorableDurationKeys,
             } satisfies KeySet;
 
             const keysFreqObserved: ToggleDisplayKey[] = dynamicKeyset.FrequencyKeys.map(
@@ -164,6 +171,10 @@ function RouteComponent() {
               maxX = Math.max(...resultsFiltered.map((r) => r.SessionSettings.Session));
             }
 
+            const scoringOptions = filteredSessionScoringOptions(Settings, dynamicKeyset, true, true);
+            const timerMapping =
+              scoringOptions.find((i) => i.value === storedPreferences?.Schedule) ?? scoringOptions[0];
+
             return (
               <ResultsRateVisualsPage
                 Group={Group}
@@ -173,7 +184,7 @@ function RouteComponent() {
                 Results={sessionOutcomes}
                 ResultsFiltered={resultsFiltered}
                 DynamicKeySet={dynamicKeyset}
-                Schedule={storedPreferences.Schedule ?? 'End on Timer #1'}
+                TimerMapping={timerMapping}
                 ShowKeys={showKeysFreq}
                 MinX={minX}
                 MaxX={maxX}

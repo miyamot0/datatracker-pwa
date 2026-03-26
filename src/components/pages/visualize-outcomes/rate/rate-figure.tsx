@@ -8,7 +8,8 @@ import { generateTicks, createChartLegends, createNavigationHandler, prepareRate
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { BaseChart } from '@/components/pages/visualize-outcomes/shared/base-chart';
 import { RateTooltip } from './rate-elements';
-import { convertLegacyTimerType, processMultipleSessionDataWithKeys } from '@/lib/calculations';
+import { processMultipleSessionDataWithKeys } from '@/lib/calculations';
+import { convertLegacyTimerType } from '@/calculations/calculation-helpers';
 
 type Props = {
   Group: string;
@@ -54,12 +55,8 @@ export default function RateFigureVisualization({
 
   const frequencyRates = processMultipleSessionDataWithKeys(
     FilteredSessions,
+    DynamicKeySet,
     convertLegacyTimerType(ScheduleOption, DynamicKeySet),
-    {
-      frequencyKeys: DynamicKeySet.FrequencyKeys,
-      durationKeys: DynamicKeySet.DurationKeys,
-      derivedKeys: DynamicKeySet.DerivedKeys,
-    },
     'CHART_ALL',
     {
       frequencyKeys: [],
