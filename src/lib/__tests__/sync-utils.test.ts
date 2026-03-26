@@ -14,7 +14,7 @@ import {
   writeFileToTarget,
   syncFiles,
 } from '../sync-utils';
-import { SyncWorkerHandler } from '../../workers/sync/helpers/sync-handler';
+import { SyncWorkerHandler } from '../sync-core';
 
 // Mock FileSystemDirectoryHandle and FileSystemFileHandle with proper async handling
 const createMockFileHandle = (name: string, content: string = 'test content') =>

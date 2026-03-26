@@ -138,11 +138,19 @@ function RouteComponent() {
               ScorableDurationKeys: scorableDurationKeys,
             } satisfies KeySet;
 
-            const keys: ToggleDisplayKey[] = dynamicKeyset.DurationKeys.map((key) => ({
+            const keysObserved: ToggleDisplayKey[] = dynamicKeyset.DurationKeys.map((key) => ({
               ...key,
               Visible: true,
               KeyType: 'Observed',
             }));
+
+            const keysScoring: ToggleDisplayKey[] = dynamicKeyset.ScorableDurationKeys.map((key) => ({
+              ...key,
+              Visible: true,
+              KeyType: 'Observed',
+            }));
+
+            const keys = [...keysObserved, ...keysScoring];
 
             const storedPreferences = getLocalCachedPrefs(Group, Individual, Evaluation, 'Duration');
             const showKeysBase = mapKeysWithStoragePreference(keys, storedPreferences);

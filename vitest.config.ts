@@ -28,12 +28,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['json', 'lcov', 'text', 'clover', 'json-summary'],
       reportsDirectory: './coverage',
-      include: [
-        'src/lib/**/*.{ts,tsx}',
-        'src/calculations/**/*.ts',
-        'src/workers/**/*.{ts,tsx}',
-        'src/analytics/**/*.ts',
-      ],
+      include: ['src/lib/**/*.{ts,tsx}', 'src/calculations/**/*.ts', 'src/analytics/**/*.ts'],
       exclude: ['**/__tests__/**/*', '**/types/**/*', 'src/lib/utils.ts'],
     },
   },

@@ -1,5 +1,5 @@
-import { WorkerMessage, WorkerResponse } from '../types/sync-worker-types';
-import { listFilesInDirectory, syncFiles } from '../../../lib/sync-utils';
+import { WorkerMessage, WorkerResponse } from '../workers/sync/types/sync-worker-types';
+import { listFilesInDirectory, syncFiles } from './sync-utils';
 
 export class SyncWorkerHandler {
   /**

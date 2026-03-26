@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { SessionRecorderCore, getHighResTime, formatTimestamp } from '../timing/helpers/session-recorder-core';
+import { SessionRecorderCore, getHighResTime, formatTimestamp } from '../recorder-core';
 import { SavedSettings } from '@/lib/dtos';
 import { KeySet } from '@/types/keyset';
 
