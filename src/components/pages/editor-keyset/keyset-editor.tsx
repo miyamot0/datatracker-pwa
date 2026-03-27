@@ -197,6 +197,7 @@ export default function KeySetEditor({
                     <Button
                       size={'sm'}
                       variant={'outline'}
+                      className="shadow"
                       disabled={index === 0}
                       onClick={async () => {
                         const newFrequencyKeys = moveItemUp(KeySetObject.FrequencyKeys, index);
@@ -213,6 +214,7 @@ export default function KeySetEditor({
                     <Button
                       size={'sm'}
                       variant={'outline'}
+                      className="shadow"
                       disabled={index === KeySetObject.FrequencyKeys.length - 1}
                       onClick={async () => {
                         const newFrequencyKeys = moveItemDown(KeySetObject.FrequencyKeys, index);
@@ -229,7 +231,7 @@ export default function KeySetEditor({
                     <Button
                       size={'sm'}
                       variant={'destructive'}
-                      className="shadow-xl"
+                      className="shadow"
                       onClick={async () => {
                         const confirmation = window.confirm('Are you sure you want to remove this key?');
 
@@ -328,6 +330,7 @@ export default function KeySetEditor({
                     <Button
                       size={'sm'}
                       variant={'outline'}
+                      className="shadow"
                       disabled={index === 0}
                       onClick={async () => {
                         const newDurationKeys = moveItemUp(KeySetObject.DurationKeys, index);
@@ -344,6 +347,7 @@ export default function KeySetEditor({
                     <Button
                       size={'sm'}
                       variant={'outline'}
+                      className="shadow"
                       disabled={index === KeySetObject.DurationKeys.length - 1}
                       onClick={async () => {
                         const newDurationKeys = moveItemDown(KeySetObject.DurationKeys, index);
@@ -360,6 +364,7 @@ export default function KeySetEditor({
                     <Button
                       size={'sm'}
                       variant={'destructive'}
+                      className="shadow"
                       onClick={async () => {
                         const confirmation = window.confirm('Are you sure you want to remove this key?');
 
@@ -388,7 +393,7 @@ export default function KeySetEditor({
                     <Button
                       size={'sm'}
                       variant={'destructive'}
-                      className="shadow-xl"
+                      className="shadow"
                       onClick={async () => {
                         const confirmation = window.confirm('Are you sure you want to remove this key?');
 
@@ -419,7 +424,7 @@ export default function KeySetEditor({
                     <Button
                       size={'sm'}
                       variant={'destructive'}
-                      className="shadow-xl"
+                      className="shadow"
                       onClick={async () => {
                         const confirmation = window.confirm('Are you sure you want to remove this key?');
 

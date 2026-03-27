@@ -445,7 +445,7 @@ export default function SessionDesigner({
                   </FormItem>
                 )}
               />
-              <Button variant={'outline'} className="w-full" type="submit">
+              <Button variant={'outline'} className="w-full shadow" type="submit">
                 Run Session
               </Button>
             </form>
