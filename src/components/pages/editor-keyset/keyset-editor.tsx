@@ -153,7 +153,7 @@ export default function KeySetEditor({
           </div>
 
           <div className="flex flex-row gap-2">
-            <div className={cn(btnProps, 'pl-3 pr-0')}>
+            <div className={cn(btnProps, 'pl-3 pr-0 shadow')}>
               <FrequencyDialogKeyCreator KeySet={KeySetObject} Callback={addKeyCallback} />
 
               <DropdownMenu modal={false}>
@@ -176,7 +176,7 @@ export default function KeySetEditor({
               </DropdownMenu>
             </div>
 
-            <BackButton />
+            <BackButton Silence />
           </div>
         </CardHeader>
         <CardContent className="flex-1">
@@ -291,7 +291,7 @@ export default function KeySetEditor({
           </div>
 
           <div className="flex flex-row gap-2">
-            <div className={cn(btnProps, 'pl-3 pr-0')}>
+            <div className={cn(btnProps, 'pl-3 pr-0 shadow')}>
               <DurationDialogKeyCreator KeySet={KeySetObject} Callback={addKeyCallback} />
 
               <DropdownMenu modal={false}>
@@ -307,7 +307,7 @@ export default function KeySetEditor({
               </DropdownMenu>
             </div>
 
-            <BackButton />
+            <BackButton Silence />
           </div>
         </CardHeader>
         <CardContent className="flex-1">
