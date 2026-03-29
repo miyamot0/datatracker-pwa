@@ -13,6 +13,9 @@ import HomePage from '../home/home-page';
 import DocumentationListingPage from '../documentation/documentation-listing-page';
 import DocumentationEntryPage from '../documentation/documentation-entry-page';
 import { AllFrontMatter, AllKeywordsArray } from '@/lib/docs';
+import AuthorizedDisplayContent from '../dashboard-groups/authorized-display-content';
+import UnauthorizedDisplay from '../dashboard-groups/unauthorized-display';
+import ClientsPage from '../dashboard-participants/clients-page';
 
 // ----- Hoisted refs -----
 const mockMutateAsync = vi.hoisted(() => vi.fn().mockResolvedValue([]));
@@ -31,6 +34,10 @@ vi.mock('@tanstack/react-query', () => ({
     mutateAsync: mockMutateAsync,
     isPending: false,
     isError: false,
+  })),
+  useQueryClient: vi.fn(() => ({
+    setQueryData: vi.fn(),
+    invalidateQueries: vi.fn().mockResolvedValue(undefined),
   })),
 }));
 
@@ -63,6 +70,14 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('@/queries/evaluations/mutate-evaluations', () => ({
   mutationEvaluations: vi.fn(),
+}));
+
+vi.mock('@/queries/groups/mutate-groups', () => ({
+  mutationGroups: vi.fn(),
+}));
+
+vi.mock('@/queries/individuals/mutate-individuals', () => ({
+  mutationIndividuals: vi.fn(),
 }));
 
 // ----- Tests -----
@@ -223,5 +238,112 @@ describe('DocumentationEntryPage', () => {
     );
 
     await page.screenshot({ path: '../../../../public/screenshots2/documentation_entry_page.png' });
+  });
+});
+
+describe('AuthorizedDisplayContent', () => {
+  it('renders with full styles and saves a screenshot', async () => {
+    const mockHandle = {} as FileSystemDirectoryHandle;
+
+    render(
+      <ThemeProvider defaultTheme="light" storageKey="test-theme">
+        <FolderHandleContext.Provider
+          value={{
+            handle: mockHandle,
+            setHandle: vi.fn(),
+            settings: DEFAULT_APPLICATION_SETTINGS,
+            setSettings: vi.fn(),
+            saveSettings: vi.fn(),
+            isInitialized: true,
+            setIsInitialized: vi.fn(),
+          }}
+        >
+          <TooltipProvider>
+            <PageWrapper
+              Settings={DEFAULT_APPLICATION_SETTINGS}
+              breadcrumbs={[{ label: 'Groups', to: '/session' }]}
+              label="Groups"
+            >
+              <AuthorizedDisplayContent
+                Groups={['Study Trial A', 'Study Trial B', 'Clinical Pilot 2026']}
+                Settings={DEFAULT_APPLICATION_SETTINGS}
+                Handle={mockHandle}
+              />
+            </PageWrapper>
+          </TooltipProvider>
+        </FolderHandleContext.Provider>
+      </ThemeProvider>,
+    );
+
+    await page.screenshot({ path: '../../../../public/screenshots2/groups_authorized_page.png' });
+  });
+});
+
+describe('UnauthorizedDisplay', () => {
+  it('renders with full styles and saves a screenshot', async () => {
+    const mockHandle = undefined as unknown as FileSystemDirectoryHandle;
+
+    render(
+      <ThemeProvider defaultTheme="light" storageKey="test-theme">
+        <FolderHandleContext.Provider
+          value={{
+            handle: undefined,
+            setHandle: vi.fn(),
+            settings: DEFAULT_APPLICATION_SETTINGS,
+            setSettings: vi.fn(),
+            saveSettings: vi.fn(),
+            isInitialized: false,
+            setIsInitialized: vi.fn(),
+          }}
+        >
+          <TooltipProvider>
+            <PageWrapper Settings={DEFAULT_APPLICATION_SETTINGS} label="Authorize">
+              <UnauthorizedDisplay />
+            </PageWrapper>
+          </TooltipProvider>
+        </FolderHandleContext.Provider>
+      </ThemeProvider>,
+    );
+
+    await page.screenshot({ path: '../../../../public/screenshots2/groups_unauthorized_page.png' });
+  });
+});
+
+describe('ClientsPage', () => {
+  it('renders with full styles and saves a screenshot', async () => {
+    const mockHandle = {} as FileSystemDirectoryHandle;
+
+    render(
+      <ThemeProvider defaultTheme="light" storageKey="test-theme">
+        <FolderHandleContext.Provider
+          value={{
+            handle: mockHandle,
+            setHandle: vi.fn(),
+            settings: DEFAULT_APPLICATION_SETTINGS,
+            setSettings: vi.fn(),
+            saveSettings: vi.fn(),
+            isInitialized: true,
+            setIsInitialized: vi.fn(),
+          }}
+        >
+          <TooltipProvider>
+            <PageWrapper
+              Settings={DEFAULT_APPLICATION_SETTINGS}
+              breadcrumbs={[{ label: 'Study Trial A', to: '/session/$group' }]}
+              label="Clients"
+            >
+              <ClientsPage
+                Group="Study Trial A"
+                Clients={['Participant 001', 'Participant 002', 'Participant 003']}
+                Handle={mockHandle}
+                Settings={DEFAULT_APPLICATION_SETTINGS}
+              />
+            </PageWrapper>
+          </TooltipProvider>
+        </FolderHandleContext.Provider>
+      </ThemeProvider>,
+    );
+
+    await page.screenshot({ path: '../../../../public/screenshots2/clients_page.png' });
   });
 });
