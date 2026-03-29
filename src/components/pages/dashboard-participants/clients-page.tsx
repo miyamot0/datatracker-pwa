@@ -5,7 +5,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 import { mutationIndividuals } from '@/queries/individuals/mutate-individuals';
 import { ApplicationSettingsTypes } from '@/types/settings';
@@ -59,11 +58,11 @@ export default function ClientsPage({
           <Button size={'sm'} variant={'outline'} className="flex flex-row divide-x justify-between mx-0 px-0 shadow">
             <Link
               className="px-3 hover:underline flex flex-row items-center"
-              to={createHref({
-                type: 'Evaluations',
+              to="/session/$group/$individual"
+              params={{
                 group: Group,
                 individual: row.original.Individual,
-              })}
+              }}
             >
               <FolderInput className="mr-2 h-4 w-4" />
               Open Evaluations

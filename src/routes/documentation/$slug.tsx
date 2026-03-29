@@ -1,5 +1,4 @@
 import { AllFrontMatter, AllKeywordsArray, DocumentationObjects } from '@/lib/docs';
-import createHref from '@/lib/links';
 import { FrontMatterUniversalType, ParsedFrontMatterType } from '@/types/mdx';
 import { redirect, createFileRoute, lazyRouteComponent } from '@tanstack/react-router';
 
@@ -9,7 +8,7 @@ export const Route = createFileRoute('/documentation/$slug')({
 
     if (!entry) {
       throw redirect({
-        href: createHref({ type: 'Documentation' }),
+        to: '/documentation',
       });
     }
 

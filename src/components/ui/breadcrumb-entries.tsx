@@ -1,61 +1,50 @@
-import createHref from '@/lib/links';
 import { CleanUpString } from '@/lib/strings';
 
 export function BuildDocumentationBreadcrumb() {
   return {
-    href: createHref({ type: 'Documentation' }),
+    to: '/documentation',
     label: 'Documentation',
   };
 }
 
 export function BuildGroupBreadcrumb() {
   return {
-    href: createHref({ type: 'Dashboard' }),
+    to: '/dashboard',
     label: 'Group Dashboard',
   };
 }
 
 export function BuildIndividualsBreadcrumb(group: string) {
   return {
-    href: createHref({ type: 'Individuals', group }),
+    to: `/session/${CleanUpString(group)}`,
     label: CleanUpString(group),
   };
 }
 
 export function BuildEvaluationsBreadcrumb(group: string, individual: string) {
   return {
-    href: createHref({ type: 'Evaluations', group, individual }),
+    to: `/session/${CleanUpString(group)}/${CleanUpString(individual)}`,
     label: CleanUpString(individual),
   };
 }
 
 export function BuildSessionHistoryBreadcrumb(group: string, individual: string, evaluation: string) {
   return {
-    href: createHref({
-      type: 'Evaluation Session Viewer',
-      group,
-      individual,
-      evaluation,
-    }),
+    to: `/session/${CleanUpString(group)}/${CleanUpString(individual)}/${CleanUpString(evaluation)}/history`,
     label: 'Session History',
   };
 }
 
 export function BuildSessionDesignerBreadcrumb(group: string, individual: string, evaluation: string) {
   return {
-    href: createHref({
-      type: 'Session Designer',
-      group,
-      individual,
-      evaluation,
-    }),
+    to: `/session/${CleanUpString(group)}/${CleanUpString(individual)}/${CleanUpString(evaluation)}`,
     label: CleanUpString(evaluation),
   };
 }
 
 export function BuildKeysetBreadcrumb(group: string, individual: string) {
   return {
-    href: createHref({ type: 'Keysets', group, individual }),
+    to: `/session/${CleanUpString(group)}/${CleanUpString(individual)}/keysets`,
     label: 'Keysets',
   };
 }

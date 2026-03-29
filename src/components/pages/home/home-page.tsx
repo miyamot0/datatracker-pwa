@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { BookTextIcon, ChartLineIcon, HardDriveDownloadIcon, PackageIcon } from 'lucide-react';
-import createHref from '@/lib/links';
 import {
   Dialog,
   DialogContent,
@@ -72,7 +71,7 @@ export default function HomePage({ Settings, SaveSettings, SetSettings }: Props)
       </div>
       <ImageCarousel />
       <div className="max-w-lg flex flex-col w-full py-8 gap-4">
-        <Link to={createHref({ type: 'Documentation' })} className="flex flex-row gap-2 items-center">
+        <Link to="/documentation" className="flex flex-row gap-2 items-center">
           <Button variant={'outline'} className="w-full shadow-xl">
             <BookTextIcon className="mr-2 h-4 w-4" />
             Program Documentation

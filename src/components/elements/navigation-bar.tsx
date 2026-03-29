@@ -8,7 +8,6 @@ import {
   BreadcrumbPage,
 } from '../ui/breadcrumb';
 import AuthorizationStatus from './authorization-status';
-import createHref from '@/lib/links';
 import { Button } from '@/components/ui/button';
 import { MenuIcon, RefreshCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -26,6 +25,7 @@ type Props = {
   label?: string;
 };
 
+// TODO: Navbar should inherit global router settings
 export default function NavigationBar({ breadcrumbs, label }: Props) {
   const { handle, settings } = useContext(FolderHandleContext);
 
@@ -40,7 +40,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to={createHref({ type: 'Home' })} className={cn('underline')} viewTransition={{ types: animLeft }}>
+              <Link to="/" className={cn('underline')} viewTransition={{ types: animLeft }}>
                 Home
               </Link>
             </BreadcrumbLink>
