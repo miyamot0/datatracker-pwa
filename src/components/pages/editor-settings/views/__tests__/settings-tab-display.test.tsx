@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { vi, describe, it, expect } from 'vitest';
+import { vi, describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import userEvent from '@testing-library/user-event';
 
 // ----- Module mocks -----
 
@@ -18,8 +19,9 @@ vi.mock('@tanstack/react-router', () => ({
   })),
 }));
 
+const mockSetTheme = vi.hoisted(() => vi.fn());
 vi.mock('@/components/ui/theme-provider', () => ({
-  useTheme: vi.fn(() => ({ theme: 'light', setTheme: vi.fn() })),
+  useTheme: vi.fn(() => ({ theme: 'light', setTheme: mockSetTheme })),
 }));
 
 vi.mock('@/lib/notifications', () => ({
@@ -30,7 +32,8 @@ vi.mock('@/lib/notifications', () => ({
 
 import { Tabs } from '@/components/ui/tabs';
 import { SettingsTabDisplay } from '../settings-tab-display';
-import { SettingsDisplayEnum } from '@/types/settings';
+import { DEFAULT_APPLICATION_SETTINGS, SettingsDisplayEnum } from '@/types/settings';
+import { FolderHandleContext } from '@/context/folder-context';
 
 // ----- Tests -----
 
@@ -81,5 +84,80 @@ describe('SettingsTabDisplay', () => {
     renderWithTabs();
     const triggers = screen.getAllByRole('combobox');
     expect(triggers.length).toBeGreaterThanOrEqual(3);
+  });
+
+  describe('select interactions', () => {
+    const mockSetSettings = vi.fn();
+    const mockSaveSettings = vi.fn();
+
+    const renderWithProvider = () =>
+      render(
+        <FolderHandleContext.Provider
+          value={{
+            settings: DEFAULT_APPLICATION_SETTINGS,
+            setSettings: mockSetSettings,
+            saveSettings: mockSaveSettings,
+            handle: undefined,
+            setHandle: vi.fn(),
+            isInitialized: false,
+            setIsInitialized: vi.fn(),
+          }}
+        >
+          <Tabs defaultValue={SettingsDisplayEnum.Display}>
+            <SettingsTabDisplay />
+          </Tabs>
+        </FolderHandleContext.Provider>,
+      );
+
+    beforeAll(() => {
+      global.ResizeObserver = class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      };
+      Element.prototype.hasPointerCapture = vi.fn(() => false);
+      Element.prototype.setPointerCapture = vi.fn();
+      Element.prototype.releasePointerCapture = vi.fn();
+      Element.prototype.scrollIntoView = vi.fn();
+    });
+
+    beforeEach(() => {
+      mockSetSettings.mockReset();
+      mockSaveSettings.mockReset();
+      mockSetTheme.mockReset();
+    });
+
+    it('selecting Dark Theme calls setTheme with dark', async () => {
+      const user = userEvent.setup();
+      renderWithProvider();
+      const triggers = screen.getAllByRole('combobox');
+      await user.click(triggers[0]);
+      await user.click(screen.getByRole('option', { name: 'Dark Theme' }));
+      expect(mockSetTheme).toHaveBeenCalledWith('dark');
+    });
+
+    it('selecting Wide Layout calls setSettings with updated DisplaySize', async () => {
+      const user = userEvent.setup();
+      renderWithProvider();
+      const triggers = screen.getAllByRole('combobox');
+      await user.click(triggers[2]);
+      await user.click(screen.getByRole('option', { name: 'Wide Layout' }));
+      expect(mockSetSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ DisplaySize: 'wide' }),
+      );
+      expect(mockSaveSettings).toHaveBeenCalled();
+    });
+
+    it('selecting Dense Key Display calls setSettings with updated KeyDisplay', async () => {
+      const user = userEvent.setup();
+      renderWithProvider();
+      const triggers = screen.getAllByRole('combobox');
+      await user.click(triggers[3]);
+      await user.click(screen.getByRole('option', { name: 'Dense Key Display' }));
+      expect(mockSetSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ KeyDisplay: 'dense' }),
+      );
+      expect(mockSaveSettings).toHaveBeenCalled();
+    });
   });
 });

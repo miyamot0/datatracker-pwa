@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { vi, describe, it, expect } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import userEvent from '@testing-library/user-event';
 
 // ----- Module mocks -----
 
@@ -29,8 +30,9 @@ vi.mock('@/lib/calculations/calculation-formatting', () => ({
   ]),
 }));
 
+const mockSetLocalCachedPrefs = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/local_storage', () => ({
-  setLocalCachedPrefs: vi.fn(),
+  setLocalCachedPrefs: mockSetLocalCachedPrefs,
 }));
 
 vi.mock('@/components/ui/back-button', () => ({
@@ -113,5 +115,48 @@ describe('ViewFrequencyResults', () => {
   it('renders the BackButton', () => {
     render(<ViewFrequencyResults {...defaultProps} />);
     expect(screen.getByRole('button', { name: 'Back' })).not.toBeNull();
+  });
+
+  describe('interactions', () => {
+    beforeEach(() => {
+      mockSetLocalCachedPrefs.mockReset();
+      vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-frequency');
+      vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('clicking the CSV Download button calls URL.createObjectURL', async () => {
+      const user = userEvent.setup();
+      render(<ViewFrequencyResults {...defaultProps} />);
+      const downloadBtns = screen.getAllByRole('button', { name: /download/i });
+      await user.click(downloadBtns[0]);
+      expect(URL.createObjectURL).toHaveBeenCalled();
+    });
+
+    it('clicking the JSON Download button calls URL.createObjectURL', async () => {
+      const user = userEvent.setup();
+      render(<ViewFrequencyResults {...defaultProps} />);
+      const downloadBtns = screen.getAllByRole('button', { name: /download/i });
+      await user.click(downloadBtns[1]);
+      expect(URL.createObjectURL).toHaveBeenCalled();
+    });
+
+    it('clicking Edit Keys Displayed opens the dropdown', async () => {
+      const user = userEvent.setup();
+      render(<ViewFrequencyResults {...defaultProps} />);
+      await user.click(screen.getByRole('button', { name: /edit keys displayed/i }));
+      expect(screen.getByRole('menuitemcheckbox', { name: 'Hitting' })).not.toBeNull();
+    });
+
+    it('unchecking a key in Edit Keys Displayed calls setLocalCachedPrefs', async () => {
+      const user = userEvent.setup();
+      render(<ViewFrequencyResults {...defaultProps} />);
+      await user.click(screen.getByRole('button', { name: /edit keys displayed/i }));
+      await user.click(screen.getByRole('menuitemcheckbox', { name: 'Hitting' }));
+      expect(mockSetLocalCachedPrefs).toHaveBeenCalled();
+    });
   });
 });

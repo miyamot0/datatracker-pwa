@@ -94,6 +94,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/typography": "^0.5.15",
     "@tanstack/router-plugin": "^1.166.7",
     "@testing-library/react": "^16.3.2",
@@ -138,7 +139,8 @@
     "vite": "^8.0.2",
     "vite-plugin-pwa": "^1.0.3",
     "vite-plugin-singlefile": "^2.3.0",
-    "vitest": "^4.1.1"
+    "vitest": "^4.1.1",
+    "vitest-browser-react": "^2.1.0"
   },
   "findUnusedExports": {
     "include": [

@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { vi, describe, it, expect } from 'vitest';
+import { vi, describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import userEvent from '@testing-library/user-event';
 
 // ----- Module mocks -----
 
@@ -20,7 +21,8 @@ vi.mock('@/lib/notifications', () => ({
 
 import { Tabs } from '@/components/ui/tabs';
 import { SettingsTabIO } from '../settings-tab-io';
-import { SettingsDisplayEnum } from '@/types/settings';
+import { DEFAULT_APPLICATION_SETTINGS, SettingsDisplayEnum } from '@/types/settings';
+import { FolderHandleContext } from '@/context/folder-context';
 
 // ----- Tests -----
 
@@ -71,5 +73,82 @@ describe('SettingsTabIO', () => {
     renderWithTabs();
     const triggers = screen.getAllByRole('combobox');
     expect(triggers.length).toBe(3);
+  });
+
+  describe('select interactions', () => {
+    const mockSetSettings = vi.fn();
+    const mockSaveSettings = vi.fn();
+
+    const renderWithProvider = () =>
+      render(
+        <FolderHandleContext.Provider
+          value={{
+            settings: DEFAULT_APPLICATION_SETTINGS,
+            setSettings: mockSetSettings,
+            saveSettings: mockSaveSettings,
+            handle: undefined,
+            setHandle: vi.fn(),
+            isInitialized: false,
+            setIsInitialized: vi.fn(),
+          }}
+        >
+          <Tabs defaultValue={SettingsDisplayEnum.File}>
+            <SettingsTabIO />
+          </Tabs>
+        </FolderHandleContext.Provider>,
+      );
+
+    beforeAll(() => {
+      global.ResizeObserver = class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      };
+      Element.prototype.hasPointerCapture = vi.fn(() => false);
+      Element.prototype.setPointerCapture = vi.fn();
+      Element.prototype.releasePointerCapture = vi.fn();
+      Element.prototype.scrollIntoView = vi.fn();
+    });
+
+    beforeEach(() => {
+      mockSetSettings.mockReset();
+      mockSaveSettings.mockReset();
+    });
+
+    it('selecting Aggressive Caching calls setSettings with updated CacheBehavior', async () => {
+      const user = userEvent.setup();
+      renderWithProvider();
+      const triggers = screen.getAllByRole('combobox');
+      await user.click(triggers[0]);
+      await user.click(screen.getByRole('option', { name: 'Aggressive Caching' }));
+      expect(mockSetSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ CacheBehavior: 'aggressive' }),
+      );
+      expect(mockSaveSettings).toHaveBeenCalled();
+    });
+
+    it('selecting Precise polling calls setSettings with updated RecorderPolling', async () => {
+      const user = userEvent.setup();
+      renderWithProvider();
+      const triggers = screen.getAllByRole('combobox');
+      await user.click(triggers[1]);
+      await user.click(screen.getByRole('option', { name: 'Precise (25ms)' }));
+      expect(mockSetSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ RecorderPolling: 'precise' }),
+      );
+      expect(mockSaveSettings).toHaveBeenCalled();
+    });
+
+    it('selecting Auto Advance calls setSettings with updated PostSessionBx', async () => {
+      const user = userEvent.setup();
+      renderWithProvider();
+      const triggers = screen.getAllByRole('combobox');
+      await user.click(triggers[2]);
+      await user.click(screen.getByRole('option', { name: 'Auto Advance' }));
+      expect(mockSetSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ PostSessionBx: 'AutoAdvance' }),
+      );
+      expect(mockSaveSettings).toHaveBeenCalled();
+    });
   });
 });

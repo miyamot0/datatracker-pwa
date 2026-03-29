@@ -13,6 +13,13 @@ export default defineConfig({
       provider: playwright({
         // ...custom playwright options
       }),
+      instances: [
+        { browser: 'chromium' },
+        // TODO: Test on relevant other browsers
+        // { browser: 'edge' },
+        // { browser: 'firefox' },
+        // { browser: 'webkit' }
+      ],
     },
     //maxWorkers: 1,
     include: [

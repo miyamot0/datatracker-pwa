@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { vi, describe, it, expect } from 'vitest';
+import { vi, describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import userEvent from '@testing-library/user-event';
 
 // ----- Module mocks -----
 
@@ -12,9 +13,10 @@ vi.mock('@/App', () => ({
   },
 }));
 
+const mockSetConsent = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/analytics/analytics-consent', () => ({
   getConsent: vi.fn(() => 'denied'),
-  setConsent: vi.fn(),
+  setConsent: mockSetConsent,
 }));
 
 vi.mock('@/lib/notifications', () => ({
@@ -25,7 +27,8 @@ vi.mock('@/lib/notifications', () => ({
 
 import { Tabs } from '@/components/ui/tabs';
 import { SettingsTabAdministrative } from '../settings-tab-admin';
-import { SettingsDisplayEnum } from '@/types/settings';
+import { DEFAULT_APPLICATION_SETTINGS, SettingsDisplayEnum } from '@/types/settings';
+import { FolderHandleContext } from '@/context/folder-context';
 
 // ----- Tests -----
 
@@ -77,5 +80,80 @@ describe('SettingsTabAdministrative', () => {
     // Each SettingsFormItemWrapper adds one SelectTrigger
     const triggers = screen.getAllByRole('combobox');
     expect(triggers.length).toBe(3);
+  });
+
+  describe('select interactions', () => {
+    const mockSetSettings = vi.fn();
+    const mockSaveSettings = vi.fn();
+
+    const renderWithProvider = () =>
+      render(
+        <FolderHandleContext.Provider
+          value={{
+            settings: DEFAULT_APPLICATION_SETTINGS,
+            setSettings: mockSetSettings,
+            saveSettings: mockSaveSettings,
+            handle: undefined,
+            setHandle: vi.fn(),
+            isInitialized: false,
+            setIsInitialized: vi.fn(),
+          }}
+        >
+          <Tabs defaultValue={SettingsDisplayEnum.Admin}>
+            <SettingsTabAdministrative />
+          </Tabs>
+        </FolderHandleContext.Provider>,
+      );
+
+    beforeAll(() => {
+      global.ResizeObserver = class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      };
+      Element.prototype.hasPointerCapture = vi.fn(() => false);
+      Element.prototype.setPointerCapture = vi.fn();
+      Element.prototype.releasePointerCapture = vi.fn();
+      Element.prototype.scrollIntoView = vi.fn();
+    });
+
+    beforeEach(() => {
+      mockSetSettings.mockReset();
+      mockSaveSettings.mockReset();
+      mockSetConsent.mockReset();
+    });
+
+    it('selecting Allow elevated privileges calls setSettings with EnableFileDeletion: true', async () => {
+      const user = userEvent.setup();
+      renderWithProvider();
+      const triggers = screen.getAllByRole('combobox');
+      await user.click(triggers[0]);
+      await user.click(screen.getByRole('option', { name: 'Allow' }));
+      expect(mockSetSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ EnableFileDeletion: true }),
+      );
+      expect(mockSaveSettings).toHaveBeenCalled();
+    });
+
+    it('selecting Disable Requirements calls setSettings with EnforceDataFolderName: false', async () => {
+      const user = userEvent.setup();
+      renderWithProvider();
+      const triggers = screen.getAllByRole('combobox');
+      await user.click(triggers[1]);
+      await user.click(screen.getByRole('option', { name: 'Disable Requirements' }));
+      expect(mockSetSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ EnforceDataFolderName: false }),
+      );
+      expect(mockSaveSettings).toHaveBeenCalled();
+    });
+
+    it('selecting Allow anonymous error logs calls setConsent with granted', async () => {
+      const user = userEvent.setup();
+      renderWithProvider();
+      const triggers = screen.getAllByRole('combobox');
+      await user.click(triggers[2]);
+      await user.click(screen.getByRole('option', { name: 'Allow anonymous error logs' }));
+      expect(mockSetConsent).toHaveBeenCalledWith('granted');
+    });
   });
 });

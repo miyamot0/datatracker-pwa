@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import userEvent from '@testing-library/user-event';
 
 // ----- Hoisted mocks -----
 
@@ -155,5 +156,39 @@ describe('ResultsRateVisualsPage', () => {
   it('initially passes figureTextSize=base to the figure', () => {
     render(<ResultsRateVisualsPage {...defaultProps} />);
     expect(screen.getByTestId('figure-text-size').textContent).toBe('base');
+  });
+
+  describe('interactions', () => {
+    it('clicking the Connect All Spans switch toggles ConnectSpans to true', async () => {
+      const user = userEvent.setup();
+      render(<ResultsRateVisualsPage {...defaultProps} />);
+      expect(screen.getByTestId('figure-connect').textContent).toBe('false');
+      await user.click(screen.getByRole('switch'));
+      expect(screen.getByTestId('figure-connect').textContent).toBe('true');
+    });
+
+    it('clicking Connect All Spans twice toggles back to false', async () => {
+      const user = userEvent.setup();
+      render(<ResultsRateVisualsPage {...defaultProps} />);
+      await user.click(screen.getByRole('switch'));
+      await user.click(screen.getByRole('switch'));
+      expect(screen.getByTestId('figure-connect').textContent).toBe('false');
+    });
+
+    it('clicking Edit Keys Displayed opens dropdown with key checkboxes', async () => {
+      const user = userEvent.setup();
+      render(<ResultsRateVisualsPage {...defaultProps} />);
+      await user.click(screen.getByRole('button', { name: /edit keys displayed/i }));
+      expect(screen.getByRole('menuitemcheckbox', { name: 'Kicking' })).not.toBeNull();
+      expect(screen.getByRole('menuitemcheckbox', { name: 'Hitting' })).not.toBeNull();
+    });
+
+    it('toggling a key in the dropdown calls setLocalCachedPrefs', async () => {
+      const user = userEvent.setup();
+      render(<ResultsRateVisualsPage {...defaultProps} />);
+      await user.click(screen.getByRole('button', { name: /edit keys displayed/i }));
+      await user.click(screen.getByRole('menuitemcheckbox', { name: 'Kicking' }));
+      expect(mockSetLocalCachedPrefs).toHaveBeenCalled();
+    });
   });
 });

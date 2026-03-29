@@ -3,6 +3,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
+import userEvent from '@testing-library/user-event';
 
 // ----- Module mocks -----
 
@@ -18,8 +19,9 @@ vi.mock('@/components/ui/back-button', () => ({
   default: () => <button>Back</button>,
 }));
 
+const mockSetLocalCachedPrefs = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/local_storage', () => ({
-  setLocalCachedPrefs: vi.fn(),
+  setLocalCachedPrefs: mockSetLocalCachedPrefs,
 }));
 
 // ----- Import under test -----
@@ -163,5 +165,31 @@ describe('SessionViewerContent', () => {
     render(<SessionViewerContent {...defaultProps} />);
     expect(screen.getByText('Timer Duration (Main):')).not.toBeNull();
     expect(screen.getByText('Timer Duration (#1):')).not.toBeNull();
+  });
+
+  describe('interactions', () => {
+    it('clicking Edit Keys Displayed opens the dropdown with key checkboxes', async () => {
+      const user = userEvent.setup();
+      render(<SessionViewerContent {...defaultProps} />);
+      await user.click(screen.getByRole('button', { name: /edit keys displayed/i }));
+      expect(screen.getByRole('menuitemcheckbox', { name: 'Hitting' })).not.toBeNull();
+    });
+
+    it('toggling a visible key calls setLocalCachedPrefs', async () => {
+      const user = userEvent.setup();
+      mockSetLocalCachedPrefs.mockReset();
+      render(<SessionViewerContent {...defaultProps} />);
+      await user.click(screen.getByRole('button', { name: /edit keys displayed/i }));
+      await user.click(screen.getByRole('menuitemcheckbox', { name: 'Hitting' }));
+      expect(mockSetLocalCachedPrefs).toHaveBeenCalled();
+    });
+
+    it('the dropdown checkbox is initially checked for a visible key', async () => {
+      const user = userEvent.setup();
+      render(<SessionViewerContent {...defaultProps} />);
+      await user.click(screen.getByRole('button', { name: /edit keys displayed/i }));
+      const checkbox = screen.getByRole('menuitemcheckbox', { name: 'Hitting' });
+      expect(checkbox.getAttribute('aria-checked')).toBe('true');
+    });
   });
 });
