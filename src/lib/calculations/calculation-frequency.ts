@@ -2,7 +2,7 @@ import { SavedSessionResult } from '@/lib/dtos';
 import { walkSessionFrequencyKey } from '@/lib/schedule-parser';
 import { KeySet } from '@/types/keyset';
 import { getUnifiedTimerMinutes, getTimerSchedule } from './calculation-helpers';
-import { SessionProcessingOptions, ProcessedKeyResult } from '../types/calculation';
+import { SessionProcessingOptions, ProcessedKeyResult } from '../../types/calculation';
 
 /**
  * Processes frequency keys with unified timer system

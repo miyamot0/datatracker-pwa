@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { processDerivedKeys } from '../calculation-derived';
+import { processDerivedKeys } from '@/lib/calculations/calculation-derived';
 import type { SavedSessionResult } from '@/lib/dtos';
 import type { KeySet } from '@/types/keyset';
 import type { LogicState } from '@/lib/logic';
@@ -9,8 +9,8 @@ vi.mock('@/lib/logic', () => ({
   evaluateLogic: vi.fn(),
 }));
 
-vi.mock('@/calculations/calculation-helpers', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/calculations/calculation-helpers')>();
+vi.mock('@/lib/calculations/calculation-helpers', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/calculations/calculation-helpers')>();
   return {
     ...actual,
     getUnifiedTimerMinutes: vi.fn().mockReturnValue(10),

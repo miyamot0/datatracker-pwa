@@ -19,8 +19,8 @@ import BackButton from '@/components/ui/back-button';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';
 import { processMultipleSessionDataWithKeys } from '@/lib/calculations';
-import { convertLegacyTimerType } from '@/calculations/calculation-helpers';
-import { formatForSpreadsheet } from '@/calculations/calculation-formatting';
+import { convertLegacyTimerType } from '@/lib/calculations/calculation-helpers';
+import { formatForSpreadsheet } from '@/lib/calculations/calculation-formatting';
 
 type Props = {
   SessionTimer: SessionTerminationOptionsType;

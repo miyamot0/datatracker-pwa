@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { processFrequencyKeys } from '../calculation-frequency';
+import { processFrequencyKeys } from '@/lib/calculations/calculation-frequency';
 import type { SavedSessionResult } from '@/lib/dtos';
 import type { KeySet } from '@/types/keyset';
-import type { SessionProcessingOptions } from '../../types/calculation';
+import type { SessionProcessingOptions } from '../../../types/calculation';
 
 vi.mock('@/lib/schedule-parser', () => ({
   walkSessionFrequencyKey: vi.fn(),

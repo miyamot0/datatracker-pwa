@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { processDurationKeys } from '../calculation-duration';
+import { processDurationKeys } from '@/lib/calculations/calculation-duration';
 import type { SavedSessionResult } from '@/lib/dtos';
 import type { KeySet } from '@/types/keyset';
-import type { SessionProcessingOptions } from '../../types/calculation';
+import type { SessionProcessingOptions } from '../../../types/calculation';
 
 vi.mock('@/lib/schedule-parser', () => ({
   walkSessionDurationKey: vi.fn(),

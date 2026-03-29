@@ -9,7 +9,7 @@ import { SessionTerminationOptionsType } from '@/types/terminations';
 import { BaseChart } from '@/components/pages/visualize-outcomes/shared/base-chart';
 import { RateTooltip } from './rate-elements';
 import { processMultipleSessionDataWithKeys } from '@/lib/calculations';
-import { convertLegacyTimerType } from '@/calculations/calculation-helpers';
+import { convertLegacyTimerType } from '@/lib/calculations/calculation-helpers';
 
 type Props = {
   Group: string;

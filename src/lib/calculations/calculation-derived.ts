@@ -2,7 +2,7 @@ import { SavedSessionResult } from '@/lib/dtos';
 import { evaluateLogic } from '@/lib/logic';
 import { KeySet } from '@/types/keyset';
 import { getUnifiedTimerMinutes } from './calculation-helpers';
-import { SessionProcessingOptions, ProcessedKeyResult } from '../types/calculation';
+import { SessionProcessingOptions, ProcessedKeyResult } from '../../types/calculation';
 
 /**
  * Processes derived keys with unified timer system

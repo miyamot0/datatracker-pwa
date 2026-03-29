@@ -75,7 +75,7 @@ describe('Analytics Module Full Coverage', () => {
       vi.stubEnv('DEV', true);
       vi.stubEnv('PROD', false);
 
-      const { analyticsConfig } = await import('../analytics-config');
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
 
       expect(analyticsConfig.enabled).toBe(true);
       expect(analyticsConfig.measurementId).toBe('test-measurement-id');
@@ -87,26 +87,26 @@ describe('Analytics Module Full Coverage', () => {
     it('should handle disabled analytics', async () => {
       vi.stubEnv('VITE_ANALYTICS_ENABLED', 'false');
 
-      const { analyticsConfig } = await import('../analytics-config');
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
       expect(analyticsConfig.enabled).toBe(false);
     });
   });
 
   describe('analytics-consent.ts', () => {
     it('should return "granted" as default consent', async () => {
-      const { getConsent } = await import('../analytics-consent');
+      const { getConsent } = await import('@/lib/analytics/analytics-consent');
       expect(getConsent()).toBe('granted');
     });
 
     it('should return stored consent value', async () => {
       mockLocalStorage.set('analytics_consent', 'denied');
-      const { getConsent } = await import('../analytics-consent');
+      const { getConsent } = await import('@/lib/analytics/analytics-consent');
       expect(getConsent()).toBe('denied');
     });
 
     it('should set consent and dispatch event', async () => {
       const dispatchEventSpy = vi.spyOn(window, 'dispatchEvent');
-      const { setConsent } = await import('../analytics-consent');
+      const { setConsent } = await import('@/lib/analytics/analytics-consent');
 
       setConsent('denied');
 
@@ -121,13 +121,13 @@ describe('Analytics Module Full Coverage', () => {
 
     it('should correctly identify when consent is granted', async () => {
       mockLocalStorage.set('analytics_consent', 'granted');
-      const { hasConsent } = await import('../analytics-consent');
+      const { hasConsent } = await import('@/lib/analytics/analytics-consent');
       expect(hasConsent()).toBe(true);
     });
 
     it('should correctly identify when consent is denied', async () => {
       mockLocalStorage.set('analytics_consent', 'denied');
-      const { hasConsent } = await import('../analytics-consent');
+      const { hasConsent } = await import('@/lib/analytics/analytics-consent');
       expect(hasConsent()).toBe(false);
     });
   });
@@ -135,7 +135,7 @@ describe('Analytics Module Full Coverage', () => {
   describe('analytics-queue.ts', () => {
     it('should initialize database with correct structure', async () => {
       const { openDB } = await import('idb');
-      await import('../analytics-queue');
+      await import('@/lib/analytics/analytics-queue');
 
       expect(openDB).toHaveBeenCalledWith('analytics-db', 1, {
         upgrade: expect.any(Function),
@@ -149,7 +149,7 @@ describe('Analytics Module Full Coverage', () => {
         timestamp: Date.now(),
       };
 
-      const { queueEvent } = await import('../analytics-queue');
+      const { queueEvent } = await import('@/lib/analytics/analytics-queue');
       await queueEvent(mockEvent);
 
       expect(mockDB.add).toHaveBeenCalledWith('events', mockEvent);
@@ -159,7 +159,7 @@ describe('Analytics Module Full Coverage', () => {
       const mockEvents = [{ name: 'test', params: {}, timestamp: 123 }];
       mockDB.getAll.mockResolvedValue(mockEvents);
 
-      const { getQueuedEvents } = await import('../analytics-queue');
+      const { getQueuedEvents } = await import('@/lib/analytics/analytics-queue');
       const result = await getQueuedEvents();
 
       expect(mockDB.getAll).toHaveBeenCalledWith('events');
@@ -173,7 +173,7 @@ describe('Analytics Module Full Coverage', () => {
       };
       mockDB.transaction.mockReturnValue(mockTx);
 
-      const { clearQueuedEvents } = await import('../analytics-queue');
+      const { clearQueuedEvents } = await import('@/lib/analytics/analytics-queue');
       await clearQueuedEvents();
 
       expect(mockDB.transaction).toHaveBeenCalledWith('events', 'readwrite');
@@ -181,7 +181,7 @@ describe('Analytics Module Full Coverage', () => {
     });
 
     it('should delete all events', async () => {
-      const { deleteAllEvents } = await import('../analytics-queue');
+      const { deleteAllEvents } = await import('@/lib/analytics/analytics-queue');
       await deleteAllEvents();
 
       expect(mockDB.clear).toHaveBeenCalledWith('events');
@@ -195,7 +195,7 @@ describe('Analytics Module Full Coverage', () => {
 
     it('should not track when consent is denied', async () => {
       mockLocalStorage.set('analytics_consent', 'denied');
-      const { analytics } = await import('../analytics-client');
+      const { analytics } = await import('@/lib/analytics/analytics-client');
 
       await analytics.track('page_view', { path: '/test' });
 
@@ -208,7 +208,7 @@ describe('Analytics Module Full Coverage', () => {
       vi.stubEnv('DEV', true);
 
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-      const { analytics } = await import('../analytics-client');
+      const { analytics } = await import('@/lib/analytics/analytics-client');
 
       await analytics.track('user_action', { action: 'click' });
 
@@ -222,7 +222,7 @@ describe('Analytics Module Full Coverage', () => {
       vi.stubEnv('DEV', false);
 
       mockFetch.mockResolvedValue(new Response('', { status: 200 }));
-      const { analytics } = await import('../analytics-client');
+      const { analytics } = await import('@/lib/analytics/analytics-client');
 
       await analytics.track('app_error', { message: 'test error', fatal: true });
 
@@ -240,7 +240,7 @@ describe('Analytics Module Full Coverage', () => {
       Object.defineProperty(navigator, 'onLine', { value: false, writable: true });
       vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
 
-      const { analytics } = await import('../analytics-client');
+      const { analytics } = await import('@/lib/analytics/analytics-client');
       await analytics.track('page_view', { path: '/offline' });
 
       expect(mockDB.add).toHaveBeenCalled();
@@ -254,7 +254,7 @@ describe('Analytics Module Full Coverage', () => {
       vi.stubEnv('DEV', false);
 
       mockFetch.mockRejectedValue(new Error('Network error'));
-      const { analytics } = await import('../analytics-client');
+      const { analytics } = await import('@/lib/analytics/analytics-client');
 
       await analytics.track('api_error', { endpoint: '/api/test', status: 500 });
 
@@ -267,7 +267,7 @@ describe('Analytics Module Full Coverage', () => {
       vi.stubEnv('DEV', false);
 
       mockFetch.mockResolvedValue(new Response('', { status: 200 }));
-      const { analytics } = await import('../analytics-client');
+      const { analytics } = await import('@/lib/analytics/analytics-client');
 
       await analytics.track('user_action', { action: 'submit' });
 
@@ -280,7 +280,7 @@ describe('Analytics Module Full Coverage', () => {
       vi.stubEnv('DEV', false);
 
       mockFetch.mockResolvedValue(new Response('', { status: 200 }));
-      const { analytics } = await import('../analytics-client');
+      const { analytics } = await import('@/lib/analytics/analytics-client');
 
       await analytics.track('user_action', { action: 'navigate' });
 
@@ -294,7 +294,7 @@ describe('Analytics Module Full Coverage', () => {
       vi.stubEnv('DEV', true);
 
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-      const { analytics } = await import('../analytics-client');
+      const { analytics } = await import('@/lib/analytics/analytics-client');
 
       const testEvent: EventPayload = {
         name: 'page_view',
@@ -310,7 +310,7 @@ describe('Analytics Module Full Coverage', () => {
 
     it('should not send when consent is denied', async () => {
       mockLocalStorage.set('analytics_consent', 'denied');
-      const { analytics } = await import('../analytics-client');
+      const { analytics } = await import('@/lib/analytics/analytics-client');
 
       const testEvent: EventPayload = {
         name: 'page_view',
@@ -331,7 +331,7 @@ describe('Analytics Module Full Coverage', () => {
 
     it('should set up error event listeners', async () => {
       const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
-      const { setupErrorTracking } = await import('../analytics-errors');
+      const { setupErrorTracking } = await import('@/lib/analytics/analytics-errors');
 
       setupErrorTracking();
 
@@ -347,7 +347,7 @@ describe('Analytics Module Full Coverage', () => {
 
       mockFetch.mockResolvedValue(new Response('', { status: 200 }));
 
-      const { setupErrorTracking } = await import('../analytics-errors');
+      const { setupErrorTracking } = await import('@/lib/analytics/analytics-errors');
       setupErrorTracking();
 
       // Trigger error event
@@ -374,7 +374,7 @@ describe('Analytics Module Full Coverage', () => {
 
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      const { setupErrorTracking } = await import('../analytics-errors');
+      const { setupErrorTracking } = await import('@/lib/analytics/analytics-errors');
       setupErrorTracking();
 
       const errorEvent = new ErrorEvent('error', {
@@ -394,7 +394,7 @@ describe('Analytics Module Full Coverage', () => {
 
       mockFetch.mockResolvedValue(new Response('', { status: 200 }));
 
-      const { setupErrorTracking } = await import('../analytics-errors');
+      const { setupErrorTracking } = await import('@/lib/analytics/analytics-errors');
       setupErrorTracking();
 
       // Create a controlled promise that we can handle to prevent actual unhandled rejection
@@ -603,7 +603,7 @@ describe('Analytics Module Full Coverage', () => {
       // Start offline
       Object.defineProperty(navigator, 'onLine', { value: false, writable: true });
 
-      const { analytics } = await import('../analytics-client');
+      const { analytics } = await import('@/lib/analytics/analytics-client');
       const { startAnalyticsSync } = await import('../analytics-sync');
 
       // Track event while offline
@@ -638,7 +638,7 @@ describe('Analytics Module Full Coverage', () => {
       // Start with consent granted
       mockLocalStorage.set('analytics_consent', 'granted');
 
-      const { analytics } = await import('../analytics-client');
+      const { analytics } = await import('@/lib/analytics/analytics-client');
       await import('../analytics-sync');
 
       // Track some events - should queue because online/offline logic

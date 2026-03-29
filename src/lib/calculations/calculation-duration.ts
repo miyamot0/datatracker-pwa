@@ -2,7 +2,7 @@ import { SavedSessionResult } from '@/lib/dtos';
 import { walkSessionDurationKey } from '@/lib/schedule-parser';
 import { KeySet } from '@/types/keyset';
 import { getUnifiedTimerValue, getTimerSchedule } from './calculation-helpers';
-import { SessionProcessingOptions, ProcessedKeyResult } from '../types/calculation';
+import { SessionProcessingOptions, ProcessedKeyResult } from '../../types/calculation';
 
 /**
  * Processes duration keys with unified timer system

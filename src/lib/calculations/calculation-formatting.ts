@@ -1,4 +1,4 @@
-import { ProcessedSessionData } from '../types/calculation';
+import { ProcessedSessionData } from '../../types/calculation';
 
 /**
  * Formats processed data for spreadsheet display

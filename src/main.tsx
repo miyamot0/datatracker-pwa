@@ -5,8 +5,8 @@ import '@/styles/globals.css';
 import '@/styles/github.min.css';
 import '@/styles/github-dark.min.css';
 import { initializeSharedArrayBufferSupport } from '@/lib/shared-buffer.ts';
-import { startAnalyticsSync } from './analytics/analytics-sync.ts';
-import { setupErrorTracking } from './analytics/analytics-errors.ts';
+import { startAnalyticsSync } from './lib/analytics/analytics-sync.ts';
+import { setupErrorTracking } from './lib/analytics/analytics-errors.ts';
 //import { registerSW } from 'virtual:pwa-register';
 
 /*

@@ -1,6 +1,6 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-95.95_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-88.61_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-97.94_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-95.51_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-87.66_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-97.81_Percent-green>)
 
-![Static Badge Version](https://img.shields.io/badge/Version-0.5.6-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge Version](https://img.shields.io/badge/Version-0.5.7-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 # DataTracker (Installable PWA Build)
 
@@ -109,6 +109,8 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
  
 @radix-ui/react-tooltip (1.1.2). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
+@tanstack/react-hotkeys (0.8.1). Copyright Tanner Linsley -- MIT Licensed: [Repo](https://github.com/TanStack/hotkeys.git) 
+ 
 @tanstack/react-query (5.90.21). Copyright tannerlinsley -- MIT Licensed: [Repo](https://github.com/TanStack/query.git) 
  
 @tanstack/react-router (1.166.7). Copyright Tanner Linsley -- MIT Licensed: [Repo](https://github.com/TanStack/router.git) 
@@ -163,4 +165,4 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Current Version
 
-0.5.6
+0.5.7

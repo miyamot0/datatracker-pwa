@@ -1,7 +1,7 @@
 import { SavedSessionResult } from '@/lib/dtos';
 import { sumDurationScoringKey, sumDurationSpecialKey } from '@/lib/schedule-parser';
 import { KeySet } from '@/types/keyset';
-import { ScoringStrategy, SessionProcessingOptions, UnifiedTimerType } from '../types/calculation';
+import { ScoringStrategy, SessionProcessingOptions, UnifiedTimerType } from '../../types/calculation';
 import { KeyTiming } from '@/types/timing';
 import { SessionTerminationOptions, SessionTerminationOptionsType } from '@/types/terminations';
 

@@ -13,7 +13,7 @@ import { TabsContent } from '../../../ui/tabs';
 import { SettingsTabContainer } from './settings-tab-container';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useContext, useState } from 'react';
-import { AnalyticsConsent, getConsent, setConsent } from '@/analytics/analytics-consent';
+import { AnalyticsConsent, getConsent, setConsent } from '@/lib/analytics/analytics-consent';
 
 export function SettingsTabAdministrative() {
   const { settings, setSettings, saveSettings } = useContext(FolderHandleContext);
