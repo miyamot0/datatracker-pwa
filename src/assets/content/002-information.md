@@ -7,15 +7,15 @@ author: 'Shawn Gilroy'
 index: 2
 ---
 
-The DataTracker program is designed to provide considerable flexibility in how data are collected and managed. This flexibility allows you to structure your data in a way that makes sense for your specific needs and research questions. However, there are several critical and recommended organizational practices that ensure that your data are easily accessible and manageable.
+The DataTracker program is designed to provide considerable flexibility in how data are collected and managed when planning assessments and evaluations of observed behavior. This flexibility allows users to structure their recorded data in a way that makes sense for their specific needs and questions (research, clinical, etc.). There is always considerable flexibility provided; however, there are several important and recommended practices emphasized to ensure that data are easily accessible, orderly, interpretable, and manageable.
 
-This document provides an overview of the recommended organizational structure for data within the DataTracker program. It also outlines several conventions to follow when using the program.
+This document provides an overview of the _recommended_ organizational structure for data being recorded with the DataTracker program. This entry also outlines several conventions to follow when using the program. As a general rule, it is recommended to follow the organizational structure emphasized to maximize the likelihood that the program works as expected and designed (i.e., certain features and functionalities depend on this structure being followed).
 
 ### DataTracker Folder Access
 
-DataTracker is a website at its core. It does not have access to your hard drive as an installable program would. This is a security feature of web browsers that is designed to protect your data. Fortunately, at the user's discretion, you may authorize _very specific_ access to your hard drive when working with websites. This is a common feature of many web-based programs that need to save data locally on your machine.
+DataTracker is a website at its core and has no more privileges implied than other other website you would visit. That is, it _does not_ have access to your hard drive as an installable program would. This is a well-justified security feature of web browsers that is designed to protect your data. Fortunately, at the user's discretion, they may authorize _very specific_ access to your hard drive when working with websites (e.g., when uploading a certain file). This is a common feature of many web-based programs that need to save data locally on your machine. To clarify, the program does not upload any files and instead works directly with files on your hard drive.
 
-Because of how this program is designed, you will be prompted to approve the program access to **a specific** folder on your hard drive whenever you use it. This must happen once **every time** you use the program. This is a critical aspect of web security that is common across all browsers.
+Because of how this program is designed, users will always be prompted to approve the program's access to **a specific** folder on your hard drive whenever being loaded. That said, this is designed to be something that happens once **every single time** that the program is launched. This is a critical aspect of web security that is common across all browsers, but once access is granted, it remains authorized for the duration of the session (i.e., until the program is closed).
 
 The DataTracker interface will provide cues to indicate if the required access has, or has not, been authorized. A pair of images visualizing each status are shown below:
 

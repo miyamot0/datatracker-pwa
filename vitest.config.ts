@@ -22,6 +22,10 @@ export default defineConfig({
             enabled: true,
             headless: true,
             viewport: { width: 1280, height: 720 },
+            screenshotFailures: false,
+            // TODO: Reference later on when complete
+            screenshotDirectory: './public/screenshots2',
+
             instances: [
               { browser: 'chromium' },
               // TODO: Test on relevant other browsers
