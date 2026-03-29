@@ -32,7 +32,7 @@ export const mutationKeyboards = async ({
   Handle: FileSystemDirectoryHandle;
   Action: 'Add' | 'Delete' | 'Duplicate' | 'Rename' | 'Update';
 }): Promise<KeySet[]> => {
-  // TODO: Confirm if re-querying even worth it?
+  // TODO: Confirm if re-querying worth it
   // const keysets: KeySet[] = await queryClient.fetchQuery(keyboardQueryOptions(Handle, Group, Individual));
 
   return await mutationKeysetsWorker({ Handle, Group, Individual, Keysets, Action, Rename, NewKeySet });

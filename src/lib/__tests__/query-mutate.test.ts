@@ -32,7 +32,7 @@ vi.mock('@/lib/data', () => ({
 vi.mock('@/lib/keyset');
 vi.mock('uuid');
 vi.mock('@/lib/writer');
-vi.mock('@/queries/keysets/helpers/import-keysets');
+vi.mock('@/lib/keysets/import-keysets');
 
 const mockedCleanUpString = vi.mocked(CleanUpString);
 const mockedDataExampleFiles = vi.mocked(DataExampleFiles);
