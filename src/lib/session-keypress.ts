@@ -16,6 +16,13 @@ import { ModifiedSessionResult } from '@/types/storage';
 import { RunningStateOptions } from '@/types/session';
 import { RouterHistory } from '@tanstack/react-router';
 
+/**
+ * Handles incoming messages from the session recorder worker, updating state and processing session end logic as needed.
+ *
+ * @param event - The message event received from the worker, containing the type of message and associated payload.
+ * @param param1 - An object containing various state management functions, refs, and data needed to handle the worker messages appropriately.
+ * @returns void
+ */
 export function handleMessageChannel(
   event: MessageEvent<WorkerResponse>,
   {
@@ -45,6 +52,13 @@ export function handleMessageChannel(
   }
 }
 
+/**
+ * Handles the logic for when a session ends, including saving results, updating state, and navigating based on user settings.
+ *
+ * @param event - The message event received from the worker indicating the session has ended, containing the reason and final session data.
+ * @param param1 - An object containing various state management functions, refs, and data needed to process the session end logic appropriately.
+ * @returns void
+ */
 export function handleWorkerMessage(
   event: MessageEvent<WorkerResponse>,
   {
@@ -128,6 +142,66 @@ export function handleWorkerMessage(
 ) {
   const { type, payload } = event.data;
 
+  const getActiveTimerSeconds = (timers: SessionEndedPayload['timers']): number => {
+    if (activeSpecialKey.current) {
+      return specialKeyTimers.current[activeSpecialKey.current] || 0;
+    }
+
+    switch (activeTimerRef.current) {
+      case 'Primary':
+        return timers.first;
+      case 'Secondary':
+        return timers.second;
+      case 'Tertiary':
+        return timers.third;
+      default:
+        return timers.total;
+    }
+  };
+
+  const getFinalTimerPayload = (sessionEndPayload: SessionEndedPayload): TimerUpdatePayload => {
+    const finalPayload: TimerUpdatePayload = {
+      total: sessionEndPayload.timers.total,
+      first: sessionEndPayload.timers.first,
+      second: sessionEndPayload.timers.second,
+      third: sessionEndPayload.timers.third,
+      active: getActiveTimerSeconds(sessionEndPayload.timers),
+      activeTimer: activeTimerRef.current,
+      specialKeyTimers: sessionEndPayload.specialKeyTimers || {},
+      activeSpecialKey: activeSpecialKey.current,
+    };
+
+    // Clamp the endpoint timer when auto-completed so UI visibly lands on the configured duration.
+    if (sessionEndPayload.reason === 'Completed') {
+      if (Settings.TimerOption === 'End on Primary Timer') {
+        finalPayload.total = Math.max(finalPayload.total, Settings.DurationS);
+      } else if (Settings.TimerOption === 'End on Timer #1') {
+        finalPayload.first = Math.max(finalPayload.first, Settings.DurationS);
+      } else if (Settings.TimerOption === 'End on Timer #2') {
+        finalPayload.second = Math.max(finalPayload.second, Settings.DurationS);
+      } else if (Settings.TimerOption === 'End on Timer #3') {
+        finalPayload.third = Math.max(finalPayload.third, Settings.DurationS);
+      } else if (typeof Settings.TimerOption === 'number') {
+        const specialKeyName = Keyset.SpecialDurationKeys.find((key) => key.KeyCode === Settings.TimerOption)?.KeyName;
+        if (specialKeyName) {
+          finalPayload.specialKeyTimers[specialKeyName] = Math.max(
+            finalPayload.specialKeyTimers[specialKeyName] || 0,
+            Settings.DurationS,
+          );
+        }
+      }
+
+      finalPayload.active = getActiveTimerSeconds({
+        total: finalPayload.total,
+        first: finalPayload.first,
+        second: finalPayload.second,
+        third: finalPayload.third,
+      });
+    }
+
+    return finalPayload;
+  };
+
   switch (type) {
     case 'TIMER_UPDATE':
       // Fallback for when MessageChannel isn't available
@@ -171,6 +245,11 @@ export function handleWorkerMessage(
 
     case 'SESSION_ENDED':
       if (payload) {
+        const sessionEndPayload = payload as SessionEndedPayload;
+        specialKeyTimers.current = sessionEndPayload.specialKeyTimers || {};
+        pendingTimerUpdate.current = getFinalTimerPayload(sessionEndPayload);
+        scheduleUIUpdate();
+
         handleSessionEnded(payload as SessionEndedPayload, {
           history,
           displayConditionalNotification,
@@ -193,6 +272,13 @@ export function handleWorkerMessage(
   }
 }
 
+/**
+ * Handles the logic for when a session ends, including saving results, updating state, and navigating based on user settings.
+ *
+ * @param payload - The payload received from the worker indicating the session has ended, containing the reason and final session data.
+ * @param param1 - An object containing various state management functions, refs, and data needed to process the session end logic appropriately.
+ * @returns void
+ */
 export async function handleSessionEnded(
   payload: SessionEndedPayload,
   {
@@ -374,6 +460,13 @@ export async function handleSessionEnded(
   save_output();
 }
 
+/**
+ * Sends a message to the session recorder worker to switch the active timer based on user keypresses, allowing for dynamic timer switching during a session.
+ *
+ * @param timer - The timer to switch to, which can be 'Primary', 'Secondary', or 'Tertiary'.
+ * @param workerRef - A reference to the web worker handling the session recording.
+ * @returns void
+ */
 export function switchTimer(timer: 'Primary' | 'Secondary' | 'Tertiary', workerRef: MutableRefObject<Worker | null>) {
   if (!workerRef.current) return;
 
@@ -384,6 +477,13 @@ export function switchTimer(timer: 'Primary' | 'Secondary' | 'Tertiary', workerR
   workerRef.current.postMessage(message);
 }
 
+/**
+ * Sends a message to the session recorder worker to switch to a special key timer based on user keypresses, allowing for dynamic switching to timers associated with specific keys during a session.
+ *
+ * @param keyName - The name of the special key timer to switch to, which should correspond to a key defined in the Keyset's SpecialDurationKeys.
+ * @param workerRef - A reference to the web worker handling the session recording.
+ * @returns void
+ */
 export function switchToSpecialKey(keyName: string, workerRef: MutableRefObject<Worker | null>) {
   if (!workerRef.current) return;
 
@@ -394,6 +494,13 @@ export function switchToSpecialKey(keyName: string, workerRef: MutableRefObject<
   workerRef.current.postMessage(message);
 }
 
+/**
+ * Handles keypress events during a session, sending appropriate messages to the session recorder worker to process key presses, switch timers, or end the session based on user input and the current running state of the session.
+ *
+ * @param ev - The keyboard event triggered by the user's keypress, which will be processed to determine the appropriate action to take (e.g., processing a key, switching timers, or ending the session).
+ * @param param1 - An object containing various state management functions, refs, and data needed to process the keypress logic appropriately based on the current session state and user settings.
+ * @returns void
+ */
 export function SessionProcessKeypress(
   ev: React.KeyboardEvent<HTMLElement>,
   {
