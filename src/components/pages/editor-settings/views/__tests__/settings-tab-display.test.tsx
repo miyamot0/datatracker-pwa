@@ -142,9 +142,7 @@ describe('SettingsTabDisplay', () => {
       const triggers = screen.getAllByRole('combobox');
       await user.click(triggers[2]);
       await user.click(screen.getByRole('option', { name: 'Wide Layout' }));
-      expect(mockSetSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ DisplaySize: 'wide' }),
-      );
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ DisplaySize: 'wide' }));
       expect(mockSaveSettings).toHaveBeenCalled();
     });
 
@@ -154,9 +152,7 @@ describe('SettingsTabDisplay', () => {
       const triggers = screen.getAllByRole('combobox');
       await user.click(triggers[3]);
       await user.click(screen.getByRole('option', { name: 'Dense Key Display' }));
-      expect(mockSetSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ KeyDisplay: 'dense' }),
-      );
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ KeyDisplay: 'dense' }));
       expect(mockSaveSettings).toHaveBeenCalled();
     });
   });

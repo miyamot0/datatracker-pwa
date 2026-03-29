@@ -111,9 +111,7 @@ describe('SettingsTabNotifications', () => {
       const triggers = screen.getAllByRole('combobox');
       await user.click(triggers[0]);
       await user.click(screen.getByRole('option', { name: 'Show Errors Only' }));
-      expect(mockSetSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ NotificationSettings: 'ShowErrorsOnly' }),
-      );
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ NotificationSettings: 'ShowErrorsOnly' }));
       expect(mockSaveSettings).toHaveBeenCalled();
     });
 
@@ -123,9 +121,7 @@ describe('SettingsTabNotifications', () => {
       const triggers = screen.getAllByRole('combobox');
       await user.click(triggers[1]);
       await user.click(screen.getByRole('option', { name: 'Disable Tooltips' }));
-      expect(mockSetSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ EnableToolTip: false }),
-      );
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ EnableToolTip: false }));
       expect(mockSaveSettings).toHaveBeenCalled();
     });
   });

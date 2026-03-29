@@ -129,9 +129,7 @@ describe('SettingsTabAdministrative', () => {
       const triggers = screen.getAllByRole('combobox');
       await user.click(triggers[0]);
       await user.click(screen.getByRole('option', { name: 'Allow' }));
-      expect(mockSetSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ EnableFileDeletion: true }),
-      );
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ EnableFileDeletion: true }));
       expect(mockSaveSettings).toHaveBeenCalled();
     });
 
@@ -141,9 +139,7 @@ describe('SettingsTabAdministrative', () => {
       const triggers = screen.getAllByRole('combobox');
       await user.click(triggers[1]);
       await user.click(screen.getByRole('option', { name: 'Disable Requirements' }));
-      expect(mockSetSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ EnforceDataFolderName: false }),
-      );
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ EnforceDataFolderName: false }));
       expect(mockSaveSettings).toHaveBeenCalled();
     });
 

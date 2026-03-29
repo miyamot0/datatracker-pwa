@@ -121,9 +121,7 @@ describe('SettingsTabIO', () => {
       const triggers = screen.getAllByRole('combobox');
       await user.click(triggers[0]);
       await user.click(screen.getByRole('option', { name: 'Aggressive Caching' }));
-      expect(mockSetSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ CacheBehavior: 'aggressive' }),
-      );
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ CacheBehavior: 'aggressive' }));
       expect(mockSaveSettings).toHaveBeenCalled();
     });
 
@@ -133,9 +131,7 @@ describe('SettingsTabIO', () => {
       const triggers = screen.getAllByRole('combobox');
       await user.click(triggers[1]);
       await user.click(screen.getByRole('option', { name: 'Precise (25ms)' }));
-      expect(mockSetSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ RecorderPolling: 'precise' }),
-      );
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ RecorderPolling: 'precise' }));
       expect(mockSaveSettings).toHaveBeenCalled();
     });
 
@@ -145,9 +141,7 @@ describe('SettingsTabIO', () => {
       const triggers = screen.getAllByRole('combobox');
       await user.click(triggers[2]);
       await user.click(screen.getByRole('option', { name: 'Auto Advance' }));
-      expect(mockSetSettings).toHaveBeenCalledWith(
-        expect.objectContaining({ PostSessionBx: 'AutoAdvance' }),
-      );
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ PostSessionBx: 'AutoAdvance' }));
       expect(mockSaveSettings).toHaveBeenCalled();
     });
   });
