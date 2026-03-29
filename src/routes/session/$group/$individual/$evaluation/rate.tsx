@@ -18,9 +18,9 @@ import {
   BuildIndividualsBreadcrumb,
   BuildEvaluationsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { ModifiedSessionResult } from '@/types/storage';
-import { ErrorDisplay } from '@/components/suspense/error-display';
+import { ErrorDisplay } from '@/components/elements/suspense/error-display';
 import { filteredSessionScoringOptions } from '@/types/schedules';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/rate')({

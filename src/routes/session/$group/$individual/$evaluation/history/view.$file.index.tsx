@@ -7,10 +7,10 @@ import {
   BuildEvaluationsBreadcrumb,
   BuildSessionHistoryBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { ModifiedSessionResult } from '@/types/storage';
-import { ErrorDisplay } from '@/components/suspense/error-display';
+import { ErrorDisplay } from '@/components/elements/suspense/error-display';
 import { ExpandedSavedSessionResult, SavedSettings } from '@/lib/dtos';
 import { extractAndDeduplicateKeysets, generateTicks, mapKeysWithStoragePreference } from '@/lib/graphing';
 import { combineAndSortKeyPresses } from '@/lib/schedule-parser';

@@ -1,4 +1,4 @@
-import { useEventListener } from '@/components/elements/event-listeners';
+import { useEventListener } from '@/components/elements/behavior/event-listeners';
 import { SavedSettings } from '@/lib/dtos';
 import { KeySet } from '@/types/keyset';
 import { useState, useRef, useEffect, useMemo } from 'react';

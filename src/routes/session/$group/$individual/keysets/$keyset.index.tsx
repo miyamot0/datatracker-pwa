@@ -1,6 +1,6 @@
 import PageWrapper from '@/components/elements/page-wrapper';
 import KeySetEditor from '@/components/pages/editor-keyset/keyset-editor';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import {
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,
@@ -11,7 +11,7 @@ import { CleanUpString } from '@/lib/strings';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 import { type KeySet } from '@/types/keyset';
-import { ErrorDisplay } from '@/components/suspense/error-display';
+import { ErrorDisplay } from '@/components/elements/suspense/error-display';
 
 export const Route = createFileRoute('/session/$group/$individual/keysets/$keyset/')({
   beforeLoad: ({ params, context }) => {

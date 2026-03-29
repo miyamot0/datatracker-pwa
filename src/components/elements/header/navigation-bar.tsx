@@ -6,8 +6,8 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
   BreadcrumbPage,
-} from '../ui/breadcrumb';
-import AuthorizationStatus from './authorization-status';
+} from '@/components/ui/breadcrumb';
+import AuthorizationStatus from '../header/authorization-status';
 import { Button } from '@/components/ui/button';
 import { MenuIcon, RefreshCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';

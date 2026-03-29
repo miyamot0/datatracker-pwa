@@ -1,6 +1,6 @@
 import PageWrapper from '@/components/elements/page-wrapper';
 import ViewerEvaluationsPage from '@/components/pages/dashboard-evaluations-import/viewer-evaluations-page';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import {
   BuildEvaluationsBreadcrumb,
   BuildGroupBreadcrumb,

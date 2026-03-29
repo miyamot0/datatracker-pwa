@@ -4,7 +4,7 @@ import ClientsPage from '@/components/pages/dashboard-participants/clients-page'
 import PageWrapper from '@/components/elements/page-wrapper';
 import { BuildGroupBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { clientQueryOptions } from '@/queries/individuals/query-individuals';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 
 export const Route = createFileRoute('/session/$group/')({
   beforeLoad: ({ context, params }) => {

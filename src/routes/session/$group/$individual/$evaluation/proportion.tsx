@@ -18,8 +18,8 @@ import {
   BuildIndividualsBreadcrumb,
   BuildEvaluationsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
-import { ErrorDisplay } from '@/components/suspense/error-display';
+import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
+import { ErrorDisplay } from '@/components/elements/suspense/error-display';
 import { ModifiedSessionResult } from '@/types/storage';
 import { filteredSessionScoringOptions } from '@/types/schedules';
 

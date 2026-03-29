@@ -1,8 +1,8 @@
 import { cn } from '@/lib/utils';
-import NavigationBar, { BreadCrumbListing } from './navigation-bar';
+import NavigationBar, { BreadCrumbListing } from './header/navigation-bar';
 import { useContext } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
-import LayoutFooter from './footer';
+import LayoutFooter from './footer/footer';
 import ScrollReset from './behavior/scroll-reset';
 import { ApplicationSettingsTypes } from '@/types/settings';
 
