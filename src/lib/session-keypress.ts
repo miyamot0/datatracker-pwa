@@ -14,6 +14,7 @@ import { SavedSessionResult, SavedSettings } from './dtos';
 import { UseMutationResult } from '@tanstack/react-query';
 import { ModifiedSessionResult } from '@/types/storage';
 import { RunningStateOptions } from '@/types/session';
+import { RouterHistory } from '@tanstack/react-router';
 
 export function handleMessageChannel(
   event: MessageEvent<WorkerResponse>,
@@ -105,8 +106,14 @@ export function handleWorkerMessage(
       },
       unknown
     >;
-    history: any; // Replace with actual type
-    displayConditionalNotification: any; // Replace with actual type
+    history: RouterHistory;
+    displayConditionalNotification: (
+      settings: ApplicationSettingsTypes,
+      title: string,
+      description: string,
+      duration?: number,
+      isError?: boolean,
+    ) => void;
     setRunningState: Dispatch<SetStateAction<RunningStateOptions>>;
     setStartTime: Dispatch<SetStateAction<Date | null>>;
     wakelockRef: MutableRefObject<WakeLockSentinel | undefined>;
@@ -241,8 +248,14 @@ export async function handleSessionEnded(
       },
       unknown
     >;
-    history: any; // Replace with actual type
-    displayConditionalNotification: any; // Replace with actual type
+    history: RouterHistory; // Replace with actual type
+    displayConditionalNotification: (
+      settings: ApplicationSettingsTypes,
+      title: string,
+      description: string,
+      duration?: number,
+      isError?: boolean,
+    ) => void;
     setRunningState: Dispatch<SetStateAction<RunningStateOptions>>;
     setStartTime: Dispatch<SetStateAction<Date | null>>;
     wakelockRef: MutableRefObject<WakeLockSentinel | undefined>;
