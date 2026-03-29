@@ -25,7 +25,7 @@ export default function PageWrapper({
   HideFooter,
   Settings,
 }: Props) {
-  const { settings: preSettings } = useContext(FolderHandleContext);
+  const { settings: preSettings, handle } = useContext(FolderHandleContext);
 
   const settings = Settings ?? preSettings;
 
@@ -39,7 +39,7 @@ export default function PageWrapper({
         'max-w-full w-full': settings.SessionDisplay === 'FullScreen',
       })}
     >
-      {!HideNavbar && <NavigationBar breadcrumbs={breadcrumbs} label={label} />}
+      {!HideNavbar && <NavigationBar breadcrumbs={breadcrumbs} label={label} Settings={settings} Handle={handle} />}
 
       {children}
 

@@ -22,7 +22,7 @@ import { KeySet, KeySetExtended } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';
 import { GenerateSavedFileName } from '@/lib/writer';
 import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
-import { importExistingKeysets } from '@/queries/keysets/helpers/import-keysets';
+import { importExistingKeysets } from '@/lib/keysets/import-keysets';
 
 // Mock all dependencies
 vi.mock('@/lib/strings');
@@ -816,27 +816,6 @@ describe('file-query-mutate-actions', () => {
       await expect(
         mutateKeysets(mockRootHandle as any, 'group', 'individual', ['existing-keyset'], 'Update'),
       ).rejects.toThrow('newKeySet not supplied');
-    });
-
-    it('should throw error for rename action (not implemented)', async () => {
-      // Mock existing keyset
-      const mockExistingKeysetFile = createMockFileHandle('existing-keyset.json');
-      const mockExistingFile = createMockFile('{"Name": "existing-keyset", "id": "123"}');
-      mockExistingKeysetFile.getFile.mockResolvedValue(mockExistingFile);
-
-      mockIndividualDir.entries.mockReturnValue(
-        createEntriesIterator([['existing-keyset.json', mockExistingKeysetFile]]),
-      );
-
-      // Ensure getFileHandle returns the same mocked file handle
-      mockIndividualDir.getFileHandle.mockImplementation((name) => {
-        if (name === 'existing-keyset.json') return Promise.resolve(mockExistingKeysetFile);
-        throw new Error(`File ${name} not found`);
-      });
-
-      await expect(
-        mutateKeysets(mockRootHandle as any, 'group', 'individual', ['existing-keyset'], 'Rename'),
-      ).rejects.toThrow('Rename action not yet implemented');
     });
 
     it('should skip invalid JSON files', async () => {

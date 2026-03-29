@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -12,24 +12,23 @@ import { Button } from '@/components/ui/button';
 import { MenuIcon, RefreshCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from '@tanstack/react-router';
-import { FolderHandleContext } from '@/context/folder-context';
 import { TRANSITION_CLASSES } from '@/types/transitions';
+import { ApplicationSettingsTypes } from '@/types/settings';
 
 export type BreadCrumbListing = {
   label: string;
-  href: string;
+  to: string;
 };
 
 type Props = {
   breadcrumbs?: BreadCrumbListing[];
   label?: string;
+  Settings: ApplicationSettingsTypes;
+  Handle: FileSystemDirectoryHandle | undefined;
 };
 
-// TODO: Navbar should inherit global router settings
-export default function NavigationBar({ breadcrumbs, label }: Props) {
-  const { handle, settings } = useContext(FolderHandleContext);
-
-  const animTypes = TRANSITION_CLASSES[settings.TransitionBehavior];
+export default function NavigationBar({ breadcrumbs, label, Settings, Handle }: Props) {
+  const animTypes = TRANSITION_CLASSES[Settings.TransitionBehavior];
 
   const animLeft = animTypes.length > 0 ? [animTypes[animTypes.length - 1]] : [];
   const animRight = animTypes.length > 0 ? [animTypes[0]] : [];
@@ -52,7 +51,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link to={breadcrumb.href} className={cn('underline')} viewTransition={{ types: animLeft }}>
+                    <Link to={breadcrumb.to} className={cn('underline')} viewTransition={{ types: animLeft }}>
                       {breadcrumb.label}
                     </Link>
                   </BreadcrumbLink>
@@ -77,7 +76,7 @@ export default function NavigationBar({ breadcrumbs, label }: Props) {
         <Link
           to={'/dashboard/sync'}
           className={cn('flex flex-row gap-2 items-center', {
-            'disabled cursor-default pointer-events-none opacity-50': !handle,
+            'disabled cursor-default pointer-events-none opacity-50': !Handle,
           })}
           viewTransition={{ types: animRight }}
         >

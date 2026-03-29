@@ -1,6 +1,4 @@
-import { keyboardQueryOptions } from './query-keyboards';
 import { KeySet } from '@/types/keyset';
-import { queryClient } from '@/App';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
 import { v4 as uuidv4 } from 'uuid';
 import { MutateKeysetsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
@@ -34,12 +32,8 @@ export const mutationKeyboards = async ({
   Handle: FileSystemDirectoryHandle;
   Action: 'Add' | 'Delete' | 'Duplicate' | 'Rename' | 'Update';
 }): Promise<KeySet[]> => {
-  const keysets: KeySet[] = await queryClient.fetchQuery(keyboardQueryOptions(Handle, Group, Individual));
-
-  // TODO: Need to handle a rename
-  if (!keysets) {
-    throw new Error('Keysets not found');
-  }
+  // TODO: Confirm if re-querying even worth it?
+  // const keysets: KeySet[] = await queryClient.fetchQuery(keyboardQueryOptions(Handle, Group, Individual));
 
   return await mutationKeysetsWorker({ Handle, Group, Individual, Keysets, Action, Rename, NewKeySet });
 };
