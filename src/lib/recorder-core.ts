@@ -234,6 +234,7 @@ export class SessionRecorderCore {
         const specialKeyName = this.keyset?.SpecialDurationKeys.find(
           (key) => key.KeyCode === this.settings!.TimerOption,
         )?.KeyName;
+
         if (specialKeyName) {
           timerUpdate = {
             ...timerUpdate,
@@ -466,6 +467,8 @@ export class SessionRecorderCore {
 
     // Create final system events using the helper method
     const endTimerEvent = this.createEndEventForCurrentTimer();
+
+    // Note: need to create end event for duration timers?
 
     const endSessionEvent = this.createSystemEvent('Escape', 0, 'End of Session', 'Primary' as KeyTiming, 'End');
 

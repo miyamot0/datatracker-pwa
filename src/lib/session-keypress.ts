@@ -417,18 +417,12 @@ export function SessionProcessKeypress(
     keysPressed: KeyManageType[];
   },
 ) {
-  if (ev.repeat) {
-    return;
-  }
+  if (ev.repeat) return;
 
-  if (ev.key === 'Space' || ev.key === ' ') {
-    ev.preventDefault();
-  }
+  if (ev.key === 'Space' || ev.key === ' ') ev.preventDefault();
 
   if (runningState === 'Not Started') {
-    if (ev.key === 'Escape') {
-      history.go(-1);
-    }
+    if (ev.key === 'Escape') history.go(-1);
 
     if (ev.key === 'Enter') {
       if (!workerRef.current) return;
