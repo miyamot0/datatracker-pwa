@@ -1,6 +1,6 @@
 import PageWrapper from '@/components/elements/page-wrapper';
-import AuthorizedDisplayContent from '@/components/pages/dashboard-groups/gated-displays/authorized-display-content';
-import UnauthorizedDisplay from '@/components/pages/dashboard-groups/gated-displays/unauthorized-display';
+import AuthorizedDisplayContent from '@/components/pages/dashboard-groups/authorized-display-content';
+import UnauthorizedDisplay from '@/components/pages/dashboard-groups/unauthorized-display';
 import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { groupQueryOptions } from '@/queries/groups/query-groups';
 import { Await, createFileRoute } from '@tanstack/react-router';

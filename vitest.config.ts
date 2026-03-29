@@ -40,6 +40,7 @@ export default defineConfig({
         'src/calculations/**/*.ts',
         'src/analytics/**/*.ts',
         'src/components/elements/**/*.{ts,tsx}',
+        'src/components/pages/**/*.{ts,tsx}',
       ],
       exclude: ['**/__tests__/**/*', '**/types/**/*', 'src/lib/utils.ts', 'src/components/ui/**'],
     },

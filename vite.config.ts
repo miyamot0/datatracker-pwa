@@ -37,7 +37,6 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
             cleanupOutdatedCaches: true,
             sourcemap: false,
             maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
-            // Ensure SharedArrayBuffer support in service worker
             runtimeCaching: [
               {
                 urlPattern: /https:\/\/www\.google-analytics\.com/,
