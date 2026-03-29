@@ -71,7 +71,7 @@ export default function NavigationBar({ breadcrumbs, label, Settings, Handle }: 
       </Breadcrumb>
 
       <div className="flex flex-row gap-2 items-center">
-        <AuthorizationStatus />
+        <AuthorizationStatus handle={Handle} />
 
         <Link
           to={'/dashboard/sync'}

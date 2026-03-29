@@ -1,7 +1,5 @@
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { FolderHandleContext } from '@/context/folder-context';
-import { useContext } from 'react';
 
 const NotAuthorized = () => (
   <Tooltip>
@@ -32,8 +30,6 @@ const Authorized = ({ Handle }: { Handle: FileSystemDirectoryHandle }) => (
   </Tooltip>
 );
 
-export default function AuthorizationStatus() {
-  const { handle } = useContext(FolderHandleContext);
-
+export default function AuthorizationStatus({ handle }: { handle?: FileSystemDirectoryHandle }) {
   return <>{handle ? <Authorized Handle={handle} /> : <NotAuthorized />}</>;
 }

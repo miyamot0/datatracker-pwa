@@ -3,7 +3,7 @@ import NavigationBar, { BreadCrumbListing } from './navigation-bar';
 import { useContext } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
 import LayoutFooter from './footer';
-import ScrollReset from './scroll-reset';
+import ScrollReset from './behavior/scroll-reset';
 import { ApplicationSettingsTypes } from '@/types/settings';
 
 type Props = {
