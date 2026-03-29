@@ -7,11 +7,11 @@ import {
   convertLegacyTimerType,
   createSpecialTimerType,
   identifyStrategyTimingStrategy,
-} from './calculation-helpers';
+} from '../calculation-helpers';
 import { SessionTerminationOptions } from '@/types/terminations';
 import type { SavedSessionResult } from '@/lib/dtos';
 import type { KeySet } from '@/types/keyset';
-import type { SessionProcessingOptions } from '../types/calculation';
+import type { SessionProcessingOptions } from '../../types/calculation';
 
 vi.mock('@/lib/schedule-parser', () => ({
   sumDurationScoringKey: vi.fn().mockReturnValue(120),

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { formatForSpreadsheet } from './calculation-formatting';
-import type { ProcessedSessionData, ProcessedKeyResult } from '../types/calculation';
+import { formatForSpreadsheet } from '../calculation-formatting';
+import type { ProcessedSessionData, ProcessedKeyResult } from '../../types/calculation';
 
 // ── Factories ────────────────────────────────────────────────────────────────
 
