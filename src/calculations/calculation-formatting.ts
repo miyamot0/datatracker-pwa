@@ -38,7 +38,7 @@ export function formatForSpreadsheet(data: ProcessedSessionData[]): string[][] {
   });
 
   sampleData.derivedKeys.forEach((key) => {
-    headers.push(`${key.keyDescription} (Derived)`);
+    headers.push(`${key.keyDescription} (Derived Count)`);
     headers.push(`${key.keyDescription} (Derived Rate)`);
   });
 
