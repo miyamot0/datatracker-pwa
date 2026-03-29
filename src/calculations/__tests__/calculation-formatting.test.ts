@@ -111,7 +111,7 @@ describe('formatForSpreadsheet', () => {
   it('appends derived column headers after duration columns', () => {
     const data = [makeSessionData({ derivedKeys: [makeDerivedKey({ keyDescription: 'Computed Rate' })] })];
     const headers = formatForSpreadsheet(data)[0];
-    expect(headers).toContain('Computed Rate (Derived)');
+    expect(headers).toContain('Computed Rate (Derived Count)');
     expect(headers).toContain('Computed Rate (Derived Rate)');
   });
 
@@ -128,7 +128,7 @@ describe('formatForSpreadsheet', () => {
     const baseEnd = BASE_HEADERS.length - 1;
     const freqCountIdx = headers.indexOf('FreqA (Count)');
     const durSecondsIdx = headers.indexOf('DurA (Seconds)');
-    const derivedIdx = headers.indexOf('DerA (Derived)');
+    const derivedIdx = headers.indexOf('DerA (Derived Count)');
 
     expect(freqCountIdx).toBeGreaterThan(baseEnd);
     expect(durSecondsIdx).toBeGreaterThan(freqCountIdx);
@@ -229,7 +229,7 @@ describe('formatForSpreadsheet', () => {
     const data = [makeSessionData({ derivedKeys: [makeDerivedKey({ rawValue: 7, rate: 0.7 })] })];
     const headers = formatForSpreadsheet(data)[0];
     const row = formatForSpreadsheet(data)[1];
-    const derivedIdx = headers.indexOf('Derived Key (Derived)');
+    const derivedIdx = headers.indexOf('Derived Key (Derived Count)');
 
     expect(row[derivedIdx]).toBe('7');
     expect(row[derivedIdx + 1]).toBe('0.70');
