@@ -1,6 +1,7 @@
+import DocumentationEntryPage from '@/components/pages/documentation/documentation-entry-page';
 import { AllFrontMatter, AllKeywordsArray, DocumentationObjects } from '@/lib/docs';
 import { FrontMatterUniversalType, ParsedFrontMatterType } from '@/types/mdx';
-import { redirect, createFileRoute, lazyRouteComponent } from '@tanstack/react-router';
+import { redirect, createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/documentation/$slug')({
   beforeLoad({ params }) {
@@ -61,5 +62,19 @@ export const Route = createFileRoute('/documentation/$slug')({
       Settings: context.folderHandleContext.settings,
     };
   },
-  component: lazyRouteComponent(() => import('@/components/pages/documentation/documentation-entry-page')),
+  component: RouteComponent,
 });
+
+function RouteComponent() {
+  const { FrontMatter, KeywordArray, Settings } = Route.useLoaderData();
+
+  return (
+    <DocumentationEntryPage
+      KeywordArray={KeywordArray}
+      PreviousEntry={null}
+      NextEntry={null}
+      Entry={{ matter: FrontMatter, value: '' }}
+      Settings={Settings}
+    />
+  );
+}

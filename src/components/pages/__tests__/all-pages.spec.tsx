@@ -10,6 +10,9 @@ import { DEFAULT_APPLICATION_SETTINGS } from '@/types/settings';
 import { FolderHandleContext } from '@/context/folder-context';
 import '@/styles/globals.css';
 import HomePage from '../home/home-page';
+import DocumentationListingPage from '../documentation/documentation-listing-page';
+import DocumentationEntryPage from '../documentation/documentation-entry-page';
+import { AllFrontMatter, AllKeywordsArray } from '@/lib/docs';
 
 // ----- Hoisted refs -----
 const mockMutateAsync = vi.hoisted(() => vi.fn().mockResolvedValue([]));
@@ -143,5 +146,82 @@ describe('HomePage', () => {
     );
 
     await page.screenshot({ path: '../../../../public/screenshots2/home_page.png' });
+  });
+});
+
+const mockKeywordArray = AllKeywordsArray;
+
+const mockFrontMatter = AllFrontMatter;
+
+const mockEntry = {
+  matter: mockFrontMatter[0],
+  value: `# Getting Started\n\nWelcome to **DataTracker**. This guide walks you through the initial setup.\n\n## Step 1: Authorize a Folder\n\nClick the "Authorize Folder" button on the home screen to grant access to your data directory.\n\n## Step 2: Create a Group\n\nNavigate to the Groups page and create your first study group.`,
+};
+
+describe('DocumentationListingPage', () => {
+  it('renders with full styles and saves a screenshot', async () => {
+    const mockHandle = {} as FileSystemDirectoryHandle;
+
+    render(
+      <ThemeProvider defaultTheme="light" storageKey="test-theme">
+        <FolderHandleContext.Provider
+          value={{
+            handle: mockHandle,
+            setHandle: vi.fn(),
+            settings: DEFAULT_APPLICATION_SETTINGS,
+            setSettings: vi.fn(),
+            saveSettings: vi.fn(),
+            isInitialized: true,
+            setIsInitialized: vi.fn(),
+          }}
+        >
+          <TooltipProvider>
+            <PageWrapper
+              Settings={DEFAULT_APPLICATION_SETTINGS}
+              breadcrumbs={[{ label: 'Documentation', to: '/documentation' }]}
+              label="Documentation"
+            >
+              <DocumentationListingPage FrontMatter={mockFrontMatter} KeywordArray={mockKeywordArray} />
+            </PageWrapper>
+          </TooltipProvider>
+        </FolderHandleContext.Provider>
+      </ThemeProvider>,
+    );
+
+    await page.screenshot({ path: '../../../../public/screenshots2/documentation_listing_page.png' });
+  });
+});
+
+describe('DocumentationEntryPage', () => {
+  it('renders with full styles and saves a screenshot', async () => {
+    const mockHandle = {} as FileSystemDirectoryHandle;
+
+    render(
+      <ThemeProvider defaultTheme="light" storageKey="test-theme">
+        <FolderHandleContext.Provider
+          value={{
+            handle: mockHandle,
+            setHandle: vi.fn(),
+            settings: DEFAULT_APPLICATION_SETTINGS,
+            setSettings: vi.fn(),
+            saveSettings: vi.fn(),
+            isInitialized: true,
+            setIsInitialized: vi.fn(),
+          }}
+        >
+          <TooltipProvider>
+            <DocumentationEntryPage
+              Entry={mockEntry}
+              KeywordArray={mockKeywordArray}
+              PreviousEntry={null}
+              NextEntry={mockFrontMatter[1]}
+              Settings={DEFAULT_APPLICATION_SETTINGS}
+            />
+          </TooltipProvider>
+        </FolderHandleContext.Provider>
+      </ThemeProvider>,
+    );
+
+    await page.screenshot({ path: '../../../../public/screenshots2/documentation_entry_page.png' });
   });
 });

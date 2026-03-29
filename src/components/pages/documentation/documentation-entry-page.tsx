@@ -6,19 +6,23 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import BackButton from '@/components/ui/back-button';
 import { Link } from '@tanstack/react-router';
 import { MdViewer } from './views/md-viewer';
-import { useContext } from 'react';
-import { FolderHandleContext } from '@/context/folder-context';
 import { TRANSITION_CLASSES } from '@/types/transitions';
 import PageWrapper from '@/components/elements/page-wrapper';
 import { BuildDocumentationBreadcrumb } from '@/components/ui/breadcrumb-entries';
-import { Route } from '@/routes/documentation/$slug';
+import { FrontMatterUniversalType, ParsedFrontMatterType } from '@/types/mdx';
+import { ApplicationSettingsTypes } from '@/types/settings';
+import { KeywordColors } from '@/types/colors';
 
-export default function DocumentationEntryPage() {
-  const { KeywordArray, PreviousEntry, NextEntry, Entry, Settings } = Route.useLoaderData();
+type Props = {
+  KeywordArray: KeywordColors[];
+  PreviousEntry: FrontMatterUniversalType | null;
+  NextEntry: FrontMatterUniversalType | null;
+  Entry: ParsedFrontMatterType;
+  Settings: ApplicationSettingsTypes;
+};
 
-  const { settings } = useContext(FolderHandleContext);
-
-  const animTypes = TRANSITION_CLASSES[settings.TransitionBehavior];
+export default function DocumentationEntryPage({ KeywordArray, PreviousEntry, NextEntry, Entry, Settings }: Props) {
+  const animTypes = TRANSITION_CLASSES[Settings.TransitionBehavior];
 
   const animLeft = animTypes.length > 0 ? [animTypes[animTypes.length - 1]] : [];
   const animRight = animTypes.length > 0 ? [animTypes[0]] : [];
