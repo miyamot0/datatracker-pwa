@@ -30,7 +30,7 @@
     "research software"
   ],
   "license": "Apache-2.0",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "scripts": {
     "dev-island": "vite --mode island",
     "dev": "vite",
@@ -43,7 +43,8 @@
     "check-licenses": "npx license-report --only=prod --output=json > ./src/assets/licenses.json",
     "build-readme": "tsx ./scripts/index.ts",
     "prebuild": "yarn run lint && yarn run test && yarn run check-licenses && yarn run build-readme",
-    "push": "yarn run build && git add . && git commit -m 'Build and update' && git push",
+    "commit": "git add . && git commit -m \"automated commit\"",
+    "push": "yarn run build && yarn run commit && git push",
     "test": "vitest run --coverage",
     "test-old": "vitest run --coverage",
     "test:watch": "vitest --watch",
