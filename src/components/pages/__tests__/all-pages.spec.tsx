@@ -31,6 +31,24 @@ import ResultsViewerContent from '../summary-outcomes/results-viewer-content';
 import ResultsRateVisualsPage from '../visualize-outcomes/rate/results-rate-visuals-page';
 import ResultsProportionVisualsPage from '../visualize-outcomes/proportion/results-proportion-visuals-page';
 import { SessionTerminationOptions } from '@/types/terminations';
+import demandTreatmentKeysetJson from '@/assets/data/Evaluation Study/Participant 001/FC Treatment Evaluation.json';
+
+const demandTreatmentSessionModules = {
+  ...import.meta.glob(
+    '/src/assets/data/Evaluation Study/Participant 001/Demand Treatment Evaluation/Baseline/*_Primary.json',
+    {
+      eager: true,
+      import: 'default',
+    },
+  ),
+  ...import.meta.glob(
+    '/src/assets/data/Evaluation Study/Participant 001/Demand Treatment Evaluation/Intervention/*_Primary.json',
+    {
+      eager: true,
+      import: 'default',
+    },
+  ),
+};
 
 const mockKeywordArray = AllKeywordsArray;
 
@@ -463,6 +481,88 @@ const mockShowKeys: import('@/types/visuals').ToggleDisplayKey[] = [
   { KeyName: 'a', KeyDescription: 'Aggression', KeyCode: 65, KeyType: 'Observed', Visible: true },
   { KeyName: 's', KeyDescription: 'Self-Injury', KeyCode: 83, KeyType: 'Observed', Visible: true },
 ];
+
+type ImportedKeySet = Omit<import('@/types/keyset').KeySet, 'createdAt' | 'lastModified'> & {
+  createdAt: string;
+  lastModified: string;
+};
+
+type ImportedSessionResult = Omit<import('@/lib/dtos').SavedSessionResult, 'Keyset'> & {
+  Keyset?: Partial<import('@/types/keyset').KeySet>;
+  SpecialKeyTimers?: Record<string, number>;
+};
+
+function hydrateImportedKeyset(keyset: ImportedKeySet): import('@/types/keyset').KeySet {
+  return {
+    ...keyset,
+    DerivedKeys: keyset.DerivedKeys ?? [],
+    SpecialDurationKeys: keyset.SpecialDurationKeys ?? [],
+    ScorableDurationKeys: keyset.ScorableDurationKeys ?? [],
+    createdAt: new Date(keyset.createdAt),
+    lastModified: new Date(keyset.lastModified),
+  };
+}
+
+function hydrateImportedSession(
+  filename: string,
+  session: ImportedSessionResult,
+  keyset: import('@/types/keyset').KeySet,
+): import('@/types/storage').ModifiedSessionResult {
+  return {
+    ...session,
+    Filename: filename,
+    Keyset: keyset,
+    SpecialKeyTimers: session.SpecialKeyTimers ?? {},
+  };
+}
+
+function getSessionNumberFromPath(path: string) {
+  const filename = path.split('/').pop() ?? '0';
+  return Number.parseInt(filename.split('_')[0] ?? '0', 10);
+}
+
+const demandTreatmentKeyset = hydrateImportedKeyset(demandTreatmentKeysetJson as ImportedKeySet);
+
+const demandTreatmentSessions = Object.entries(demandTreatmentSessionModules)
+  .sort(([leftPath], [rightPath]) => getSessionNumberFromPath(leftPath) - getSessionNumberFromPath(rightPath))
+  .map(([path, session]) => {
+    const filename = path.split('/').pop() ?? 'session.json';
+    return hydrateImportedSession(filename, session as ImportedSessionResult, demandTreatmentKeyset);
+  });
+
+const demandTreatmentRateShowKeys: import('@/types/visuals').ToggleDisplayKey[] = [
+  ...demandTreatmentKeyset.FrequencyKeys.filter((key) =>
+    ['AGG', 'DIS', 'FCR', 'Prompt'].includes(key.KeyDescription),
+  ).map((key) => ({
+    ...key,
+    KeyType: 'Observed' as const,
+    Visible: true,
+  })),
+  ...demandTreatmentKeyset.DerivedKeys.filter((key) => ['CTB'].includes(key.name)).map((key, index) => ({
+    KeyName: key.name,
+    KeyDescription: key.name,
+    KeyCode: 1000 + index,
+    KeyType: 'Derived' as const,
+    Visible: true,
+  })),
+];
+
+const demandTreatmentProportionShowKeys: import('@/types/visuals').ToggleDisplayKey[] =
+  demandTreatmentKeyset.DurationKeys.filter((key) => ['SR', 'Tantrum'].includes(key.KeyDescription)).map((key) => ({
+    ...key,
+    KeyType: 'Observed' as const,
+    Visible: true,
+  }));
+
+const demandTreatmentTimerMapping: import('@/types/schedules').ScoringOptionsMapType = {
+  value: 'End on Timer #1',
+  label: 'Score Timer #1 Time',
+};
+
+const demandTreatmentSessionBounds = {
+  min: Math.min(...demandTreatmentSessions.map((session) => session.SessionSettings.Session)),
+  max: Math.max(...demandTreatmentSessions.map((session) => session.SessionSettings.Session)),
+};
 
 describe('ViewerEvaluationsPage', () => {
   it('renders with full styles and saves a screenshot', async () => {
@@ -1071,25 +1171,24 @@ describe('ResultsRateVisualsPage', () => {
             <PageWrapper
               Settings={DEFAULT_APPLICATION_SETTINGS}
               breadcrumbs={[
-                { label: 'Study Trial A', to: '/session/$group' },
+                { label: 'Evaluation Study', to: '/session/$group' },
                 { label: 'Participant 001', to: '/session/$group/$individual' },
-                { label: 'Functional Analysis', to: '/session/$group/$individual/$evaluation' },
-                { label: 'Rate', to: '/session/$group/$individual/$evaluation/rate' },
+                { label: 'Demand Treatment Evaluation', to: '/session/$group/$individual/$evaluation' },
               ]}
               label="Rate Visualization"
             >
               <ResultsRateVisualsPage
-                Group="Study Trial A"
+                Group="Evaluation Study"
                 Individual="Participant 001"
-                Evaluation="Functional Analysis"
+                Evaluation="Demand Treatment Evaluation"
                 Handle={mockHandle}
-                Results={[mockSession]}
-                ResultsFiltered={[mockSession]}
-                DynamicKeySet={mockKeyset}
-                TimerMapping={mockTimerMapping}
-                ShowKeys={mockShowKeys}
-                MinX={1}
-                MaxX={5}
+                Results={demandTreatmentSessions}
+                ResultsFiltered={demandTreatmentSessions}
+                DynamicKeySet={demandTreatmentKeyset}
+                TimerMapping={demandTreatmentTimerMapping}
+                ShowKeys={demandTreatmentRateShowKeys}
+                MinX={demandTreatmentSessionBounds.min}
+                MaxX={demandTreatmentSessionBounds.max}
                 Settings={DEFAULT_APPLICATION_SETTINGS}
               />
             </PageWrapper>
@@ -1098,6 +1197,7 @@ describe('ResultsRateVisualsPage', () => {
       </ThemeProvider>,
     );
 
+    await page.viewport(1295, 1150);
     await page.screenshot({ path: '../../../../public/screenshots/rate_visuals_page.png' });
   });
 });
@@ -1123,24 +1223,23 @@ describe('ResultsProportionVisualsPage', () => {
             <PageWrapper
               Settings={DEFAULT_APPLICATION_SETTINGS}
               breadcrumbs={[
-                { label: 'Study Trial A', to: '/session/$group' },
+                { label: 'Evaluation Study', to: '/session/$group' },
                 { label: 'Participant 001', to: '/session/$group/$individual' },
-                { label: 'Functional Analysis', to: '/session/$group/$individual/$evaluation' },
-                { label: 'Proportion', to: '/session/$group/$individual/$evaluation/proportion' },
+                { label: 'Demand Treatment Evaluation', to: '/session/$group/$individual/$evaluation' },
               ]}
               label="Proportion Visualization"
             >
               <ResultsProportionVisualsPage
-                Group="Study Trial A"
+                Group="Evaluation Study"
                 Individual="Participant 001"
-                Evaluation="Functional Analysis"
-                Results={[mockSession]}
-                ResultsFiltered={[mockSession]}
-                DynamicKeySet={mockKeyset}
-                TimerMapping={mockTimerMapping}
-                ShowKeys={mockShowKeys}
-                MinX={1}
-                MaxX={5}
+                Evaluation="Demand Treatment Evaluation"
+                Results={demandTreatmentSessions}
+                ResultsFiltered={demandTreatmentSessions}
+                DynamicKeySet={demandTreatmentKeyset}
+                TimerMapping={demandTreatmentTimerMapping}
+                ShowKeys={demandTreatmentProportionShowKeys}
+                MinX={demandTreatmentSessionBounds.min}
+                MaxX={demandTreatmentSessionBounds.max}
                 Settings={DEFAULT_APPLICATION_SETTINGS}
               />
             </PageWrapper>
@@ -1149,6 +1248,7 @@ describe('ResultsProportionVisualsPage', () => {
       </ThemeProvider>,
     );
 
+    await page.viewport(1295, 1150);
     await page.screenshot({ path: '../../../../public/screenshots/proportion_visuals_page.png' });
   });
 });
