@@ -184,4 +184,3 @@ describe('ReliabilityViewerContent', () => {
     expect(mockPreventDefault).not.toHaveBeenCalled();
   });
 });
-
