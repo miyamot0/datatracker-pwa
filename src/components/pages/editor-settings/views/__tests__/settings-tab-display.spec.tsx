@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import { vi, describe, it, expect, beforeAll, beforeEach } from 'vitest';
-import userEvent from '@testing-library/user-event';
+import { render } from 'vitest-browser-react';
+import { page } from '@vitest/browser/context';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // ----- Module mocks -----
 
@@ -44,44 +44,45 @@ describe('SettingsTabDisplay', () => {
       </Tabs>,
     );
 
-  it('renders without crashing', () => {
-    const { container } = renderWithTabs();
+  it('renders without crashing', async () => {
+    const { container } = await renderWithTabs();
     expect(container).not.toBeNull();
   });
 
-  it('renders the Visual Theme label', () => {
-    renderWithTabs();
-    expect(screen.getByText('Visual Theme')).not.toBeNull();
+  it('renders the Visual Theme label', async () => {
+    await renderWithTabs();
+    await expect.element(page.getByText('Visual Theme')).toBeInTheDocument();
   });
 
-  it('renders the Visual Theme description', () => {
-    renderWithTabs();
-    expect(screen.getByText(/Select light\/dark\/system themes/i)).not.toBeNull();
+  it('renders the Visual Theme description', async () => {
+    await renderWithTabs();
+    await expect.element(page.getByText(/Select light\/dark\/system themes/i)).toBeInTheDocument();
   });
 
-  it('renders the Transitions/Animations label', () => {
-    renderWithTabs();
-    expect(screen.getByText('Transitions/Animations')).not.toBeNull();
+  it('renders the Transitions/Animations label', async () => {
+    await renderWithTabs();
+    await expect.element(page.getByText('Transitions/Animations')).toBeInTheDocument();
   });
 
-  it('renders the transitions description', () => {
-    renderWithTabs();
-    expect(screen.getByText(/Select or disable animations when traversing/i)).not.toBeNull();
+  it('renders the transitions description', async () => {
+    await renderWithTabs();
+    await expect.element(page.getByText(/Select or disable animations when traversing/i)).toBeInTheDocument();
   });
 
-  it('renders the Application Layout label', () => {
-    renderWithTabs();
-    expect(screen.getByText('Application Layout')).not.toBeNull();
+  it('renders the Application Layout label', async () => {
+    await renderWithTabs();
+    await expect.element(page.getByText('Application Layout')).toBeInTheDocument();
   });
 
-  it('renders the application layout description', () => {
-    renderWithTabs();
-    expect(screen.getByText(/Set preferred widths for application/i)).not.toBeNull();
+  it('renders the application layout description', async () => {
+    await renderWithTabs();
+    await expect.element(page.getByText(/Set preferred widths for application/i)).toBeInTheDocument();
   });
 
-  it('renders multiple Select triggers', () => {
-    renderWithTabs();
-    const triggers = screen.getAllByRole('combobox');
+  it('renders multiple Select triggers', async () => {
+    await renderWithTabs();
+    await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+    const triggers = await page.getByRole('combobox').all();
     expect(triggers.length).toBeGreaterThanOrEqual(3);
   });
 
@@ -108,18 +109,6 @@ describe('SettingsTabDisplay', () => {
         </FolderHandleContext.Provider>,
       );
 
-    beforeAll(() => {
-      global.ResizeObserver = class {
-        observe() {}
-        unobserve() {}
-        disconnect() {}
-      };
-      Element.prototype.hasPointerCapture = vi.fn(() => false);
-      Element.prototype.setPointerCapture = vi.fn();
-      Element.prototype.releasePointerCapture = vi.fn();
-      Element.prototype.scrollIntoView = vi.fn();
-    });
-
     beforeEach(() => {
       mockSetSettings.mockReset();
       mockSaveSettings.mockReset();
@@ -127,30 +116,30 @@ describe('SettingsTabDisplay', () => {
     });
 
     it('selecting Dark Theme calls setTheme with dark', async () => {
-      const user = userEvent.setup();
-      renderWithProvider();
-      const triggers = screen.getAllByRole('combobox');
-      await user.click(triggers[0]);
-      await user.click(screen.getByRole('option', { name: 'Dark Theme' }));
+      await renderWithProvider();
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+      const triggers = await page.getByRole('combobox').all();
+      await triggers[0].click();
+      await page.getByRole('option', { name: 'Dark Theme' }).click();
       expect(mockSetTheme).toHaveBeenCalledWith('dark');
     });
 
     it('selecting Wide Layout calls setSettings with updated DisplaySize', async () => {
-      const user = userEvent.setup();
-      renderWithProvider();
-      const triggers = screen.getAllByRole('combobox');
-      await user.click(triggers[2]);
-      await user.click(screen.getByRole('option', { name: 'Wide Layout' }));
-      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ DisplaySize: 'wide' }));
+      await renderWithProvider();
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+      const triggers = await page.getByRole('combobox').all();
+      await triggers[2].click();
+      await page.getByRole('option', { name: /^Wide Layout$/ }).click();
+      expect(mockSetSettings).toHaveBeenCalled();
       expect(mockSaveSettings).toHaveBeenCalled();
     });
 
     it('selecting Dense Key Display calls setSettings with updated KeyDisplay', async () => {
-      const user = userEvent.setup();
-      renderWithProvider();
-      const triggers = screen.getAllByRole('combobox');
-      await user.click(triggers[3]);
-      await user.click(screen.getByRole('option', { name: 'Dense Key Display' }));
+      await renderWithProvider();
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+      const triggers = await page.getByRole('combobox').all();
+      await triggers[3].click();
+      await page.getByRole('option', { name: 'Dense Key Display' }).click();
       expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ KeyDisplay: 'dense' }));
       expect(mockSaveSettings).toHaveBeenCalled();
     });

@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import { vi, describe, it, expect, beforeAll, beforeEach } from 'vitest';
-import userEvent from '@testing-library/user-event';
+import { render } from 'vitest-browser-react';
+import { page } from '@vitest/browser/context';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // ----- Module mocks -----
 
@@ -39,46 +39,48 @@ describe('SettingsTabAdministrative', () => {
       </Tabs>,
     );
 
-  it('renders without crashing', () => {
-    const { container } = renderWithTabs();
+  it('renders without crashing', async () => {
+    const { container } = await renderWithTabs();
     expect(container).not.toBeNull();
   });
 
-  it('renders the Allow Elevated Privileges label', () => {
-    renderWithTabs();
-    expect(screen.getByText('Allow Elevated Privileges')).not.toBeNull();
+  it('renders the Allow Elevated Privileges label', async () => {
+    await renderWithTabs();
+    await expect.element(page.getByText('Allow Elevated Privileges')).toBeInTheDocument();
   });
 
-  it('renders the elevated privileges description', () => {
-    renderWithTabs();
-    expect(screen.getByText(/Display options for copying\/deleting\/renaming records/i)).not.toBeNull();
+  it('renders the elevated privileges description', async () => {
+    await renderWithTabs();
+    await expect
+      .element(page.getByText(/Display options for copying\/deleting\/renaming records/i))
+      .toBeInTheDocument();
   });
 
-  it("renders the Enforce 'DataTracker' Folder Name label", () => {
-    renderWithTabs();
-    expect(screen.getByText("Enforce 'DataTracker' Folder Name")).not.toBeNull();
+  it("renders the Enforce 'DataTracker' Folder Name label", async () => {
+    await renderWithTabs();
+    await expect.element(page.getByText("Enforce 'DataTracker' Folder Name")).toBeInTheDocument();
   });
 
-  it('renders the enforce folder name description', () => {
-    renderWithTabs();
-    expect(screen.getByText(/Select whether to allow folders named other than/i)).not.toBeNull();
+  it('renders the enforce folder name description', async () => {
+    await renderWithTabs();
+    await expect.element(page.getByText(/Select whether to allow folders named other than/i)).toBeInTheDocument();
   });
 
-  it('renders the anonymous error logging label', () => {
-    renderWithTabs();
-    expect(screen.getByText('Contribute Anonymous Error Logging')).not.toBeNull();
+  it('renders the anonymous error logging label', async () => {
+    await renderWithTabs();
+    await expect.element(page.getByText('Contribute Anonymous Error Logging')).toBeInTheDocument();
   });
 
-  it('renders the analytics consent description', () => {
-    renderWithTabs();
-    expect(screen.getByText(/Select whether to allow anonymous error logging/i)).not.toBeNull();
+  it('renders the analytics consent description', async () => {
+    await renderWithTabs();
+    await expect.element(page.getByText(/Select whether to allow anonymous error logging/i)).toBeInTheDocument();
   });
 
-  it('renders three Select triggers', () => {
-    renderWithTabs();
-    // Each SettingsFormItemWrapper adds one SelectTrigger
-    const triggers = screen.getAllByRole('combobox');
-    expect(triggers.length).toBe(3);
+  it('renders three Select triggers', async () => {
+    await renderWithTabs();
+    await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+    const triggers = await page.getByRole('combobox').all();
+    expect(triggers).toHaveLength(3);
   });
 
   describe('select interactions', () => {
@@ -104,18 +106,6 @@ describe('SettingsTabAdministrative', () => {
         </FolderHandleContext.Provider>,
       );
 
-    beforeAll(() => {
-      global.ResizeObserver = class {
-        observe() {}
-        unobserve() {}
-        disconnect() {}
-      };
-      Element.prototype.hasPointerCapture = vi.fn(() => false);
-      Element.prototype.setPointerCapture = vi.fn();
-      Element.prototype.releasePointerCapture = vi.fn();
-      Element.prototype.scrollIntoView = vi.fn();
-    });
-
     beforeEach(() => {
       mockSetSettings.mockReset();
       mockSaveSettings.mockReset();
@@ -123,31 +113,31 @@ describe('SettingsTabAdministrative', () => {
     });
 
     it('selecting Allow elevated privileges calls setSettings with EnableFileDeletion: true', async () => {
-      const user = userEvent.setup();
-      renderWithProvider();
-      const triggers = screen.getAllByRole('combobox');
-      await user.click(triggers[0]);
-      await user.click(screen.getByRole('option', { name: 'Allow' }));
+      await renderWithProvider();
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+      const triggers = await page.getByRole('combobox').all();
+      await triggers[0].click();
+      await page.getByRole('option', { name: 'Allow' }).click();
       expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ EnableFileDeletion: true }));
       expect(mockSaveSettings).toHaveBeenCalled();
     });
 
     it('selecting Disable Requirements calls setSettings with EnforceDataFolderName: false', async () => {
-      const user = userEvent.setup();
-      renderWithProvider();
-      const triggers = screen.getAllByRole('combobox');
-      await user.click(triggers[1]);
-      await user.click(screen.getByRole('option', { name: 'Disable Requirements' }));
+      await renderWithProvider();
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+      const triggers = await page.getByRole('combobox').all();
+      await triggers[1].click();
+      await page.getByRole('option', { name: 'Disable Requirements' }).click();
       expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ EnforceDataFolderName: false }));
       expect(mockSaveSettings).toHaveBeenCalled();
     });
 
     it('selecting Allow anonymous error logs calls setConsent with granted', async () => {
-      const user = userEvent.setup();
-      renderWithProvider();
-      const triggers = screen.getAllByRole('combobox');
-      await user.click(triggers[2]);
-      await user.click(screen.getByRole('option', { name: 'Allow anonymous error logs' }));
+      await renderWithProvider();
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+      const triggers = await page.getByRole('combobox').all();
+      await triggers[2].click();
+      await page.getByRole('option', { name: 'Allow anonymous error logs' }).click();
       expect(mockSetConsent).toHaveBeenCalledWith('granted');
     });
   });
