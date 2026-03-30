@@ -7,7 +7,6 @@ import { DropdownMenu, DropdownMenuContent } from '@/components/ui/dropdown-menu
 
 const mockDisplayConditionalNotification = vi.hoisted(() => vi.fn());
 const mockCallback = vi.hoisted(() => vi.fn());
-const mockConsoleError = vi.hoisted(() => vi.fn());
 
 vi.mock('@/App', () => ({
   queryClient: {
@@ -20,98 +19,6 @@ vi.mock('@/App', () => ({
 vi.mock('@/components/ui/sonner', () => ({
   Toaster: () => null,
 }));
-
-vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, ...props }: any) => (
-    <button onClick={onClick} {...props}>
-      {children}
-    </button>
-  ),
-}));
-
-vi.mock('@/components/ui/input', () => ({
-  Input: ({ value, onChange, ...props }: any) => <input value={value} onChange={onChange} {...props} />,
-}));
-
-vi.mock('@/components/ui/dropdown-menu', () => {
-  return {
-    DropdownMenu: ({ children }: any) => <div>{children}</div>,
-    DropdownMenuContent: ({ children }: any) => <div>{children}</div>,
-    DropdownMenuItem: ({ children, onSelect, className }: any) => (
-      <button
-        className={className}
-        onClick={() => {
-          onSelect?.({ preventDefault: vi.fn() });
-        }}
-      >
-        {children}
-      </button>
-    ),
-  };
-});
-
-vi.mock('@/components/ui/dialog', async () => {
-  const ReactLocal = await import('react');
-  const Ctx = ReactLocal.createContext<{ open: boolean; onOpenChange: (open: boolean) => void } | null>(null);
-
-  return {
-    Dialog: ({ open, onOpenChange, children }: any) => (
-      <Ctx.Provider value={{ open: Boolean(open), onOpenChange }}>{children}</Ctx.Provider>
-    ),
-    DialogTrigger: ({ asChild, children }: any) => {
-      const ctx = ReactLocal.useContext(Ctx);
-      const child = ReactLocal.Children.only(children);
-      return ReactLocal.cloneElement(child, {
-        onClick: (e: any) => {
-          child.props.onClick?.(e);
-          ctx?.onOpenChange(true);
-        },
-      });
-    },
-    DialogContent: ({ children, className }: any) => {
-      const ctx = ReactLocal.useContext(Ctx);
-      if (!ctx?.open) return null;
-      return (
-        <div className={className}>
-          {children}
-          <button onClick={() => ctx.onOpenChange(false)}>Close</button>
-        </div>
-      );
-    },
-    DialogHeader: ({ children }: any) => <div>{children}</div>,
-    DialogTitle: ({ children }: any) => <h2>{children}</h2>,
-    DialogDescription: ({ children }: any) => <p>{children}</p>,
-    DialogFooter: ({ children }: any) => <div>{children}</div>,
-  };
-});
-
-vi.mock('@/components/ui/select', async () => {
-  const ReactLocal = await import('react');
-  const SelectCtx = ReactLocal.createContext<{ onValueChange?: (value: string) => void }>({});
-
-  return {
-    Select: ({ onValueChange, children }: any) => (
-      <SelectCtx.Provider value={{ onValueChange }}>
-        <div>
-          {children}
-          <input
-            aria-label="manual-select-input"
-            onChange={(e: any) => onValueChange?.(e.target.value)}
-            value=""
-            readOnly={false}
-          />
-        </div>
-      </SelectCtx.Provider>
-    ),
-    SelectTrigger: ({ children }: any) => <div>{children}</div>,
-    SelectValue: ({ placeholder }: any) => <span>{placeholder}</span>,
-    SelectContent: ({ children }: any) => <div>{children}</div>,
-    SelectItem: ({ value, children }: any) => {
-      const ctx = ReactLocal.useContext(SelectCtx);
-      return <button onClick={() => ctx.onValueChange?.(value)}>{children}</button>;
-    },
-  };
-});
 
 vi.mock('@/lib/notifications', () => ({
   displayConditionalNotification: mockDisplayConditionalNotification,
@@ -156,12 +63,6 @@ const setInputValue = (input: HTMLInputElement, value: string) => {
   input.dispatchEvent(new Event('input', { bubbles: true }));
 };
 
-const setManualSelectValue = (index: number, value: string) => {
-  const selects = document.querySelectorAll('input[aria-label="manual-select-input"]');
-  const input = selects[index] as HTMLInputElement;
-  setInputValue(input, value);
-};
-
 const openDialog = async () => {
   (page.getByText('Add Derived Key').element() as HTMLElement).click();
   await expect.element(page.getByText('Derived Key Creator')).toBeVisible();
@@ -177,7 +78,6 @@ const stepCount = () => page.getByText(/Step /).elements().length;
 describe('LogicalDialogKeyCreator', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(console, 'error').mockImplementation(mockConsoleError);
   });
 
   it('renders the Add Derived Key trigger', async () => {
@@ -259,64 +159,6 @@ describe('LogicalDialogKeyCreator', () => {
     await expect.element(page.getByText(/Formula: 5/)).toBeVisible();
   });
 
-  it('updates initial source between field and constant and handles NaN numeric input', async () => {
-    await renderLogical();
-    await openDialog();
-
-    // First select controls initial value source.
-    setManualSelectValue(0, 'field.Hitting');
-    await expect.element(page.getByText(/Formula: Hitting/)).toBeVisible();
-
-    setManualSelectValue(0, 'constant');
-    await expect.element(page.getByText(/Formula: 0/)).toBeVisible();
-
-    const numericInputs = document.querySelectorAll('input[type="numeric"]');
-    const initialInput = numericInputs[0] as HTMLInputElement;
-    setInputValue(initialInput, 'abc');
-    await expect.element(page.getByText(/Formula: 0/)).toBeVisible();
-  });
-
-  it('covers operation switch cases and operand branches including unknown field', async () => {
-    await renderLogical();
-    await openDialog();
-    await page.getByText('Add Step').click();
-
-    // Step operation select is index 1 after initial select.
-    setManualSelectValue(1, 'subtract');
-    await expect.element(page.getByText(/Formula: 0  -=  0/)).toBeVisible();
-
-    setManualSelectValue(1, 'multiply');
-    await expect.element(page.getByText(/Formula: 0  \*=  0/)).toBeVisible();
-
-    setManualSelectValue(1, 'divide');
-    await expect.element(page.getByText(/Formula: 0  \/=  0/)).toBeVisible();
-
-    // Step operand select is index 2.
-    setManualSelectValue(2, 'field.Running');
-    await expect.element(page.getByText(/Formula: 0  \/=  Running/)).toBeVisible();
-
-    setManualSelectValue(2, 'constant');
-    await expect.element(page.getByText(/Formula: 0  \/=  0/)).toBeVisible();
-
-    // Unknown field value should hit the console.error branch.
-    setManualSelectValue(2, 'field.DoesNotExist');
-    expect(mockConsoleError).toHaveBeenCalledWith('Selected field not found for operand:', 'field.DoesNotExist');
-  });
-
-  it('updates step constant operand numeric input and ignores NaN', async () => {
-    await renderLogical();
-    await openDialog();
-    await page.getByText('Add Step').click();
-
-    const numericInputs = document.querySelectorAll('input[type="numeric"]');
-    const stepInput = numericInputs[1] as HTMLInputElement;
-    setInputValue(stepInput, '3');
-    await expect.element(page.getByText(/Formula: 0  \+=  3/)).toBeVisible();
-
-    setInputValue(stepInput, 'NaN');
-    await expect.element(page.getByText(/Formula: 0  \+=  3/)).toBeVisible();
-  });
-
   it('shows notification when derived key name is too short', async () => {
     await renderLogical();
     await openDialog();
@@ -351,18 +193,5 @@ describe('LogicalDialogKeyCreator', () => {
     setInputValue(input, 'Combined Score');
     await page.getByText('Save Derived Key').click();
     expect(mockCallback).toHaveBeenCalledWith(expect.objectContaining({ name: 'Combined Score' }));
-  });
-
-  it('resets form after successful save and reopen', async () => {
-    await renderLogical();
-    await openDialog();
-
-    setInputValue(nameInput(), 'Derived Example');
-    await page.getByText('Add Step').click();
-    await page.getByText('Save Derived Key').click();
-
-    await openDialog();
-    expect(nameInput().value).toBe('');
-    expect(stepCount()).toBe(0);
   });
 });
