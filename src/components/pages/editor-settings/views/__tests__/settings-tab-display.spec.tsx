@@ -12,19 +12,25 @@ vi.mock('@/App', () => ({
   },
 }));
 
+const mockRouter = vi.hoisted(() => ({ options: { defaultViewTransition: undefined as unknown } }));
 vi.mock('@tanstack/react-router', () => ({
-  useRouter: vi.fn(() => ({
-    options: { defaultViewTransition: undefined },
-  })),
+  useRouter: vi.fn(() => mockRouter),
 }));
 
 const mockSetTheme = vi.hoisted(() => vi.fn());
+const mockThemeState = vi.hoisted(() => ({ value: 'light' as 'light' | 'dark' | 'system' | undefined }));
 vi.mock('@/components/ui/theme-provider', () => ({
-  useTheme: vi.fn(() => ({ theme: 'light', setTheme: mockSetTheme })),
+  useTheme: vi.fn(() => ({ theme: mockThemeState.value, setTheme: mockSetTheme })),
 }));
 
+const mockDisplayConditionalNotification = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/notifications', () => ({
-  displayConditionalNotification: vi.fn(),
+  displayConditionalNotification: mockDisplayConditionalNotification,
+}));
+
+const mockViewTransitionCall = vi.hoisted(() => vi.fn(() => 'mock-transition'));
+vi.mock('@/types/transitions', () => ({
+  viewTransitionCall: mockViewTransitionCall,
 }));
 
 // ----- Import under test -----
@@ -113,6 +119,11 @@ describe('SettingsTabDisplay', () => {
       mockSetSettings.mockReset();
       mockSaveSettings.mockReset();
       mockSetTheme.mockReset();
+      mockDisplayConditionalNotification.mockReset();
+      mockViewTransitionCall.mockReset();
+      mockViewTransitionCall.mockReturnValue('mock-transition');
+      mockRouter.options.defaultViewTransition = undefined;
+      mockThemeState.value = 'light';
     });
 
     it('selecting Dark Theme calls setTheme with dark', async () => {
@@ -122,6 +133,26 @@ describe('SettingsTabDisplay', () => {
       await triggers[0].click();
       await page.getByRole('option', { name: 'Dark Theme' }).click();
       expect(mockSetTheme).toHaveBeenCalledWith('dark');
+      expect(mockDisplayConditionalNotification).toHaveBeenCalled();
+    });
+
+    it('falls back to system when theme is undefined', async () => {
+      mockThemeState.value = undefined;
+      await renderWithProvider();
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+    });
+
+    it('selecting slide transition updates settings and router transition callback', async () => {
+      await renderWithProvider();
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+      const triggers = await page.getByRole('combobox').all();
+      await triggers[1].click();
+      await page.getByRole('option', { name: 'Slide Transitions' }).click();
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ TransitionBehavior: 'slide' }));
+      expect(mockSaveSettings).toHaveBeenCalled();
+      expect(mockViewTransitionCall).toHaveBeenCalledWith('slide');
+      expect(mockRouter.options.defaultViewTransition).toBe('mock-transition');
+      expect(mockDisplayConditionalNotification).toHaveBeenCalled();
     });
 
     it('selecting Wide Layout calls setSettings with updated DisplaySize', async () => {
@@ -130,8 +161,9 @@ describe('SettingsTabDisplay', () => {
       const triggers = await page.getByRole('combobox').all();
       await triggers[2].click();
       await page.getByRole('option', { name: /^Wide Layout$/ }).click();
-      expect(mockSetSettings).toHaveBeenCalled();
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ DisplaySize: 'wide' }));
       expect(mockSaveSettings).toHaveBeenCalled();
+      expect(mockDisplayConditionalNotification).toHaveBeenCalled();
     });
 
     it('selecting Dense Key Display calls setSettings with updated KeyDisplay', async () => {
@@ -142,7 +174,51 @@ describe('SettingsTabDisplay', () => {
       await page.getByRole('option', { name: 'Dense Key Display' }).click();
       expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ KeyDisplay: 'dense' }));
       expect(mockSaveSettings).toHaveBeenCalled();
+      expect(mockDisplayConditionalNotification).toHaveBeenCalled();
+    });
+
+    it('selecting full screen updates session display setting', async () => {
+      await renderWithProvider();
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+      const triggers = await page.getByRole('combobox').all();
+      await triggers[4].click();
+      await page.getByRole('option', { name: 'Full Screen Display' }).click();
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ SessionDisplay: 'FullScreen' }));
+      expect(mockSaveSettings).toHaveBeenCalled();
+      expect(mockDisplayConditionalNotification).toHaveBeenCalled();
+    });
+
+    it('selecting disabled footer updates footer display setting', async () => {
+      await renderWithProvider();
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+      const triggers = await page.getByRole('combobox').all();
+      await triggers[5].click();
+      await page.getByRole('option', { name: 'Disable Footer Entirely' }).click();
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ ApplicationFooterDisplay: 'Disabled' }));
+      expect(mockSaveSettings).toHaveBeenCalled();
+      expect(mockDisplayConditionalNotification).toHaveBeenCalled();
+    });
+
+    it('selecting hide timer two updates TimerTwoDisplay', async () => {
+      await renderWithProvider();
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+      const triggers = await page.getByRole('combobox').all();
+      await triggers[6].click();
+      await page.getByRole('option', { name: 'Hide Timer Two' }).click();
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ TimerTwoDisplay: 'hide' }));
+      expect(mockSaveSettings).toHaveBeenCalled();
+      expect(mockDisplayConditionalNotification).toHaveBeenCalled();
+    });
+
+    it('selecting show timer three updates TimerThreeDisplay', async () => {
+      await renderWithProvider();
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+      const triggers = await page.getByRole('combobox').all();
+      await triggers[7].click();
+      await page.getByRole('option', { name: 'Show Timer Three' }).click();
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ TimerThreeDisplay: 'show' }));
+      expect(mockSaveSettings).toHaveBeenCalled();
+      expect(mockDisplayConditionalNotification).toHaveBeenCalled();
     });
   });
 });
-

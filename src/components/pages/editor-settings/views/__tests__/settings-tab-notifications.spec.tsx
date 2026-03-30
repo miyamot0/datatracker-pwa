@@ -69,11 +69,14 @@ describe('SettingsTabNotifications', () => {
     const mockSetSettings = vi.fn();
     const mockSaveSettings = vi.fn();
 
-    const renderWithProvider = () =>
+    const renderWithProvider = (settingsOverride?: Partial<typeof DEFAULT_APPLICATION_SETTINGS>) =>
       render(
         <FolderHandleContext.Provider
           value={{
-            settings: DEFAULT_APPLICATION_SETTINGS,
+            settings: {
+              ...DEFAULT_APPLICATION_SETTINGS,
+              ...settingsOverride,
+            },
             setSettings: mockSetSettings,
             saveSettings: mockSaveSettings,
             handle: undefined,
@@ -112,6 +115,15 @@ describe('SettingsTabNotifications', () => {
       expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ EnableToolTip: false }));
       expect(mockSaveSettings).toHaveBeenCalled();
     });
+
+    it('selecting Show All Tooltips calls setSettings with EnableToolTip: true', async () => {
+      await renderWithProvider({ EnableToolTip: false });
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+      const triggers = await page.getByRole('combobox').all();
+      await triggers[1].click();
+      await page.getByRole('option', { name: 'Show All Tooltips' }).click();
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ EnableToolTip: true }));
+      expect(mockSaveSettings).toHaveBeenCalled();
+    });
   });
 });
-

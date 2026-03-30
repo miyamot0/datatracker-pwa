@@ -87,11 +87,14 @@ describe('SettingsTabAdministrative', () => {
     const mockSetSettings = vi.fn();
     const mockSaveSettings = vi.fn();
 
-    const renderWithProvider = () =>
+    const renderWithProvider = (settingsOverride?: Partial<typeof DEFAULT_APPLICATION_SETTINGS>) =>
       render(
         <FolderHandleContext.Provider
           value={{
-            settings: DEFAULT_APPLICATION_SETTINGS,
+            settings: {
+              ...DEFAULT_APPLICATION_SETTINGS,
+              ...settingsOverride,
+            },
             setSettings: mockSetSettings,
             saveSettings: mockSaveSettings,
             handle: undefined,
@@ -122,6 +125,16 @@ describe('SettingsTabAdministrative', () => {
       expect(mockSaveSettings).toHaveBeenCalled();
     });
 
+    it('selecting Disable elevated privileges calls setSettings with EnableFileDeletion: false', async () => {
+      await renderWithProvider({ EnableFileDeletion: true });
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+      const triggers = await page.getByRole('combobox').all();
+      await triggers[0].click();
+      await page.getByRole('option', { name: 'Disable' }).click();
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ EnableFileDeletion: false }));
+      expect(mockSaveSettings).toHaveBeenCalled();
+    });
+
     it('selecting Disable Requirements calls setSettings with EnforceDataFolderName: false', async () => {
       await renderWithProvider();
       await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
@@ -129,6 +142,16 @@ describe('SettingsTabAdministrative', () => {
       await triggers[1].click();
       await page.getByRole('option', { name: 'Disable Requirements' }).click();
       expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ EnforceDataFolderName: false }));
+      expect(mockSaveSettings).toHaveBeenCalled();
+    });
+
+    it('selecting DataTracker Name Required calls setSettings with EnforceDataFolderName: true', async () => {
+      await renderWithProvider({ EnforceDataFolderName: false });
+      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
+      const triggers = await page.getByRole('combobox').all();
+      await triggers[1].click();
+      await page.getByRole('option', { name: "'DataTracker' Name Required" }).click();
+      expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ EnforceDataFolderName: true }));
       expect(mockSaveSettings).toHaveBeenCalled();
     });
 
@@ -142,4 +165,3 @@ describe('SettingsTabAdministrative', () => {
     });
   });
 });
-
