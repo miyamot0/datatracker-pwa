@@ -15,8 +15,8 @@ import { KeywordColors } from '@/types/colors';
 
 type Props = {
   KeywordArray: KeywordColors[];
-  PreviousEntry: FrontMatterUniversalType | null;
-  NextEntry: FrontMatterUniversalType | null;
+  PreviousEntry: FrontMatterUniversalType | undefined;
+  NextEntry: FrontMatterUniversalType | undefined;
   Entry: ParsedFrontMatterType;
   Settings: ApplicationSettingsTypes;
 };

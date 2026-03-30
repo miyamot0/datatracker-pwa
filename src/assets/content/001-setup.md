@@ -30,7 +30,7 @@ As a reminder, it is **not required** to 'install' DataTracker on your device to
 Specific browsers each provide numerous pathways to install DataTracker. The simplest and most direct method would be to use the button provided on the site homepage. The button prompting install will be displayed whenever it is relevant and possible to install the program. It will not be displayed if you are visiting the site on a mobile device. A visual of the installation button is shown below.
 
 <div align="center" width="100%">
-    <img src="docs/install_button.png" alt="Image of install button"/>
+    <img src="screenshots/home_page.png" alt="Image of DataTracker home page with install button"/>
 </div>
 
 The installation of the program completes in less than a second and is generally a seamless process. Once the program is installed, your computer will treat it similarly as it would any other program installed on the computer (e.g., would show up in Windows menu as an app). At this time, you may create a shortcut to the program on your desktop or pin it to your Taskbar/Dock for quick and easy access. Furthermore, across various operating systems, you can set the program to launch automatically when you start your computer if that is most convenient (e.g., for supporting the training of new recorders). Once the respective shortcut is clicked, it would open a window that resembles a traditional program, but is actually a web app running natively on your machine. Shown below is the DataTracker program pinned to the Task/Menu bar in Microsoft Windows.

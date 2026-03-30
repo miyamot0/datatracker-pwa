@@ -12,7 +12,7 @@ The **Session Designer** is a critical element of the DataTracker program. This 
 An illustration of a hypothetical session is displayed below:
 
 <div align="center" width="100%">
-    <img src="docs/session_designer.png" alt="Image of DataTracker session design page"/>
+    <img src="screenshots/session_designer_page.png" alt="Image of DataTracker session design page"/>
 </div>
 
 ### Adding/Selection Evaluation Condition

@@ -30,6 +30,7 @@ import ReliabilityViewerPage from '../summary-agreement/reli-viewer-page';
 import ResultsViewerContent from '../summary-outcomes/results-viewer-content';
 import ResultsRateVisualsPage from '../visualize-outcomes/rate/results-rate-visuals-page';
 import ResultsProportionVisualsPage from '../visualize-outcomes/proportion/results-proportion-visuals-page';
+import { SessionTerminationOptions } from '@/types/terminations';
 
 const mockKeywordArray = AllKeywordsArray;
 
@@ -241,7 +242,7 @@ describe('DocumentationListingPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots/documentation_listing_page.png' });
+    //await page.screenshot({ path: '../../../../public/screenshots/documentation_listing_page.png' });
   });
 });
 
@@ -266,7 +267,7 @@ describe('DocumentationEntryPage', () => {
             <DocumentationEntryPage
               Entry={mockEntry}
               KeywordArray={mockKeywordArray}
-              PreviousEntry={null}
+              PreviousEntry={undefined}
               NextEntry={mockFrontMatter[1]}
               Settings={DEFAULT_APPLICATION_SETTINGS}
             />
@@ -275,7 +276,7 @@ describe('DocumentationEntryPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots/documentation_entry_page.png' });
+    //await page.screenshot({ path: '../../../../public/screenshots/documentation_entry_page.png' });
   });
 });
 
@@ -409,7 +410,7 @@ const mockSessionSettings: import('@/lib/dtos').SavedSettings = {
   Therapist: 'Dr. Smith',
   Condition: 'Baseline',
   KeySet: 'Behavioral Keyset',
-  TimerOption: 0,
+  TimerOption: SessionTerminationOptions.TimerMain,
   Initials: 'JS',
   Role: 'Primary',
   Session: 1,
@@ -813,6 +814,7 @@ describe('SessionDesigner', () => {
       </ThemeProvider>,
     );
 
+    await page.viewport(1295, 1475);
     await page.screenshot({ path: '../../../../public/screenshots/session_designer_page.png' });
   });
 });

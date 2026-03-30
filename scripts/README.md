@@ -43,17 +43,17 @@ Islanded builds are compiled as numbered releases (main-branch) available on the
 
 ## Screenshots and Visuals
 
-![DataTracker Home Page](public/screenshots/landing_page.png 'Visual of landing page for program')
+![DataTracker Home Page](public/screenshots/home_page.png 'Visual of landing page for program')
 
 ![DataTracker Data Visualization](public/screenshots/visualization.png 'DataTracker Options for Between-Session Data Display')
 
 ![DataTracker Data Visualization](public/screenshots/within_session_preview.png 'DataTracker Options for Within-Session Data Display')
 
-![Group-level Organization](public/screenshots/group_editor.png 'Organization of Participant Data by Groups')
+![Group-level Organization](public/screenshots/groups_authorized_page.png 'Organization of Participant Data by Groups')
 
-![Key Management](public/screenshots/key_editor.png 'Basic Editor for Keyboards Mappings')
+![Key Management](public/screenshots/keyset_editor_page.png 'Basic Editor for Keyboards Mappings')
 
-![Session Designer Page](public/screenshots/session_designer.png 'Various options for designing session conditions')
+![Session Designer Page](public/screenshots/session_designer_page.png 'Various options for designing session conditions')
 
 ![Session Recorder Page](public/screenshots/session_recorder.png 'Options for displaying session recording progress')
 

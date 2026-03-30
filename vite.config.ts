@@ -107,7 +107,7 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
             screenshots: [
               {
                 ...common_screenshot_params,
-                src: 'screenshots/session_designer.png',
+                src: 'screenshots/session_designer_page.png',
                 label: 'View of Session Designer Page',
               },
               {
@@ -117,17 +117,17 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
               },
               {
                 ...common_screenshot_params,
-                src: 'screenshots/group_editor.png',
+                src: 'screenshots/groups_authorized_page.png',
                 label: 'View of Group Editor Page',
               },
               {
                 ...common_screenshot_params,
-                src: 'screenshots/key_editor.png',
+                src: 'screenshots/keyset_editor_page.png',
                 label: 'View of Keyboard Editor Page',
               },
               {
                 ...common_screenshot_params,
-                src: 'screenshots/landing_page.png',
+                src: 'screenshots/home_page.png',
                 label: 'View of Landing Page',
               },
               {
