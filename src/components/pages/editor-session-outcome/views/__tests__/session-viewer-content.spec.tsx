@@ -207,6 +207,27 @@ describe('SessionViewerContent', () => {
       const checkbox = page.getByRole('menuitemcheckbox', { name: 'Hitting' });
       await expect.element(checkbox).toHaveAttribute('aria-checked', 'true');
     });
+
+    it('updates only the matching key and persists hidden key descriptions', async () => {
+      mockSetLocalCachedPrefs.mockReset();
+
+      await render(
+        <SessionViewerContent
+          {...defaultProps}
+          ShowKeys={[
+            { KeyDescription: 'Hitting', KeyName: 'a', Visible: true },
+            { KeyDescription: 'Kicking', KeyName: 'b', Visible: true },
+          ]}
+        />,
+      );
+
+      await page.getByRole('button', { name: /edit keys displayed/i }).click();
+      await page.getByRole('menuitemcheckbox', { name: 'Hitting' }).click();
+
+      expect(mockSetLocalCachedPrefs).toHaveBeenCalledWith('GroupA', 'ClientB', 'Eval1', 'GroupA ClientB Eval1', {
+        KeyDescription: ['Hitting'],
+        Schedule: 'End on Timer #1',
+      });
+    });
   });
 });
-
