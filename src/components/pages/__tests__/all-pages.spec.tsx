@@ -174,6 +174,7 @@ describe('EvaluationsPage', () => {
       </ThemeProvider>,
     );
 
+    await page.viewport(1295, 825);
     await page.screenshot({ path: '../../../../public/screenshots/evaluation_page.png' });
   });
 });
@@ -208,6 +209,7 @@ describe('HomePage', () => {
       </ThemeProvider>,
     );
 
+    await page.viewport(1295, 900);
     await page.screenshot({ path: '../../../../public/screenshots/home_page.png' });
   });
 });
@@ -314,6 +316,7 @@ describe('AuthorizedDisplayContent', () => {
       </ThemeProvider>,
     );
 
+    await page.viewport(1295, 850);
     await page.screenshot({ path: '../../../../public/screenshots/groups_authorized_page.png' });
   });
 });
@@ -389,7 +392,7 @@ describe('ClientsPage', () => {
 
 const mockKeyset: import('@/types/keyset').KeySet = {
   id: 'ks-001',
-  Name: 'Behavioral Keyset',
+  Name: 'Functional Analysis',
   createdAt: new Date('2026-01-01'),
   lastModified: new Date('2026-03-01'),
   FrequencyKeys: [
@@ -397,10 +400,7 @@ const mockKeyset: import('@/types/keyset').KeySet = {
     { KeyName: 's', KeyDescription: 'Self-Injury', KeyCode: 83 },
     { KeyName: 'd', KeyDescription: 'Disruption', KeyCode: 68 },
   ],
-  DurationKeys: [
-    { KeyName: 'z', KeyDescription: 'Escape', KeyCode: 90 },
-    { KeyName: 'x', KeyDescription: 'Attention', KeyCode: 88 },
-  ],
+  DurationKeys: [{ KeyName: 'r', KeyDescription: 'Reinforcement', KeyCode: 90 }],
   DerivedKeys: [],
   SpecialDurationKeys: [],
   ScorableDurationKeys: [],
@@ -409,7 +409,7 @@ const mockKeyset: import('@/types/keyset').KeySet = {
 const mockSessionSettings: import('@/lib/dtos').SavedSettings = {
   Therapist: 'Dr. Smith',
   Condition: 'Baseline',
-  KeySet: 'Behavioral Keyset',
+  KeySet: 'Functional Analysis',
   TimerOption: SessionTerminationOptions.TimerMain,
   Initials: 'JS',
   Role: 'Primary',
@@ -506,13 +506,13 @@ describe('ViewerEvaluationsPage', () => {
                     Group: 'Study Trial A',
                     Individual: 'Participant 002',
                     Evaluation: 'Demand Treatment',
-                    Conditions: ['Baseline', 'Treatment'],
+                    Conditions: ['Baseline', 'FCT Evaluation'],
                   },
                   {
                     Group: 'Study Trial B',
                     Individual: 'Participant 003',
                     Evaluation: 'Attention Treatment',
-                    Conditions: ['Baseline', 'NCE'],
+                    Conditions: ['Baseline', 'FCT Evaluation'],
                   },
                 ]}
               />
@@ -562,7 +562,7 @@ describe('KeySetsPage', () => {
                   {
                     ...mockKeyset,
                     id: 'ks-002',
-                    Name: 'Attention Keyset',
+                    Name: 'Treatment Evaluation Keyset',
                     createdAt: new Date('2026-02-01'),
                     lastModified: new Date('2026-03-15'),
                   },
@@ -669,10 +669,10 @@ describe('DashboardHistoryPage', () => {
                   mockSession,
                   {
                     ...mockSession,
-                    Filename: 'session_002.json',
+                    Filename: 'session_001.json',
                     SessionSettings: {
                       ...mockSessionSettings,
-                      Session: 2,
+                      Session: 1,
                       Condition: 'Attention',
                       Role: 'Reliability',
                     },
@@ -681,8 +681,8 @@ describe('DashboardHistoryPage', () => {
                   },
                   {
                     ...mockSession,
-                    Filename: 'session_003.json',
-                    SessionSettings: { ...mockSessionSettings, Session: 3, Condition: 'Demand' },
+                    Filename: 'session_002.json',
+                    SessionSettings: { ...mockSessionSettings, Session: 2, Condition: 'Demand' },
                     SessionEnd: '2026-03-30T10:10:00',
                     TimerMain: 600,
                   },
@@ -902,6 +902,7 @@ describe('SettingsPage', () => {
       </ThemeProvider>,
     );
 
+    await page.viewport(1295, 1000);
     await page.screenshot({ path: '../../../../public/screenshots/settings_page.png' });
   });
 });
@@ -924,20 +925,31 @@ describe('SessionRecorderPage', () => {
           }}
         >
           <TooltipProvider>
-            <SessionRecorderPage
-              Group="Study Trial A"
-              Individual="Participant 001"
-              Evaluation="Functional Analysis"
-              KeySetObject={mockKeyset}
-              SessionParams={mockSessionSettings}
-              Handle={mockHandle}
-              ApplicationSettings={DEFAULT_APPLICATION_SETTINGS}
-            />
+            <PageWrapper
+              Settings={DEFAULT_APPLICATION_SETTINGS}
+              breadcrumbs={[
+                { label: 'Study Trial A', to: '/session/$group' },
+                { label: 'Participant 001', to: '/session/$group/$individual' },
+                { label: 'Functional Analysis', to: '/session/$group/$individual/$evaluation' },
+              ]}
+              label="Session Designer"
+            >
+              <SessionRecorderPage
+                Group="Study Trial A"
+                Individual="Participant 001"
+                Evaluation="Functional Analysis"
+                KeySetObject={mockKeyset}
+                SessionParams={mockSessionSettings}
+                Handle={mockHandle}
+                ApplicationSettings={DEFAULT_APPLICATION_SETTINGS}
+              />
+            </PageWrapper>
           </TooltipProvider>
         </FolderHandleContext.Provider>
       </ThemeProvider>,
     );
 
+    await page.viewport(1295, 900);
     await page.screenshot({ path: '../../../../public/screenshots/session_recorder_page.png' });
   });
 });
@@ -984,6 +996,7 @@ describe('ReliabilityViewerPage', () => {
       </ThemeProvider>,
     );
 
+    await page.viewport(1295, 800);
     await page.screenshot({ path: '../../../../public/screenshots/reli_viewer_page.png' });
   });
 });
