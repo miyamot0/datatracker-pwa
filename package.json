@@ -43,6 +43,7 @@
     "check-licenses": "npx license-report --only=prod --output=json > ./src/assets/licenses.json",
     "build-readme": "tsx ./scripts/index.ts",
     "prebuild": "yarn run lint && yarn run test && yarn run check-licenses && yarn run build-readme",
+    "push": "yarn run build && git push",
     "test": "vitest run --coverage",
     "test-old": "vitest run --coverage",
     "test:watch": "vitest --watch",

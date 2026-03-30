@@ -2,6 +2,9 @@
 import { page } from 'vitest/browser';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
+const mockPreventDefaultDuration = vi.hoisted(() => vi.fn());
+const mockProcessDuration = vi.hoisted(() => vi.fn(() => []));
+
 // ----- Module mocks -----
 
 vi.mock('@/App', () => ({
@@ -30,17 +33,43 @@ vi.mock('@/components/ui/sonner', () => ({
 }));
 
 vi.mock('react-spreadsheet', () => ({
-  default: ({ columnLabels }: { columnLabels: string[] }) => (
+  default: ({
+    columnLabels,
+    onKeyDown,
+  }: {
+    columnLabels: string[];
+    onKeyDown?: (ev: { key: string; preventDefault: () => void }) => void;
+  }) => (
     <div data-testid="spreadsheet">
       {columnLabels?.map((label, i) => (
         <span key={i}>{label}</span>
       ))}
+      <button
+        onClick={() =>
+          onKeyDown?.({
+            key: 'v',
+            preventDefault: mockPreventDefaultDuration,
+          })
+        }
+      >
+        Trigger V Key
+      </button>
+      <button
+        onClick={() =>
+          onKeyDown?.({
+            key: 'x',
+            preventDefault: mockPreventDefaultDuration,
+          })
+        }
+      >
+        Trigger X Key
+      </button>
     </div>
   ),
 }));
 
 vi.mock('@/lib/calculations', () => ({
-  processMultipleSessionDataWithKeys: vi.fn(() => []),
+  processMultipleSessionDataWithKeys: mockProcessDuration,
 }));
 
 vi.mock('@/lib/calculations/calculation-helpers', () => ({
@@ -71,13 +100,20 @@ const makeKeyset = () =>
     id: 'ks1',
     Name: 'TestSet',
     FrequencyKeys: [],
-    DurationKeys: [{ KeyName: 'C', KeyDescription: 'Crying', KeyCode: 67 }],
+    DurationKeys: [
+      { KeyName: 'C', KeyDescription: 'Crying', KeyCode: 67 },
+      { KeyName: 'R', KeyDescription: 'Running', KeyCode: 82 },
+    ],
     DerivedKeys: [],
     SpecialDurationKeys: [],
     ScorableDurationKeys: [],
   }) as any;
 
-const makeShowKeys = () => [{ KeyName: 'C', KeyDescription: 'Crying', Visible: true }] as any[];
+const makeShowKeys = () =>
+  [
+    { KeyName: 'C', KeyDescription: 'Crying', Visible: true },
+    { KeyName: 'R', KeyDescription: 'Running', Visible: true },
+  ] as any[];
 
 const defaultProps = {
   SessionTimer: 'End on Timer #1' as any,
@@ -145,6 +181,8 @@ describe('ViewDurationResults', () => {
   describe('interactions', () => {
     beforeEach(() => {
       mockSetLocalCachedPrefs.mockReset();
+      mockProcessDuration.mockClear();
+      mockPreventDefaultDuration.mockReset();
       vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-duration');
       vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
     });
@@ -180,6 +218,38 @@ describe('ViewDurationResults', () => {
       await page.getByRole('button', { name: /edit keys displayed/i }).click();
       await page.getByRole('menuitemcheckbox', { name: 'Crying' }).click();
       expect(mockSetLocalCachedPrefs).toHaveBeenCalled();
+    });
+
+    it('pressing v on spreadsheet prevents default and non-v does not', async () => {
+      await renderDur();
+      await page.getByRole('button', { name: 'Trigger V Key' }).click();
+      expect(mockPreventDefaultDuration).toHaveBeenCalledTimes(1);
+
+      await page.getByRole('button', { name: 'Trigger X Key' }).click();
+      expect(mockPreventDefaultDuration).toHaveBeenCalledTimes(1);
+    });
+
+    it('retains untouched key entries when toggling one duration key', async () => {
+      await renderDur();
+      await page.getByRole('button', { name: /edit keys displayed/i }).click();
+      await page.getByRole('menuitemcheckbox', { name: 'Crying' }).click();
+
+      const lastCall = mockSetLocalCachedPrefs.mock.calls.at(-1);
+      expect(lastCall[4]).toEqual(
+        expect.objectContaining({
+          KeyDescription: ['Crying'],
+        }),
+      );
+    });
+
+    it('falls back to false when a duration key has no matching display config', async () => {
+      await renderDur({
+        ...defaultProps,
+        ShowKeysDuration: [{ KeyName: 'C', KeyDescription: 'Crying', Visible: true }] as any,
+      });
+
+      const calcArg = mockProcessDuration.mock.calls[0]?.[4];
+      expect(calcArg.durationKeys).toEqual([]);
     });
   });
 });
