@@ -109,5 +109,92 @@ describe('GenerateTableCols - Duration', () => {
     await render(<GenerateTableCols Keys={makeDurationKeys()} KeysPressed={[]} NumCols={1} KeyType="Duration" />);
     await expect.element(page.getByText('0.00')).toBeInTheDocument();
   });
-});
 
+  it('renders 0 rounds when no key presses', async () => {
+    await render(<GenerateTableCols Keys={makeDurationKeys()} KeysPressed={[]} NumCols={1} KeyType="Duration" />);
+    await expect.element(page.getByRole('cell', { name: '0', exact: true })).toBeInTheDocument();
+  });
+
+  it('renders rounds count of 1 for two paired key presses', async () => {
+    const presses = [
+      {
+        KeyCode: 67,
+        TimePressed: new Date(0),
+        KeyDescription: 'Crying',
+        KeyName: 'C',
+        KeyType: 'Duration' as const,
+        KeyScheduleRecording: 'Primary' as const,
+        TimeIntoSession: 0,
+      },
+      {
+        KeyCode: 67,
+        TimePressed: new Date(1000),
+        KeyDescription: 'Crying',
+        KeyName: 'C',
+        KeyType: 'Duration' as const,
+        KeyScheduleRecording: 'Primary' as const,
+        TimeIntoSession: 1,
+      },
+    ] as any[];
+    await render(<GenerateTableCols Keys={makeDurationKeys()} KeysPressed={presses} NumCols={1} KeyType="Duration" />);
+    await expect.element(page.getByRole('cell', { name: '1', exact: true })).toBeInTheDocument();
+  });
+
+  it('renders computed duration total for paired key presses', async () => {
+    const presses = [
+      {
+        KeyCode: 67,
+        TimePressed: new Date(0),
+        KeyDescription: 'Crying',
+        KeyName: 'C',
+        KeyType: 'Duration' as const,
+        KeyScheduleRecording: 'Primary' as const,
+        TimeIntoSession: 0,
+      },
+      {
+        KeyCode: 67,
+        TimePressed: new Date(1000),
+        KeyDescription: 'Crying',
+        KeyName: 'C',
+        KeyType: 'Duration' as const,
+        KeyScheduleRecording: 'Primary' as const,
+        TimeIntoSession: 1,
+      },
+    ] as any[];
+    await render(<GenerateTableCols Keys={makeDurationKeys()} KeysPressed={presses} NumCols={1} KeyType="Duration" />);
+    await expect.element(page.getByText('1.00')).toBeInTheDocument();
+  });
+
+  it('shows active duration suffix when key has an odd number of presses', async () => {
+    const presses = [
+      {
+        KeyCode: 67,
+        TimePressed: new Date(),
+        KeyDescription: 'Crying',
+        KeyName: 'C',
+        KeyType: 'Duration' as const,
+        KeyScheduleRecording: 'Primary' as const,
+        TimeIntoSession: 0,
+      },
+    ] as any[];
+    await render(<GenerateTableCols Keys={makeDurationKeys()} KeysPressed={presses} NumCols={1} KeyType="Duration" />);
+    await expect.element(page.getByText(/\+ /)).toBeInTheDocument();
+  });
+
+  it('applies active (green) class to duration cell when key has odd press count', async () => {
+    const presses = [
+      {
+        KeyCode: 67,
+        TimePressed: new Date(),
+        KeyDescription: 'Crying',
+        KeyName: 'C',
+        KeyType: 'Duration' as const,
+        KeyScheduleRecording: 'Primary' as const,
+        TimeIntoSession: 0,
+      },
+    ] as any[];
+    await render(<GenerateTableCols Keys={makeDurationKeys()} KeysPressed={presses} NumCols={1} KeyType="Duration" />);
+    const activeDiv = document.querySelector('.bg-green-500');
+    expect(activeDiv).not.toBeNull();
+  });
+});

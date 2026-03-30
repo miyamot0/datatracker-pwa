@@ -104,5 +104,55 @@ describe('KeyHistoryListing', () => {
     await render(<KeyHistoryListing {...defaultProps} KeySetSpecialKeys={specialKeys} SpecialKeyTimers={{ F: 42 }} />);
     await expect.element(page.getByText('42s')).toBeInTheDocument();
   });
-});
 
+  it('renders 0s for special key when not in SpecialKeyTimers', async () => {
+    const specialKeys = [{ KeyName: 'F', KeyDescription: 'Sched A', KeyCode: 70 }] as any[];
+    await render(<KeyHistoryListing {...defaultProps} KeySetSpecialKeys={specialKeys} SpecialKeyTimers={{}} />);
+    await expect.element(page.getByText('0s')).toBeInTheDocument();
+  });
+
+  it('applies bg-blue-500 class to special key timer when ActiveSpecialTimer matches and Running is true', async () => {
+    const specialKeys = [{ KeyName: 'F', KeyDescription: 'Sched A', KeyCode: 70 }] as any[];
+    await render(
+      <KeyHistoryListing
+        {...defaultProps}
+        KeySetSpecialKeys={specialKeys}
+        SpecialKeyTimers={{ F: 10 }}
+        ActiveSpecialTimer="F"
+        Running={true}
+      />,
+    );
+    const timerEl = page.getByText('10s');
+    await expect.element(timerEl).toHaveClass('bg-blue-500');
+  });
+
+  it('does not apply bg-blue-500 when Running is false even if ActiveSpecialTimer matches', async () => {
+    const specialKeys = [{ KeyName: 'F', KeyDescription: 'Sched A', KeyCode: 70 }] as any[];
+    await render(
+      <KeyHistoryListing
+        {...defaultProps}
+        KeySetSpecialKeys={specialKeys}
+        SpecialKeyTimers={{ F: 10 }}
+        ActiveSpecialTimer="F"
+        Running={false}
+      />,
+    );
+    const timerEl = page.getByText('10s');
+    await expect.element(timerEl).not.toHaveClass('bg-blue-500');
+  });
+
+  it('does not apply bg-blue-500 when ActiveSpecialTimer does not match key name', async () => {
+    const specialKeys = [{ KeyName: 'F', KeyDescription: 'Sched A', KeyCode: 70 }] as any[];
+    await render(
+      <KeyHistoryListing
+        {...defaultProps}
+        KeySetSpecialKeys={specialKeys}
+        SpecialKeyTimers={{ F: 10 }}
+        ActiveSpecialTimer="G"
+        Running={true}
+      />,
+    );
+    const timerEl = page.getByText('10s');
+    await expect.element(timerEl).not.toHaveClass('bg-blue-500');
+  });
+});

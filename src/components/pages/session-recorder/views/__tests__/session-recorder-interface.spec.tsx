@@ -182,5 +182,29 @@ describe('SessionRecorderInterface', () => {
     await expect.element(page.getByText('Schedule')).toBeInTheDocument();
     await expect.element(page.getByText('Time')).toBeInTheDocument();
   });
-});
 
+  it('renders with unknown polling interval (falls back to 100ms default)', async () => {
+    const settings = makeAppSettings({ RecorderPolling: 'unknown' as any });
+    const { container } = await render(<SessionRecorderInterface {...defaultProps} ApplicationSettings={settings} />);
+    expect(container).not.toBeNull();
+    await expect.element(page.getByTestId('header-component')).toBeInTheDocument();
+  });
+
+  it('renders with scorable duration keys in keyset', async () => {
+    const keyset = {
+      ...makeKeyset(),
+      ScorableDurationKeys: [{ KeyName: 'S', KeyDescription: 'Scored Eye Contact', KeyCode: 83 }],
+    } as any;
+    await render(<SessionRecorderInterface {...defaultProps} Keyset={keyset} />);
+    await expect.element(page.getByTestId('duration-tallies')).toBeInTheDocument();
+  });
+
+  it('renders with special duration keys in keyset', async () => {
+    const keyset = {
+      ...makeKeyset(),
+      SpecialDurationKeys: [{ KeyName: 'F', KeyDescription: 'Schedule A', KeyCode: 70 }],
+    } as any;
+    await render(<SessionRecorderInterface {...defaultProps} Keyset={keyset} />);
+    await expect.element(page.getByTestId('key-listing')).toBeInTheDocument();
+  });
+});

@@ -117,5 +117,63 @@ describe('SessionHeaderComponent', () => {
     );
     await expect.element(page.getByText('No Timer Selected')).toBeInTheDocument();
   });
-});
 
+  it('renders timer string for End on Timer #2', async () => {
+    await render(
+      <SessionHeaderComponent
+        Settings={makeSettings({ TimerOption: 'End on Timer #2', DurationS: 45 })}
+        RunningState="Not Started"
+        KeySet={makeKeyset()}
+      />,
+    );
+    await expect.element(page.getByText('Timer #2 (45s)')).toBeInTheDocument();
+  });
+
+  it('renders timer string for End on Timer #3', async () => {
+    await render(
+      <SessionHeaderComponent
+        Settings={makeSettings({ TimerOption: 'End on Timer #3', DurationS: 90 })}
+        RunningState="Not Started"
+        KeySet={makeKeyset()}
+      />,
+    );
+    await expect.element(page.getByText('Timer #3 (90s)')).toBeInTheDocument();
+  });
+
+  it('renders matching special key description when TimerOption matches a SpecialDurationKey', async () => {
+    const keysetWithSpecial = {
+      ...makeKeyset(),
+      SpecialDurationKeys: [{ KeyName: 'F', KeyDescription: 'Schedule Alpha', KeyCode: 101 }],
+    } as any;
+    await render(
+      <SessionHeaderComponent
+        Settings={makeSettings({ TimerOption: 101, DurationS: 30 })}
+        RunningState="Not Started"
+        KeySet={keysetWithSpecial}
+      />,
+    );
+    await expect.element(page.getByText('Schedule Alpha (30s)')).toBeInTheDocument();
+  });
+
+  it('applies green background class for Primary role', async () => {
+    await render(
+      <SessionHeaderComponent
+        Settings={makeSettings({ Role: 'Primary' })}
+        RunningState="Not Started"
+        KeySet={makeKeyset()}
+      />,
+    );
+    await expect.element(page.getByText('Primary Data Collector')).toHaveClass('bg-green-600');
+  });
+
+  it('applies purple background class for Reliability role', async () => {
+    await render(
+      <SessionHeaderComponent
+        Settings={makeSettings({ Role: 'Reliability' })}
+        RunningState="Not Started"
+        KeySet={makeKeyset()}
+      />,
+    );
+    await expect.element(page.getByText('Reliability Data Collector')).toHaveClass('bg-purple-400');
+  });
+});

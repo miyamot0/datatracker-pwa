@@ -169,5 +169,79 @@ describe('SessionRecorderInstructions', () => {
     await expect.element(page.getByText('F:')).toBeInTheDocument();
     await expect.element(page.getByText('G:')).toBeInTheDocument();
   });
-});
 
+  it('renders Data Collector padded row with Initials value', async () => {
+    await render(
+      <SessionRecorderInstructions
+        Evaluation="E1"
+        Settings={makeSettings({ Initials: 'AB' })}
+        KeySetSpecialKeys={[]}
+        AppSettings={makeAppSettings()}
+      />,
+    );
+    await expect.element(page.getByText('Data Collector:')).toBeInTheDocument();
+    await expect.element(page.getByText('AB')).toBeInTheDocument();
+  });
+
+  it('renders Session Therapist padded row with Therapist value', async () => {
+    await render(
+      <SessionRecorderInstructions
+        Evaluation="E1"
+        Settings={makeSettings({ Therapist: 'Dr. Jones' })}
+        KeySetSpecialKeys={[]}
+        AppSettings={makeAppSettings()}
+      />,
+    );
+    await expect.element(page.getByText('Session Therapist:')).toBeInTheDocument();
+    await expect.element(page.getByText('Dr. Jones')).toBeInTheDocument();
+  });
+
+  it('renders Backspace instruction row', async () => {
+    await render(
+      <SessionRecorderInstructions
+        Evaluation="E1"
+        Settings={makeSettings()}
+        KeySetSpecialKeys={[]}
+        AppSettings={makeAppSettings()}
+      />,
+    );
+    await expect.element(page.getByText('Backspace:')).toBeInTheDocument();
+  });
+
+  it('renders Z: instruction row for Timer #1 switch', async () => {
+    await render(
+      <SessionRecorderInstructions
+        Evaluation="E1"
+        Settings={makeSettings()}
+        KeySetSpecialKeys={[]}
+        AppSettings={makeAppSettings()}
+      />,
+    );
+    await expect.element(page.getByText('Z:')).toBeInTheDocument();
+  });
+
+  it('does not render Timer #3 row when TimerThreeDisplay is hide', async () => {
+    await render(
+      <SessionRecorderInstructions
+        Evaluation="E1"
+        Settings={makeSettings()}
+        KeySetSpecialKeys={[]}
+        AppSettings={makeAppSettings({ TimerThreeDisplay: 'hide' })}
+      />,
+    );
+    await expect.element(page.getByText('C:')).not.toBeInTheDocument();
+  });
+
+  it('renders Switch to value for special key in padded row', async () => {
+    const specialKeys = [{ KeyName: 'F', KeyDescription: 'Schedule Alpha', KeyCode: 70 }] as any[];
+    await render(
+      <SessionRecorderInstructions
+        Evaluation="E1"
+        Settings={makeSettings()}
+        KeySetSpecialKeys={specialKeys}
+        AppSettings={makeAppSettings()}
+      />,
+    );
+    await expect.element(page.getByText('Switch to Schedule Alpha')).toBeInTheDocument();
+  });
+});
