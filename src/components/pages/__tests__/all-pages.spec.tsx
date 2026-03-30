@@ -24,6 +24,7 @@ import ViewSyncPage from '../dashboard-sync/view-sync-page';
 import KeySetEditor from '../editor-keyset/keyset-editor';
 import SessionDesigner from '../editor-session/session-designer-form';
 import SessionManagerContent from '../editor-session-outcome/session-manager-content';
+import SessionViewerContent from '../editor-session-outcome/views/session-viewer-content';
 import SettingsPage from '../editor-settings/settings-page';
 import SessionRecorderPage from '../session-recorder/session-recorder-page';
 import ReliabilityViewerPage from '../summary-agreement/reli-viewer-page';
@@ -31,6 +32,9 @@ import ResultsViewerContent from '../summary-outcomes/results-viewer-content';
 import ResultsRateVisualsPage from '../visualize-outcomes/rate/results-rate-visuals-page';
 import ResultsProportionVisualsPage from '../visualize-outcomes/proportion/results-proportion-visuals-page';
 import { SessionTerminationOptions } from '@/types/terminations';
+import { preparePlotDataCumulative } from '@/lib/summary';
+import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
+import { generateTicks } from '@/lib/graphing';
 import demandTreatmentKeysetJson from '@/assets/data/Evaluation Study/Participant 001/FC Treatment Evaluation.json';
 
 const demandTreatmentSessionModules = {
@@ -61,6 +65,9 @@ const mockEntry = {
 
 // ----- Hoisted refs -----
 const mockMutateAsync = vi.hoisted(() => vi.fn().mockResolvedValue([]));
+vi.hoisted(() => {
+  vi.stubEnv('VITE_MODE', 'base');
+});
 
 // ----- Module mocks -----
 
@@ -151,7 +158,6 @@ vi.mock('@/queries/session/mutate-session-params', () => ({
 // Vite build-time globals not defined in vitest
 vi.stubGlobal('BUILD_VERSION', '0.5.6');
 vi.stubGlobal('BUILD_DATE', '03/29/2026');
-vi.stubGlobal('MODALITY', 'base');
 
 describe('EvaluationsPage', () => {
   it('renders with full styles and saves a screenshot', async () => {
@@ -562,6 +568,35 @@ const demandTreatmentTimerMapping: import('@/types/schedules').ScoringOptionsMap
 const demandTreatmentSessionBounds = {
   min: Math.min(...demandTreatmentSessions.map((session) => session.SessionSettings.Session)),
   max: Math.max(...demandTreatmentSessions.map((session) => session.SessionSettings.Session)),
+};
+
+const demandTreatmentSessionViewerShowKeys: import('@/types/visuals').ToggleDisplayKey[] =
+  demandTreatmentKeyset.FrequencyKeys.map((key) => ({
+    ...key,
+    KeyType: 'Observed' as const,
+    Visible: true,
+  }));
+
+const demandTreatmentSessionViewerSession =
+  demandTreatmentSessions.find((session) => session.SessionSettings.Session === 13) ?? demandTreatmentSessions[0];
+
+const demandTreatmentSessionViewerPlot = preparePlotDataCumulative(demandTreatmentSessionViewerSession);
+
+const demandTreatmentSessionViewerYValues = demandTreatmentSessionViewerPlot
+  .map((point) => {
+    const keys = Object.keys(point).filter((key) => key !== 'second');
+    return keys.map((key) => point[key]);
+  })
+  .flat();
+
+const demandTreatmentSessionViewerMaxY = Math.max(...demandTreatmentSessionViewerYValues) + 1;
+
+const demandTreatmentSessionViewerExpandedSession: import('@/lib/dtos').ExpandedSavedSessionResult = {
+  ...demandTreatmentSessionViewerSession,
+  Comments: demandTreatmentSessionViewerSession.Comments ?? 'Imported example session.',
+  MaxY: demandTreatmentSessionViewerMaxY,
+  YTicks: generateTicks(demandTreatmentSessionViewerMaxY, 0),
+  PlottedKeys: combineAndSortKeyPresses(demandTreatmentSessionViewerSession),
 };
 
 describe('ViewerEvaluationsPage', () => {
@@ -975,6 +1010,54 @@ describe('SessionManagerContent', () => {
     );
 
     await page.screenshot({ path: '../../../../public/screenshots/session_manager_content_page.png' });
+  });
+});
+
+describe('SessionViewerContent', () => {
+  it('renders with full styles and saves a screenshot', async () => {
+    const mockHandle = {} as FileSystemDirectoryHandle;
+
+    render(
+      <ThemeProvider defaultTheme="light" storageKey="test-theme">
+        <FolderHandleContext.Provider
+          value={{
+            handle: mockHandle,
+            setHandle: vi.fn(),
+            settings: DEFAULT_APPLICATION_SETTINGS,
+            setSettings: vi.fn(),
+            saveSettings: vi.fn(),
+            isInitialized: true,
+            setIsInitialized: vi.fn(),
+          }}
+        >
+          <TooltipProvider>
+            <PageWrapper
+              Settings={DEFAULT_APPLICATION_SETTINGS}
+              breadcrumbs={[
+                { label: 'Evaluation Study', to: '/session/$group' },
+                { label: 'Participant 001', to: '/session/$group/$individual' },
+                { label: 'Demand Treatment Evaluation', to: '/session/$group/$individual/$evaluation' },
+                { label: 'History', to: '/session/$group/$individual/$evaluation/history' },
+              ]}
+              label="Session Inspector"
+            >
+              <SessionViewerContent
+                Group="Evaluation Study"
+                Individual="Participant 001"
+                Evaluation="Demand Treatment Evaluation"
+                ShowKeys={demandTreatmentSessionViewerShowKeys}
+                ExpandedSession={demandTreatmentSessionViewerExpandedSession}
+                PlotObject={demandTreatmentSessionViewerPlot}
+                Settings={DEFAULT_APPLICATION_SETTINGS}
+              />
+            </PageWrapper>
+          </TooltipProvider>
+        </FolderHandleContext.Provider>
+      </ThemeProvider>,
+    );
+
+    await page.viewport(1295, 2050);
+    await page.screenshot({ path: '../../../../public/screenshots/session_viewer_content_page.png' });
   });
 });
 
