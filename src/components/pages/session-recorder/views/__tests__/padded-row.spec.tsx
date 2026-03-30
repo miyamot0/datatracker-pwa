@@ -1,5 +1,5 @@
-import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+﻿import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
 import { vi, describe, it, expect } from 'vitest';
 
 // ----- Module mocks -----
@@ -70,3 +70,4 @@ describe('PaddedTimerRow', () => {
     await expect.element(page.getByText(/7m/)).toBeInTheDocument();
   });
 });
+

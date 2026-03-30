@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import { SavedSettings } from '@/lib/dtos';
-import { RunningStateOptions } from '../views/session-recorder-interface';
 import { KeySet } from '@/types/keyset';
+import { RunningStateOptions } from '@/types/session';
 
 const DataCollectorVisual = ({ Settings }: { Settings: SavedSettings }) => {
   return (

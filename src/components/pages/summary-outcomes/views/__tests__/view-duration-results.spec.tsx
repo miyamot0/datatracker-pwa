@@ -1,5 +1,5 @@
-import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+﻿import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 // ----- Module mocks -----
@@ -14,7 +14,7 @@ vi.mock('@/App', () => ({
 
 vi.mock('@tanstack/react-router', () => ({
   useRouter: () => ({ history: { go: vi.fn() } }),
-  Link: ({ children }) => <a>{children}</a>,
+  Link: ({ children }: any) => <a>{children}</a>,
 }));
 
 vi.mock('@tanstack/react-hotkeys', () => ({

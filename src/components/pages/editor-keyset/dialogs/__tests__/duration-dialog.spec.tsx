@@ -1,7 +1,7 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React from 'react';
 import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+import { page } from 'vitest/browser';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 vi.mock('@/App', () => ({
@@ -143,3 +143,4 @@ describe('DurationDialogKeyCreator', () => {
     );
   });
 });
+

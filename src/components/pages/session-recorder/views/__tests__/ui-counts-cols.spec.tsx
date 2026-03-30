@@ -1,5 +1,5 @@
-import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+﻿import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
 import { describe, it, expect } from 'vitest';
 import { GenerateTableCols } from '../ui-counts-cols';
 
@@ -110,3 +110,4 @@ describe('GenerateTableCols - Duration', () => {
     await expect.element(page.getByText('0.00')).toBeInTheDocument();
   });
 });
+

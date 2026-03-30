@@ -1,5 +1,5 @@
-import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+﻿import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // ----- Hoisted mocks -----
@@ -110,3 +110,4 @@ describe('ProportionFigureVisualization', () => {
     await expect.element(page.getByText('Download Figure as PNG')).toBeInTheDocument();
   });
 });
+

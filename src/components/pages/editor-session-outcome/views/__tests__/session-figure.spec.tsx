@@ -1,5 +1,5 @@
-import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+﻿import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
 import { vi, describe, it, expect } from 'vitest';
 
 vi.mock('@/lib/graphing', () => ({
@@ -103,3 +103,4 @@ describe('SessionFigure', () => {
     expect(container).not.toBeNull();
   });
 });
+

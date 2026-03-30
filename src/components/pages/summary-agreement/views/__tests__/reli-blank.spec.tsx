@@ -1,7 +1,7 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React from 'react';
 import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+import { page } from 'vitest/browser';
 import { vi, describe, it, expect } from 'vitest';
 
 vi.stubGlobal('BUILD_VERSION', 'test-build');
@@ -94,3 +94,4 @@ describe('ReliabilityBlank', () => {
     await expect.element(page.getByText('No data files are currently available to inspect.')).toBeInTheDocument();
   });
 });
+

@@ -1,6 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+import { page } from 'vitest/browser';
 import { vi, describe, it } from 'vitest';
 import EvaluationsPage from '../dashboard-evaluations/evaluations-page';
 import PageWrapper from '@/components/elements/page-wrapper';
@@ -1137,3 +1137,4 @@ describe('ResultsProportionVisualsPage', () => {
     await page.screenshot({ path: '../../../../public/screenshots2/proportion_visuals_page.png' });
   });
 });
+

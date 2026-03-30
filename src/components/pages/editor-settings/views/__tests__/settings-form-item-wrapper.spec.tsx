@@ -1,5 +1,5 @@
-import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+﻿import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
 import { describe, it, expect } from 'vitest';
 import SettingsFormItemWrapper from '../settings-form-item-wrapper';
 
@@ -60,3 +60,4 @@ describe('SettingsFormItemWrapper', () => {
     await expect.element(page.getByTestId('child-b')).toBeInTheDocument();
   });
 });
+

@@ -1,5 +1,5 @@
-import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+﻿import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
 import { describe, it, expect } from 'vitest';
 import SessionHeaderComponent from '../header-component';
 
@@ -118,3 +118,4 @@ describe('SessionHeaderComponent', () => {
     await expect.element(page.getByText('No Timer Selected')).toBeInTheDocument();
   });
 });
+

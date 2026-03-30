@@ -1,5 +1,5 @@
-import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+﻿import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
 import { describe, it, expect } from 'vitest';
 import { RateTooltip } from '../rate-elements';
 
@@ -65,8 +65,8 @@ describe('RateTooltip', () => {
     await expect.element(page.getByText('2.50/min')).toBeInTheDocument();
   });
 
-  it('renders formatted total count (rate × sessionTime)', async () => {
-    // rate=2.5, sessionTime=10 → total = 25.00
+  it('renders formatted total count (rate Ã— sessionTime)', async () => {
+    // rate=2.5, sessionTime=10 â†’ total = 25.00
     await render(
       <RateTooltip active={true} payload={[makePayloadEntry('Kicking', 2.5, 'Baseline', 10)]} figureTextSize="base" />,
     );
@@ -103,3 +103,4 @@ describe('RateTooltip', () => {
     expect(document.querySelector('.text-2xl')).not.toBeNull();
   });
 });
+

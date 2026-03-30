@@ -1,6 +1,5 @@
-import React from 'react';
-import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+﻿import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // ----- Module mocks -----
@@ -66,9 +65,9 @@ describe('SettingsTabIO', () => {
 
   it('renders the post-session description', async () => {
     await renderWithTabs();
-    await expect.element(
-      page.getByText(/Select how you wish the program to behave after recording sessions/i),
-    ).toBeInTheDocument();
+    await expect
+      .element(page.getByText(/Select how you wish the program to behave after recording sessions/i))
+      .toBeInTheDocument();
   });
 
   it('renders three Select triggers', async () => {

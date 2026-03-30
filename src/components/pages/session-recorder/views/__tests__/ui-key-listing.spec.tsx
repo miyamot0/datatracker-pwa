@@ -1,5 +1,5 @@
-import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+﻿import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
 import { vi, describe, it, expect } from 'vitest';
 
 // ----- Module mocks -----
@@ -105,3 +105,4 @@ describe('KeyHistoryListing', () => {
     await expect.element(page.getByText('42s')).toBeInTheDocument();
   });
 });
+

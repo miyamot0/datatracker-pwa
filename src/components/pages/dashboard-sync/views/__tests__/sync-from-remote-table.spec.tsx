@@ -1,5 +1,8 @@
+// @ts-nocheck
+
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // ----- Hoisted mocks -----
@@ -19,10 +22,10 @@ vi.mock('@/hooks/use-main-thread-sync', () => ({
 }));
 
 vi.mock('@/components/ui/data-table-reli', () => ({
-  ReliabilityDataTable: ({ data, direction, optionalButtons, callback }: any) => (
+  ReliabilityDataTable: ({ data, direction, optionalButtons, callback }) => (
     <div data-testid="reliability-table">
       <span data-testid="table-direction">{direction}</span>
-      {data.map((row: any) => (
+      {data.map((row) => (
         <div key={row.id} data-testid="table-row">
           {row.file}
         </div>
@@ -36,7 +39,7 @@ vi.mock('@/components/ui/data-table-reli', () => ({
 }));
 
 vi.mock('@/components/ui/data-table-column-header', () => ({
-  DataTableColumnHeader: ({ title }: any) => <span>{title}</span>,
+  DataTableColumnHeader: ({ title }) => <span>{title}</span>,
 }));
 
 vi.mock('sonner', () => ({
@@ -54,6 +57,11 @@ import SyncFromRemoteTable from '../sync-from-remote-table';
 
 const makeHandle = (name = 'handle') => ({ name }) as FileSystemDirectoryHandle;
 
+const flushMicrotasks = async () => {
+  await Promise.resolve();
+  await Promise.resolve();
+};
+
 // ----- Tests -----
 
 describe('SyncFromRemoteTable', () => {
@@ -62,32 +70,31 @@ describe('SyncFromRemoteTable', () => {
     mockListBothFiles.mockResolvedValue({ localFiles: [], remoteFiles: [] });
   });
 
-  it('shows loading indicator initially', () => {
-    render(<SyncFromRemoteTable Handle={makeHandle('local')} RemoteHandle={makeHandle('remote')} />);
-    expect(screen.getByText('Loading files...')).not.toBeNull();
+  it('shows loading indicator initially', async () => {
+    mockListBothFiles.mockImplementationOnce(
+      () => new Promise<{ localFiles: string[]; remoteFiles: string[] }>(() => {}),
+    );
+    await render(<SyncFromRemoteTable Handle={makeHandle('local')} RemoteHandle={makeHandle('remote')} />);
+    await expect.element(page.getByText('Loading files...')).toBeInTheDocument();
   });
 
   it('hides loading indicator after files load', async () => {
-    render(<SyncFromRemoteTable Handle={makeHandle('local')} RemoteHandle={makeHandle('remote')} />);
-    await waitFor(() => {
-      expect(screen.queryByText('Loading files...')).toBeNull();
-    });
+    await render(<SyncFromRemoteTable Handle={makeHandle('local')} RemoteHandle={makeHandle('remote')} />);
+    await expect.element(page.getByTestId('table-direction')).toHaveTextContent('Local');
+    expect(page.getByText('Loading files...').elements().length).toBe(0);
   });
 
   it('calls listBothFiles on mount with correct handles', async () => {
     const local = makeHandle('local');
     const remote = makeHandle('remote');
-    render(<SyncFromRemoteTable Handle={local} RemoteHandle={remote} />);
-    await waitFor(() => {
-      expect(mockListBothFiles).toHaveBeenCalledWith(local, remote);
-    });
+    await render(<SyncFromRemoteTable Handle={local} RemoteHandle={remote} />);
+    await expect.element(page.getByTestId('table-direction')).toHaveTextContent('Local');
+    expect(mockListBothFiles).toHaveBeenCalledWith(local, remote);
   });
 
   it('renders the table with direction="Local"', async () => {
-    render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
-    await waitFor(() => {
-      expect(screen.getByTestId('table-direction').textContent).toBe('Local');
-    });
+    await render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
+    await expect.element(page.getByTestId('table-direction')).toHaveTextContent('Local');
   });
 
   it('shows remote files that are not in local (unsynced)', async () => {
@@ -95,10 +102,9 @@ describe('SyncFromRemoteTable', () => {
       localFiles: ['a.json'],
       remoteFiles: ['a.json', 'b.json'],
     });
-    render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
-    await waitFor(() => {
-      expect(screen.getByText('b.json')).not.toBeNull();
-    });
+
+    await render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
+    await expect.element(page.getByText('b.json')).toBeInTheDocument();
   });
 
   it('does not show remote files that are already in local (synced)', async () => {
@@ -106,12 +112,10 @@ describe('SyncFromRemoteTable', () => {
       localFiles: ['a.json'],
       remoteFiles: ['a.json', 'b.json'],
     });
-    render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
-    await waitFor(() => {
-      const rows = screen.queryAllByTestId('table-row');
-      const texts = rows.map((r) => r.textContent);
-      expect(texts).not.toContain('a.json');
-    });
+
+    await render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
+    await expect.element(page.getByText('b.json')).toBeInTheDocument();
+    expect(page.getByText('a.json').elements().length).toBe(0);
   });
 
   it('renders no rows when all remote files are already local', async () => {
@@ -119,17 +123,17 @@ describe('SyncFromRemoteTable', () => {
       localFiles: ['a.json', 'b.json'],
       remoteFiles: ['a.json', 'b.json'],
     });
-    render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
-    await waitFor(() => {
-      expect(screen.queryAllByTestId('table-row').length).toBe(0);
-    });
+
+    await render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
+    await expect.element(page.getByTestId('table-direction')).toBeInTheDocument();
+    expect(page.getByTestId('table-row').elements().length).toBe(0);
   });
 
   it('shows toast.error when listBothFiles throws', async () => {
     mockListBothFiles.mockRejectedValueOnce(new Error('disk read error'));
-    render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
-    await waitFor(() => {
-      expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('disk read error'));
-    });
+
+    await render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
+    await flushMicrotasks();
+    expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('disk read error'));
   });
 });

@@ -1,5 +1,5 @@
-import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+﻿import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // ----- Module mocks -----
@@ -114,3 +114,4 @@ describe('SettingsTabNotifications', () => {
     });
   });
 });
+

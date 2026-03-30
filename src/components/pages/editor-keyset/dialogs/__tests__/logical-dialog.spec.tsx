@@ -1,7 +1,7 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React from 'react';
 import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+import { page } from 'vitest/browser';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { DropdownMenu, DropdownMenuContent } from '@/components/ui/dropdown-menu';
 
@@ -136,3 +136,4 @@ describe('LogicalDialogKeyCreator', () => {
     expect(mockCallback).toHaveBeenCalledWith(expect.objectContaining({ name: 'Combined Score' }));
   });
 });
+

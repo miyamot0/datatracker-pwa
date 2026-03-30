@@ -1,5 +1,5 @@
-import { render } from 'vitest-browser-react';
-import { page } from '@vitest/browser/context';
+﻿import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
 import { describe, it, expect } from 'vitest';
 import { ProportionTooltip } from '../proportion-elements';
 
@@ -122,3 +122,4 @@ describe('ProportionTooltip', () => {
     expect(document.querySelector('.text-2xl')).not.toBeNull();
   });
 });
+
