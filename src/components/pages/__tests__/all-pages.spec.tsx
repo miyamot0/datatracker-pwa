@@ -173,7 +173,7 @@ describe('EvaluationsPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/evaluation_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/evaluation_page.png' });
   });
 });
 
@@ -207,7 +207,7 @@ describe('HomePage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/home_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/home_page.png' });
   });
 });
 
@@ -241,7 +241,7 @@ describe('DocumentationListingPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/documentation_listing_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/documentation_listing_page.png' });
   });
 });
 
@@ -275,7 +275,7 @@ describe('DocumentationEntryPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/documentation_entry_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/documentation_entry_page.png' });
   });
 });
 
@@ -313,7 +313,7 @@ describe('AuthorizedDisplayContent', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/groups_authorized_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/groups_authorized_page.png' });
   });
 });
 
@@ -341,7 +341,7 @@ describe('UnauthorizedDisplay', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/groups_unauthorized_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/groups_unauthorized_page.png' });
   });
 });
 
@@ -380,7 +380,7 @@ describe('ClientsPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/clients_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/clients_page.png' });
   });
 });
 
@@ -521,7 +521,7 @@ describe('ViewerEvaluationsPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/viewer_evaluations_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/viewer_evaluations_page.png' });
   });
 });
 
@@ -573,7 +573,7 @@ describe('KeySetsPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/keysets_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/keysets_page.png' });
   });
 });
 
@@ -627,7 +627,7 @@ describe('ViewerKeysetPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/viewer_keyset_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/viewer_keyset_page.png' });
   });
 });
 
@@ -693,7 +693,7 @@ describe('DashboardHistoryPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/dashboard_history_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/dashboard_history_page.png' });
   });
 });
 
@@ -723,7 +723,7 @@ describe('ViewSyncPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/view_sync_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/view_sync_page.png' });
   });
 });
 
@@ -766,7 +766,7 @@ describe('KeySetEditor', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/keyset_editor_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/keyset_editor_page.png' });
   });
 });
 
@@ -813,7 +813,7 @@ describe('SessionDesigner', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/session_designer_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/session_designer_page.png' });
   });
 });
 
@@ -872,7 +872,7 @@ describe('SessionManagerContent', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/session_manager_content_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/session_manager_content_page.png' });
   });
 });
 
@@ -900,7 +900,7 @@ describe('SettingsPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/settings_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/settings_page.png' });
   });
 });
 
@@ -936,7 +936,7 @@ describe('SessionRecorderPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/session_recorder_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/session_recorder_page.png' });
   });
 });
 
@@ -982,7 +982,7 @@ describe('ReliabilityViewerPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/reli_viewer_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/reli_viewer_page.png' });
   });
 });
 
@@ -1031,7 +1031,7 @@ describe('ResultsViewerContent', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/results_viewer_content_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/results_viewer_content_page.png' });
   });
 });
 
@@ -1083,7 +1083,7 @@ describe('ResultsRateVisualsPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/rate_visuals_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/rate_visuals_page.png' });
   });
 });
 
@@ -1134,7 +1134,6 @@ describe('ResultsProportionVisualsPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots2/proportion_visuals_page.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/proportion_visuals_page.png' });
   });
 });
-
