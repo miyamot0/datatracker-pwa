@@ -112,7 +112,7 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
               },
               {
                 ...common_screenshot_params,
-                src: 'screenshots/visualization.png',
+                src: 'screenshots/rate_visuals_page.png',
                 label: 'Illustration of recorded data',
               },
               {
@@ -132,7 +132,7 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
               },
               {
                 ...common_screenshot_params,
-                src: 'screenshots/session_recorder.png',
+                src: 'screenshots/session_recorder_page.png',
                 label: 'View of Session Recorder Page',
               },
               {

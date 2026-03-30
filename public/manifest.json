@@ -55,7 +55,7 @@
     "id": "/",
     "screenshots": [
         {
-            "src": "/screenshots/visualization.png",
+            "src": "/screenshots/rate_visuals_page.png",
             "sizes": "1375x860",
             "type": "image/png",
             "form_factor": "wide",
@@ -90,7 +90,7 @@
             "label": "View of Session Designer Page"
         },
         {
-            "src": "/screenshots/session_recorder.png",
+            "src": "/screenshots/session_recorder_page.png",
             "sizes": "1375x860",
             "type": "image/png",
             "form_factor": "wide",

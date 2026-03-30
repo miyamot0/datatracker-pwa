@@ -1,4 +1,4 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-94.95_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-87.88_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-96.16_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-94.95_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-87.94_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-96.16_Percent-green>)
 
 ![Static Badge Version](https://img.shields.io/badge/Version-0.5.8-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
@@ -31,7 +31,7 @@ Features include the following:
 - [x] Highly-optimized real-time data recording with millisecond-level fidelity
 - [x] Manual export of data in multiple formats (i.e., JSON, CSV)
 - [x] Support for deriving new keys/targets based on existing keys (e.g., percentage of compliance, multiple targets in a shared response class)
-- [x] Support for duration logging that permits inter-scoring (i.e., events occuring during a respective) period or periods of time (e.g., 30s intervals)
+- [x] Support for duration logging that permits inter-scoring (i.e., events occurring during a respective) period or periods of time (e.g., 30s intervals)
 
 ## Alternative/Islanded Mode for Highly Secure Environments
 
@@ -45,9 +45,9 @@ Islanded builds are compiled as numbered releases (main-branch) available on the
 
 ![DataTracker Home Page](public/screenshots/home_page.png 'Visual of landing page for program')
 
-![DataTracker Data Visualization](public/screenshots/visualization.png 'DataTracker Options for Between-Session Data Display')
+![DataTracker Data Visualization](public/screenshots/rate_visuals_page.png 'DataTracker Options for Between-Session Data Display')
 
-![DataTracker Data Visualization](public/screenshots/within_session_preview.png 'DataTracker Options for Within-Session Data Display')
+![DataTracker Data Visualization](public/screenshots/session_viewer_content_page.png 'DataTracker Options for Within-Session Data Display')
 
 ![Group-level Organization](public/screenshots/groups_authorized_page.png 'Organization of Participant Data by Groups')
 
@@ -55,7 +55,7 @@ Islanded builds are compiled as numbered releases (main-branch) available on the
 
 ![Session Designer Page](public/screenshots/session_designer_page.png 'Various options for designing session conditions')
 
-![Session Recorder Page](public/screenshots/session_recorder.png 'Options for displaying session recording progress')
+![Session Recorder Page](public/screenshots/session_recorder_page.png 'Options for displaying session recording progress')
 
 ## Program Support
 
