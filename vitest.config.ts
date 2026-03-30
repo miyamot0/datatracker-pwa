@@ -3,7 +3,7 @@ import path from 'path';
 import { playwright } from '@vitest/browser-playwright';
 import { CoverageV8Options } from 'vitest/node';
 
-const isVercel = !!process.env.VERCEL;
+const isVercel = !!process.env.VERCEL_BUILD;
 
 const componentProj: TestProjectConfiguration = {
   resolve: {

@@ -1,7 +1,7 @@
 import { useLocation } from '@tanstack/react-router';
 import { useEffect } from 'react';
 
-export default function ScrollReset() {
+const ScrollReset = () => {
   const location = useLocation();
 
   useEffect(() => {
@@ -9,4 +9,6 @@ export default function ScrollReset() {
   }, [location.pathname]);
 
   return null;
-}
+};
+
+export default ScrollReset;

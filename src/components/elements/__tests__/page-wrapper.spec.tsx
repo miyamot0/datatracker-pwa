@@ -28,10 +28,6 @@ vi.mock('../footer/footer', () => ({
   default: () => <footer data-testid="layout-footer" />,
 }));
 
-vi.mock('../behavior/scroll-reset', () => ({
-  default: () => null,
-}));
-
 vi.mock('@tanstack/react-router', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@tanstack/react-router')>();
   return {

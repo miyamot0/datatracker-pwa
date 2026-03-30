@@ -63,6 +63,25 @@ describe('useEventListener', () => {
     expect(handler1).not.toHaveBeenCalled();
   });
 
+  it('does not invoke a non-function handler value after rerender', () => {
+    const handler = vi.fn();
+
+    const { rerender } = renderHook(({ currentHandler }) => useEventListener('keydown', currentHandler as any), {
+      initialProps: { currentHandler: handler as any },
+    });
+
+    rerender({ currentHandler: null as any });
+
+    const registeredListener = addEventListenerSpy.mock.calls[0][1] as EventListener;
+    const mockEvent = { key: 'z' } as unknown as Event;
+
+    expect(() => {
+      registeredListener(mockEvent);
+    }).not.toThrow();
+
+    expect(handler).not.toHaveBeenCalled();
+  });
+
   it('re-registers the listener when eventName changes', () => {
     const handler = vi.fn();
     const { rerender } = renderHook(({ eventName }) => useEventListener(eventName, handler), {
