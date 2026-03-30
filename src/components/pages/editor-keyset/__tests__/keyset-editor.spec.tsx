@@ -36,8 +36,15 @@ vi.mock('@/components/ui/button', () => ({
   buttonVariants: () => '',
 }));
 
+const mockInvalidateFilter = vi.hoisted(() => ({ fn: null as ((match: { routeId: string }) => boolean) | null }));
+
 vi.mock('@tanstack/react-router', () => ({
-  useRouter: () => ({ invalidate: mockInvalidate }),
+  useRouter: () => ({
+    invalidate: (opts: { filter: (match: { routeId: string }) => boolean; sync: boolean }) => {
+      mockInvalidateFilter.fn = opts.filter;
+      return mockInvalidate(opts);
+    },
+  }),
   useRouterState: () => ({ matches: [{ routeId: '/test' }] }),
 }));
 
@@ -230,5 +237,112 @@ describe('KeySetEditor', () => {
     expect(payloads.some((p) => p.DerivedKeys.length === 0)).toBe(true);
     expect(payloads.some((p) => p.SpecialDurationKeys.length === 0)).toBe(true);
     expect(payloads.some((p) => p.ScorableDurationKeys.length === 0)).toBe(true);
+  });
+
+  it('moves frequency keys up via ArrowUp button', async () => {
+    await renderEditor();
+
+    // F2 row: ArrowUp is enabled (index=1>0), ArrowDown is disabled (last item)
+    const freq2Row = page.getByRole('row').filter({ hasText: 'Freq 2' });
+    const freq2Buttons = await freq2Row.getByRole('button').all();
+    await freq2Buttons[0].click();
+    expect(mockMutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({
+        Action: 'Update',
+        NewKeySet: expect.objectContaining({
+          FrequencyKeys: [expect.objectContaining({ KeyName: 'F2' }), expect.objectContaining({ KeyName: 'F1' })],
+        }),
+      }),
+    );
+  });
+
+  it('moves duration keys up and down', async () => {
+    await renderEditor();
+
+    // Find the row containing "Dur 2" and click its first button (ArrowUp - enabled for last row)
+    const dur2Row = page.getByRole('row').filter({ hasText: 'Dur 2' });
+    const dur2Buttons = await dur2Row.getByRole('button').all();
+    // D2 is the last duration row: up=enabled, down=disabled, Delete
+    await dur2Buttons[0].click();
+    expect(mockMutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({
+        Action: 'Update',
+        NewKeySet: expect.objectContaining({
+          DurationKeys: [expect.objectContaining({ KeyName: 'D2' }), expect.objectContaining({ KeyName: 'D1' })],
+        }),
+      }),
+    );
+
+    mockMutateAsync.mockClear();
+
+    // Find the row containing "Dur 1" and click its second button (ArrowDown)
+    const dur1Row = page.getByRole('row').filter({ hasText: 'Dur 1' });
+    const dur1Buttons = await dur1Row.getByRole('button').all();
+    // D1 is the first duration row: up=disabled, down=enabled, Delete
+    await dur1Buttons[1].click();
+    expect(mockMutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({
+        Action: 'Update',
+        NewKeySet: expect.objectContaining({
+          DurationKeys: expect.arrayContaining([expect.objectContaining({ KeyName: 'D1' })]),
+        }),
+      }),
+    );
+  });
+
+  it('router.invalidate filter matches current route and session keysets route', async () => {
+    await renderEditor();
+
+    // Trigger a mutation so onSuccess fires and router.invalidate is called.
+    await page.getByRole('button', { name: 'Add Frequency' }).click();
+
+    expect(mockInvalidate).toHaveBeenCalled();
+    expect(mockInvalidateFilter.fn).not.toBeNull();
+
+    const filter = mockInvalidateFilter.fn!;
+    // Current routeId = '/test' → matches
+    expect(filter({ routeId: '/test' })).toBe(true);
+    // Session keysets route → matches
+    expect(filter({ routeId: '/session/$group/$individual/keysets/' })).toBe(true);
+    // Unrelated route → does not match
+    expect(filter({ routeId: '/other' })).toBe(false);
+  });
+
+  it('covers || [] fallback branches when SpecialDurationKeys and ScorableDurationKeys are undefined', async () => {
+    const keysetWithUndefined = {
+      id: 'ks3',
+      Name: 'Partial Keyset',
+      FrequencyKeys: [{ KeyDescription: 'Freq 1', KeyName: 'F1', KeyCode: 70 }],
+      DurationKeys: [{ KeyDescription: 'Dur 1', KeyName: 'D1', KeyCode: 68 }],
+      DerivedKeys: [],
+      SpecialDurationKeys: undefined as any,
+      ScorableDurationKeys: undefined as any,
+      lastModified: new Date('2024-01-01T00:00:00.000Z'),
+    } as any;
+
+    render(
+      <KeySetEditor
+        Group="GroupA"
+        Individual="ClientB"
+        KeySetObject={keysetWithUndefined}
+        Handle={{} as FileSystemDirectoryHandle}
+      />,
+    );
+
+    // Add Derived triggers addDerivedKeyCallback → SpecialDurationKeys || [] with undefined
+    await page.getByRole('button', { name: 'Add Derived' }).click();
+    // Add Special Duration triggers addSpecialDurationKeyCallback → SpecialDurationKeys || []
+    await page.getByRole('button', { name: 'Add Special Duration' }).click();
+    // Add Scored Duration triggers addScoredDurationKeyCallback → ScorableDurationKeys || []
+    await page.getByRole('button', { name: 'Add Scored Duration' }).click();
+
+    expect(mockMutateAsync).toHaveBeenCalledTimes(3);
+    const payloads = mockMutateAsync.mock.calls.map((c) => c[0].NewKeySet);
+    // DerivedKeys was [], now has 1 entry
+    expect(payloads.some((p) => p.DerivedKeys?.some((k: any) => k.id === 'logic-new'))).toBe(true);
+    // SpecialDurationKeys was undefined, now has 1 entry
+    expect(payloads.some((p) => p.SpecialDurationKeys?.some((k: any) => k.KeyCode === 80))).toBe(true);
+    // ScorableDurationKeys was undefined, now has 1 entry
+    expect(payloads.some((p) => p.ScorableDurationKeys?.some((k: any) => k.KeyCode === 81))).toBe(true);
   });
 });
