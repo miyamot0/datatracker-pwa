@@ -45,6 +45,8 @@ export default function ViewFrequencyResults({
 
   // Keyset
 
+  console.log(Results);
+
   const frequencyRates = processMultipleSessionDataWithKeys(
     Results,
     LatestKeyset,

@@ -170,6 +170,8 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
           console.log('Docs images optimized and converted!', ((postPng - prePng) / 1000).toFixed(2), 'seconds');
           console.log();
 
+          /*
+          Note: This wasn't really worth the complexity TBH
           // Pull relevant MDs
           const mdFiles = await fs.readdir(`${PROD_OUT_DIR}/content`);
 
@@ -194,6 +196,7 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
             'seconds',
           );
           console.log();
+          */
         },
       });
       break;

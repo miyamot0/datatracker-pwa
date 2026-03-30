@@ -42,25 +42,68 @@ describe('walkSessionFrequencyKey', () => {
     TimerThree: 0,
   };
 
-  it('should throw error when schedule changes are odd number', () => {
+  it('should handle odd number of schedule changes by processing from last change to session end', () => {
     const sessionWithOddSchedule: SavedSessionResult = {
       ...baseSessionSettings,
       SystemKeyPresses: [
         {
           KeyName: 'Primary',
           KeyCode: -1,
-          KeyDescription: 'Primary Timer',
+          KeyDescription: 'Primary Timer Start',
           KeyScheduleRecording: 'Primary',
           TimePressed: new Date('2023-01-01T10:00:05Z'),
           TimeIntoSession: 5.0,
           KeyType: 'System',
         },
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary Timer End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:15Z'),
+          TimeIntoSession: 15.0,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary Timer Start (unpaired)',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:25Z'),
+          TimeIntoSession: 25.0,
+          KeyType: 'System',
+        },
+      ],
+      FrequencyKeyPresses: [
+        {
+          KeyName: 'TestKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Frequency Key',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:08Z'),
+          TimeIntoSession: 8.0,
+          KeyType: 'Frequency',
+        },
+        {
+          KeyName: 'TestKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Frequency Key',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:30Z'),
+          TimeIntoSession: 30.0,
+          KeyType: 'Frequency',
+        },
       ],
     };
 
-    expect(() => walkSessionFrequencyKey(sessionWithOddSchedule, 'Primary', mockKey)).toThrow(
-      'Schedule changes must be even',
-    );
+    const result = walkSessionFrequencyKey(sessionWithOddSchedule, 'Primary', mockKey);
+    expect(result).toEqual({
+      KeyName: 'TestKey',
+      KeyDescription: 'Test Frequency Key',
+      Schedule: 'Primary',
+      Value: 2, // 1 from first period (8-15) + 1 from last unpaired period (30 before session end)
+      Bouts: -1,
+    });
   });
 
   it('should return zero count when no schedule changes exist', () => {
@@ -461,7 +504,7 @@ describe('walkSessionFrequencyKey', () => {
     });
   });
 
-  it('should throw error when using Special schedule without SpecialKey parameter', () => {
+  it('should handle odd special schedule without SpecialKey parameter by treating as regular schedule', () => {
     const sessionWithSpecialSchedule: SavedSessionResult = {
       ...baseSessionSettings,
       SystemKeyPresses: [
@@ -474,12 +517,55 @@ describe('walkSessionFrequencyKey', () => {
           TimeIntoSession: 5.0,
           KeyType: 'System',
         },
+        {
+          KeyName: 'Special',
+          KeyCode: -3,
+          KeyDescription: 'Special Timer End',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:15Z'),
+          TimeIntoSession: 15.0,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'Special',
+          KeyCode: -3,
+          KeyDescription: 'Special Timer Start (unpaired)',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:25Z'),
+          TimeIntoSession: 25.0,
+          KeyType: 'System',
+        },
+      ],
+      FrequencyKeyPresses: [
+        {
+          KeyName: 'TestKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Frequency Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10.0,
+          KeyType: 'Frequency',
+        },
+        {
+          KeyName: 'TestKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Frequency Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:30Z'),
+          TimeIntoSession: 30.0,
+          KeyType: 'Frequency',
+        },
       ],
     };
 
-    expect(() => walkSessionFrequencyKey(sessionWithSpecialSchedule, 'Special', mockKey)).toThrow(
-      'Schedule changes must be even',
-    );
+    const result = walkSessionFrequencyKey(sessionWithSpecialSchedule, 'Special', mockKey);
+    expect(result).toEqual({
+      KeyName: 'TestKey',
+      KeyDescription: 'Test Frequency Key',
+      Schedule: 'Special',
+      Value: 2,
+      Bouts: -1,
+    });
   });
 
   it('should handle empty key presses within valid schedule period', () => {
@@ -592,7 +678,7 @@ describe('walkSessionFrequencyKey', () => {
     });
   });
 
-  it('should throw when duration strategy has odd schedule changes', () => {
+  it('should handle duration strategy with odd schedule changes', () => {
     const mockKeyset = {
       id: 'test-keyset',
       Name: 'Test KeySet',
@@ -610,24 +696,58 @@ describe('walkSessionFrequencyKey', () => {
         {
           KeyName: 'ScheduleKey',
           KeyCode: 5,
-          KeyDescription: 'Schedule Key',
+          KeyDescription: 'Schedule Key Start',
           KeyScheduleRecording: 'Special',
           TimePressed: new Date('2023-01-01T10:00:05Z'),
           TimeIntoSession: 5.0,
           KeyType: 'Duration',
         },
+        {
+          KeyName: 'ScheduleKey',
+          KeyCode: 5,
+          KeyDescription: 'Schedule Key End',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:15Z'),
+          TimeIntoSession: 15.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScheduleKey',
+          KeyCode: 5,
+          KeyDescription: 'Schedule Key Start (unpaired)',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:25Z'),
+          TimeIntoSession: 25.0,
+          KeyType: 'Duration',
+        },
+      ],
+      FrequencyKeyPresses: [
+        {
+          KeyName: 'TestKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Frequency Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10.0,
+          KeyType: 'Frequency',
+        },
       ],
     };
 
-    expect(() =>
-      walkSessionFrequencyKey(sessionWithOddDuration, 'Special', mockKey, {
-        special: true,
-        schedule: 'duration',
-        specialKeyName: 'ScheduleKey',
-        keyset: mockKeyset,
-        timerType: 'Total',
-      }),
-    ).toThrow('Schedule changes must be even');
+    const result = walkSessionFrequencyKey(sessionWithOddDuration, 'Special', mockKey, {
+      special: true,
+      schedule: 'duration',
+      specialKeyName: 'ScheduleKey',
+      keyset: mockKeyset,
+      timerType: 'Total',
+    });
+    expect(result).toEqual({
+      KeyName: 'TestKey',
+      KeyDescription: 'Test Frequency Key',
+      Schedule: 'Special',
+      Value: 1,
+      Bouts: -1,
+    });
   });
 });
 
@@ -664,25 +784,69 @@ describe('walkSessionDurationKey', () => {
     TimerThree: 0,
   };
 
-  it('should throw error when schedule changes are odd number', () => {
+  it('should handle odd number of schedule changes by processing pairs only', () => {
     const sessionWithOddSchedule: SavedSessionResult = {
       ...baseSessionSettings,
       SystemKeyPresses: [
         {
           KeyName: 'Primary',
           KeyCode: -1,
-          KeyDescription: 'Primary Timer',
+          KeyDescription: 'Primary Timer Start',
           KeyScheduleRecording: 'Primary',
           TimePressed: new Date('2023-01-01T10:00:05Z'),
           TimeIntoSession: 5.0,
           KeyType: 'System',
         },
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary Timer End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:15Z'),
+          TimeIntoSession: 15.0,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary Timer Start Again',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:25Z'),
+          TimeIntoSession: 25.0,
+          KeyType: 'System',
+        },
+      ],
+      DurationKeyPresses: [
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Duration Key',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:08Z'),
+          TimeIntoSession: 8.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Duration Key',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:12Z'),
+          TimeIntoSession: 12.0,
+          KeyType: 'Duration',
+        },
       ],
     };
 
-    expect(() => walkSessionDurationKey(sessionWithOddSchedule, 'Primary', mockKey)).toThrow(
-      'Schedule changes must be even',
-    );
+    const result = walkSessionDurationKey(sessionWithOddSchedule, 'Primary', mockKey);
+
+    expect(result).toEqual({
+      KeyName: 'DurationKey',
+      KeyDescription: 'Test Duration Key',
+      Schedule: 'Primary',
+      Value: 4, // Only the first period: 12-8=4 seconds
+      Bouts: 1,
+    });
   });
 
   it('should return zero duration when no schedule changes exist', () => {
@@ -1297,7 +1461,7 @@ describe('walkSessionDurationKey', () => {
     });
   });
 
-  it('should throw when system strategy has odd schedule changes for duration key', () => {
+  it('should handle system strategy with odd schedule changes by processing pairs only', () => {
     const mockKeyset = {
       id: 'test-keyset',
       Name: 'Test KeySet',
@@ -1315,24 +1479,67 @@ describe('walkSessionDurationKey', () => {
         {
           KeyName: 'SpecialScheduleKey',
           KeyCode: -5,
-          KeyDescription: 'Special Schedule',
+          KeyDescription: 'Special Schedule Start',
           KeyScheduleRecording: 'Special',
           TimePressed: new Date('2023-01-01T10:00:05Z'),
           TimeIntoSession: 5.0,
           KeyType: 'System',
         },
+        {
+          KeyName: 'SpecialScheduleKey',
+          KeyCode: -5,
+          KeyDescription: 'Special Schedule End',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20.0,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'SpecialScheduleKey',
+          KeyCode: -5,
+          KeyDescription: 'Special Schedule Start (unpaired)',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:25Z'),
+          TimeIntoSession: 25.0,
+          KeyType: 'System',
+        },
+      ],
+      DurationKeyPresses: [
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Duration Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:08Z'),
+          TimeIntoSession: 8.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Duration Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:15Z'),
+          TimeIntoSession: 15.0,
+          KeyType: 'Duration',
+        },
       ],
     };
 
-    expect(() =>
-      walkSessionDurationKey(sessionWithOddSystem, 'Special', mockKey, {
-        special: true,
-        schedule: 'system',
-        specialKeyName: 'SpecialScheduleKey',
-        keyset: mockKeyset,
-        timerType: 'Total',
-      }),
-    ).toThrow('Schedule changes must be even');
+    const result = walkSessionDurationKey(sessionWithOddSystem, 'Special', mockKey, {
+      special: true,
+      schedule: 'system',
+      specialKeyName: 'SpecialScheduleKey',
+      keyset: mockKeyset,
+      timerType: 'Total',
+    });
+    expect(result).toEqual({
+      KeyName: 'DurationKey',
+      KeyDescription: 'Test Duration Key',
+      Schedule: 'Special',
+      Value: 7, // Only first period: 15-8=7 seconds
+      Bouts: 1,
+    });
   });
 });
 
@@ -1363,25 +1570,42 @@ describe('sumDurationSpecialKey', () => {
     TimerThree: 0,
   };
 
-  it('should throw error when special key presses are odd number', () => {
+  it('should handle odd number of special key presses by extending to session end', () => {
     const sessionWithOddSpecialKey: SavedSessionResult = {
       ...baseSessionSettings,
       SystemKeyPresses: [
         {
           KeyName: 'SpecialTimer',
           KeyCode: -3,
-          KeyDescription: 'Special Timer',
+          KeyDescription: 'Special Timer Start',
           KeyScheduleRecording: 'Special',
           TimePressed: new Date('2023-01-01T10:00:05Z'),
           TimeIntoSession: 5.0,
           KeyType: 'System',
         },
+        {
+          KeyName: 'SpecialTimer',
+          KeyCode: -3,
+          KeyDescription: 'Special Timer End',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10.0,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'SpecialTimer',
+          KeyCode: -3,
+          KeyDescription: 'Special Timer Start (unpaired)',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20.0,
+          KeyType: 'System',
+        },
       ],
     };
 
-    expect(() => sumDurationSpecialKey(sessionWithOddSpecialKey, 'SpecialTimer')).toThrow(
-      'Schedule changes must be even',
-    );
+    const result = sumDurationSpecialKey(sessionWithOddSpecialKey, 'SpecialTimer');
+    expect(result).toBe(585); // (10-5) + (600-20) = 5 + 580 = 585 seconds
   });
 
   it('should return zero duration when no special key presses exist', () => {
@@ -1850,23 +2074,42 @@ describe('sumDurationScoringKey', () => {
     TimerThree: 0,
   };
 
-  it('should throw error when duration key presses are odd number', () => {
+  it('should handle odd number of duration key presses by extending to session end', () => {
     const sessionWithOdd: SavedSessionResult = {
       ...baseSessionSettings,
       DurationKeyPresses: [
         {
           KeyName: 'ScoringKey',
           KeyCode: 10,
-          KeyDescription: 'Scoring Key',
+          KeyDescription: 'Scoring Key Start',
           KeyScheduleRecording: 'Primary',
           TimePressed: new Date('2023-01-01T10:00:05Z'),
           TimeIntoSession: 5.0,
           KeyType: 'Duration',
         },
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Scoring Key End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Scoring Key Start (unpaired)',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20.0,
+          KeyType: 'Duration',
+        },
       ],
     };
 
-    expect(() => sumDurationScoringKey(sessionWithOdd, 'ScoringKey')).toThrow('Schedule changes must be even');
+    const result = sumDurationScoringKey(sessionWithOdd, 'ScoringKey');
+    expect(result).toBe(585); // (10-5) + (600-20) = 5 + 580 = 585 seconds
   });
 
   it('should return zero when no matching duration key presses exist', () => {

@@ -35,8 +35,6 @@ export function walkSessionFrequencyKey(
 
   const isEven = relevantScheduleChanges.length % 2 === 0;
 
-  if (!isEven) throw new Error('Schedule changes must be even');
-
   let workingCount = 0;
 
   for (let i = 0; i < relevantScheduleChanges.length - 1; i += 2) {
@@ -44,6 +42,19 @@ export function walkSessionFrequencyKey(
     const t2 = relevantScheduleChanges[i + 1].TimePressed;
     const keysWithinScheduleChange = FrequencyKeyPresses.filter(
       (k) => k.KeyName === Key.KeyName && k.TimePressed > t1 && k.TimePressed <= t2,
+    );
+    const nEventsLogged = keysWithinScheduleChange.length;
+
+    workingCount += nEventsLogged;
+  }
+
+  // TODO: Needs testing
+  if (!isEven) {
+    const t1 = relevantScheduleChanges.slice(-1)[0].TimePressed;
+    const t2 = new Date(SessionSettings.SessionEnd);
+
+    const keysWithinScheduleChange = FrequencyKeyPresses.filter(
+      (k) => k.KeyName === Key.KeyName && k.TimePressed > t1 && k.TimePressed < t2,
     );
     const nEventsLogged = keysWithinScheduleChange.length;
 
@@ -88,12 +99,12 @@ export function walkSessionDurationKey(
     relevantScheduleChanges.push(...SystemKeyPresses.filter((k) => k.KeyName === Schedule));
   }
 
-  const isEven = relevantScheduleChanges.length % 2 === 0;
+  //const isEven = relevantScheduleChanges.length % 2 === 0;
 
   const relevantKeyEvents = DurationKeyPresses.filter((k) => k.KeyName === Key.KeyName);
   const bouts = Math.ceil(relevantKeyEvents.length / 2);
 
-  if (!isEven) throw new Error('Schedule changes must be even');
+  //if (!isEven) throw new Error('Schedule changes must be even');
 
   let workingDuration = 0;
 
@@ -104,16 +115,20 @@ export function walkSessionDurationKey(
     const nEventsLogged = keysWithinScheduleChange.length;
 
     if (nEventsLogged === 0) {
+      // No events contained
       workingDuration += 0;
     } else if (nEventsLogged === 1) {
+      // Just one event is contained - we assume it starts at the press and ends at the end of the schedule change
       workingDuration += (new Date(t2).getTime() - new Date(keysWithinScheduleChange[0].TimePressed).getTime()) / 1000;
     } else if (nEventsLogged === 2) {
+      // Note: Two events are contained - we assume the first is a press and the second is a release, so we take the difference between them as the duration within this schedule change
       workingDuration +=
         (new Date(keysWithinScheduleChange[1].TimePressed).getTime() -
           new Date(keysWithinScheduleChange[0].TimePressed).getTime()) /
         1000;
     } else {
-      //let increment = 0;
+      // Note: More than two events are contained - we assume they are alternating presses and releases, so we sum up the durations between each pair of events. We also account for the possibility of an odd number of events, which would indicate a press without a corresponding release by using the schedule change end time as the end point for the final duration calculation.
+
       const offset = nEventsLogged % 2 === 0 ? 0 : -1;
 
       for (let k = 0; k < nEventsLogged + offset; k += 2) {
@@ -124,6 +139,7 @@ export function walkSessionDurationKey(
       }
 
       if (offset === -1) {
+        // Note: Cap to close of current interval
         const last_key = keysWithinScheduleChange.slice(-1)[0];
 
         workingDuration += (new Date(t2).getTime() - new Date(last_key.TimePressed).getTime()) / 1000;
@@ -154,8 +170,6 @@ export function sumDurationSpecialKey(SessionSettings: SavedSessionResult, Speci
 
   const isEven = relevantScheduleChanges.length % 2 === 0;
 
-  if (!isEven) throw new Error('Schedule changes must be even');
-
   let workingDuration = 0;
 
   for (let i = 0; i < relevantScheduleChanges.length - 1; i += 2) {
@@ -163,6 +177,14 @@ export function sumDurationSpecialKey(SessionSettings: SavedSessionResult, Speci
     const t2 = relevantScheduleChanges[i + 1].TimePressed;
 
     workingDuration += (new Date(t2).getTime() - new Date(t1).getTime()) / 1000;
+  }
+
+  // TODO: Needs testing
+  if (!isEven) {
+    const lastRelevantPressEvent = relevantScheduleChanges.slice(-1)[0].TimePressed;
+    const sessionEndTime = new Date(SessionSettings.SessionEnd).getTime();
+
+    workingDuration += (sessionEndTime - new Date(lastRelevantPressEvent).getTime()) / 1000;
   }
 
   return workingDuration;
@@ -183,8 +205,6 @@ export function sumDurationScoringKey(SessionSettings: SavedSessionResult, Speci
 
   const isEven = relevantScheduleChanges.length % 2 === 0;
 
-  if (!isEven) throw new Error('Schedule changes must be even');
-
   let workingDuration = 0;
 
   for (let i = 0; i < relevantScheduleChanges.length - 1; i += 2) {
@@ -192,6 +212,14 @@ export function sumDurationScoringKey(SessionSettings: SavedSessionResult, Speci
     const t2 = relevantScheduleChanges[i + 1].TimePressed;
 
     workingDuration += (new Date(t2).getTime() - new Date(t1).getTime()) / 1000;
+  }
+
+  // TODO: Needs testing
+  if (!isEven) {
+    const lastRelevantPressEvent = relevantScheduleChanges.slice(-1)[0].TimePressed;
+    const sessionEndTime = new Date(SessionSettings.SessionEnd).getTime();
+
+    workingDuration += (sessionEndTime - new Date(lastRelevantPressEvent).getTime()) / 1000;
   }
 
   return workingDuration;
