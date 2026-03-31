@@ -4,6 +4,46 @@ import { KeySetInstance } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';
 import { ScoringStrategy } from '@/types/calculation';
 
+type DurationSummationOptions = {
+  startsActive?: boolean;
+};
+
+function sumDurationFromToggleEvents(
+  eventTimesMs: number[],
+  sessionStartMs: number,
+  sessionEndMs: number,
+  options?: DurationSummationOptions,
+) {
+  const sortedEventTimes = [...eventTimesMs].sort((a, b) => a - b);
+
+  let isActive = options?.startsActive ?? false;
+  let cursor = sessionStartMs;
+  let totalDurationSeconds = 0;
+
+  for (const eventTime of sortedEventTimes) {
+    if (eventTime < sessionStartMs) {
+      // Pre-session toggles establish the state at session start.
+      isActive = !isActive;
+      continue;
+    }
+
+    if (eventTime > sessionEndMs) break;
+
+    if (isActive && eventTime > cursor) {
+      totalDurationSeconds += (eventTime - cursor) / 1000;
+    }
+
+    isActive = !isActive;
+    cursor = eventTime;
+  }
+
+  if (isActive && sessionEndMs > cursor) {
+    totalDurationSeconds += (sessionEndMs - cursor) / 1000;
+  }
+
+  return totalDurationSeconds;
+}
+
 /**
  * Calculates the total count of key presses for a specific key that occurred during the periods defined by a given schedule key. It iterates through the system key presses to identify the relevant schedule changes and then counts the number of times the specified key was pressed within those periods.
  *
@@ -224,37 +264,7 @@ export function walkSessionDurationKeyStateAware(
   let workingDurationSeconds = 0;
 
   for (const [intervalStart, intervalEnd] of scheduleIntervals) {
-    let isActive = false;
-
-    // Events at the exact start boundary establish the key state inside the interval.
-    for (const eventTime of relevantKeyTimes) {
-      if (eventTime <= intervalStart) {
-        // If a time noticed before the interval, we use it to set the initial state of the key for this interval
-        isActive = !isActive;
-        continue;
-      }
-      break;
-    }
-
-    let cursor = intervalStart;
-
-    // "Credit" for active state prior to a press starting in the interval
-    for (const eventTime of relevantKeyTimes) {
-      if (eventTime <= intervalStart) continue;
-      if (eventTime >= intervalEnd) break;
-
-      if (isActive) {
-        workingDurationSeconds += (eventTime - cursor) / 1000;
-      }
-
-      isActive = !isActive;
-      cursor = eventTime;
-    }
-
-    // If active and interval ends, credit until the end of the interval
-    if (isActive && intervalEnd > cursor) {
-      workingDurationSeconds += (intervalEnd - cursor) / 1000;
-    }
+    workingDurationSeconds += sumDurationFromToggleEvents(relevantKeyTimes, intervalStart, intervalEnd);
   }
 
   return {
@@ -272,6 +282,7 @@ export function walkSessionDurationKeyStateAware(
  * @param SessionSettings - The session result object containing the key presses to analyze.
  * @param SpecialKeyName - The name of the specific special key to calculate the duration for.
  * @returns The total active duration in seconds for the specified special key.
+ * @deprecated
  */
 export function sumDurationSpecialKey(SessionSettings: SavedSessionResult, SpecialKeyName: string) {
   const { SystemKeyPresses } = SessionSettings;
@@ -301,12 +312,36 @@ export function sumDurationSpecialKey(SessionSettings: SavedSessionResult, Speci
 }
 
 /**
+ * State-aware alternative for summing special key duration over the session.
+ *
+ * @param SessionSettings - The session result object containing the key presses to analyze.
+ * @param SpecialKeyName - The name of the specific special key to calculate the duration for.
+ * @param options - Optional configuration for how to handle edge cases (e.g., starts active).
+ * @returns The total active duration in seconds for the specified special key.
+ */
+export function sumDurationSpecialKeyStateAware(
+  SessionSettings: SavedSessionResult,
+  SpecialKeyName: string,
+  options?: DurationSummationOptions,
+) {
+  const eventTimesMs = SessionSettings.SystemKeyPresses.filter((k) => k.KeyName === SpecialKeyName).map((k) =>
+    new Date(k.TimePressed).getTime(),
+  );
+
+  const sessionStartMs = new Date(SessionSettings.SessionStart).getTime();
+  const sessionEndMs = new Date(SessionSettings.SessionEnd).getTime();
+
+  return sumDurationFromToggleEvents(eventTimesMs, sessionStartMs, sessionEndMs, options);
+}
+
+/**
  * Calculates the total duration of time that a specific special key was active during the periods defined by a given schedule key. It identifies all the system key presses corresponding to the special key and sums up the durations between each pair of presses that occur within the schedule periods, assuming that each press represents a toggle (e.g., on/off) of the key's state. The function also checks to ensure that there is an even number of presses, as each activation should have a corresponding deactivation.
  *
  * @param SessionSettings - The session result object containing the key presses to analyze.
  * @param Schedule - The name of the schedule key that defines the periods to analyze.
  * @param SpecialKeyName - The name of the specific special key to calculate the duration for.
  * @returns The total active duration in seconds for the specified special key within the defined schedule periods.
+ * @deprecated
  */
 export function sumDurationScoringKey(SessionSettings: SavedSessionResult, SpecialKeyName: string) {
   const { DurationKeyPresses } = SessionSettings;
@@ -333,6 +368,29 @@ export function sumDurationScoringKey(SessionSettings: SavedSessionResult, Speci
   }
 
   return workingDuration;
+}
+
+/**
+ * State-aware alternative for summing duration-based scoring key duration over the session.
+ *
+ * @param SessionSettings - The session result object containing the key presses to analyze.
+ * @param SpecialKeyName - The name of the specific special key to calculate the duration for.
+ * @param options - Optional configuration for duration summation, such as whether the key starts active.
+ * @returns The total active duration in seconds for the specified special key within the defined schedule periods.
+ */
+export function sumDurationScoringKeyStateAware(
+  SessionSettings: SavedSessionResult,
+  SpecialKeyName: string,
+  options?: DurationSummationOptions,
+) {
+  const eventTimesMs = SessionSettings.DurationKeyPresses.filter((k) => k.KeyName === SpecialKeyName).map((k) =>
+    new Date(k.TimePressed).getTime(),
+  );
+
+  const sessionStartMs = new Date(SessionSettings.SessionStart).getTime();
+  const sessionEndMs = new Date(SessionSettings.SessionEnd).getTime();
+
+  return sumDurationFromToggleEvents(eventTimesMs, sessionStartMs, sessionEndMs, options);
 }
 
 /**

@@ -4,7 +4,9 @@ import {
   walkSessionDurationKeyStateAware,
   combineAndSortKeyPresses,
   sumDurationSpecialKey,
+  sumDurationSpecialKeyStateAware,
   sumDurationScoringKey,
+  sumDurationScoringKeyStateAware,
 } from '../schedule-parser';
 import { SavedSessionResult } from '@/lib/dtos';
 import { KeySetInstance } from '@/types/keyset';
@@ -2512,5 +2514,191 @@ describe('sumDurationScoringKey', () => {
 
     const result = sumDurationScoringKey(session, 'ScoringKey');
     expect(result).toBe(5.5); // 10.75 - 5.25 = 5.5 seconds
+  });
+});
+
+describe('sumDurationSpecialKeyStateAware', () => {
+  const baseSessionSettings: SavedSessionResult = {
+    Keyset: {
+      id: 'test-keyset',
+      Name: 'Test KeySet',
+      FrequencyKeys: [],
+      DurationKeys: [],
+      createdAt: new Date('2023-01-01'),
+      lastModified: new Date('2023-01-02'),
+      DerivedKeys: [],
+      SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
+    },
+    SessionSettings: {} as any,
+    SpecialKeyTimers: {},
+    SystemKeyPresses: [],
+    FrequencyKeyPresses: [],
+    DurationKeyPresses: [],
+    SessionStart: '2023-01-01T10:00:00Z',
+    SessionEnd: '2023-01-01T10:10:00Z',
+    EndedEarly: false,
+    TimerMain: 600,
+    TimerOne: 0,
+    TimerTwo: 0,
+    TimerThree: 0,
+  };
+
+  it('matches legacy behavior for standard start-end pairs', () => {
+    const session: SavedSessionResult = {
+      ...baseSessionSettings,
+      SystemKeyPresses: [
+        {
+          KeyName: 'SpecialTimer',
+          KeyCode: -3,
+          KeyDescription: 'Start',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'SpecialTimer',
+          KeyCode: -3,
+          KeyDescription: 'End',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:15Z'),
+          TimeIntoSession: 15,
+          KeyType: 'System',
+        },
+      ],
+    };
+
+    expect(sumDurationSpecialKeyStateAware(session, 'SpecialTimer')).toBe(10);
+  });
+
+  it('supports release-first sessions when key starts active', () => {
+    const session: SavedSessionResult = {
+      ...baseSessionSettings,
+      SystemKeyPresses: [
+        {
+          KeyName: 'SpecialTimer',
+          KeyCode: -3,
+          KeyDescription: 'Release',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'SpecialTimer',
+          KeyCode: -3,
+          KeyDescription: 'Press',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'SpecialTimer',
+          KeyCode: -3,
+          KeyDescription: 'Release',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:30Z'),
+          TimeIntoSession: 30,
+          KeyType: 'System',
+        },
+      ],
+    };
+
+    expect(sumDurationSpecialKeyStateAware(session, 'SpecialTimer', { startsActive: true })).toBe(15);
+  });
+});
+
+describe('sumDurationScoringKeyStateAware', () => {
+  const baseSessionSettings: SavedSessionResult = {
+    Keyset: {
+      id: 'test-keyset',
+      Name: 'Test KeySet',
+      FrequencyKeys: [],
+      DurationKeys: [],
+      createdAt: new Date('2023-01-01'),
+      lastModified: new Date('2023-01-02'),
+      DerivedKeys: [],
+      SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
+    },
+    SessionSettings: {} as any,
+    SpecialKeyTimers: {},
+    SystemKeyPresses: [],
+    FrequencyKeyPresses: [],
+    DurationKeyPresses: [],
+    SessionStart: '2023-01-01T10:00:00Z',
+    SessionEnd: '2023-01-01T10:10:00Z',
+    EndedEarly: false,
+    TimerMain: 600,
+    TimerOne: 0,
+    TimerTwo: 0,
+    TimerThree: 0,
+  };
+
+  it('matches legacy behavior for standard start-end pairs', () => {
+    const session: SavedSessionResult = {
+      ...baseSessionSettings,
+      DurationKeyPresses: [
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Start',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:12Z'),
+          TimeIntoSession: 12,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    expect(sumDurationScoringKeyStateAware(session, 'ScoringKey')).toBe(7);
+  });
+
+  it('supports release-first sessions when key starts active', () => {
+    const session: SavedSessionResult = {
+      ...baseSessionSettings,
+      DurationKeyPresses: [
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Release',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Press',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Release',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:30Z'),
+          TimeIntoSession: 30,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    expect(sumDurationScoringKeyStateAware(session, 'ScoringKey', { startsActive: true })).toBe(15);
   });
 });
