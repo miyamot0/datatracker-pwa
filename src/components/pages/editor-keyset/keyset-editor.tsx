@@ -92,7 +92,7 @@ export default function KeySetEditor({
       // Note: hack to kick off re-render
       FrequencyKeys: [...KeySetObject.FrequencyKeys],
       DurationKeys: [...KeySetObject.DurationKeys],
-      DerivedKeys: [...(KeySetObject.DerivedKeys || []), logic],
+      DerivedKeys: [...KeySetObject.DerivedKeys, logic],
       SpecialDurationKeys: [...(KeySetObject.SpecialDurationKeys || [])],
       lastModified: new Date(),
     } satisfies KeySet;
@@ -106,7 +106,7 @@ export default function KeySetEditor({
       // Note: hack to kick off re-render
       DurationKeys: [...base_keyset.DurationKeys],
       FrequencyKeys: [...base_keyset.FrequencyKeys],
-      DerivedKeys: [...(base_keyset.DerivedKeys || [])],
+      DerivedKeys: [...base_keyset.DerivedKeys],
       SpecialDurationKeys: [...(base_keyset.SpecialDurationKeys || []), new_key],
       ScorableDurationKeys: [...(base_keyset.ScorableDurationKeys || [])],
       lastModified: new Date(),
@@ -121,7 +121,7 @@ export default function KeySetEditor({
       // Note: hack to kick off re-render
       DurationKeys: [...base_keyset.DurationKeys],
       FrequencyKeys: [...base_keyset.FrequencyKeys],
-      DerivedKeys: [...(base_keyset.DerivedKeys || [])],
+      DerivedKeys: [...base_keyset.DerivedKeys],
       SpecialDurationKeys: [...(base_keyset.SpecialDurationKeys || [])],
       ScorableDurationKeys: [...(base_keyset.ScorableDurationKeys || []), new_key],
       lastModified: new Date(),

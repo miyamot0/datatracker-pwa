@@ -5,20 +5,28 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // ----- Graphing / helpers mocks -----
 
-vi.mock('@/lib/graphing', () => ({
-  getChartConfiguration: () => ({
+const mockGetChartConfiguration = vi.hoisted(() =>
+  vi.fn(() => ({
     noAnimationProps: {},
     chartMargins: { top: 30, right: 20, bottom: 30, left: 20 },
     xAxisConfig: {},
     yAxisStyle: {},
     labelStyle: {},
-  }),
-  getUniqueSessionConditions: (_sessions: any) => ['Baseline'],
-  calculateSplitPoints: () => [],
+  })),
+);
+const mockGetUniqueSessionConditions = vi.hoisted(() => vi.fn(() => ['Baseline']));
+const mockCalculateSplitPoints = vi.hoisted(() => vi.fn(() => []));
+const mockSplitAtPoints = vi.hoisted(() => vi.fn((data: any) => [data]));
+const mockGetShape = vi.hoisted(() => vi.fn(() => 'circle'));
+
+vi.mock('@/lib/graphing', () => ({
+  getChartConfiguration: mockGetChartConfiguration,
+  getUniqueSessionConditions: mockGetUniqueSessionConditions,
+  calculateSplitPoints: mockCalculateSplitPoints,
 }));
 
 vi.mock('@/lib/arrays', () => ({
-  splitAtPoints: (data: any) => [data],
+  splitAtPoints: mockSplitAtPoints,
 }));
 
 vi.mock('@/lib/colors', () => ({
@@ -26,7 +34,7 @@ vi.mock('@/lib/colors', () => ({
 }));
 
 vi.mock('@/lib/shapes', () => ({
-  getShape: () => 'circle',
+  getShape: mockGetShape,
 }));
 
 // ----- Imports under test -----
@@ -59,6 +67,10 @@ const defaultProps = {
 describe('BaseChart', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetUniqueSessionConditions.mockReturnValue(['Baseline']);
+    mockCalculateSplitPoints.mockReturnValue([]);
+    mockSplitAtPoints.mockImplementation((data: any) => [data]);
+    mockGetShape.mockReturnValue('circle');
   });
 
   it('renders the recharts container', async () => {
@@ -121,5 +133,69 @@ describe('BaseChart', () => {
     const container = document.querySelector('.recharts-responsive-container');
     expect(container).not.toBeNull();
   });
-});
 
+  it('uses splitAtPoints when split points exist and connectSpans is false', async () => {
+    const baselineData = [
+      { session: 1, Condition: 'Baseline', Kicking: 10 },
+      { session: 2, Condition: 'Baseline', Kicking: 20 },
+      { session: 3, Condition: 'Baseline', Kicking: 30 },
+    ];
+    mockCalculateSplitPoints.mockReturnValue([1]);
+    mockSplitAtPoints.mockReturnValue([[baselineData[0]], [baselineData[1], baselineData[2]]]);
+
+    await render(<BaseChart {...defaultProps} preparedData={baselineData} connectSpans={false} />);
+
+    expect(mockCalculateSplitPoints).toHaveBeenCalledWith(baselineData, defaultProps.filteredSessions, 'Baseline');
+    expect(mockSplitAtPoints).toHaveBeenCalledWith(baselineData, [1]);
+  });
+
+  it('does not split when connectSpans is true even if split points exist', async () => {
+    const baselineData = [
+      { session: 1, Condition: 'Baseline', Kicking: 10 },
+      { session: 2, Condition: 'Baseline', Kicking: 20 },
+    ];
+    mockCalculateSplitPoints.mockReturnValue([1]);
+
+    await render(<BaseChart {...defaultProps} preparedData={baselineData} connectSpans={true} />);
+
+    expect(mockCalculateSplitPoints).toHaveBeenCalled();
+    expect(mockSplitAtPoints).not.toHaveBeenCalled();
+  });
+
+  it('passes visible key index to getShape and skips hidden keys', async () => {
+    await render(
+      <BaseChart
+        {...defaultProps}
+        keySetFull={[
+          { KeyDescription: 'Kicking', Visible: true },
+          { KeyDescription: 'Hidden', Visible: false },
+          { KeyDescription: 'Hitting', Visible: true },
+        ]}
+      />,
+    );
+
+    expect(mockGetShape).toHaveBeenCalledTimes(2);
+    expect(mockGetShape).toHaveBeenNthCalledWith(1, 0);
+    expect(mockGetShape).toHaveBeenNthCalledWith(2, 1);
+  });
+
+  it('filters preparedData by each condition before line/scatter construction', async () => {
+    const baselineData = { session: 1, Condition: 'Baseline', Kicking: 10 };
+    const interventionData = { session: 2, Condition: 'Intervention', Kicking: 20 };
+    mockGetUniqueSessionConditions.mockReturnValue(['Baseline', 'Intervention']);
+
+    await render(
+      <BaseChart
+        {...defaultProps}
+        preparedData={[baselineData, interventionData]}
+        filteredSessions={[{ Condition: 'Baseline' } as any, { Condition: 'Intervention' } as any]}
+      />,
+    );
+
+    expect(mockCalculateSplitPoints).toHaveBeenCalledTimes(2);
+    expect(mockCalculateSplitPoints.mock.calls[0][0]).toEqual([baselineData]);
+    expect(mockCalculateSplitPoints.mock.calls[1][0]).toEqual([interventionData]);
+    expect(mockCalculateSplitPoints.mock.calls[0][2]).toBe('Baseline');
+    expect(mockCalculateSplitPoints.mock.calls[1][2]).toBe('Intervention');
+  });
+});

@@ -213,11 +213,52 @@ describe('KeySetEditor', () => {
     expect(mockMutateAsync).toHaveBeenCalledTimes(3);
   });
 
+  it('keeps order unchanged when moving first item up or last item down', async () => {
+    await renderEditor();
+
+    const freq1Row = page.getByRole('row').filter({ hasText: 'Freq 1' });
+    const freq1Buttons = await freq1Row.getByRole('button').all();
+    await freq1Buttons[0].click();
+
+    const freq2Row = page.getByRole('row').filter({ hasText: 'Freq 2' });
+    const freq2Buttons = await freq2Row.getByRole('button').all();
+    await freq2Buttons[1].click();
+
+    const payloads = mockMutateAsync.mock.calls.map((c) => c[0].NewKeySet?.FrequencyKeys);
+    expect(payloads[0]).toEqual([
+      expect.objectContaining({ KeyName: 'F1' }),
+      expect.objectContaining({ KeyName: 'F2' }),
+    ]);
+    expect(payloads[1]).toEqual([
+      expect.objectContaining({ KeyName: 'F1' }),
+      expect.objectContaining({ KeyName: 'F2' }),
+    ]);
+  });
+
   it('does not delete when confirmation is canceled', async () => {
     mockConfirm.mockReturnValue(false);
     await renderEditor();
 
     await page.getByRole('button', { name: 'Delete' }).first().click();
+
+    expect(mockMutateAsync).not.toHaveBeenCalled();
+  });
+
+  it('does not delete derived, duration, special, and scored rows when confirmation is canceled', async () => {
+    mockConfirm.mockReturnValue(false);
+    await renderEditor();
+
+    const derivedRow = page.getByRole('row').filter({ hasText: 'Derived 1 (Derived)' });
+    await derivedRow.getByRole('button', { name: 'Delete' }).click();
+
+    const durationRow = page.getByRole('row').filter({ hasText: 'Dur 1' });
+    await durationRow.getByRole('button', { name: 'Delete' }).click();
+
+    const specialRow = page.getByRole('row').filter({ hasText: 'Special 1 (Special Timing)' });
+    await specialRow.getByRole('button', { name: 'Delete' }).click();
+
+    const scoredRow = page.getByRole('row').filter({ hasText: 'Scored 1 (Scored Duration)' });
+    await scoredRow.getByRole('button', { name: 'Delete' }).click();
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });

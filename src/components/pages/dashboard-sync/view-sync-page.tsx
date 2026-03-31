@@ -59,19 +59,6 @@ export default function ViewSyncPage({
         size={'sm'}
         className={cn('w-full md:max-w-[250px] shadow')}
         onClick={async () => {
-          if (remote_handle) {
-            return (
-              <Button
-                variant={'outline'}
-                size={'sm'}
-                onClick={() => setDirectionalSync((prev) => (prev === 'to_remote' ? 'from_remote' : 'to_remote'))}
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                {directionalSync === 'to_remote' ? 'Syncing to Remote' : 'Syncing from Remote'}
-              </Button>
-            );
-          }
-
           const options = {
             startIn: 'documents',
             mode: 'readwrite',
@@ -107,15 +94,15 @@ export default function ViewSyncPage({
           }
         }}
       >
-        {!remote_handle !== false ? 'Select Remote Backup' : 'Remote Backup Set'}
+        {!remote_handle ? 'Select Remote Backup' : 'Remote Backup Set'}
       </Button>
     );
-  }, [directionalSync, remote_handle, setRemoteHandle, Settings]);
+  }, [remote_handle, setRemoteHandle, Settings]);
 
   const buttonFunctionality = useMemo(() => {
     return (
       <WrappedButton active={!!remote_handle}>
-        {!!remote_handle !== false && buttonChangeDirection}
+        {!!remote_handle && buttonChangeDirection}
 
         {!remote_handle && buttonSetRemote}
 

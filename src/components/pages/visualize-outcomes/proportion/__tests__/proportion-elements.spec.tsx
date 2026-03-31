@@ -98,6 +98,64 @@ describe('ProportionTooltip', () => {
     expect(page.getByText(/Kicking Total/).elements().length).toBe(1);
   });
 
+  it('filters entries from a different condition than the first payload', async () => {
+    const entries = [makePayloadEntry('Kicking', 50, 'Baseline'), makePayloadEntry('Biting', 20, 'Intervention')];
+
+    await render(<ProportionTooltip active={true} payload={entries} figureTextSize="base" />);
+
+    await expect.element(page.getByText(/Kicking Total/)).toBeInTheDocument();
+    await expect.element(page.getByText(/Biting Total/)).not.toBeInTheDocument();
+  });
+
+  it('keeps only the first entry when duplicate dataKey values exist', async () => {
+    const entries = [makePayloadEntry('Kicking', 50, 'Baseline'), makePayloadEntry('Kicking', 75, 'Baseline')];
+
+    await render(<ProportionTooltip active={true} payload={entries} figureTextSize="base" />);
+
+    expect(page.getByText(/Kicking Total/).elements().length).toBe(1);
+    await expect.element(page.getByText('300.00s')).toBeInTheDocument();
+    await expect.element(page.getByText('450.00s')).not.toBeInTheDocument();
+  });
+
+  it('filters out entries with NaN values', async () => {
+    const entries = [makePayloadEntry('Kicking', Number.NaN, 'Baseline'), makePayloadEntry('Biting', 25, 'Baseline')];
+
+    await render(<ProportionTooltip active={true} payload={entries} figureTextSize="base" />);
+
+    await expect.element(page.getByText(/Biting Total/)).toBeInTheDocument();
+    await expect.element(page.getByText(/Kicking Total/)).not.toBeInTheDocument();
+  });
+
+  it('renders N/A for bouts and average when bout values are undefined', async () => {
+    const entry = makePayloadEntry('Kicking', 50, 'Baseline');
+    delete entry.payload['Kicking-Bouts'];
+    delete entry.payload['Kicking-Bout-Ave'];
+
+    await render(<ProportionTooltip active={true} payload={[entry]} figureTextSize="base" />);
+
+    const naElements = page.getByText('N/A', { exact: true }).elements();
+    expect(naElements.length).toBe(2);
+  });
+
+  it('renders N/A for average when bout average is zero', async () => {
+    const entry = makePayloadEntry('Kicking', 50, 'Baseline');
+    entry.payload['Kicking-Bout-Ave'] = 0;
+
+    await render(<ProportionTooltip active={true} payload={[entry]} figureTextSize="base" />);
+
+    await expect.element(page.getByText(/Kicking Ave/)).toBeInTheDocument();
+    expect(page.getByText('N/A', { exact: true }).elements().length).toBe(1);
+  });
+
+  it('cleans condition and hyphen from data key labels', async () => {
+    const entry = makePayloadEntry('Baseline-Kicking', 25, 'Baseline');
+
+    await render(<ProportionTooltip active={true} payload={[entry]} figureTextSize="base" />);
+
+    await expect.element(page.getByText(/Kicking Total/)).toBeInTheDocument();
+    await expect.element(page.getByText(/Baseline-Kicking Total/)).not.toBeInTheDocument();
+  });
+
   it('applies large text size class when figureTextSize is large', async () => {
     await render(
       <ProportionTooltip
@@ -122,4 +180,3 @@ describe('ProportionTooltip', () => {
     expect(document.querySelector('.text-2xl')).not.toBeNull();
   });
 });
-

@@ -41,13 +41,9 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
   }, [Handle, RemoteHandle, listBothFiles]);
 
   const sync_status = useMemo(() => {
-    // Defensive check to ensure we have valid arrays
-    const safeLocalList = Array.isArray(localFileList) ? localFileList : [];
-    const safeRemoteList = Array.isArray(remoteFileList) ? remoteFileList : [];
-
-    return safeRemoteList
+    return remoteFileList
       .map((file) => {
-        if (safeLocalList.includes(file)) {
+        if (localFileList.includes(file)) {
           return { file, status: 'Synced' };
         } else {
           return { file, status: 'Unsynced' };
@@ -92,7 +88,7 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
         return {
           id: `from-remote-${index}`,
           file: g.file || '',
-          status: g.status || 'Unknown',
+          status: g.status,
           direction: 'Remote --> Local',
         } satisfies SyncEntryTableRow;
       })}

@@ -96,6 +96,20 @@ describe('ViewSyncPage', () => {
 
     await expect.element(page.getByRole('button', { name: 'Syncing FROM Remote' })).toBeInTheDocument();
     await expect.element(page.getByTestId('sync-from-table')).toBeInTheDocument();
+
+    await page.getByRole('button', { name: 'Syncing FROM Remote' }).click();
+    await expect.element(page.getByRole('button', { name: 'Syncing TO Remote' })).toBeInTheDocument();
+    await expect.element(page.getByTestId('sync-to-table')).toBeInTheDocument();
+  });
+
+  it('does not authorize remote when directory picker returns undefined', async () => {
+    mockShowDirectoryPicker.mockResolvedValue(undefined);
+    await renderView();
+
+    await page.getByRole('button', { name: 'Select Remote Backup' }).click();
+
+    await expect.element(page.getByText('No Remote Selected')).toBeInTheDocument();
+    expect(mockNotification).not.toHaveBeenCalledWith(expect.anything(), 'Access Authorized', expect.anything());
   });
 
   it('shows toast error when directory picker throws', async () => {

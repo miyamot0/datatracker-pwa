@@ -154,6 +154,14 @@ describe('ScoredDurationDialogKeyCreator', () => {
     await expect.element(keyCaptureInput()).toHaveValue('');
   });
 
+  it('invokes key capture onChange via input event without mutating state', async () => {
+    await renderScored();
+    await openDialog();
+    const input = keyCaptureInput().element() as HTMLInputElement;
+    setInputValue(input, 'manual');
+    expect(input.value).toBe('');
+  });
+
   it('captures an allowed key press into key capture input', async () => {
     await renderScored();
     await openDialog();

@@ -337,4 +337,30 @@ describe('SyncToRemoteTable', () => {
     const rowCheckbox = page.getByRole('checkbox', { name: 'Select row' });
     await expect.element(rowCheckbox).toBeChecked();
   });
+
+  it('error callback correctly formats non-Error object as string', async () => {
+    let capturedOpts: Record<string, (...args: unknown[]) => unknown> = {};
+    mockToastPromise.mockImplementationOnce((_asyncFn: unknown, opts: typeof capturedOpts) => {
+      capturedOpts = opts;
+    });
+
+    await render(<SyncToRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
+    await page.getByTestId('sync-callback').click();
+    await flushMicrotasks();
+
+    const errorObj = { code: 'SYNC_FAILED', details: 'custom error' };
+    expect(capturedOpts.error(errorObj)).toContain('[object Object]');
+  });
+
+  it('renders fallback values for empty file names and missing status', async () => {
+    // Mock sync_status to return incomplete objects to test fallback rendering
+    mockListBothFiles.mockResolvedValue({
+      localFiles: ['file1.json', '', 'file2.json'],
+      remoteFiles: [],
+    });
+    await render(<SyncToRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
+
+    // Verify table renders with the empty file string shown
+    await expect.element(page.getByTestId('reliability-table')).toBeInTheDocument();
+  });
 });

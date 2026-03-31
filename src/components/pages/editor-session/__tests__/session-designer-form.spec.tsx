@@ -6,12 +6,14 @@ const mockConditionsMutate = vi.hoisted(() => vi.fn().mockResolvedValue([]));
 const mockSettingsMutate = vi.hoisted(() => vi.fn().mockResolvedValue({ KeySet: 'Keyset B' }));
 const mockNavigate = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const mockPreloadRoute = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+const mockInvalidate = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const mockDisplayNotification = vi.hoisted(() => vi.fn());
 const mockToastPromise = vi.hoisted(() => vi.fn(async (fn: () => Promise<unknown>) => await fn()));
 const mockPrompt = vi.hoisted(() => vi.fn());
 const mockConfirm = vi.hoisted(() => vi.fn());
 const mockMutationConditionsFn = vi.hoisted(() => vi.fn());
 const mockMutationSettingsFn = vi.hoisted(() => vi.fn());
+const mockFilteredSessionTerminationOptions = vi.hoisted(() => vi.fn(() => ['1', 'UNKNOWN_OPTION']));
 
 vi.mock('@/App', () => ({
   queryClient: {
@@ -61,7 +63,7 @@ vi.mock('@tanstack/react-query', () => ({
 
 vi.mock('@tanstack/react-router', () => ({
   useRouter: () => ({
-    invalidate: vi.fn().mockResolvedValue(undefined),
+    invalidate: mockInvalidate,
     preloadRoute: mockPreloadRoute,
   }),
   useRouterState: () => ({ matches: [{ routeId: '/test' }] }),
@@ -79,6 +81,15 @@ vi.mock('@/components/ui/tooltip-wrapper', () => ({
 vi.mock('@/lib/notifications', () => ({
   displayConditionalNotification: mockDisplayNotification,
 }));
+
+vi.mock('@/types/terminations', async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  return {
+    ...actual,
+    filteredSessionTerminationOptions: mockFilteredSessionTerminationOptions,
+    SessionTerminationOptionsDescriptions: [{ value: '1', description: 'End on Main Timer' }],
+  };
+});
 
 vi.mock('sonner', () => ({
   toast: {
@@ -148,6 +159,7 @@ describe('SessionDesigner', () => {
     mockSettingsMutate.mockReset();
     mockNavigate.mockReset();
     mockPreloadRoute.mockReset();
+    mockInvalidate.mockReset();
     mockDisplayNotification.mockReset();
     mockToastPromise.mockClear();
     mockPrompt.mockReset();
@@ -201,6 +213,30 @@ describe('SessionDesigner', () => {
         Condition: 'New Cond',
       }),
     );
+
+    const addCall = mockToastPromise.mock.calls.find((call) => call[1]?.loading === 'Adding condition...');
+    const addToastConfig = addCall?.[1];
+    expect(addToastConfig).toBeDefined();
+    expect(addToastConfig.success()).toBe('Condition has been added successfully!');
+    expect(addToastConfig.error(new Error('add failed'))).toBe(
+      'An error occurred while adding the condition: add failed',
+    );
+
+    const invalidateConfig = mockInvalidate.mock.calls[0][0];
+    expect(invalidateConfig.filter({ routeId: '/test' })).toBe(true);
+    expect(invalidateConfig.filter({ routeId: '/session/$group/$individual/$evaluation/run/$keyset' })).toBe(true);
+    expect(invalidateConfig.filter({ routeId: '/not-this-route' })).toBe(false);
+  });
+
+  it('does not add a condition when prompt returns only whitespace', async () => {
+    mockPrompt.mockReturnValue('   ');
+    await renderDesigner();
+
+    await page.getByRole('button', { name: 'Add New Condition' }).click();
+
+    expect(mockToastPromise).not.toHaveBeenCalled();
+    expect(mockConditionsMutate).not.toHaveBeenCalled();
+    expect(mockDisplayNotification).not.toHaveBeenCalled();
   });
 
   it('cancels clear empty conditions when user declines', async () => {
@@ -220,6 +256,14 @@ describe('SessionDesigner', () => {
 
     expect(mockToastPromise).toHaveBeenCalled();
     expect(mockConditionsMutate).toHaveBeenCalledWith(expect.objectContaining({ Action: 'Clear' }));
+
+    const clearCall = mockToastPromise.mock.calls.find((call) => call[1]?.loading === 'Clearing empty conditions...');
+    const clearToastConfig = clearCall?.[1];
+    expect(clearToastConfig).toBeDefined();
+    expect(clearToastConfig.success()).toBe('Empty conditions have been cleared successfully!');
+    expect(clearToastConfig.error(new Error('clear failed'))).toBe(
+      'An error occurred while clearing empty conditions: clear failed',
+    );
   });
 
   it('preloads route on form change for aggressive cache behavior', async () => {
@@ -228,6 +272,16 @@ describe('SessionDesigner', () => {
     await page.getByLabelText('Session Therapist ID').fill('NEWTHERAPIST');
 
     expect(mockPreloadRoute).toHaveBeenCalled();
+  });
+
+  it('logs an error when aggressive preload fails', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockPreloadRoute.mockRejectedValueOnce(new Error('preload failed'));
+    await renderDesigner('aggressive');
+
+    await page.getByLabelText('Session Therapist ID').fill('NEWTHERAPIST');
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error preloading route:', expect.any(Error));
   });
 
   it('submits form and navigates to run page', async () => {
@@ -258,5 +312,24 @@ describe('SessionDesigner', () => {
     await expect
       .element(page.getByRole('option', { name: /End on Special Time Time Specifically/i }))
       .toBeInTheDocument();
+  });
+
+  it('falls back to raw timer option when no description mapping exists', async () => {
+    await renderDesigner();
+
+    const combos = await page.getByRole('combobox').all();
+    await combos[combos.length - 1].click();
+
+    await expect.element(page.getByRole('option', { name: 'UNKNOWN_OPTION' })).toBeInTheDocument();
+  });
+
+  it('updates session condition through the select control', async () => {
+    await renderDesigner();
+
+    const combos = await page.getByRole('combobox').all();
+    await combos[0].click();
+    await page.getByRole('option', { name: 'Intervention' }).click();
+
+    await expect.element(page.getByRole('combobox').nth(0)).toHaveTextContent('Intervention');
   });
 });

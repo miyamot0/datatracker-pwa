@@ -3,6 +3,8 @@ import { page } from 'vitest/browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockMutateAsync = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+const mockSetQueryData = vi.hoisted(() => vi.fn());
+const mockInvalidate = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const mockConfirm = vi.hoisted(() => vi.fn());
 const mockPrompt = vi.hoisted(() => vi.fn());
 const mockAlert = vi.hoisted(() => vi.fn());
@@ -10,18 +12,24 @@ const mockToastPromise = vi.hoisted(() => vi.fn(async (fn: () => Promise<unknown
 
 vi.mock('@/App', () => ({
   queryClient: {
-    setQueryData: vi.fn(),
+    setQueryData: mockSetQueryData,
   },
 }));
 
 vi.mock('@tanstack/react-query', () => ({
-  useMutation: vi.fn(() => ({
-    mutateAsync: mockMutateAsync,
+  useMutation: vi.fn(({ onSuccess }: { onSuccess?: (data: unknown) => Promise<void> | void }) => ({
+    mutateAsync: async (payload: unknown) => {
+      const data = await mockMutateAsync(payload);
+      if (onSuccess) {
+        await onSuccess(data);
+      }
+      return data;
+    },
   })),
 }));
 
 vi.mock('@tanstack/react-router', () => ({
-  useRouter: () => ({ invalidate: vi.fn().mockResolvedValue(undefined) }),
+  useRouter: () => ({ invalidate: mockInvalidate }),
   useRouterState: () => ({ matches: [{ routeId: '/test' }] }),
 }));
 
@@ -110,6 +118,8 @@ const renderSessionManager = () =>
 describe('SessionManagerContent', () => {
   beforeEach(() => {
     mockMutateAsync.mockReset();
+    mockSetQueryData.mockReset();
+    mockInvalidate.mockReset();
     mockConfirm.mockReset();
     mockPrompt.mockReset();
     mockAlert.mockReset();
@@ -140,6 +150,12 @@ describe('SessionManagerContent', () => {
 
     const deleteButtons = await page.getByRole('button', { name: 'Delete Key' }).all();
     expect(deleteButtons).toHaveLength(4);
+
+    const replaceButtons = await page.getByRole('button', { name: 'Replace Key' }).all();
+    await expect.element(deleteButtons[0]).toBeDisabled();
+    await expect.element(deleteButtons[3]).toBeDisabled();
+    await expect.element(replaceButtons[0]).toBeDisabled();
+    await expect.element(replaceButtons[3]).toBeDisabled();
   });
 
   it('cancels delete when not confirmed', async () => {
@@ -218,6 +234,44 @@ describe('SessionManagerContent', () => {
           DurationKeyPresses: expect.arrayContaining([expect.objectContaining({ KeyType: 'Duration' })]),
         }),
       }),
+    );
+    expect(mockSetQueryData).toHaveBeenCalledWith(['/', 'GroupA', 'ClientB', 'Eval1', 'outcomes'], undefined);
+    expect(mockInvalidate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sync: true,
+      }),
+    );
+    const invalidateConfig = mockInvalidate.mock.calls[0][0];
+    expect(invalidateConfig.filter({ routeId: '/test' })).toBe(true);
+    expect(invalidateConfig.filter({ routeId: '/other-route' })).toBe(false);
+  });
+
+  it('saves with empty comments when comment box is cleared', async () => {
+    await renderSessionManager();
+
+    const textarea = page.getByRole('textbox');
+    await textarea.fill('');
+
+    await page.getByRole('button', { name: 'Update File' }).click();
+
+    expect(mockMutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({
+        UpdatedOutcome: expect.objectContaining({
+          Comments: '',
+        }),
+      }),
+    );
+  });
+
+  it('exposes success and error toast message handlers for save action', async () => {
+    await renderSessionManager();
+
+    await page.getByRole('button', { name: 'Update File' }).click();
+
+    const toastConfig = mockToastPromise.mock.calls[0][1];
+    expect(toastConfig.success()).toBe('Session file has been updated successfully!');
+    expect(toastConfig.error(new Error('save failed'))).toBe(
+      'An error occurred while saving the session file: save failed.',
     );
   });
 });

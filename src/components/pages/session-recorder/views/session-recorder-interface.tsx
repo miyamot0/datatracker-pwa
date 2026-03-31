@@ -191,14 +191,10 @@ export default function SessionRecorderInterface({
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-      if (messageChannelRef.current) {
-        messageChannelRef.current.port1.close();
-        messageChannelRef.current = null;
-      }
-      if (workerRef.current) {
-        workerRef.current.terminate();
-        workerRef.current = null;
-      }
+      messageChannelRef.current?.port1.close();
+      messageChannelRef.current = null;
+      workerRef.current?.terminate();
+      workerRef.current = null;
       if (wakelockRef.current) {
         wakelockRef.current.release();
         wakelockRef.current = undefined;
