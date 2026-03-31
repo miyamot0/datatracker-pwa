@@ -290,6 +290,36 @@ describe('file-query-mutate-actions', () => {
       expect(targetDir.getFileHandle).toHaveBeenCalledWith('regular.txt', { create: true });
       expect(targetDir.getFileHandle).not.toHaveBeenCalledWith('.DS_Store', expect.any(Object));
     });
+
+    it('should recurse when an entry is a directory', async () => {
+      const sourceDir = createMockDirectoryHandle('source');
+      const targetDir = createMockDirectoryHandle('target');
+      const childSource = createMockDirectoryHandle('child');
+      const childTarget = createMockDirectoryHandle('child');
+
+      sourceDir.entries.mockReturnValue(createEntriesIterator([['child', childSource]]));
+      childSource.entries.mockReturnValue(createEntriesIterator([]));
+
+      sourceDir.getDirectoryHandle.mockResolvedValue(childSource);
+      targetDir.getDirectoryHandle.mockResolvedValue(childTarget);
+
+      await copyDirectory(sourceDir as any, targetDir as any);
+
+      expect(targetDir.getDirectoryHandle).toHaveBeenCalledWith('child', { create: true });
+    });
+
+    it('should ignore unsupported entry kinds when copying directory', async () => {
+      const sourceDir = createMockDirectoryHandle('source');
+      const targetDir = createMockDirectoryHandle('target');
+      sourceDir.entries.mockReturnValue(
+        createEntriesIterator([['mystery', { kind: 'other', name: 'mystery' } as any]]),
+      );
+
+      await copyDirectory(sourceDir as any, targetDir as any);
+
+      expect(targetDir.getFileHandle).not.toHaveBeenCalled();
+      expect(targetDir.getDirectoryHandle).not.toHaveBeenCalled();
+    });
   });
 
   describe('mutateConditions', () => {
@@ -339,32 +369,58 @@ describe('file-query-mutate-actions', () => {
       );
     });
 
-    it.skip('should clear empty conditions', async () => {
+    it('should not duplicate condition name when adding existing condition', async () => {
+      const mockExisting = createMockDirectoryHandle('existing-condition');
+
+      mockEvaluationDir.entries.mockReturnValue(createEntriesIterator([['existing-condition', mockExisting]]));
+      mockEvaluationDir.getDirectoryHandle.mockResolvedValue(mockExisting);
+
+      const result = await mutateConditions(
+        mockRootHandle as any,
+        'group',
+        'individual',
+        'evaluation',
+        'Add',
+        'existing-condition',
+      );
+
+      expect(result).toEqual(['existing-condition']);
+    });
+
+    it('should ignore non-directory entries while listing conditions', async () => {
+      mockEvaluationDir.entries.mockReturnValue(
+        createEntriesIterator([['notes.txt', createMockFileHandle('notes.txt')]]),
+      );
+
+      const newCondition = createMockDirectoryHandle('new-condition');
+      mockEvaluationDir.getDirectoryHandle.mockResolvedValue(newCondition);
+
+      const result = await mutateConditions(
+        mockRootHandle as any,
+        'group',
+        'individual',
+        'evaluation',
+        'Add',
+        'new-condition',
+      );
+
+      expect(result).toEqual(['new-condition']);
+    });
+
+    it('should clear empty conditions', async () => {
       const mockCondition1 = createMockDirectoryHandle('condition1');
       const mockCondition2 = createMockDirectoryHandle('condition2');
 
-      mockEvaluationDir.entries.mockReturnValue(
+      mockEvaluationDir.entries.mockImplementation(() =>
         createEntriesIterator([
           ['condition1', mockCondition1],
           ['condition2', mockCondition2],
         ]),
       );
 
-      // Mock condition1 as empty - return empty async iterable
-      const emptyAsyncIterable = {
-        async *[Symbol.asyncIterator]() {
-          // Empty generator
-        },
-      };
-      mockCondition1.values.mockResolvedValue(emptyAsyncIterable);
-
-      // Mock condition2 as having files - return non-empty async iterable
-      const nonEmptyAsyncIterable = {
-        async *[Symbol.asyncIterator]() {
-          yield createMockFileHandle('session.json');
-        },
-      };
-      mockCondition2.values.mockResolvedValue(nonEmptyAsyncIterable);
+      // Mock condition1 as empty and condition2 as having files.
+      mockCondition1.values.mockReturnValue(createValuesIterator([]));
+      mockCondition2.values.mockReturnValue(createValuesIterator([createMockFileHandle('session.json')]));
 
       mockEvaluationDir.getDirectoryHandle.mockImplementation((name) => {
         if (name === 'condition1') return Promise.resolve(mockCondition1);
@@ -378,6 +434,16 @@ describe('file-query-mutate-actions', () => {
 
       expect(mockEvaluationDir.removeEntry).toHaveBeenCalledWith('condition1', { recursive: true });
       expect(result).toEqual(['condition2']);
+    });
+
+    it('should ignore .DS_Store entries when clearing conditions', async () => {
+      const dsStoreFile = createMockFileHandle('.DS_Store');
+      mockEvaluationDir.entries.mockImplementation(() => createEntriesIterator([['.DS_Store', dsStoreFile]]));
+
+      const result = await mutateConditions(mockRootHandle as any, 'group', 'individual', 'evaluation', 'Clear');
+
+      expect(mockEvaluationDir.removeEntry).not.toHaveBeenCalled();
+      expect(result).toEqual([]);
     });
   });
 
@@ -449,6 +515,59 @@ describe('file-query-mutate-actions', () => {
       ).rejects.toThrow('renameTo is required for Duplicate action');
     });
 
+    it('should not duplicate evaluation name when adding existing evaluation', async () => {
+      const existingEvalDir = createMockDirectoryHandle('existing-eval');
+      mockIndividualDir.getDirectoryHandle.mockResolvedValue(existingEvalDir);
+
+      const result = await mutateEvaluations(mockRootHandle as any, 'group', 'individual', ['existing-eval'], 'Add');
+
+      expect(result).toEqual(['existing-eval']);
+    });
+
+    it('should ignore non-directory entries when listing evaluations', async () => {
+      mockIndividualDir.entries.mockReturnValue(
+        createEntriesIterator([['note.txt', createMockFileHandle('note.txt')]]),
+      );
+
+      const newEval = createMockDirectoryHandle('new-eval');
+      mockIndividualDir.getDirectoryHandle.mockResolvedValue(newEval);
+
+      const result = await mutateEvaluations(mockRootHandle as any, 'group', 'individual', ['new-eval'], 'Add');
+
+      expect(result).toEqual(['new-eval']);
+    });
+
+    it('should not duplicate evaluation name on duplicate when target already exists in list', async () => {
+      const sourceDir = createMockDirectoryHandle('source-eval');
+      const targetDir = createMockDirectoryHandle('target-eval');
+
+      mockIndividualDir.entries.mockReturnValue(
+        createEntriesIterator([
+          ['source-eval', sourceDir],
+          ['target-eval', targetDir],
+        ]),
+      );
+
+      mockIndividualDir.getDirectoryHandle.mockImplementation((name) => {
+        if (name === 'source-eval') return Promise.resolve(sourceDir);
+        if (name === 'target-eval') return Promise.resolve(targetDir);
+        throw new Error('Not found');
+      });
+
+      sourceDir.entries.mockReturnValue(createEntriesIterator([]));
+
+      const result = await mutateEvaluations(
+        mockRootHandle as any,
+        'group',
+        'individual',
+        ['source-eval'],
+        'Duplicate',
+        'target-eval',
+      );
+
+      expect(result.filter((e) => e === 'target-eval')).toHaveLength(1);
+    });
+
     it('should rename an evaluation', async () => {
       const mockSourceDir = createMockDirectoryHandle('old-name');
       const mockTargetDir = createMockDirectoryHandle('new-name');
@@ -478,6 +597,37 @@ describe('file-query-mutate-actions', () => {
       expect(result).toEqual(['new-name']);
     });
 
+    it('should preserve non-target evaluations during rename', async () => {
+      const mockSourceDir = createMockDirectoryHandle('old-name');
+      const mockOtherDir = createMockDirectoryHandle('keep-name');
+      const mockTargetDir = createMockDirectoryHandle('new-name');
+
+      mockIndividualDir.getDirectoryHandle.mockImplementation((name) => {
+        if (name === 'old-name') return Promise.resolve(mockSourceDir);
+        if (name === 'new-name') return Promise.resolve(mockTargetDir);
+        throw new Error('Not found');
+      });
+      mockSourceDir.entries.mockReturnValue(createEntriesIterator([]));
+      mockIndividualDir.entries.mockReturnValue(
+        createEntriesIterator([
+          ['old-name', mockSourceDir],
+          ['keep-name', mockOtherDir],
+        ]),
+      );
+
+      const result = await mutateEvaluations(
+        mockRootHandle as any,
+        'group',
+        'individual',
+        ['old-name'],
+        'Rename',
+        'new-name',
+      );
+
+      expect(result).toContain('new-name');
+      expect(result).toContain('keep-name');
+    });
+
     it('should throw error when renaming without renameTo', async () => {
       await expect(
         mutateEvaluations(mockRootHandle as any, 'group', 'individual', ['old-name'], 'Rename'),
@@ -505,6 +655,15 @@ describe('file-query-mutate-actions', () => {
       expect(result).toEqual(['existing-group', 'new-group']);
     });
 
+    it('should not duplicate group name when adding existing group', async () => {
+      const existingGroup = createMockDirectoryHandle('existing-group');
+      mockRootHandle.getDirectoryHandle.mockResolvedValue(existingGroup);
+
+      const result = await mutateGroups(mockRootHandle as any, ['existing-group'], 'Add');
+
+      expect(result).toEqual(['existing-group']);
+    });
+
     it('should delete a group', async () => {
       mockRootHandle.entries.mockReturnValue(
         createEntriesIterator([['group-to-delete', createMockDirectoryHandle('group-to-delete')]]),
@@ -524,6 +683,21 @@ describe('file-query-mutate-actions', () => {
       const result = await mutateGroups(mockRootHandle as any, [], 'Demo');
 
       expect(result).toEqual(['existing-group', DemoDataFolderName]);
+    });
+
+    it('should not duplicate demo folder when it already exists in listed groups', async () => {
+      mockRootHandle.entries.mockReturnValue(
+        createEntriesIterator([
+          ['existing-group', createMockDirectoryHandle('existing-group')],
+          [DemoDataFolderName, createMockDirectoryHandle(DemoDataFolderName)],
+        ]),
+      );
+      mockRootHandle.getDirectoryHandle.mockResolvedValue(createMockDirectoryHandle(DemoDataFolderName));
+      mockedDataExampleFiles.length = 0;
+
+      const result = await mutateGroups(mockRootHandle as any, [], 'Demo');
+
+      expect(result.filter((name) => name === DemoDataFolderName)).toHaveLength(1);
     });
 
     it('should skip .DS_Store when listing groups', async () => {
@@ -565,6 +739,26 @@ describe('file-query-mutate-actions', () => {
 
       expect(mockGroupDir.getDirectoryHandle).toHaveBeenCalledWith('new-individual', { create: true });
       expect(result).toEqual(['existing-individual', 'new-individual']);
+    });
+
+    it('should not duplicate individual name when adding existing individual', async () => {
+      const existing = createMockDirectoryHandle('existing-individual');
+      mockGroupDir.getDirectoryHandle.mockResolvedValue(existing);
+
+      const result = await mutateIndividuals(mockRootHandle as any, 'group', ['existing-individual'], 'Add');
+
+      expect(result).toEqual(['existing-individual']);
+    });
+
+    it('should ignore non-directory entries when listing individuals', async () => {
+      mockGroupDir.entries.mockReturnValue(createEntriesIterator([['notes.txt', createMockFileHandle('notes.txt')]]));
+
+      const newIndividual = createMockDirectoryHandle('new-individual');
+      mockGroupDir.getDirectoryHandle.mockResolvedValue(newIndividual);
+
+      const result = await mutateIndividuals(mockRootHandle as any, 'group', ['new-individual'], 'Add');
+
+      expect(result).toEqual(['new-individual']);
     });
 
     it('should delete individuals', async () => {
@@ -797,6 +991,70 @@ describe('file-query-mutate-actions', () => {
       expect(result[0]).toEqual(mockUpdatedKeyset);
     });
 
+    it('should keep unrelated keysets unchanged when updating one keyset', async () => {
+      const targetFile = createMockFileHandle('target.json');
+      const targetContent = createMockFile('{"Name": "target", "id": "1"}');
+      targetFile.getFile.mockResolvedValue(targetContent);
+      const targetWritable = createMockWritableStream();
+      targetFile.createWritable.mockResolvedValue(targetWritable);
+
+      const otherFile = createMockFileHandle('other.json');
+      const otherContent = createMockFile('{"Name": "other", "id": "2"}');
+      otherFile.getFile.mockResolvedValue(otherContent);
+
+      mockIndividualDir.entries.mockReturnValue(
+        createEntriesIterator([
+          ['target.json', targetFile],
+          ['other.json', otherFile],
+        ]),
+      );
+
+      mockIndividualDir.getFileHandle.mockImplementation((name) => {
+        if (name === 'target.json') return Promise.resolve(targetFile);
+        if (name === 'other.json') return Promise.resolve(otherFile);
+        throw new Error(`File ${name} not found`);
+      });
+
+      const updated = { Name: 'target', id: '1', changed: true } as any;
+      mockedSerializeKeySet.mockReturnValue(JSON.stringify(updated));
+
+      const result = await mutateKeysets(
+        mockRootHandle as any,
+        'group',
+        'individual',
+        ['target'],
+        'Update',
+        undefined,
+        updated,
+      );
+
+      expect(result.find((k) => k.Name === 'target')).toEqual(updated);
+      expect(result.find((k) => k.Name === 'other')?.id).toBe('2');
+    });
+
+    it('should allow rename action without renameTo by preserving name', async () => {
+      const oldFile = createMockFileHandle('same-name.json');
+      const oldContent = createMockFile('{"Name": "same-name", "id": "1"}');
+      oldFile.getFile.mockResolvedValue(oldContent);
+
+      const undefinedTarget = createMockFileHandle('undefined.json');
+      const undefinedWritable = createMockWritableStream();
+      undefinedTarget.createWritable.mockResolvedValue(undefinedWritable);
+
+      mockIndividualDir.entries.mockReturnValue(createEntriesIterator([['same-name.json', oldFile]]));
+      mockIndividualDir.getFileHandle.mockImplementation((name) => {
+        if (name === 'same-name.json') return Promise.resolve(oldFile);
+        if (name === 'undefined.json') return Promise.resolve(undefinedTarget);
+        throw new Error(`File ${name} not found`);
+      });
+
+      mockedSerializeKeySet.mockReturnValue('{"Name":"same-name"}');
+
+      const result = await mutateKeysets(mockRootHandle as any, 'group', 'individual', ['same-name'], 'Rename');
+
+      expect(result[0].Name).toBe('same-name');
+    });
+
     it('should throw error when updating without newKeySet', async () => {
       // Mock existing keyset
       const mockExistingKeysetFile = createMockFileHandle('existing-keyset.json');
@@ -816,6 +1074,59 @@ describe('file-query-mutate-actions', () => {
       await expect(
         mutateKeysets(mockRootHandle as any, 'group', 'individual', ['existing-keyset'], 'Update'),
       ).rejects.toThrow('newKeySet not supplied');
+    });
+
+    it('should rename an existing keyset and keep non-target keysets unchanged', async () => {
+      const oldKeysetFile = createMockFileHandle('old-name.json');
+      const oldKeysetContent = createMockFile('{"Name": "old-name", "id": "old-id"}');
+      oldKeysetFile.getFile.mockResolvedValue(oldKeysetContent);
+
+      const otherKeysetFile = createMockFileHandle('other.json');
+      const otherKeysetContent = createMockFile('{"Name": "other", "id": "other-id"}');
+      otherKeysetFile.getFile.mockResolvedValue(otherKeysetContent);
+
+      const renamedFile = createMockFileHandle('renamed.json');
+      const writable = createMockWritableStream();
+      renamedFile.createWritable.mockResolvedValue(writable);
+
+      mockIndividualDir.entries.mockReturnValue(
+        createEntriesIterator([
+          ['old-name.json', oldKeysetFile],
+          ['other.json', otherKeysetFile],
+        ]),
+      );
+
+      mockIndividualDir.getFileHandle.mockImplementation((name) => {
+        if (name === 'old-name.json') return Promise.resolve(oldKeysetFile);
+        if (name === 'other.json') return Promise.resolve(otherKeysetFile);
+        if (name === 'renamed.json') return Promise.resolve(renamedFile);
+        throw new Error(`File ${name} not found`);
+      });
+
+      mockedSerializeKeySet.mockReturnValue('{"Name":"renamed"}');
+
+      const result = await mutateKeysets(
+        mockRootHandle as any,
+        'group',
+        'individual',
+        ['old-name'],
+        'Rename',
+        'renamed',
+      );
+
+      expect(mockIndividualDir.getFileHandle).toHaveBeenCalledWith('renamed.json', { create: true });
+      expect(mockIndividualDir.removeEntry).toHaveBeenCalledWith('old-name.json');
+      expect(writable.write).toHaveBeenCalled();
+      expect(result.some((k) => k.Name === 'renamed')).toBe(true);
+      expect(result.some((k) => k.Name === 'other')).toBe(true);
+    });
+
+    it('should throw when renaming a non-existent keyset', async () => {
+      mockIndividualDir.entries.mockReturnValue(createEntriesIterator([]));
+
+      await expect(
+        mutateKeysets(mockRootHandle as any, 'group', 'individual', ['missing'], 'Rename', 'new-name'),
+      ).rejects.toThrow('No matching KeySet found.');
     });
 
     it('should skip invalid JSON files', async () => {
@@ -852,6 +1163,41 @@ describe('file-query-mutate-actions', () => {
       // Should only include the valid keyset plus the new one
       expect(result).toHaveLength(2);
     });
+
+    it('should skip non-json and empty json files when loading keysets', async () => {
+      const emptyJsonFile = createMockFileHandle('empty.json');
+      const nonJsonFile = createMockFileHandle('notes.txt');
+      const validJsonFile = createMockFileHandle('valid.json');
+
+      emptyJsonFile.getFile.mockResolvedValue(createMockFile(''));
+      nonJsonFile.getFile.mockResolvedValue(createMockFile('ignored'));
+      validJsonFile.getFile.mockResolvedValue(createMockFile('{"Name":"valid","id":"1"}'));
+
+      const createdFile = createMockFileHandle('new-keyset.json');
+      const writable = createMockWritableStream();
+      createdFile.createWritable.mockResolvedValue(writable);
+
+      mockIndividualDir.entries.mockReturnValue(
+        createEntriesIterator([
+          ['empty.json', emptyJsonFile],
+          ['notes.txt', nonJsonFile],
+          ['valid.json', validJsonFile],
+        ]),
+      );
+
+      mockIndividualDir.getFileHandle.mockImplementation((name) => {
+        if (name === 'empty.json') return Promise.resolve(emptyJsonFile);
+        if (name === 'notes.txt') return Promise.resolve(nonJsonFile);
+        if (name === 'valid.json') return Promise.resolve(validJsonFile);
+        if (name === 'new-keyset.json') return Promise.resolve(createdFile);
+        throw new Error(`File ${name} not found`);
+      });
+
+      const result = await mutateKeysets(mockRootHandle as any, 'group', 'individual', ['new-keyset'], 'Add');
+
+      expect(result.map((k) => k.Name)).toContain('valid');
+      expect(result.map((k) => k.Name)).toContain('new-keyset');
+    });
   });
 
   describe('mutateKeysetsAll', () => {
@@ -881,6 +1227,15 @@ describe('file-query-mutate-actions', () => {
 
       // Should exclude keysets belonging to 'individual' and those with matching names
       expect(result).toEqual([{ Name: 'keyset3', id: '3', Individual: 'other', Group: 'group' }]);
+    });
+
+    it('should rethrow when importExistingKeysets fails', async () => {
+      const mockRootHandle = createMockDirectoryHandle('root');
+      mockedImportExistingKeysets.mockRejectedValueOnce(new Error('import failed'));
+
+      await expect(mutateKeysetsAll(mockRootHandle as any, 'group', 'individual', [], [])).rejects.toThrow(
+        'import failed',
+      );
     });
   });
 
@@ -991,6 +1346,42 @@ describe('file-query-mutate-actions', () => {
 
       expect(result).toEqual(mockAllRecords);
     });
+
+    it('should handle undefined allRecords and relevantRecords by returning empty list', async () => {
+      const mockRootHandle = createMockDirectoryHandle('root');
+
+      const result = await mutateEvaluationsAll(
+        mockRootHandle as any,
+        'target-group',
+        'target-individual',
+        'Import',
+        undefined as any,
+        undefined,
+      );
+
+      expect(result).toEqual([]);
+    });
+
+    it('should rethrow when evaluation duplication fails during import', async () => {
+      const mockRootHandle = createMockDirectoryHandle('root');
+      const mockAllRecords = [] as EvaluationRecord[];
+      const relevantRecords = [
+        { Group: 'source-group', Individual: 'source-individual', Evaluation: 'eval1', Conditions: [] },
+      ] as EvaluationRecord[];
+
+      mockRootHandle.getDirectoryHandle.mockRejectedValueOnce(new Error('duplication failed'));
+
+      await expect(
+        mutateEvaluationsAll(
+          mockRootHandle as any,
+          'target-group',
+          'target-individual',
+          'Import',
+          mockAllRecords,
+          relevantRecords,
+        ),
+      ).rejects.toThrow('duplication failed');
+    });
   });
 
   describe('mutateSessionOutcomes', () => {
@@ -1061,6 +1452,30 @@ describe('file-query-mutate-actions', () => {
       expect(result).toEqual(mockOutcomes);
     });
 
+    it('should continue delete flow when removeEntry fails for an existing condition directory', async () => {
+      const mockConditionDir = createMockDirectoryHandle('condition1');
+      mockConditionDir.removeEntry.mockRejectedValue(new Error('cannot remove'));
+
+      const mockOutcomes = [
+        { Filename: 'session1.json', SessionSettings: { Condition: 'condition1' } },
+      ] as ModifiedSessionResult[];
+
+      mockEvaluationDir.getDirectoryHandle.mockResolvedValue(mockConditionDir);
+
+      const result = await mutateSessionOutcomes(
+        mockRootHandle as any,
+        'group',
+        'individual',
+        'evaluation',
+        mockOutcomes,
+        [...mockOutcomes],
+        'Delete',
+      );
+
+      expect(mockConditionDir.removeEntry).toHaveBeenCalledWith('session1.json');
+      expect(result).toEqual([]);
+    });
+
     it('should edit condition for session outcomes', async () => {
       const mockOldConditionDir = createMockDirectoryHandle('old-condition');
       const mockNewConditionDir = createMockDirectoryHandle('new-condition');
@@ -1102,6 +1517,90 @@ describe('file-query-mutate-actions', () => {
       expect(mockWritable.write).toHaveBeenCalled();
       expect(mockOldConditionDir.removeEntry).toHaveBeenCalledWith('session1.json');
       expect(result[0].SessionSettings.Condition).toBe('new-condition');
+    });
+
+    it('should sort edited outcomes by descending session value', async () => {
+      const mockOldConditionDir = createMockDirectoryHandle('old-condition');
+      const mockNewConditionDir = createMockDirectoryHandle('new-condition');
+      const mockFileHandleA = createMockFileHandle('session-a.json');
+      const mockFileHandleB = createMockFileHandle('session-b.json');
+      const mockNewFileHandle = createMockFileHandle('generated-filename.json');
+      const mockWritable = createMockWritableStream();
+
+      const first = {
+        Filename: 'session-a.json',
+        SessionSettings: { Condition: 'old-condition', Session: '2024-01-01T00:00:00.000Z' },
+      } as unknown as ModifiedSessionResult;
+      const second = {
+        Filename: 'session-b.json',
+        SessionSettings: { Condition: 'old-condition', Session: '2024-02-01T00:00:00.000Z' },
+      } as unknown as ModifiedSessionResult;
+
+      mockedGenerateSavedFileName.mockReturnValueOnce('generated-a.json').mockReturnValueOnce('generated-b.json');
+
+      mockEvaluationDir.values.mockReturnValue(createValuesIterator([mockOldConditionDir]));
+      mockOldConditionDir.values.mockReturnValue(createValuesIterator([mockFileHandleA, mockFileHandleB]));
+
+      mockEvaluationDir.getDirectoryHandle.mockImplementation((name) => {
+        if (name === 'new-condition') return Promise.resolve(mockNewConditionDir);
+        if (name === 'old-condition') return Promise.resolve(mockOldConditionDir);
+        throw new Error('Not found');
+      });
+
+      mockNewConditionDir.getFileHandle.mockResolvedValue(mockNewFileHandle);
+      mockNewFileHandle.createWritable.mockResolvedValue(mockWritable);
+
+      const result = await mutateSessionOutcomes(
+        mockRootHandle as any,
+        'group',
+        'individual',
+        'evaluation',
+        [first, second],
+        [first, second],
+        'EditCondition',
+        'new-condition',
+      );
+
+      expect(result).toHaveLength(2);
+      expect(new Date(result[0].SessionSettings.Session).valueOf()).toBeGreaterThan(
+        new Date(result[1].SessionSettings.Session).valueOf(),
+      );
+    });
+
+    it('should skip non-directory entries and non-matching files during EditCondition', async () => {
+      const oldConditionDir = createMockDirectoryHandle('old-condition');
+      const newConditionDir = createMockDirectoryHandle('new-condition');
+      const ignoredFile = createMockFileHandle('not-a-directory.json');
+      const unrelatedFile = createMockFileHandle('unrelated.json');
+
+      const outcomes = [
+        {
+          Filename: 'target.json',
+          SessionSettings: { Condition: 'old-condition', Session: '2024-01-01T00:00:00.000Z' },
+        },
+      ] as unknown as ModifiedSessionResult[];
+
+      mockEvaluationDir.values.mockReturnValue(createValuesIterator([ignoredFile, oldConditionDir] as any));
+      oldConditionDir.values.mockReturnValue(createValuesIterator([unrelatedFile]));
+
+      mockEvaluationDir.getDirectoryHandle.mockImplementation((name) => {
+        if (name === 'new-condition') return Promise.resolve(newConditionDir);
+        if (name === 'old-condition') return Promise.resolve(oldConditionDir);
+        throw new Error('Not found');
+      });
+
+      const result = await mutateSessionOutcomes(
+        mockRootHandle as any,
+        'group',
+        'individual',
+        'evaluation',
+        outcomes,
+        outcomes,
+        'EditCondition',
+        'new-condition',
+      );
+
+      expect(result).toEqual([]);
     });
 
     it('should throw error when editing condition without rename value', async () => {
@@ -1187,6 +1686,36 @@ describe('file-query-mutate-actions', () => {
       ).rejects.toThrow('Original outcome not found');
     });
 
+    it('should wrap modify file write errors with context', async () => {
+      const mockConditionDir = createMockDirectoryHandle('condition1');
+      const mockPriorOutcome = {
+        Filename: 'session1.json',
+        SessionSettings: { Condition: 'condition1' },
+      } as any;
+      const mockUpdatedOutcome = {
+        Filename: 'session1.json',
+        SessionSettings: { Condition: 'condition1' },
+      } as any;
+
+      mockEvaluationDir.getDirectoryHandle.mockResolvedValue(mockConditionDir);
+      mockConditionDir.getFileHandle.mockRejectedValue(new Error('write target missing'));
+
+      await expect(
+        mutateSessionOutcomes(
+          mockRootHandle as any,
+          'group',
+          'individual',
+          'evaluation',
+          [],
+          [mockPriorOutcome],
+          'Modify',
+          undefined,
+          mockUpdatedOutcome,
+          mockPriorOutcome,
+        ),
+      ).rejects.toThrow('Failed to update outcome: Error: write target missing');
+    });
+
     it('should add new session outcome', async () => {
       const mockConditionDir = createMockDirectoryHandle('condition1');
       const mockFileHandle = createMockFileHandle('generated-filename.json');
@@ -1227,6 +1756,32 @@ describe('file-query-mutate-actions', () => {
       await expect(
         mutateSessionOutcomes(mockRootHandle as any, 'group', 'individual', 'evaluation', [], [], 'Add'),
       ).rejects.toThrow('New outcome not found');
+    });
+
+    it('should wrap add file write errors with context', async () => {
+      const mockConditionDir = createMockDirectoryHandle('condition1');
+      const mockNewOutcome = {
+        SessionSettings: { Condition: 'condition1', Session: '2024-01-01' },
+      } as any;
+
+      mockEvaluationDir.getDirectoryHandle.mockResolvedValue(mockConditionDir);
+      mockConditionDir.getFileHandle.mockRejectedValue(new Error('create failed'));
+
+      await expect(
+        mutateSessionOutcomes(
+          mockRootHandle as any,
+          'group',
+          'individual',
+          'evaluation',
+          [],
+          [],
+          'Add',
+          undefined,
+          undefined,
+          undefined,
+          mockNewOutcome,
+        ),
+      ).rejects.toThrow('Failed to add outcome: Error: create failed');
     });
   });
 

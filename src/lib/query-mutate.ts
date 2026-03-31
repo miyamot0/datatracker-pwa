@@ -695,9 +695,7 @@ export async function mutateSessionOutcomes(
 
             for await (const sub_dir_file of await condition_folder.values()) {
               if (file_names_to_move.includes(sub_dir_file.name)) {
-                const relevant_result = outcomes.find((r) => r.Filename === sub_dir_file.name);
-
-                if (!relevant_result) continue;
+                const relevant_result = outcomes.find((r) => r.Filename === sub_dir_file.name)!;
 
                 const new_object = { ...relevant_result };
                 new_object.SessionSettings.Condition = conditionRename.trim();

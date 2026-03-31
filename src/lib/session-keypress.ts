@@ -457,7 +457,15 @@ export async function handleSessionEnded(
     }
   };
 
-  save_output();
+  void save_output().catch(() => {
+    displayConditionalNotification(
+      ApplicationSettings,
+      'Error Saving Results',
+      'An error occurred while saving the results. Please try again.',
+      3000,
+      true,
+    );
+  });
 }
 
 /**

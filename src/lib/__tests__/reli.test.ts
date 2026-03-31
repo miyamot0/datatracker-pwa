@@ -611,6 +611,27 @@ describe('calculateReliabilityFrequency - Edge Cases', () => {
     }).toThrow(); // Accept any error as the bin logic causes runtime errors
   });
 
+  it('should throw explicit out-of-range error for reliability bins', () => {
+    const primaryInRange: SavedSessionResult = {
+      ...mockPrimarySession,
+      TimerMain: 50,
+      FrequencyKeyPresses: [{ KeyDescription: 'Key1', KeyName: 'A', TimeIntoSession: 10 }] as KeyManageType[],
+    };
+    const reliabilityOutOfRange: SavedSessionResult = {
+      ...mockReliabilitySession,
+      TimerMain: 50,
+      FrequencyKeyPresses: [{ KeyDescription: 'Key1', KeyName: 'A', TimeIntoSession: 1000 }] as KeyManageType[],
+    };
+
+    const pair: ReliabilityPairType = {
+      primary: primaryInRange,
+      reli: reliabilityOutOfRange,
+    };
+    const keyToCode = { KeyName: 'A', KeyDescription: 'Key1' } as ProbedKey;
+
+    expect(() => calculateReliabilityFrequency(pair, [keyToCode])).toThrow('is out of range');
+  });
+
   it('should handle sessions with different timer lengths', () => {
     const shortReliability: SavedSessionResult = {
       ...mockReliabilitySession,
@@ -1015,6 +1036,36 @@ describe('prepareFrequencyReliTable', () => {
     });
   });
 
+  it('should leave blank cells when session identifiers do not strictly match', () => {
+    const keyset: KeySet = {
+      ...mockKeySet,
+      FrequencyKeys: [{ KeyName: 'A', KeyDescription: 'Key A', KeyCode: 65 }],
+    };
+
+    const pairedWithStringSession: ReliabilityPairType[] = [
+      {
+        primary: {
+          ...mockPrimarySession,
+          SessionSettings: { Session: '1' as any } as SavedSettings,
+        },
+        reli: {
+          ...mockReliabilitySession,
+          SessionSettings: { Session: '1' as any } as SavedSettings,
+        },
+      },
+    ];
+
+    const result = prepareFrequencyReliTable(pairedWithStringSession, keyset);
+
+    // First row is for session "1" pulled as numeric 1, but scored row stores "1" string.
+    expect(result.rows[0][1].value).toBe('');
+    expect(result.rows[0][2].value).toBe('');
+    expect(result.rows[0][3].value).toBe('');
+    expect(result.rows[0][4].value).toBe('');
+    expect(result.rows[0][5].value).toBe('');
+    expect(result.rows[0][6].value).toBe('');
+  });
+
   it('should format numeric values to 2 decimal places', () => {
     const result = prepareFrequencyReliTable(mockPairedSessions, mockKeySet);
 
@@ -1200,6 +1251,43 @@ describe('prepareDurationReliTable', () => {
         }
       });
     });
+  });
+
+  it('should leave blank duration cells when session identifiers do not strictly match', () => {
+    const keyset: KeySet = {
+      ...mockDurationKeySet,
+      DurationKeys: [{ KeyName: 'D1', KeyDescription: 'Duration Key 1', KeyCode: 68 }],
+    };
+
+    const pairedWithStringSession: ReliabilityPairType[] = [
+      {
+        primary: {
+          ...mockPrimarySession,
+          SessionSettings: { Session: '1' as any } as SavedSettings,
+          DurationKeyPresses: [
+            { KeyDescription: 'Duration Key 1', KeyName: 'D1', TimeIntoSession: 10 },
+            { KeyDescription: 'Duration Key 1', KeyName: 'D1', TimeIntoSession: 20 },
+          ] as KeyManageType[],
+        },
+        reli: {
+          ...mockReliabilitySession,
+          SessionSettings: { Session: '1' as any } as SavedSettings,
+          DurationKeyPresses: [
+            { KeyDescription: 'Duration Key 1', KeyName: 'D1', TimeIntoSession: 10 },
+            { KeyDescription: 'Duration Key 1', KeyName: 'D1', TimeIntoSession: 20 },
+          ] as KeyManageType[],
+        },
+      },
+    ];
+
+    const result = prepareDurationReliTable(pairedWithStringSession, keyset);
+
+    expect(result.rows[0][1].value).toBe('');
+    expect(result.rows[0][2].value).toBe('');
+    expect(result.rows[0][3].value).toBe('');
+    expect(result.rows[0][4].value).toBe('');
+    expect(result.rows[0][5].value).toBe('');
+    expect(result.rows[0][6].value).toBe('');
   });
 
   it('should handle NaN values in calculations gracefully', () => {

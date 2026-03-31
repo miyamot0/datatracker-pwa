@@ -560,6 +560,46 @@ describe('graphing utility functions', () => {
       expect(result.derivedKeys).toEqual([derived1, derived2]);
     });
 
+    it('should deduplicate special and scorable duration keys', () => {
+      const special1: KeySetInstance = { KeyName: 'Special1', KeyDescription: 'Special 1', KeyCode: 71 };
+      const special1Duplicate: KeySetInstance = { KeyName: 'Special1', KeyDescription: 'Special 1', KeyCode: 71 };
+      const special2: KeySetInstance = { KeyName: 'Special2', KeyDescription: 'Special 2', KeyCode: 72 };
+
+      const scorable1: KeySetInstance = { KeyName: 'Scorable1', KeyDescription: 'Scorable 1', KeyCode: 81 };
+      const scorable1Duplicate: KeySetInstance = { KeyName: 'Scorable1', KeyDescription: 'Scorable 1', KeyCode: 81 };
+      const scorable2: KeySetInstance = { KeyName: 'Scorable2', KeyDescription: 'Scorable 2', KeyCode: 82 };
+
+      const sessions = [
+        {
+          ...createMockModifiedSession(1),
+          Keyset: {
+            ...createMockKeySet(),
+            SpecialDurationKeys: [special1, special2],
+            ScorableDurationKeys: [scorable1],
+          },
+        },
+        {
+          ...createMockModifiedSession(2),
+          Keyset: {
+            ...createMockKeySet(),
+            SpecialDurationKeys: [special1Duplicate],
+            ScorableDurationKeys: [scorable1Duplicate, scorable2],
+          },
+        },
+      ] as ModifiedSessionResult[];
+
+      const keyset = {
+        ...createMockKeySet(),
+        SpecialDurationKeys: [special1],
+        ScorableDurationKeys: [scorable1],
+      } as KeySet;
+
+      const result = extractAndDeduplicateKeysets(sessions, keyset);
+
+      expect(result.specialDurationKeys).toEqual([special1, special2]);
+      expect(result.scorableDurationKeys).toEqual([scorable1, scorable2]);
+    });
+
     it('should handle sessions with no keys', () => {
       const sessions = [createMockModifiedSession(1, [], []), createMockModifiedSession(2, [], [])];
 
@@ -629,6 +669,29 @@ describe('graphing utility functions', () => {
 
       expect(result.frequencyKeys).toHaveLength(1);
       expect(result.derivedKeys).toHaveLength(0); // Should handle undefined gracefully
+    });
+
+    it('should handle undefined special and scorable duration keys', () => {
+      const session: ModifiedSessionResult = {
+        ...createMockSession(1),
+        Keyset: {
+          ...createMockKeySet(),
+          SpecialDurationKeys: undefined as any,
+          ScorableDurationKeys: undefined as any,
+        },
+        Filename: 'session1.json',
+      };
+
+      const keyset = {
+        ...createMockKeySet(),
+        SpecialDurationKeys: undefined as any,
+        ScorableDurationKeys: undefined as any,
+      } as KeySet;
+
+      const result = extractAndDeduplicateKeysets([session], keyset);
+
+      expect(result.specialDurationKeys).toEqual([]);
+      expect(result.scorableDurationKeys).toEqual([]);
     });
   });
 
@@ -1529,6 +1592,34 @@ describe('graphing utility functions', () => {
         'Zero Rate Key': 0,
         'Negative Rate Key': -1.5,
       });
+    });
+
+    it('should keep maxY when derived rate is lower than current max', () => {
+      const scoredSessions = [
+        createMockProcessedSession(
+          1,
+          'DerivedBelowMax',
+          [
+            {
+              keyName: 'FreqMax',
+              keyDescription: 'Frequency Max',
+              rate: 5.5,
+            },
+          ],
+          [
+            {
+              keyName: 'DerivedLower',
+              keyDescription: 'Derived Lower',
+              rate: 1.2,
+            },
+          ],
+        ),
+      ];
+
+      const result = prepareRateDataUniversal(scoredSessions);
+
+      expect(result.maxY).toBe(5.5);
+      expect(result.preparedData[0]['Derived Lower']).toBe(1.2);
     });
   });
 

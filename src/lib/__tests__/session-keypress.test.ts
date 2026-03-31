@@ -400,6 +400,229 @@ describe('session-keypress.ts', () => {
       await flushPromises();
       expect(args.setRunningState).not.toHaveBeenCalled();
     });
+
+    it('SESSION_ENDED falls back to empty specialKeyTimers when payload value is null', () => {
+      const args = makeWorkerMessageArgs();
+
+      handleWorkerMessage(
+        makeWorkerEvent('SESSION_ENDED', makeSessionEndedPayload({ specialKeyTimers: null } as any)),
+        args,
+      );
+
+      expect(args.specialKeyTimers.current).toEqual({});
+    });
+
+    it('SESSION_ENDED uses special key timer when activeSpecialKey is set', () => {
+      const args = makeWorkerMessageArgs({
+        activeSpecialKey: makeRef<string | null>('SpecialKey'),
+        specialKeyTimers: makeRef<Record<string, number>>({ SpecialKey: 42 }),
+      });
+
+      handleWorkerMessage(
+        makeWorkerEvent(
+          'SESSION_ENDED',
+          makeSessionEndedPayload({
+            reason: 'Stopped',
+            specialKeyTimers: { SpecialKey: 42 },
+            timers: { total: 100, first: 50, second: 25, third: 10 },
+          }),
+        ),
+        args,
+      );
+
+      expect(args.pendingTimerUpdate.current?.active).toBe(42);
+    });
+
+    it('SESSION_ENDED uses 0 active time when active special key is missing in timer map', () => {
+      const args = makeWorkerMessageArgs({
+        activeSpecialKey: makeRef<string | null>('MissingKey'),
+      });
+
+      handleWorkerMessage(
+        makeWorkerEvent(
+          'SESSION_ENDED',
+          makeSessionEndedPayload({
+            reason: 'Stopped',
+            specialKeyTimers: {},
+            timers: { total: 100, first: 50, second: 25, third: 10 },
+          }),
+        ),
+        args,
+      );
+
+      expect(args.pendingTimerUpdate.current?.active).toBe(0);
+    });
+
+    it('SESSION_ENDED uses secondary timer when active timer is Secondary', () => {
+      const args = makeWorkerMessageArgs({ activeTimerRef: makeRef<any>('Secondary') });
+
+      handleWorkerMessage(makeWorkerEvent('SESSION_ENDED', makeSessionEndedPayload({ reason: 'Stopped' })), args);
+
+      expect(args.pendingTimerUpdate.current?.active).toBe(25);
+    });
+
+    it('SESSION_ENDED uses tertiary timer when active timer is Tertiary', () => {
+      const args = makeWorkerMessageArgs({ activeTimerRef: makeRef<any>('Tertiary') });
+
+      handleWorkerMessage(makeWorkerEvent('SESSION_ENDED', makeSessionEndedPayload({ reason: 'Stopped' })), args);
+
+      expect(args.pendingTimerUpdate.current?.active).toBe(25);
+    });
+
+    it('SESSION_ENDED falls back to total timer for unknown active timer', () => {
+      const args = makeWorkerMessageArgs({ activeTimerRef: makeRef<any>('UnknownTimer') });
+
+      handleWorkerMessage(makeWorkerEvent('SESSION_ENDED', makeSessionEndedPayload({ reason: 'Stopped' })), args);
+
+      expect(args.pendingTimerUpdate.current?.active).toBe(100);
+    });
+
+    it('SESSION_ENDED clamps total time for End on Primary Timer completion', () => {
+      const args = makeWorkerMessageArgs({
+        Settings: makeSettings({ TimerOption: 'End on Primary Timer', DurationS: 200 }),
+      });
+
+      handleWorkerMessage(
+        makeWorkerEvent(
+          'SESSION_ENDED',
+          makeSessionEndedPayload({ reason: 'Completed', timers: { total: 100, first: 20, second: 20, third: 20 } }),
+        ),
+        args,
+      );
+
+      expect(args.pendingTimerUpdate.current?.total).toBe(200);
+    });
+
+    it('SESSION_ENDED clamps first/second/third timers for configured timer option', () => {
+      const primaryArgs = makeWorkerMessageArgs({
+        Settings: makeSettings({ TimerOption: 'End on Timer #1', DurationS: 60 }),
+      });
+      handleWorkerMessage(
+        makeWorkerEvent(
+          'SESSION_ENDED',
+          makeSessionEndedPayload({ reason: 'Completed', timers: { total: 100, first: 10, second: 20, third: 30 } }),
+        ),
+        primaryArgs,
+      );
+      expect(primaryArgs.pendingTimerUpdate.current?.first).toBe(60);
+
+      const secondaryArgs = makeWorkerMessageArgs({
+        Settings: makeSettings({ TimerOption: 'End on Timer #2', DurationS: 70 }),
+      });
+      handleWorkerMessage(
+        makeWorkerEvent(
+          'SESSION_ENDED',
+          makeSessionEndedPayload({ reason: 'Completed', timers: { total: 100, first: 10, second: 20, third: 30 } }),
+        ),
+        secondaryArgs,
+      );
+      expect(secondaryArgs.pendingTimerUpdate.current?.second).toBe(70);
+
+      const tertiaryArgs = makeWorkerMessageArgs({
+        Settings: makeSettings({ TimerOption: 'End on Timer #3', DurationS: 80 }),
+      });
+      handleWorkerMessage(
+        makeWorkerEvent(
+          'SESSION_ENDED',
+          makeSessionEndedPayload({ reason: 'Completed', timers: { total: 100, first: 10, second: 20, third: 30 } }),
+        ),
+        tertiaryArgs,
+      );
+      expect(tertiaryArgs.pendingTimerUpdate.current?.third).toBe(80);
+    });
+
+    it('SESSION_ENDED clamps special key timer for numeric TimerOption', () => {
+      const args = makeWorkerMessageArgs({
+        Settings: makeSettings({ TimerOption: 83, DurationS: 90 }),
+        Keyset: makeKeyset({
+          SpecialDurationKeys: [{ KeyName: 'SpecialS', KeyCode: 83, KeyDescription: 'Special S' }],
+        }),
+        activeSpecialKey: makeRef<string | null>('SpecialS'),
+      });
+
+      handleWorkerMessage(
+        makeWorkerEvent(
+          'SESSION_ENDED',
+          makeSessionEndedPayload({
+            reason: 'Completed',
+            specialKeyTimers: { SpecialS: 10 },
+            timers: { total: 100, first: 10, second: 20, third: 30 },
+          }),
+        ),
+        args,
+      );
+
+      expect(args.pendingTimerUpdate.current?.specialKeyTimers.SpecialS).toBe(90);
+      expect(args.pendingTimerUpdate.current?.active).toBe(90);
+    });
+
+    it('SESSION_ENDED numeric TimerOption does not clamp when special key code is not found', () => {
+      const args = makeWorkerMessageArgs({
+        Settings: makeSettings({ TimerOption: 999, DurationS: 90 }),
+        Keyset: makeKeyset({
+          SpecialDurationKeys: [{ KeyName: 'SpecialS', KeyCode: 83, KeyDescription: 'Special S' }],
+        }),
+      });
+
+      handleWorkerMessage(
+        makeWorkerEvent(
+          'SESSION_ENDED',
+          makeSessionEndedPayload({
+            reason: 'Completed',
+            specialKeyTimers: { SpecialS: 10 },
+            timers: { total: 100, first: 10, second: 20, third: 30 },
+          }),
+        ),
+        args,
+      );
+
+      expect(args.pendingTimerUpdate.current?.specialKeyTimers.SpecialS).toBe(10);
+    });
+
+    it('SESSION_ENDED numeric TimerOption clamps from zero when special timer is initially missing', () => {
+      const args = makeWorkerMessageArgs({
+        Settings: makeSettings({ TimerOption: 83, DurationS: 90 }),
+        Keyset: makeKeyset({
+          SpecialDurationKeys: [{ KeyName: 'SpecialS', KeyCode: 83, KeyDescription: 'Special S' }],
+        }),
+      });
+
+      handleWorkerMessage(
+        makeWorkerEvent(
+          'SESSION_ENDED',
+          makeSessionEndedPayload({
+            reason: 'Completed',
+            specialKeyTimers: {},
+            timers: { total: 100, first: 10, second: 20, third: 30 },
+          }),
+        ),
+        args,
+      );
+
+      expect(args.pendingTimerUpdate.current?.specialKeyTimers.SpecialS).toBe(90);
+    });
+
+    it('SESSION_ENDED with unmatched completed timer option leaves timers unchanged', () => {
+      const args = makeWorkerMessageArgs({
+        Settings: makeSettings({ TimerOption: 'Unknown Option' as any, DurationS: 300 }),
+      });
+
+      handleWorkerMessage(
+        makeWorkerEvent(
+          'SESSION_ENDED',
+          makeSessionEndedPayload({
+            reason: 'Completed',
+            timers: { total: 100, first: 10, second: 20, third: 30 },
+          }),
+        ),
+        args,
+      );
+
+      expect(args.pendingTimerUpdate.current?.total).toBe(100);
+      expect(args.pendingTimerUpdate.current?.first).toBe(10);
+      expect(args.pendingTimerUpdate.current?.second).toBe(20);
+      expect(args.pendingTimerUpdate.current?.third).toBe(30);
+    });
   });
 
   // =========================================================================
@@ -566,6 +789,13 @@ describe('session-keypress.ts', () => {
       const args = makeSessionEndedArgs();
       (args.mutateSessionOutcomes.mutateAsync as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('save error'));
       await handleSessionEnded(makeSessionEndedPayload(), args);
+      await flushPromises();
+      expect(args.displayConditionalNotification).toHaveBeenCalled();
+    });
+
+    it('calls displayConditionalNotification when session start time is missing', async () => {
+      const args = makeSessionEndedArgs();
+      await handleSessionEnded(makeSessionEndedPayload({ startTime: null } as any), args);
       await flushPromises();
       expect(args.displayConditionalNotification).toHaveBeenCalled();
     });
