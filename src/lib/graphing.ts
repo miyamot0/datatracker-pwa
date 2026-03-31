@@ -1,13 +1,13 @@
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { SavedSessionResult } from './dtos';
-import { walkSessionDurationKey, walkSessionFrequencyKey } from './schedule-parser';
+import { walkSessionDurationKeyStateAware, walkSessionFrequencyKey } from './schedule-parser';
 import { ToggleDisplayKey } from '@/types/visuals';
 import { KeySetInstance, ExpandedKeySetInstance, KeySet } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';
 import { FIGURE_PATH_COLORS } from './colors';
 import { getShape } from './shapes';
 import { evaluateLogic, LogicState } from './logic';
-import { ProcessedSessionData } from './calculations';
+import { ProcessedSessionData } from '@/types/calculation';
 
 export function filterSessionsByPrimaryRole(results: SavedSessionResult[]) {
   return results
@@ -75,7 +75,7 @@ export function generateChartPreparation(
             return walkSessionFrequencyKey(result, convertScheduleSetting(ScheduleOption), key);
           })
         : result.Keyset.DurationKeys.map((key) => {
-            return walkSessionDurationKey(result, convertScheduleSetting(ScheduleOption), key);
+            return walkSessionDurationKeyStateAware(result, convertScheduleSetting(ScheduleOption), key);
           });
 
     const newScores = DynamicKeySet?.DerivedKeys.map((logicalState) => {

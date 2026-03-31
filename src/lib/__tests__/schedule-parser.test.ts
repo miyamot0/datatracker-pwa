@@ -1,6 +1,7 @@
 import {
   walkSessionFrequencyKey,
   walkSessionDurationKey,
+  walkSessionDurationKeyStateAware,
   combineAndSortKeyPresses,
   sumDurationSpecialKey,
   sumDurationScoringKey,
@@ -1540,6 +1541,250 @@ describe('walkSessionDurationKey', () => {
       Value: 7, // Only first period: 15-8=7 seconds
       Bouts: 1,
     });
+  });
+});
+
+describe('walkSessionDurationKeyStateAware', () => {
+  const mockKey: KeySetInstance = {
+    KeyName: 'DurationKey',
+    KeyDescription: 'Test Duration Key',
+    KeyCode: 1,
+  };
+
+  const baseSessionSettings: SavedSessionResult = {
+    Keyset: {
+      id: 'test-keyset',
+      Name: 'Test KeySet',
+      FrequencyKeys: [],
+      DurationKeys: [mockKey],
+      DerivedKeys: [],
+      createdAt: new Date('2023-01-01'),
+      lastModified: new Date('2023-01-02'),
+      SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
+    },
+    SessionSettings: {} as any,
+    SpecialKeyTimers: {},
+    SystemKeyPresses: [],
+    FrequencyKeyPresses: [],
+    DurationKeyPresses: [],
+    SessionStart: '2023-01-01T10:00:00Z',
+    SessionEnd: '2023-01-01T10:10:00Z',
+    EndedEarly: false,
+    TimerMain: 600,
+    TimerOne: 0,
+    TimerTwo: 0,
+    TimerThree: 0,
+  };
+
+  it('counts from schedule start when key is already active', () => {
+    const session: SavedSessionResult = {
+      ...baseSessionSettings,
+      SystemKeyPresses: [
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary Start',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20,
+          KeyType: 'System',
+        },
+      ],
+      DurationKeyPresses: [
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'DurationKey Toggle On',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'DurationKey Toggle Off',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:12Z'),
+          TimeIntoSession: 12,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    const result = walkSessionDurationKeyStateAware(session, 'Primary', mockKey);
+
+    expect(result.Value).toBe(2);
+  });
+
+  it('handles release then re-press within window when active at start', () => {
+    const session: SavedSessionResult = {
+      ...baseSessionSettings,
+      SystemKeyPresses: [
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary Start',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20,
+          KeyType: 'System',
+        },
+      ],
+      DurationKeyPresses: [
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Toggle On',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Toggle Off',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:12Z'),
+          TimeIntoSession: 12,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Toggle On',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:16Z'),
+          TimeIntoSession: 16,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Toggle Off',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:24Z'),
+          TimeIntoSession: 24,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    const result = walkSessionDurationKeyStateAware(session, 'Primary', mockKey);
+
+    expect(result.Value).toBe(6);
+  });
+
+  it('treats event at interval start as state-defining for the interval', () => {
+    const session: SavedSessionResult = {
+      ...baseSessionSettings,
+      SystemKeyPresses: [
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary Start',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20,
+          KeyType: 'System',
+        },
+      ],
+      DurationKeyPresses: [
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Toggle On At Start',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Toggle Off At End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    const result = walkSessionDurationKeyStateAware(session, 'Primary', mockKey);
+
+    expect(result.Value).toBe(10);
+  });
+
+  it('closes odd schedule windows at session end', () => {
+    const session: SavedSessionResult = {
+      ...baseSessionSettings,
+      SessionEnd: '2023-01-01T10:00:30Z',
+      SystemKeyPresses: [
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary Start Only',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10,
+          KeyType: 'System',
+        },
+      ],
+      DurationKeyPresses: [
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Toggle On',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:12Z'),
+          TimeIntoSession: 12,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Toggle Off',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:18Z'),
+          TimeIntoSession: 18,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    const result = walkSessionDurationKeyStateAware(session, 'Primary', mockKey);
+
+    expect(result.Value).toBe(6);
   });
 });
 

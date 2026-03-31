@@ -6,15 +6,16 @@ import type { SessionProcessingOptions } from '../../../types/calculation';
 
 vi.mock('@/lib/schedule-parser', () => ({
   walkSessionDurationKey: vi.fn(),
+  walkSessionDurationKeyStateAware: vi.fn(),
   sumDurationScoringKey: vi.fn().mockReturnValue(120),
   sumDurationSpecialKey: vi.fn().mockReturnValue(90),
 }));
 
-import { walkSessionDurationKey } from '@/lib/schedule-parser';
+import { walkSessionDurationKeyStateAware } from '@/lib/schedule-parser';
 
-const mockWalk = vi.mocked(walkSessionDurationKey);
+const mockWalk = vi.mocked(walkSessionDurationKeyStateAware);
 
-// ── Factories ────────────────────────────────────────────────────────────────
+// -- Factories ----------------------------------------------------------------
 
 function makeKeyset(overrides: Partial<KeySet> = {}): KeySet {
   return {
@@ -64,14 +65,14 @@ function walkReturn(value: number, bouts = 2) {
   return { Value: value, Bouts: bouts, KeyName: 'Key', KeyDescription: 'Key', Schedule: 'Primary' };
 }
 
-// ── Tests ────────────────────────────────────────────────────────────────────
+// -- Tests --------------------------------------------------------------------
 
 describe('processDurationKeys', () => {
   beforeEach(() => {
     mockWalk.mockReset();
   });
 
-  // ── Empty keys ─────────────────────────────────────────────────────────────
+  // -- Empty keys -------------------------------------------------------------
 
   it('returns empty array when DurationKeys is empty', () => {
     const keyset = makeKeyset({ DurationKeys: [], ScorableDurationKeys: [] });
@@ -88,7 +89,7 @@ describe('processDurationKeys', () => {
     expect(result).toEqual([]);
   });
 
-  // ── DurationKeys + ScorableDurationKeys combined ───────────────────────────
+  // -- DurationKeys + ScorableDurationKeys combined ---------------------------
 
   it('processes both DurationKeys and ScorableDurationKeys', () => {
     const keyset = makeKeyset({
@@ -101,7 +102,7 @@ describe('processDurationKeys', () => {
     expect(results).toHaveLength(2);
   });
 
-  // ── Total timer type ───────────────────────────────────────────────────────
+  // -- Total timer type -------------------------------------------------------
 
   it('walks Primary schedule for Total timer type', () => {
     const keyset = makeKeyset({
@@ -112,7 +113,7 @@ describe('processDurationKeys', () => {
     processsDurationAndExpect(makeResult(), keyset, makeOptions('Total'), 'Primary');
   });
 
-  // ── Specific timer types ───────────────────────────────────────────────────
+  // -- Specific timer types ---------------------------------------------------
 
   it('walks Primary schedule for Timer1', () => {
     const keyset = makeKeyset({ DurationKeys: [{ KeyName: 'KeyA', KeyDescription: 'Key A', KeyCode: 1 }] });
@@ -135,7 +136,7 @@ describe('processDurationKeys', () => {
     processsDurationAndExpect(makeResult(), keyset, makeOptions('Timer3'), 'Tertiary');
   });
 
-  // ── Special strategies ─────────────────────────────────────────────────────
+  // -- Special strategies -----------------------------------------------------
 
   it('walks Special schedule for special system strategy', () => {
     const keyset = makeKeyset({ DurationKeys: [{ KeyName: 'KeyA', KeyDescription: 'Key A', KeyCode: 1 }] });
@@ -185,7 +186,7 @@ describe('processDurationKeys', () => {
     expect(results[0].rawValue).toBe(45);
   });
 
-  // ── Percentage calculation ─────────────────────────────────────────────────
+  // -- Percentage calculation -------------------------------------------------
 
   it('calculates percentage when includePercentages is true and timerSeconds > 0', () => {
     const keyset = makeKeyset({ DurationKeys: [{ KeyName: 'KeyA', KeyDescription: 'Key A', KeyCode: 1 }] });
@@ -227,7 +228,7 @@ describe('processDurationKeys', () => {
     expect(results[0].percentage).toBeUndefined();
   });
 
-  // ── Bouts calculation ──────────────────────────────────────────────────────
+  // -- Bouts calculation ------------------------------------------------------
 
   it('sets bouts and averageBout when includeBouts is true', () => {
     const keyset = makeKeyset({ DurationKeys: [{ KeyName: 'KeyA', KeyDescription: 'Key A', KeyCode: 1 }] });
@@ -238,7 +239,7 @@ describe('processDurationKeys', () => {
       outputFormat: 'raw',
     };
 
-    mockWalk.mockReturnValueOnce(walkReturn(60, 4)); // 60s total, 4 bouts → avg 15s
+    mockWalk.mockReturnValueOnce(walkReturn(60, 4)); // 60s total, 4 bouts -> avg 15s
 
     const results = processDurationKeys(makeResult(), keyset, options);
     expect(results[0].bouts).toBe(4);
@@ -270,7 +271,7 @@ describe('processDurationKeys', () => {
     expect(results[0].averageBout).toBeUndefined();
   });
 
-  // ── Error handling ─────────────────────────────────────────────────────────
+  // -- Error handling ---------------------------------------------------------
 
   it('throws for an invalid non-special timer type', () => {
     const keyset = makeKeyset({ DurationKeys: [{ KeyName: 'KeyA', KeyDescription: 'Key A', KeyCode: 1 }] });
@@ -280,7 +281,7 @@ describe('processDurationKeys', () => {
     );
   });
 
-  // ── Key metadata ───────────────────────────────────────────────────────────
+  // -- Key metadata -----------------------------------------------------------
 
   it('populates correct key metadata on each result', () => {
     const keyset = makeKeyset({
@@ -297,7 +298,7 @@ describe('processDurationKeys', () => {
     expect(results[0].visible).toBe(true);
   });
 
-  it('rawValue comes from walkSessionDurationKey', () => {
+  it('rawValue comes from walkSessionDurationKeyStateAware', () => {
     const keyset = makeKeyset({ DurationKeys: [{ KeyName: 'KeyA', KeyDescription: 'Key A', KeyCode: 1 }] });
     mockWalk.mockReturnValueOnce(walkReturn(123));
 
@@ -306,7 +307,7 @@ describe('processDurationKeys', () => {
   });
 });
 
-// ── Helper to assert the schedule used ───────────────────────────────────────
+// -- Helper to assert the schedule used ---------------------------------------
 
 function processsDurationAndExpect(
   result: SavedSessionResult,
@@ -319,5 +320,6 @@ function processsDurationAndExpect(
     expect.anything(),
     expectedSchedule,
     expect.objectContaining({ KeyName: 'KeyA' }),
+    expect.anything(),
   );
 }

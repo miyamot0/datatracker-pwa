@@ -7,7 +7,7 @@ import { ToggleDisplayKey } from '@/types/visuals';
 // Mock the helper functions from schedule_parser
 vi.mock('@/lib/schedule-parser', () => ({
   walkSessionFrequencyKey: vi.fn(),
-  walkSessionDurationKey: vi.fn(),
+  walkSessionDurationKeyStateAware: vi.fn(),
 }));
 
 // Mock colors and shapes
@@ -44,11 +44,11 @@ import {
 } from '../graphing';
 
 // Import the mocked functions for use in tests
-import { walkSessionFrequencyKey, walkSessionDurationKey } from '@/lib/schedule-parser';
+import { walkSessionFrequencyKey, walkSessionDurationKeyStateAware } from '@/lib/schedule-parser';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { getShape } from '@/lib/shapes';
 import { evaluateLogic, LogicState } from '@/lib/logic';
-import { ProcessedSessionData } from '@/lib/calculations';
+import { ProcessedSessionData } from '@/types/calculation';
 
 describe('graphing utility functions', () => {
   beforeEach(() => {
@@ -65,6 +65,7 @@ describe('graphing utility functions', () => {
     createdAt: new Date('2024-01-01'),
     lastModified: new Date('2024-01-01'),
     SpecialDurationKeys: [],
+    ScorableDurationKeys: [],
   });
 
   // Helper function to create mock SavedSessionResult
@@ -244,7 +245,7 @@ describe('graphing utility functions', () => {
         Bouts: -1,
       });
 
-      (walkSessionDurationKey as any).mockReturnValue({
+      (walkSessionDurationKeyStateAware as any).mockReturnValue({
         KeyName: 'DurKey1',
         KeyDescription: 'Duration Key 1',
         Schedule: 'Primary',
@@ -285,8 +286,8 @@ describe('graphing utility functions', () => {
       expect(result[0].SessionTime).toBe(450); // TimerTwo
       expect(result[0].Scores).toHaveLength(1);
 
-      // Verify walkSessionDurationKey was called with correct parameters
-      expect(walkSessionDurationKey).toHaveBeenCalledWith(
+      // Verify walkSessionDurationKeyStateAware was called with correct parameters
+      expect(walkSessionDurationKeyStateAware).toHaveBeenCalledWith(
         sessions[0],
         'Secondary', // converted schedule
         mockDurationKey,
@@ -371,14 +372,14 @@ describe('graphing utility functions', () => {
       const keyset = createMockKeySet([], [mockDurationKey, mockDurationKey]);
       const sessions = [createMockSession(1, 'Primary', 'Baseline', keyset)];
 
-      (walkSessionDurationKey as any)
+      (walkSessionDurationKeyStateAware as any)
         .mockReturnValueOnce({ KeyName: 'DurKey1', Value: 30.5 })
         .mockReturnValueOnce({ KeyName: 'DurKey2', Value: 45.2 });
 
       const result = generateChartPreparation(sessions, 'End on Timer #1', 'Duration');
 
       expect(result[0].Scores).toHaveLength(2);
-      expect(walkSessionDurationKey).toHaveBeenCalledTimes(2);
+      expect(walkSessionDurationKeyStateAware).toHaveBeenCalledTimes(2);
     });
 
     it('should throw error for invalid schedule option in convertScheduleSetting', () => {

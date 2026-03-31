@@ -1,5 +1,5 @@
 import { SavedSessionResult } from '@/lib/dtos';
-import { walkSessionDurationKey } from '@/lib/schedule-parser';
+import { walkSessionDurationKeyStateAware } from '@/lib/schedule-parser';
 import { KeySet } from '@/types/keyset';
 import { getUnifiedTimerValue, getTimerSchedule } from './calculation-helpers';
 import { SessionProcessingOptions, ProcessedKeyResult } from '../../types/calculation';
@@ -38,19 +38,19 @@ export function processDurationKeys(
 
     if (options.strategy.special && options.strategy.schedule === 'system') {
       // Timer special
-      const keyResult = walkSessionDurationKey(result, 'Special', key, options.strategy);
+      const keyResult = walkSessionDurationKeyStateAware(result, 'Special', key, options.strategy);
       rawValue = keyResult.Value;
       bouts = keyResult.Bouts;
     } else if (options.strategy.special && options.strategy.schedule === 'duration') {
       // Duration special - just sum the scoring key as duration
-      const keyResult = walkSessionDurationKey(result, 'Special', key, options.strategy);
+      const keyResult = walkSessionDurationKeyStateAware(result, 'Special', key, options.strategy);
       rawValue = keyResult.Value;
       bouts = keyResult.Bouts;
     } else {
       switch (options.timer.timerType) {
         case 'Total':
           {
-            const keyResult = walkSessionDurationKey(result, 'Primary', key);
+            const keyResult = walkSessionDurationKeyStateAware(result, 'Primary', key, options.strategy);
 
             rawValue = keyResult.Value;
             bouts = keyResult.Bouts;
@@ -61,7 +61,7 @@ export function processDurationKeys(
         case 'Timer3':
           {
             const schedule = getTimerSchedule(options.timer.timerType);
-            const keyResult2 = walkSessionDurationKey(result, schedule, key);
+            const keyResult2 = walkSessionDurationKeyStateAware(result, schedule, key, options.strategy);
             rawValue = keyResult2.Value;
             bouts = keyResult2.Bouts;
           }

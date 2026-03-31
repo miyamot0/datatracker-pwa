@@ -77,6 +77,7 @@ export function walkSessionFrequencyKey(
  * @param Schedule - The name of the schedule key that defines the periods to analyze.
  * @param Key - The key set instance representing the specific key to calculate the duration for.
  * @returns An object containing the key name, description, schedule, total active duration in seconds, and the number of bouts (schedule changes).
+ * @deprecated
  */
 export function walkSessionDurationKey(
   SessionSettings: SavedSessionResult,
@@ -152,6 +153,115 @@ export function walkSessionDurationKey(
     KeyDescription: Key.KeyDescription,
     Schedule: Schedule,
     Value: workingDuration,
+    Bouts: bouts,
+  };
+}
+
+/**
+ * Alternative duration walker that reconstructs key state at each schedule boundary.
+ *
+ * This is state-aware and correctly handles cases where a duration key is already
+ * active when a schedule period starts.
+ *
+ * @param SessionSettings - The session result object containing the key presses to analyze.
+ * @param Schedule - The name of the schedule key that defines the periods to analyze.
+ * @param Key - The key set instance representing the specific key to calculate the duration for.
+ * @param Strategy - Optional scoring strategy that may define special keys and schedules.
+ * @returns An object containing the key name, description, schedule, total active duration in seconds, and the number of bouts (schedule changes).
+ */
+export function walkSessionDurationKeyStateAware(
+  SessionSettings: SavedSessionResult,
+  Schedule: KeyTiming,
+  Key: KeySetInstance,
+  Strategy?: ScoringStrategy,
+) {
+  const { SystemKeyPresses, DurationKeyPresses } = SessionSettings;
+
+  const relevantScheduleChanges = [];
+
+  if (Strategy?.special && Strategy.schedule === 'system') {
+    relevantScheduleChanges.push(...SystemKeyPresses.filter((k) => k.KeyName === Strategy.specialKeyName));
+  } else if (Strategy?.special && Strategy.schedule === 'duration') {
+    relevantScheduleChanges.push(...DurationKeyPresses.filter((k) => k.KeyName === Strategy.specialKeyName));
+  } else {
+    relevantScheduleChanges.push(...SystemKeyPresses.filter((k) => k.KeyName === Schedule));
+  }
+
+  const sortedScheduleTimes = relevantScheduleChanges
+    .map((k) => new Date(k.TimePressed).getTime())
+    .sort((a, b) => a - b);
+
+  const sessionEndMs = new Date(SessionSettings.SessionEnd).getTime();
+
+  // Generate relevant segments of time
+  const scheduleIntervals: Array<[number, number]> = [];
+  let activeScheduleStart: number | null = null;
+
+  for (const scheduleTime of sortedScheduleTimes) {
+    if (activeScheduleStart === null) {
+      // Note: This is essentially the start of the measurement interval
+      activeScheduleStart = scheduleTime;
+    } else {
+      if (scheduleTime > activeScheduleStart) {
+        scheduleIntervals.push([activeScheduleStart, scheduleTime]);
+      }
+      activeScheduleStart = null;
+    }
+  }
+
+  // If schedule is left open, close at session end.
+  if (activeScheduleStart !== null && sessionEndMs > activeScheduleStart) {
+    scheduleIntervals.push([activeScheduleStart, sessionEndMs]);
+  }
+
+  // Get relevant durations and calculate total active time within schedule intervals
+  const relevantKeyTimes = DurationKeyPresses.filter((k) => k.KeyName === Key.KeyName)
+    .map((k) => new Date(k.TimePressed).getTime())
+    .sort((a, b) => a - b);
+
+  const bouts = Math.ceil(relevantKeyTimes.length / 2);
+
+  let workingDurationSeconds = 0;
+
+  for (const [intervalStart, intervalEnd] of scheduleIntervals) {
+    let isActive = false;
+
+    // Events at the exact start boundary establish the key state inside the interval.
+    for (const eventTime of relevantKeyTimes) {
+      if (eventTime <= intervalStart) {
+        // If a time noticed before the interval, we use it to set the initial state of the key for this interval
+        isActive = !isActive;
+        continue;
+      }
+      break;
+    }
+
+    let cursor = intervalStart;
+
+    // "Credit" for active state prior to a press starting in the interval
+    for (const eventTime of relevantKeyTimes) {
+      if (eventTime <= intervalStart) continue;
+      if (eventTime >= intervalEnd) break;
+
+      if (isActive) {
+        workingDurationSeconds += (eventTime - cursor) / 1000;
+      }
+
+      isActive = !isActive;
+      cursor = eventTime;
+    }
+
+    // If active and interval ends, credit until the end of the interval
+    if (isActive && intervalEnd > cursor) {
+      workingDurationSeconds += (intervalEnd - cursor) / 1000;
+    }
+  }
+
+  return {
+    KeyName: Key.KeyName,
+    KeyDescription: Key.KeyDescription,
+    Schedule: Schedule,
+    Value: workingDurationSeconds,
     Bouts: bouts,
   };
 }
