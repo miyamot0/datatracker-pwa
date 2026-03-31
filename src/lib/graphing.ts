@@ -8,6 +8,7 @@ import { FIGURE_PATH_COLORS } from './colors';
 import { getShape } from './shapes';
 import { evaluateLogic, LogicState } from './logic';
 import { ProcessedSessionData } from '@/types/calculation';
+import { ReturnLocalStorageCache } from './local_storage';
 
 export function filterSessionsByPrimaryRole(results: SavedSessionResult[]) {
   return results
@@ -192,7 +193,7 @@ export function extractAndDeduplicateKeysets(results: ModifiedSessionResult[], l
 /**
  * Maps keys with their storage preference visibility based on stored preferences
  */
-export function mapKeysWithStoragePreference(keys: ToggleDisplayKey[], storedPreferences: any) {
+export function mapKeysWithStoragePreference(keys: ToggleDisplayKey[], storedPreferences: ReturnLocalStorageCache) {
   return keys.map((key) => {
     const shouldDisable = storedPreferences.KeyDescription.includes(key.KeyDescription);
 

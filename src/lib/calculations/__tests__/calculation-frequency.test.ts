@@ -6,8 +6,8 @@ import type { SessionProcessingOptions } from '../../../types/calculation';
 
 vi.mock('@/lib/schedule-parser', () => ({
   walkSessionFrequencyKey: vi.fn(),
-  sumDurationScoringKey: vi.fn().mockReturnValue(120),
-  sumDurationSpecialKey: vi.fn().mockReturnValue(90),
+  sumDurationScoringKeyStateAware: vi.fn().mockReturnValue(120),
+  sumDurationSpecialKeyStateAware: vi.fn().mockReturnValue(90),
 }));
 
 import { walkSessionFrequencyKey } from '@/lib/schedule-parser';

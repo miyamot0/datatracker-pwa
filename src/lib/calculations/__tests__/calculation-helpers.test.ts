@@ -14,11 +14,11 @@ import type { KeySet } from '@/types/keyset';
 import type { SessionProcessingOptions } from '../../../types/calculation';
 
 vi.mock('@/lib/schedule-parser', () => ({
-  sumDurationScoringKey: vi.fn().mockReturnValue(120),
-  sumDurationSpecialKey: vi.fn().mockReturnValue(90),
+  sumDurationScoringKeyStateAware: vi.fn().mockReturnValue(120),
+  sumDurationSpecialKeyStateAware: vi.fn().mockReturnValue(90),
 }));
 
-import { sumDurationScoringKey, sumDurationSpecialKey } from '@/lib/schedule-parser';
+import { sumDurationScoringKeyStateAware, sumDurationSpecialKeyStateAware } from '@/lib/schedule-parser';
 
 // ── Factories ────────────────────────────────────────────────────────────────
 
@@ -70,8 +70,8 @@ function makeOptions(timerType: any = 'Total', strategyOverride: Partial<any> = 
 
 describe('getUnifiedTimerValue', () => {
   beforeEach(() => {
-    vi.mocked(sumDurationScoringKey).mockReturnValue(120);
-    vi.mocked(sumDurationSpecialKey).mockReturnValue(90);
+    vi.mocked(sumDurationScoringKeyStateAware).mockReturnValue(120);
+    vi.mocked(sumDurationSpecialKeyStateAware).mockReturnValue(90);
   });
 
   it('returns TimerMain for Total', () => {
@@ -90,7 +90,7 @@ describe('getUnifiedTimerValue', () => {
     expect(getUnifiedTimerValue(makeResult(), makeOptions('Timer3'))).toBe(100);
   });
 
-  it('calls sumDurationScoringKey for special duration strategy', () => {
+  it('calls sumDurationScoringKeyStateAware for special duration strategy', () => {
     const result = makeResult();
     const timerType = { type: 'Special' as const, keyName: 'myKey' };
     const options: SessionProcessingOptions = {
@@ -100,11 +100,11 @@ describe('getUnifiedTimerValue', () => {
       outputFormat: 'raw',
     };
     const val = getUnifiedTimerValue(result, options);
-    expect(sumDurationScoringKey).toHaveBeenCalledWith(result, 'myKey');
+    expect(sumDurationScoringKeyStateAware).toHaveBeenCalledWith(result, 'myKey');
     expect(val).toBe(120);
   });
 
-  it('calls sumDurationSpecialKey for special system strategy', () => {
+  it('calls sumDurationSpecialKeyStateAware for special system strategy', () => {
     const result = makeResult();
     const timerType = { type: 'Special' as const, keyName: 'specialKey' };
     const options: SessionProcessingOptions = {
@@ -114,7 +114,7 @@ describe('getUnifiedTimerValue', () => {
       outputFormat: 'raw',
     };
     const val = getUnifiedTimerValue(result, options);
-    expect(sumDurationSpecialKey).toHaveBeenCalledWith(result, 'specialKey');
+    expect(sumDurationSpecialKeyStateAware).toHaveBeenCalledWith(result, 'specialKey');
     expect(val).toBe(90);
   });
 

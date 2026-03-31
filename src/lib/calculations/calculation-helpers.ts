@@ -1,5 +1,5 @@
 import { SavedSessionResult } from '@/lib/dtos';
-import { sumDurationScoringKey, sumDurationSpecialKey } from '@/lib/schedule-parser';
+import { sumDurationScoringKeyStateAware, sumDurationSpecialKeyStateAware } from '@/lib/schedule-parser';
 import { KeySet } from '@/types/keyset';
 import { ScoringStrategy, SessionProcessingOptions, UnifiedTimerType } from '../../types/calculation';
 import { KeyTiming } from '@/types/timing';
@@ -20,10 +20,10 @@ export function getUnifiedTimerValue(result: SavedSessionResult, options: Sessio
     // Note: a special type of timing warranted
     if (strategy.schedule === 'duration') {
       // Just a scoring key like normal duration here (Duration)
-      return sumDurationScoringKey(result, (timerType as { type: 'Special'; keyName: string }).keyName);
+      return sumDurationScoringKeyStateAware(result, (timerType as { type: 'Special'; keyName: string }).keyName);
     } else {
       // A separate timer in this case (System)
-      return sumDurationSpecialKey(result, (timerType as { type: 'Special'; keyName: string }).keyName);
+      return sumDurationSpecialKeyStateAware(result, (timerType as { type: 'Special'; keyName: string }).keyName);
     }
   }
 
