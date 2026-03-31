@@ -122,6 +122,11 @@ describe('processDerivedKeys', () => {
     expect(processDerivedKeys(makeResult(), keyset, makeOptions(), [])).toEqual([]);
   });
 
+  it('returns empty array when keyset arrays are undefined and fallback to empty arrays', () => {
+    const keyset = makeKeyset({ DerivedKeys: undefined as any, FrequencyKeys: undefined as any });
+    expect(processDerivedKeys(makeResult(), keyset, makeOptions(), [])).toEqual([]);
+  });
+
   // ── Normal computation ─────────────────────────────────────────────────────
 
   it('calls evaluateLogic with fields populated from frequencyResults', () => {
@@ -255,6 +260,18 @@ describe('processDerivedKeys', () => {
 
     const results = processDerivedKeys(makeResult(), keyset, makeOptions(), [makeFreqResult(1, 0)]);
     expect(results[0].keyCode).toBe(-999);
+  });
+
+  it('uses numeric derived id as keyCode when provided', () => {
+    const derived = makeDerivedKey({ id: 123 as any });
+    const keyset = makeKeyset({
+      DerivedKeys: [derived],
+      FrequencyKeys: [{ KeyName: 'FreqA', KeyDescription: 'Frequency A', KeyCode: 1 }],
+    });
+    mockEvaluate.mockReturnValue(0);
+
+    const results = processDerivedKeys(makeResult(), keyset, makeOptions(), [makeFreqResult(1, 0)]);
+    expect(results[0].keyCode).toBe(123);
   });
 
   // ── Key metadata ───────────────────────────────────────────────────────────

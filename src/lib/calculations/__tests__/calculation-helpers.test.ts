@@ -242,6 +242,10 @@ describe('convertLegacyTimerType', () => {
   it('returns Total for an unmatched string', () => {
     expect(convertLegacyTimerType('unknown value xyz', keyset)).toBe('Total');
   });
+
+  it('returns Total for non-string unsupported legacy value', () => {
+    expect(convertLegacyTimerType(999 as any, keyset)).toBe('Total');
+  });
 });
 
 // ── createSpecialTimerType ────────────────────────────────────────────────────

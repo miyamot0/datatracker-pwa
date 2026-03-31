@@ -44,26 +44,15 @@ export function processFrequencyKeys(
 
       rawValue = keyResult.Value;
     } else {
-      switch (options.timer.timerType) {
-        case 'Total':
-          {
-            const primary = walkSessionFrequencyKey(result, 'Primary', key);
-            const secondary = walkSessionFrequencyKey(result, 'Secondary', key);
-            const tertiary = walkSessionFrequencyKey(result, 'Tertiary', key);
-            rawValue = primary.Value + secondary.Value + tertiary.Value;
-          }
-          break;
-        case 'Timer1':
-        case 'Timer2':
-        case 'Timer3':
-          {
-            const schedule = getTimerSchedule(options.timer.timerType);
-            const keyResult = walkSessionFrequencyKey(result, schedule, key);
-            rawValue = keyResult.Value;
-          }
-          break;
-        default:
-          throw new Error('Invalid timer type for frequency key processing');
+      if (options.timer.timerType === 'Total') {
+        const primary = walkSessionFrequencyKey(result, 'Primary', key);
+        const secondary = walkSessionFrequencyKey(result, 'Secondary', key);
+        const tertiary = walkSessionFrequencyKey(result, 'Tertiary', key);
+        rawValue = primary.Value + secondary.Value + tertiary.Value;
+      } else {
+        const schedule = getTimerSchedule(options.timer.timerType);
+        const keyResult = walkSessionFrequencyKey(result, schedule, key);
+        rawValue = keyResult.Value;
       }
     }
 

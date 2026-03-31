@@ -142,6 +142,30 @@ describe('Analytics Module Full Coverage', () => {
       });
     });
 
+    it('should create object store in upgrade when store does not exist', async () => {
+      const { openDB } = await import('idb');
+      await import('@/lib/analytics/analytics-queue');
+
+      const options = vi.mocked(openDB).mock.calls[0]?.[2] as { upgrade: (db: typeof mockDB) => void };
+      mockDB.objectStoreNames.contains.mockReturnValue(false);
+      options.upgrade(mockDB as any);
+
+      expect(mockDB.objectStoreNames.contains).toHaveBeenCalledWith('events');
+      expect(mockDB.createObjectStore).toHaveBeenCalledWith('events', { autoIncrement: true });
+    });
+
+    it('should not create object store in upgrade when store already exists', async () => {
+      const { openDB } = await import('idb');
+      await import('@/lib/analytics/analytics-queue');
+
+      const options = vi.mocked(openDB).mock.calls[0]?.[2] as { upgrade: (db: typeof mockDB) => void };
+      mockDB.objectStoreNames.contains.mockReturnValue(true);
+      options.upgrade(mockDB as any);
+
+      expect(mockDB.objectStoreNames.contains).toHaveBeenCalledWith('events');
+      expect(mockDB.createObjectStore).not.toHaveBeenCalled();
+    });
+
     it('should queue an event', async () => {
       const mockEvent: EventPayload = {
         name: 'page_view',
@@ -191,6 +215,20 @@ describe('Analytics Module Full Coverage', () => {
   describe('analytics-client.ts', () => {
     beforeEach(() => {
       mockLocalStorage.set('analytics_consent', 'granted');
+    });
+
+    it('should return early when analytics is disabled and not in dev mode', async () => {
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'false');
+      vi.stubEnv('DEV', false);
+
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      const { analytics } = await import('@/lib/analytics/analytics-client');
+
+      await analytics.track('user_action', { action: 'noop' });
+
+      expect(consoleSpy).not.toHaveBeenCalled();
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(mockDB.add).not.toHaveBeenCalled();
     });
 
     it('should not track when consent is denied', async () => {

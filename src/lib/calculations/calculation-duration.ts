@@ -47,27 +47,16 @@ export function processDurationKeys(
       rawValue = keyResult.Value;
       bouts = keyResult.Bouts;
     } else {
-      switch (options.timer.timerType) {
-        case 'Total':
-          {
-            const keyResult = walkSessionDurationKeyStateAware(result, 'Primary', key, options.strategy);
+      if (options.timer.timerType === 'Total') {
+        const keyResult = walkSessionDurationKeyStateAware(result, 'Primary', key, options.strategy);
 
-            rawValue = keyResult.Value;
-            bouts = keyResult.Bouts;
-          }
-          break;
-        case 'Timer1':
-        case 'Timer2':
-        case 'Timer3':
-          {
-            const schedule = getTimerSchedule(options.timer.timerType);
-            const keyResult2 = walkSessionDurationKeyStateAware(result, schedule, key, options.strategy);
-            rawValue = keyResult2.Value;
-            bouts = keyResult2.Bouts;
-          }
-          break;
-        default:
-          throw new Error('Invalid timer type for duration key processing');
+        rawValue = keyResult.Value;
+        bouts = keyResult.Bouts;
+      } else {
+        const schedule = getTimerSchedule(options.timer.timerType);
+        const keyResult2 = walkSessionDurationKeyStateAware(result, schedule, key, options.strategy);
+        rawValue = keyResult2.Value;
+        bouts = keyResult2.Bouts;
       }
     }
 
