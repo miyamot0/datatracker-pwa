@@ -3,7 +3,7 @@ import { SavedSessionResult } from '../dtos';
 import { walkSessionDurationKeyStateAware, walkSessionFrequencyKey } from '../schedule-parser';
 import { ExpandedKeySetInstance } from '@/types/keyset/display';
 import { KeySet } from '@/types/keyset/core';
-import { evaluateLogic, LogicState } from '../logic';
+import { evaluateLogic } from '../logic';
 import { ProcessedSessionData } from '@/types/calculation';
 
 /**
