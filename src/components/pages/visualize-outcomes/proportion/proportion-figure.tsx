@@ -4,12 +4,8 @@ import { Button } from '@/components/ui/button';
 import { FigureVisualSizing } from '@/types/accessibility';
 import { useNavigate } from '@tanstack/react-router';
 import { ExpandedKeySetInstance, KeySet } from '@/types/keyset';
-import {
-  generateTicks,
-  createChartLegends,
-  createNavigationHandler,
-  prepareProportionDataUniversal,
-} from '@/lib/graphing';
+import { generateTicks, createChartLegends, createNavigationHandler } from '@/lib/graphing/chart-setup';
+import { prepareProportionDataUniversal } from '@/lib/graphing/data-preparation';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { BaseChart } from '@/components/pages/visualize-outcomes/shared/base-chart';
 import { ProportionTooltip } from './proportion-elements';

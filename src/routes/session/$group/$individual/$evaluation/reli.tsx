@@ -7,7 +7,7 @@ import {
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { filterSessionsByPrimaryRole, filterSessionsByReliabilityRole } from '@/lib/graphing';
+import { filterSessionsByPrimaryRole, filterSessionsByReliabilityRole } from '@/lib/graphing/session-filters';
 import { pullMostRecentKeySet } from '@/lib/keyset';
 import { getCorrespondingSessionPairs } from '@/lib/reli';
 import { CleanUpString } from '@/lib/strings';

@@ -3,11 +3,8 @@ import { CleanUpString } from '@/lib/strings';
 import { KeySet } from '@/types/keyset';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
-import {
-  extractAndDeduplicateKeysets,
-  filterSessionsByPrimaryRole,
-  mapKeysWithStoragePreference,
-} from '@/lib/graphing';
+import { extractAndDeduplicateKeysets, mapKeysWithStoragePreference } from '@/lib/graphing/keyset-utils';
+import { filterSessionsByPrimaryRole } from '@/lib/graphing/session-filters';
 import { pullMostRecentSession } from '@/lib/keyset';
 import { ToggleDisplayKey } from '@/types/visuals';
 import ResultsProportionVisualsPage from '@/components/pages/visualize-outcomes/proportion/results-proportion-visuals-page';

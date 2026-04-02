@@ -34,7 +34,7 @@ import ResultsProportionVisualsPage from '../visualize-outcomes/proportion/resul
 import { SessionTerminationOptions } from '@/types/terminations';
 import { preparePlotDataCumulative } from '@/lib/summary';
 import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
-import { generateTicks } from '@/lib/graphing';
+import { generateTicks } from '@/lib/graphing/chart-setup';
 import demandTreatmentKeysetJson from '@/assets/data/Evaluation Study/Participant 001/FC Treatment Evaluation.json';
 
 const demandTreatmentSessionModules = {

@@ -3,7 +3,7 @@ import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { pullMostRecentSession } from '@/lib/keyset';
-import { extractAndDeduplicateKeysets, mapKeysWithStoragePreference } from '@/lib/graphing';
+import { extractAndDeduplicateKeysets, mapKeysWithStoragePreference } from '@/lib/graphing/keyset-utils';
 import { KeySet } from '@/types/keyset';
 import { ToggleDisplayKey } from '@/types/visuals';
 import { getLocalCachedPrefs } from '@/lib/local_storage';

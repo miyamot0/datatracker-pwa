@@ -42,10 +42,13 @@ vi.mock('@tanstack/react-router', () => ({
   useNavigate: mockUseNavigate,
 }));
 
-vi.mock('@/lib/graphing', () => ({
+vi.mock('@/lib/graphing/chart-setup', () => ({
   generateTicks: mockGenerateTicks,
   createChartLegends: mockCreateChartLegends,
   createNavigationHandler: mockCreateNavigationHandler,
+}));
+
+vi.mock('@/lib/graphing/data-preparation', () => ({
   prepareProportionDataUniversal: mockPrepareProportionDataUniversal,
 }));
 

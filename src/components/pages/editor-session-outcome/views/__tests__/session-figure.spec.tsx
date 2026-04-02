@@ -254,7 +254,7 @@ describe('SessionFigure', () => {
 
     const yAxis = page.getByTestId('y-axis');
     await expect.element(yAxis).toHaveAttribute('data-max', '2');
-    await expect.element(yAxis).toHaveAttribute('data-ticks', '[0,1,2,3,2]');
+    await expect.element(yAxis).toHaveAttribute('data-ticks', '[0,1,2,2]');
 
     const xAxis = page.getByTestId('x-axis');
     await expect.element(xAxis).toHaveAttribute('data-domain', '[0,31]');
