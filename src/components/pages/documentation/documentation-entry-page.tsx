@@ -9,19 +9,11 @@ import { MdViewerLite } from './views/md-viewer-lite';
 import { TRANSITION_CLASSES } from '@/types/transitions';
 import PageWrapper from '@/components/elements/page-wrapper';
 import { BuildDocumentationBreadcrumb } from '@/components/ui/breadcrumb-entries';
-import { FrontMatterUniversalType, ParsedFrontMatterType } from '@/types/mdx';
-import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
-import { KeywordColors } from '@/types/colors';
+import { Route } from '@/routes/documentation/$slug';
 
-type Props = {
-  KeywordArray: KeywordColors[];
-  PreviousEntry: FrontMatterUniversalType | undefined;
-  NextEntry: FrontMatterUniversalType | undefined;
-  Entry: ParsedFrontMatterType;
-  Settings: ApplicationSettingsTypes;
-};
+export default function DocumentationEntryPage() {
+  const { KeywordArray, Settings, PreviousEntry, NextEntry, Entry } = Route.useLoaderData();
 
-export default function DocumentationEntryPage({ KeywordArray, PreviousEntry, NextEntry, Entry, Settings }: Props) {
   const animTypes = TRANSITION_CLASSES[Settings.TransitionBehavior];
 
   const animLeft = animTypes.length > 0 ? [animTypes[animTypes.length - 1]] : [];

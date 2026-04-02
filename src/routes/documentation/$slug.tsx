@@ -32,19 +32,5 @@ export const Route = createFileRoute('/documentation/$slug')({
       Settings: context.folderHandleContext.settings,
     };
   },
-  component: RouteComponent,
+  component: DocumentationEntryPage,
 });
-
-function RouteComponent() {
-  const { KeywordArray, Settings, PreviousEntry, NextEntry, Entry } = Route.useLoaderData();
-
-  return (
-    <DocumentationEntryPage
-      KeywordArray={KeywordArray}
-      PreviousEntry={PreviousEntry}
-      NextEntry={NextEntry}
-      Entry={Entry}
-      Settings={Settings}
-    />
-  );
-}
