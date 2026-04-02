@@ -1,7 +1,7 @@
 import { sessionOutcomesQueryOptions } from './query-session-outcomes';
 import { ModifiedSessionResult } from '@/types/storage';
 import { queryClient } from '@/App';
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { MutateSessionOutcomesRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
 import { v4 as uuidv4 } from 'uuid';

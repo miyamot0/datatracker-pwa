@@ -1,5 +1,5 @@
 import { useEventListener } from '@/components/elements/behavior/event-listeners';
-import { SavedSettings } from '@/lib/dtos';
+import { SavedSettings } from '@/lib/dtos/session-settings';
 import { KeySet } from '@/types/keyset';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { KeyManageType, TimerSetting } from '@/types/timing';

@@ -1,4 +1,4 @@
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { useGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
 import { FigureVisualSizing } from '@/types/accessibility';

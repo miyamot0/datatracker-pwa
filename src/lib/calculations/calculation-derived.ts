@@ -1,4 +1,4 @@
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { evaluateLogic } from '@/lib/logic';
 import { KeySet } from '@/types/keyset';
 import { getUnifiedTimerMinutes } from './calculation-helpers';

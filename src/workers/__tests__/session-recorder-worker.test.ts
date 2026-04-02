@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { SavedSettings } from '@/lib/dtos';
+import { SavedSettings } from '@/lib/dtos/session-settings';
 import { KeySet } from '@/types/keyset';
 import { WorkerMessage } from '../timing/types/session-recorder-worker-messaging';
 

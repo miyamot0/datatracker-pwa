@@ -5,7 +5,7 @@
   sumDurationSpecialKeyStateAware,
   sumDurationScoringKeyStateAware,
 } from '../schedule-parser';
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { KeySetInstance } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';
 

@@ -1,4 +1,4 @@
-import { SavedSettings, toSavedSettings } from '../dtos';
+import { SavedSettings, toSavedSettings } from '../dtos/session-settings';
 import { SessionDesignerSchemaType } from '../../components/pages/editor-session/session-designer-schema';
 import { DataCollectorRolesType } from '@/types/roles';
 import { SessionTerminationOptionsType } from '@/types/terminations';

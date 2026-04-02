@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { SavedSettings } from '@/lib/dtos';
+import { SavedSettings } from '@/lib/dtos/session-settings';
 import { KeySet } from '@/types/keyset';
 import { RunningStateOptions } from '@/types/session';
 

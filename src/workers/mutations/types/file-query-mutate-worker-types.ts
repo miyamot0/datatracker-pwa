@@ -1,6 +1,7 @@
 import { KeySet, KeySetExtended } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';
-import { SavedSessionResult, SavedSettings } from '@/lib/dtos';
+import { SavedSettings } from '@/lib/dtos/session-settings';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
 
 export const MUTATION_TYPES = {

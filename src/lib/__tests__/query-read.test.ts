@@ -15,7 +15,7 @@ import {
 import { deserializeKeySet } from '@/lib/keyset';
 import { CleanUpString } from '@/lib/strings';
 import { readKeyboardParameters } from '@/lib/reader';
-import { DEFAULT_SESSION_SETTINGS } from '@/lib/dtos';
+import { DEFAULT_SESSION_SETTINGS } from '@/lib/dtos/session-settings';
 
 // Mock dependencies
 vi.mock('@/lib/keyset');

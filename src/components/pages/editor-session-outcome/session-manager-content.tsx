@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { ModifiedSessionResult } from '@/types/storage';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { useMutation } from '@tanstack/react-query';
 import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outcomes';
 import { queryClient } from '@/App';

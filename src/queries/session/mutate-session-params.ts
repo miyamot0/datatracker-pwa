@@ -1,5 +1,5 @@
 import { sessionQueryOptions } from './query-session-params';
-import { SavedSettings } from '@/lib/dtos';
+import { SavedSettings } from '@/lib/dtos/session-settings';
 import { queryClient } from '@/App';
 import { MutateSessionParamsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';

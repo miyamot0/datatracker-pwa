@@ -1,5 +1,5 @@
 import { KeyTiming } from '@/types/timing';
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { KeySetInstance } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';
 import { ScoringStrategy } from '@/types/calculation';
@@ -10,12 +10,12 @@ type DurationSummationOptions = {
 
 /**
  * Helper function to sum active duration from a series of toggle events (e.g., key presses that toggle a state on/off).
- * 
- * @param eventTimesMs - An array of timestamps (in milliseconds) when the toggle events occurred. 
- * @param sessionStartMs - The timestamp (in milliseconds) representing the start of the session. 
- * @param sessionEndMs - The timestamp (in milliseconds) representing the end of the session. 
- * @param options - Optional configuration for how to handle edge cases, such as whether the key starts in an active state at the beginning of the session. 
- * @returns 
+ *
+ * @param eventTimesMs - An array of timestamps (in milliseconds) when the toggle events occurred.
+ * @param sessionStartMs - The timestamp (in milliseconds) representing the start of the session.
+ * @param sessionEndMs - The timestamp (in milliseconds) representing the end of the session.
+ * @param options - Optional configuration for how to handle edge cases, such as whether the key starts in an active state at the beginning of the session.
+ * @returns
  */
 function sumDurationFromToggleEvents(
   eventTimesMs: number[],

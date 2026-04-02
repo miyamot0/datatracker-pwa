@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SessionRecorderCore, getHighResTime, formatTimestamp } from '../recorder-core';
-import { SavedSettings } from '@/lib/dtos';
+import { SavedSettings } from '@/lib/dtos/session-settings';
 import { KeySet } from '@/types/keyset';
 
 describe('SessionRecorderCore', () => {

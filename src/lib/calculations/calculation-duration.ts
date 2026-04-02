@@ -1,4 +1,4 @@
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { walkSessionDurationKeyStateAware } from '@/lib/schedule-parser';
 import { KeySet } from '@/types/keyset';
 import { getUnifiedTimerValue, getTimerSchedule } from './calculation-helpers';

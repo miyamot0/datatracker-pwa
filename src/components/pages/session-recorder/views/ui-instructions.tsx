@@ -1,4 +1,4 @@
-import { SavedSettings } from '@/lib/dtos';
+import { SavedSettings } from '@/lib/dtos/session-settings';
 import { PaddedRow } from './padded-row';
 import { KeySetInstance } from '@/types/keyset';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';

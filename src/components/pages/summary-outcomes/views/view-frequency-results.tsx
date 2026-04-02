@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { Code2Icon, KeyboardIcon, TableIcon } from 'lucide-react';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import Spreadsheet from 'react-spreadsheet';

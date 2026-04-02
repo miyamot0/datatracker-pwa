@@ -14,7 +14,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { ExpandedKeySetInstance, KeySetInstance } from '@/types/keyset';
-import { ExpandedSavedSessionResult } from '@/lib/dtos';
+import { ExpandedSavedSessionResult } from '@/lib/dtos/session-results';
 import { CustomTooltipProps, PlotPoint } from '@/types/visuals';
 import { KeyManageType } from '@/types/timing';
 import { generateTicks } from '@/lib/graphing';

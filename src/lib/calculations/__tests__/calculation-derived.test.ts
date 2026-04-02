@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { processDerivedKeys } from '@/lib/calculations/calculation-derived';
-import type { SavedSessionResult } from '@/lib/dtos';
+import type { SavedSessionResult } from '@/lib/dtos/session-results';
 import type { KeySet } from '@/types/keyset';
 import type { LogicState } from '@/lib/logic';
 import type { SessionProcessingOptions, ProcessedKeyResult } from '@/types/calculation';

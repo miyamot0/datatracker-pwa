@@ -1,5 +1,5 @@
 import { KeySet } from '@/types/keyset';
-import { SavedSettings } from '@/lib/dtos';
+import { SavedSettings } from '@/lib/dtos/session-settings';
 import { SessionRecorderPolling } from '@/types/settings/performance-settings';
 import { WorkerMessage, WorkerResponse } from './types/session-recorder-worker-messaging';
 import { SessionRecorderCore, getHighResTime } from '../../lib/recorder-core';

@@ -1,4 +1,4 @@
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { walkSessionFrequencyKey } from '@/lib/schedule-parser';
 import { KeySet } from '@/types/keyset';
 import { getUnifiedTimerMinutes, getTimerSchedule } from './calculation-helpers';

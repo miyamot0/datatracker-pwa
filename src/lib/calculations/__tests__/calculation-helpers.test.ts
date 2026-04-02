@@ -9,7 +9,7 @@ import {
   identifyStrategyTimingStrategy,
 } from '../calculation-helpers';
 import { SessionTerminationOptions } from '@/types/terminations';
-import type { SavedSessionResult } from '@/lib/dtos';
+import type { SavedSessionResult } from '@/lib/dtos/session-results';
 import type { KeySet } from '@/types/keyset';
 import type { SessionProcessingOptions } from '../../../types/calculation';
 

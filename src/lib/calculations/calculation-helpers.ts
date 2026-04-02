@@ -1,4 +1,4 @@
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { sumDurationScoringKeyStateAware, sumDurationSpecialKeyStateAware } from '@/lib/schedule-parser';
 import { KeySet } from '@/types/keyset';
 import { ScoringStrategy, SessionProcessingOptions, UnifiedTimerType } from '../../types/calculation';

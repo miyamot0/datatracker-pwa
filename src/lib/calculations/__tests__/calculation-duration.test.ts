@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { processDurationKeys } from '@/lib/calculations/calculation-duration';
-import type { SavedSessionResult } from '@/lib/dtos';
+import type { SavedSessionResult } from '@/lib/dtos/session-results';
 import type { KeySet } from '@/types/keyset';
 import type { SessionProcessingOptions } from '../../../types/calculation';
 
