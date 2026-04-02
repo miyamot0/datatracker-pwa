@@ -69,7 +69,30 @@ vi.hoisted(() => {
   vi.stubEnv('VITE_MODE', 'base');
 });
 
-// ----- Module mocks -----
+// Mock route files to provide useLoaderData
+vi.mock('@/routes/index', () => ({
+  Route: {
+    useLoaderData: () => ({ Settings: { TransitionBehavior: 'none' }, SaveSettings: vi.fn(), SetSettings: vi.fn() }),
+  },
+}));
+
+vi.mock('@/routes/documentation/index', () => ({
+  Route: {
+    useLoaderData: () => ({ FrontMatter: [], KeywordArray: [] }),
+  },
+}));
+
+vi.mock('@/routes/documentation/$slug', () => ({
+  Route: {
+    useLoaderData: () => ({
+      KeywordArray: [],
+      PreviousEntry: undefined,
+      NextEntry: undefined,
+      Entry: { matter: { title: 'Test Entry', keywords: 'testing,documentation' } },
+      Settings: { TransitionBehavior: 'none' },
+    }),
+  },
+}));
 
 vi.mock('@/App', () => ({
   queryClient: {
@@ -115,6 +138,23 @@ vi.mock('@tanstack/react-router', () => ({
   useRouterState: () => ({ matches: [{ routeId: '/test' }] }),
   useLocation: () => ({ pathname: '/' }),
   useNavigate: () => vi.fn(),
+  createFileRoute: () => () => ({
+    component: null,
+    useLoaderData: () => ({
+      FrontMatter: [],
+      KeywordArray: [],
+      Settings: { TransitionBehavior: 'none' },
+      SaveSettings: vi.fn(),
+      SetSettings: vi.fn(),
+    }),
+  }),
+  Outlet: () => <div data-testid="outlet">Outlet</div>,
+  Await: ({ children }) => <div data-testid="await">{children}</div>,
+  createRootRouteWithContext: () => ({ component: null }),
+  redirect: () => ({}),
+  RouterProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="router-provider">{children}</div>,
+  createHashHistory: () => ({}),
+  createRouter: () => ({}),
 }));
 
 vi.mock('@/queries/evaluations/mutate-evaluations', () => ({

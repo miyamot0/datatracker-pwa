@@ -19,10 +19,15 @@ vi.mock('@/lib/user-agent', () => ({
 
 vi.mock('sonner', () => ({
   toast: mockToast,
+  Toaster: () => <div data-testid="toaster">Toaster</div>,
 }));
 
 vi.mock('../views/img-carousel', () => ({
   default: () => <div data-testid="image-carousel">Carousel</div>,
+}));
+
+const mockRoute = vi.hoisted(() => ({
+  useLoaderData: vi.fn(),
 }));
 
 vi.mock('@tanstack/react-router', () => ({
@@ -33,18 +38,69 @@ vi.mock('@tanstack/react-router', () => ({
   ),
   useNavigate: () => mockNavigate,
   useRouter: () => ({ invalidate: mockInvalidate }),
+  useLocation: () => ({ pathname: '/' }),
+  useRouterState: () => ({ matches: [{ routeId: '/test' }] }),
+  Outlet: () => <div data-testid="outlet">Outlet</div>,
+  createFileRoute: (path: string) => () => ({ component: null, useLoaderData: mockRoute.useLoaderData }),
+  createRootRouteWithContext: () => () => ({ component: null }),
+  redirect: () => ({}),
+  Await: ({ children }: { children: React.ReactNode }) => <div data-testid="await">{children}</div>,
+  RouterProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="router-provider">{children}</div>,
+  createHashHistory: () => ({}),
+  createRouter: () => ({}),
+}));
+
+vi.mock('@/routes/index', () => ({
+  Route: {
+    useLoaderData: () => mockRoute.useLoaderData(),
+    update: (config: any) => config,
+  },
+}));
+
+// Mock the entire route tree to avoid having to mock every route
+vi.mock('@/routeTree.gen', () => ({
+  routeTree: {},
+}));
+
+vi.mock('@/types/transitions', () => ({
+  TRANSITION_CLASSES: {
+    fade: ['fade-enter', 'fade-exit'],
+    slide: ['slide-enter', 'slide-exit'],
+    none: [],
+  },
+}));
+
+vi.mock('@/components/ui/tooltip', () => ({
+  Tooltip: ({ children }: { children: React.ReactNode }) => <div data-testid="tooltip">{children}</div>,
+  TooltipContent: ({ children }: { children: React.ReactNode }) => <div data-testid="tooltip-content">{children}</div>,
+  TooltipProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="tooltip-provider">{children}</div>
+  ),
+  TooltipTrigger: ({ children }: { children: React.ReactNode }) => <div data-testid="tooltip-trigger">{children}</div>,
 }));
 
 import HomePage from '../home-page';
 
+// Vite build-time globals not defined in vitest
+vi.stubGlobal('BUILD_VERSION', '0.5.6');
+vi.stubGlobal('BUILD_DATE', '03/29/2026');
+vi.stubGlobal('MODALITY', '');
+
 const makeSettings = (isReturningUser: boolean) =>
   ({
-    ...({} as any),
     IsReturningUser: isReturningUser,
+    TransitionBehavior: 'fade', // Add default transition behavior
   }) as any;
 
-const renderHome = (isReturningUser = true, saveSettings = vi.fn(), setSettings = vi.fn()) =>
-  render(<HomePage Settings={makeSettings(isReturningUser)} SaveSettings={saveSettings} SetSettings={setSettings} />);
+const renderHome = (isReturningUser = true, saveSettings = vi.fn(), setSettings = vi.fn()) => {
+  mockRoute.useLoaderData.mockReturnValue({
+    Settings: makeSettings(isReturningUser),
+    SaveSettings: saveSettings,
+    SetSettings: setSettings,
+  });
+
+  return render(<HomePage />);
+};
 
 describe('HomePage', () => {
   beforeEach(() => {
@@ -56,13 +112,14 @@ describe('HomePage', () => {
     mockInvalidate.mockReset();
     mockInvalidate.mockResolvedValue(undefined);
     mockUsePWAInstall.mockReturnValue(mockInstall);
+    mockRoute.useLoaderData.mockClear();
   });
 
   it('renders desktop actions including load and install buttons', async () => {
     mockIsOnMobilePlatform.mockReturnValue(false);
     await renderHome(true);
 
-    await expect.element(page.getByText('DataTracker')).toBeInTheDocument();
+    await expect.element(page.getByRole('heading', { name: 'DataTracker' })).toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Load Application' })).toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Install Application' })).toBeInTheDocument();
     await expect.element(page.getByTestId('image-carousel')).toBeInTheDocument();

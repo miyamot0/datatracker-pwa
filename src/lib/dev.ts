@@ -8,38 +8,36 @@ import { QueryClient } from '@tanstack/react-query';
 export const setupQueryDevTools = (queryClient: QueryClient) => {
   if (!import.meta.env.DEV) return;
 
-  if (import.meta.env.DEV) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const prevStates = new Map<string, any>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prevStates = new Map<string, any>();
 
-    queryClient.getQueryCache().subscribe((event) => {
-      if (event?.type !== 'updated') return;
+  queryClient.getQueryCache().subscribe((event) => {
+    if (event?.type !== 'updated') return;
 
-      const query = event.query;
-      const key = JSON.stringify(query.queryKey);
+    const query = event.query;
+    const key = JSON.stringify(query.queryKey);
 
-      const prev = prevStates.get(key);
-      const curr = query.state;
+    const prev = prevStates.get(key);
+    const curr = query.state;
 
-      if (curr.fetchStatus === 'fetching' && prev?.fetchStatus !== 'fetching') {
-        console.log('[FETCH START]', query.queryKey);
-      }
+    if (curr.fetchStatus === 'fetching' && prev?.fetchStatus !== 'fetching') {
+      console.log('[FETCH START]', query.queryKey);
+    }
 
-      if (prev && curr.dataUpdatedAt !== prev.dataUpdatedAt && prev.fetchStatus === 'fetching') {
-        console.log('[FETCH SUCCESS]', query.queryKey);
-      }
+    if (prev && curr.dataUpdatedAt !== prev.dataUpdatedAt && prev.fetchStatus === 'fetching') {
+      console.log('[FETCH SUCCESS]', query.queryKey);
+    }
 
-      if (
-        curr.status === 'success' &&
-        curr.fetchStatus === 'idle' &&
-        prev &&
-        prev.fetchStatus === 'idle' &&
-        curr.dataUpdatedAt === prev.dataUpdatedAt
-      ) {
-        console.log('[CACHE HIT]', query.queryKey);
-      }
+    if (
+      curr.status === 'success' &&
+      curr.fetchStatus === 'idle' &&
+      prev &&
+      prev.fetchStatus === 'idle' &&
+      curr.dataUpdatedAt === prev.dataUpdatedAt
+    ) {
+      console.log('[CACHE HIT]', query.queryKey);
+    }
 
-      prevStates.set(key, curr);
-    });
-  }
+    prevStates.set(key, curr);
+  });
 };

@@ -61,6 +61,10 @@ vi.mock('@/components/ui/back-button', () => ({
   default: () => <button data-testid="back-button">Back</button>,
 }));
 
+const mockRoute = vi.hoisted(() => ({
+  useLoaderData: vi.fn(),
+}));
+
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ to, params, children, className, viewTransition }) => (
     <a
@@ -73,6 +77,25 @@ vi.mock('@tanstack/react-router', () => ({
       {children}
     </a>
   ),
+  createFileRoute: (path: string) => () => ({ component: null, useLoaderData: mockRoute.useLoaderData }),
+  Outlet: () => <div data-testid="outlet">Outlet</div>,
+  redirect: () => ({}),
+  Await: ({ children }: { children: React.ReactNode }) => <div data-testid="await">{children}</div>,
+  RouterProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="router-provider">{children}</div>,
+  createHashHistory: () => ({}),
+  createRouter: () => ({}),
+  createRootRouteWithContext: () => () => ({ component: null }),
+  useRouter: () => ({ invalidate: vi.fn() }),
+  useNavigate: () => vi.fn(),
+  useLocation: () => ({ pathname: '/' }),
+  useRouterState: () => ({ matches: [{ routeId: '/test' }] }),
+}));
+
+// Mock the route that provides the data
+vi.mock('@/routes/documentation/$slug', () => ({
+  Route: {
+    useLoaderData: () => mockRoute.useLoaderData(),
+  },
 }));
 
 vi.mock('@/components/pages/documentation/views/md-viewer-lite', () => ({
@@ -102,6 +125,33 @@ vi.mock('@/types/transitions', () => ({
     none: [],
   },
 }));
+
+// Mock the entire route tree to avoid having to mock every route
+vi.mock('@/routeTree.gen', () => ({
+  routeTree: {},
+}));
+
+vi.mock('@/types/transitions', () => ({
+  TRANSITION_CLASSES: {
+    fade: ['fade-enter', 'fade-exit'],
+    slide: ['slide-enter', 'slide-exit'],
+    none: [],
+  },
+}));
+
+vi.mock('@/components/ui/tooltip', () => ({
+  Tooltip: ({ children }: { children: React.ReactNode }) => <div data-testid="tooltip">{children}</div>,
+  TooltipContent: ({ children }: { children: React.ReactNode }) => <div data-testid="tooltip-content">{children}</div>,
+  TooltipProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="tooltip-provider">{children}</div>
+  ),
+  TooltipTrigger: ({ children }: { children: React.ReactNode }) => <div data-testid="tooltip-trigger">{children}</div>,
+}));
+
+// Vite build-time globals not defined in vitest
+vi.stubGlobal('BUILD_VERSION', '0.5.6');
+vi.stubGlobal('BUILD_DATE', '03/29/2026');
+vi.stubGlobal('MODALITY', '');
 
 // ----- Import under test -----
 
@@ -153,52 +203,42 @@ const createMockSettings = (overrides = {}) => ({
   ...overrides,
 });
 
-// ----- Tests -----
+const renderEntryPage = (
+  entry = createMockEntry(),
+  keywordArray = createMockKeywordArray(),
+  previousEntry = undefined,
+  nextEntry = undefined,
+  settings = createMockSettings(),
+) => {
+  mockRoute.useLoaderData.mockReturnValue({
+    KeywordArray: keywordArray,
+    PreviousEntry: previousEntry,
+    NextEntry: nextEntry,
+    Entry: entry,
+    Settings: settings,
+  });
+
+  return render(<DocumentationEntryPage />);
+};
 
 describe('DocumentationEntryPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRoute.useLoaderData.mockClear();
   });
 
   it('renders card with entry title', async () => {
-    const Entry = createMockEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage();
     await expect.element(page.getByTestId('card-title')).toHaveTextContent('Test Entry');
   });
 
   it('displays entry date and author', async () => {
-    const Entry = createMockEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage();
     await expect.element(page.getByTestId('card-description')).toHaveTextContent('Written 2024-01-01 by Test Author');
   });
 
   it('renders keyword badges for entry keywords', async () => {
-    const Entry = createMockEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage();
     const badges = page.getByTestId('badge').elements();
     expect(badges.length).toBe(2);
     expect(badges[0]).toHaveTextContent('testing');
@@ -206,16 +246,7 @@ describe('DocumentationEntryPage', () => {
   });
 
   it('applies correct color class to keyword badges', async () => {
-    const Entry = createMockEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage();
     const badges = page.getByTestId('badge').elements();
     expect(badges[0]).toHaveClass('bg-blue-500');
     expect(badges[1]).toHaveClass('bg-green-500');
@@ -223,138 +254,64 @@ describe('DocumentationEntryPage', () => {
 
   it('applies fallback gray color for unknown keywords', async () => {
     const Entry = createMockEntry({ matter: { keywords: 'testing,unknown-keyword' } });
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage(Entry);
     const badges = page.getByTestId('badge').elements();
     expect(badges[1]).toHaveClass('bg-gray-500');
   });
 
   it('renders markdown viewer with entry content', async () => {
-    const Entry = createMockEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage();
     await expect.element(page.getByTestId('md-viewer-lite')).toHaveTextContent('# Test Content');
   });
 
   it('disables previous button when PreviousEntry is undefined', async () => {
-    const Entry = createMockEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage();
     const buttons = page.getByTestId('button').elements();
     expect(buttons[0]).toBeDisabled();
   });
 
   it('disables next button when NextEntry is undefined', async () => {
-    const Entry = createMockEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage();
     const buttons = page.getByTestId('button').elements();
     expect(buttons[1]).toBeDisabled();
   });
 
   it('enables previous button when PreviousEntry is provided', async () => {
-    const Entry = createMockEntry();
     const PreviousEntry = createMockPreviousEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={PreviousEntry}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage(createMockEntry(), createMockKeywordArray(), PreviousEntry);
     const buttons = page.getByTestId('button').elements();
     expect(buttons[0]).not.toBeDisabled();
   });
 
   it('enables next button when NextEntry is provided', async () => {
-    const Entry = createMockEntry();
     const NextEntry = createMockNextEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={NextEntry}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage(createMockEntry(), createMockKeywordArray(), undefined, NextEntry);
     const buttons = page.getByTestId('button').elements();
     expect(buttons[1]).not.toBeDisabled();
   });
 
   it('links to previous entry with correct slug', async () => {
-    const Entry = createMockEntry();
     const PreviousEntry = createMockPreviousEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={PreviousEntry}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage(createMockEntry(), createMockKeywordArray(), PreviousEntry);
     const links = page.getByTestId('link').elements();
     expect(links[0].getAttribute('href')).toContain('previous-entry');
   });
 
   it('links to next entry with correct slug', async () => {
-    const Entry = createMockEntry();
     const NextEntry = createMockNextEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={NextEntry}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage(createMockEntry(), createMockKeywordArray(), undefined, NextEntry);
     const links = page.getByTestId('link').elements();
     expect(links[1].getAttribute('href')).toContain('next-entry');
   });
 
   it('applies view transition types for fade behavior', async () => {
-    const Entry = createMockEntry();
     const NextEntry = createMockNextEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={NextEntry}
-        Entry={Entry}
-        Settings={createMockSettings({ TransitionBehavior: 'fade' })}
-      />,
+    await renderEntryPage(
+      createMockEntry(),
+      createMockKeywordArray(),
+      undefined,
+      NextEntry,
+      createMockSettings({ TransitionBehavior: 'fade' }),
     );
     const links = page.getByTestId('link').elements();
     // With fade: animRight should be [fade-enter], animLeft should be [fade-exit]
@@ -362,16 +319,13 @@ describe('DocumentationEntryPage', () => {
   });
 
   it('applies view transition types for slide behavior', async () => {
-    const Entry = createMockEntry();
     const PreviousEntry = createMockPreviousEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={PreviousEntry}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings({ TransitionBehavior: 'slide' })}
-      />,
+    await renderEntryPage(
+      createMockEntry(),
+      createMockKeywordArray(),
+      PreviousEntry,
+      undefined,
+      createMockSettings({ TransitionBehavior: 'slide' }),
     );
     const links = page.getByTestId('link').elements();
     // With slide: animLeft should be [slide-exit], animRight should be [slide-enter]
@@ -379,31 +333,25 @@ describe('DocumentationEntryPage', () => {
   });
 
   it('handles empty transition classes for none behavior', async () => {
-    const Entry = createMockEntry();
     const NextEntry = createMockNextEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={NextEntry}
-        Entry={Entry}
-        Settings={createMockSettings({ TransitionBehavior: 'none' })}
-      />,
+    await renderEntryPage(
+      createMockEntry(),
+      createMockKeywordArray(),
+      undefined,
+      NextEntry,
+      createMockSettings({ TransitionBehavior: 'none' }),
     );
     const links = page.getByTestId('link').elements();
     expect(links[1]).toHaveAttribute('data-transition-types', '');
   });
 
   it('renders back button in header', async () => {
-    const Entry = createMockEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings({ TransitionBehavior: 'slide' })}
-      />,
+    await renderEntryPage(
+      createMockEntry(),
+      createMockKeywordArray(),
+      undefined,
+      undefined,
+      createMockSettings({ TransitionBehavior: 'slide' }),
     );
     const wrapper = page.getByTestId('page-wrapper');
     expect(wrapper).toHaveAttribute('data-transition', 'slide');
@@ -411,96 +359,45 @@ describe('DocumentationEntryPage', () => {
 
   it('trims whitespace from keywords', async () => {
     const Entry = createMockEntry({ matter: { keywords: '  testing  ,  documentation  ' } });
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage(Entry);
     const badges = page.getByTestId('badge').elements();
     expect(badges[0]).toHaveTextContent('testing');
     expect(badges[1]).toHaveTextContent('documentation');
   });
 
   it('shows chevron icons in navigation buttons', async () => {
-    const Entry = createMockEntry();
     const PreviousEntry = createMockPreviousEntry();
     const NextEntry = createMockNextEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={PreviousEntry}
-        NextEntry={NextEntry}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage(createMockEntry(), createMockKeywordArray(), PreviousEntry, NextEntry);
     await expect.element(page.getByTestId('chevron-left')).toBeInTheDocument();
     await expect.element(page.getByTestId('chevron-right')).toBeInTheDocument();
   });
 
   it('renders with single keyword', async () => {
     const Entry = createMockEntry({ matter: { keywords: 'testing' } });
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage(Entry);
     const badges = page.getByTestId('badge').elements();
     expect(badges.length).toBe(1);
   });
 
   it('renders with multiple keywords', async () => {
     const Entry = createMockEntry({ matter: { keywords: 'testing,documentation,advanced,guide' } });
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage(Entry);
     const badges = page.getByTestId('badge').elements();
     expect(badges.length).toBe(4);
   });
 
   it('does not apply pointer-events-none when navigation entries are present', async () => {
-    const Entry = createMockEntry();
     const PreviousEntry = createMockPreviousEntry();
     const NextEntry = createMockNextEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={PreviousEntry}
-        NextEntry={NextEntry}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage(createMockEntry(), createMockKeywordArray(), PreviousEntry, NextEntry);
     const links = page.getByTestId('link').elements();
     expect(links[0]).not.toHaveClass('pointer-events-none');
     expect(links[1]).not.toHaveClass('pointer-events-none');
   });
 
   it('handles empty keyword keyword array gracefully', async () => {
-    const Entry = createMockEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={[]}
-        PreviousEntry={undefined}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage(createMockEntry(), []);
     const badges = page.getByTestId('badge').elements();
     // All keywords should fallback to gray color
     badges.forEach((badge) => {
@@ -509,16 +406,7 @@ describe('DocumentationEntryPage', () => {
   });
 
   it('renders card footer with both navigation links', async () => {
-    const Entry = createMockEntry();
-    await render(
-      <DocumentationEntryPage
-        KeywordArray={createMockKeywordArray()}
-        PreviousEntry={undefined}
-        NextEntry={undefined}
-        Entry={Entry}
-        Settings={createMockSettings()}
-      />,
-    );
+    await renderEntryPage();
     const links = page.getByTestId('link').elements();
     expect(links.length).toBe(2);
   });
