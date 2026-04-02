@@ -62,15 +62,13 @@ const InnerApp = () => {
 
 function App() {
   return (
-    <>
-      <ThemeProvider defaultTheme="system">
-        <FolderContextProvider>
-          <QueryClientProvider client={queryClient}>
-            <InnerApp />
-          </QueryClientProvider>
-        </FolderContextProvider>
-      </ThemeProvider>
-    </>
+    <ThemeProvider defaultTheme="system">
+      <FolderContextProvider>
+        <QueryClientProvider client={queryClient}>
+          <InnerApp />
+        </QueryClientProvider>
+      </FolderContextProvider>
+    </ThemeProvider>
   );
 }
 
