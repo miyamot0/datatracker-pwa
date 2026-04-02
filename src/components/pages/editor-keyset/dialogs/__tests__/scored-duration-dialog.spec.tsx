@@ -26,7 +26,7 @@ vi.mock('@/lib/notifications', () => ({
 
 import ScoredDurationDialogKeyCreator from '../scored-duration-dialog';
 import { FolderContextProvider } from '@/context/folder-context';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 
 const makeKeyset = (): KeySet =>
   ({

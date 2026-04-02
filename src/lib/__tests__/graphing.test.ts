@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SavedSessionResult } from '../dtos';
-import { KeySet, KeySetInstance, ExpandedKeySetInstance } from '@/types/keyset';
+import { KeySet, KeySetInstance } from '@/types/keyset/core';
+import { ExpandedKeySetInstance } from '@/types/keyset/display';
 import { ModifiedSessionResult } from '@/types/storage';
 import { ToggleDisplayKey } from '@/types/visuals';
 

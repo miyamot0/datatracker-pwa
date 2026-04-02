@@ -10,7 +10,7 @@ import {
 import { CleanUpString } from '@/lib/strings';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
-import { type KeySet } from '@/types/keyset';
+import { type KeySet } from '@/types/keyset/core';
 import { ErrorDisplay } from '@/components/elements/suspense/error-display';
 
 export const Route = createFileRoute('/session/$group/$individual/keysets/$keyset/')({

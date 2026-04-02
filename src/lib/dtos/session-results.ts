@@ -1,5 +1,5 @@
 import { KeyManageType } from '@/types/timing';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { SavedSettings } from './session-settings';
 
 /**

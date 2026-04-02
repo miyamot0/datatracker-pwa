@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { SavedSettings } from '@/lib/dtos/session-settings';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { WorkerMessage } from '../timing/types/session-recorder-worker-messaging';
 
 // Create mock class using vi.hoisted for proper constructor support in Vitest 4+

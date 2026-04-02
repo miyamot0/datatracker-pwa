@@ -1,4 +1,5 @@
-import { KeySet, KeySetExtended } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
+import { KeySetExtended } from '@/types/keyset/extended';
 import { keyboardsAllQueryOptions } from './query-keyboards-all';
 import { queryClient } from '@/App';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';

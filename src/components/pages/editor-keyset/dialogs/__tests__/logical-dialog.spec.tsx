@@ -30,7 +30,7 @@ vi.mock('uuid', () => ({
 
 import LogicalDialogKeyCreator from '../logical-dialog';
 import { FolderContextProvider } from '@/context/folder-context';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 
 const makeKeyset = (): KeySet =>
   ({

@@ -1,4 +1,5 @@
-import { KeySet, KeySetExtended } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
+import { KeySetExtended } from '@/types/keyset/extended';
 import { ModifiedSessionResult } from '@/types/storage';
 import { SavedSettings } from '@/lib/dtos/session-settings';
 import { SavedSessionResult } from '@/lib/dtos/session-results';

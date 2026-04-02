@@ -1,4 +1,4 @@
-import { KeySetExtended } from '@/types/keyset';
+import { KeySetExtended } from '@/types/keyset/extended';
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
 import { FetchKeysetsAllRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
 import { v4 as uuidv4 } from 'uuid';

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 
 export const Route = createFileRoute('/session/$group/$individual/keysets/')({
   beforeLoad: ({ context, params }) => {

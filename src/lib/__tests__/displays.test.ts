@@ -1,6 +1,6 @@
 import { generateChunkedVisuals } from '../displays';
 import { chunking } from '../arrays';
-import { KeySet, KeySetInstance } from '@/types/keyset';
+import { KeySet, KeySetInstance } from '@/types/keyset/core';
 import { ScreenSizingTypes } from '@/types/settings/display-settings';
 
 // Mock the arrays module

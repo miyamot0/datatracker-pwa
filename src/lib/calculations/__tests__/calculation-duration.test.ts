@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { processDurationKeys } from '@/lib/calculations/calculation-duration';
 import type { SavedSessionResult } from '@/lib/dtos/session-results';
-import type { KeySet } from '@/types/keyset';
+import type { KeySet } from '@/types/keyset/core';
 import type { SessionProcessingOptions } from '../../../types/calculation';
 
 vi.mock('@/lib/schedule-parser', () => ({

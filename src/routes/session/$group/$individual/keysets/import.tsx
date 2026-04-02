@@ -10,7 +10,7 @@ import {
 import PageWrapper from '@/components/elements/page-wrapper';
 import { keyboardsAllQueryOptions } from '@/queries/keysets/query-keyboards-all';
 import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
-import { KeySetExtended } from '@/types/keyset';
+import { KeySetExtended } from '@/types/keyset/extended';
 
 export const Route = createFileRoute('/session/$group/$individual/keysets/import')({
   beforeLoad: ({ context, params }) => {

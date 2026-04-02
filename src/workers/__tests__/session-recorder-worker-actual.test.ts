@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import SessionRecorderWorker from '../timing/session-recorder-worker?worker';
 import type { WorkerMessage, WorkerResponse } from '../timing/types/session-recorder-worker-messaging';
 import type { SavedSettings } from '@/lib/dtos/session-settings';
-import type { KeySet } from '@/types/keyset';
+import type { KeySet } from '@/types/keyset/core';
 
 describe('SessionRecorderWorker Actual Integration', () => {
   let worker: Worker;

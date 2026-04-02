@@ -1,4 +1,4 @@
-import { KeySetLogical } from '@/types/keyset';
+import { KeySetLogical } from '@/types/keyset/serialization';
 
 /**
  * Types for the logic engine

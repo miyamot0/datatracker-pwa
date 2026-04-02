@@ -1,6 +1,6 @@
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { evaluateLogic } from '@/lib/logic';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { getUnifiedTimerMinutes } from './calculation-helpers';
 import { SessionProcessingOptions, ProcessedKeyResult } from '../../types/calculation';
 

@@ -1,6 +1,6 @@
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { walkSessionDurationKeyStateAware } from '@/lib/schedule-parser';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { getUnifiedTimerValue, getTimerSchedule } from './calculation-helpers';
 import { SessionProcessingOptions, ProcessedKeyResult } from '../../types/calculation';
 

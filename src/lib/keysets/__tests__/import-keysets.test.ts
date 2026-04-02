@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
 import { CleanUpString } from '@/lib/strings';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import * as importKeysetsModule from '../import-keysets';
 
 vi.mock('@/lib/keyset');

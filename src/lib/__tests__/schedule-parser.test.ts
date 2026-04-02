@@ -6,7 +6,7 @@
   sumDurationScoringKeyStateAware,
 } from '../schedule-parser';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
-import { KeySetInstance } from '@/types/keyset';
+import { KeySetInstance } from '@/types/keyset/core';
 import { ModifiedSessionResult } from '@/types/storage';
 
 describe('walkSessionFrequencyKey', () => {
