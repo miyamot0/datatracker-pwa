@@ -17,10 +17,6 @@ export const Route = createRootRouteWithContext<CustomizedRouterContext>()({
       }
     }, [isInitialized]);
 
-    return (
-      <>
-        <Outlet />
-      </>
-    );
+    return <Outlet />;
   },
 });
