@@ -19,24 +19,19 @@ Because of how this program is designed, users will always be prompted to approv
 
 The DataTracker interface will provide cues to indicate if the required access has, or has not, been authorized. A pair of images visualizing each status are shown below:
 
-<div align="middle" width="100%">
-    <img src="docs/access_not_authorized.png" alt="Image of access not being authorized" />
-    <img src="docs/access_authorized.png" alt="Image of access being authorized" />
-</div>
+![Image of access not being authorized](docs/access_not_authorized.png 'Image of access not being authorized')
+
+![Image of access being authorized](docs/access_authorized.png 'Image of access being authorized')
 
 ### Approving the 'DataTracker' Folder
 
 The DataTracker program will present a prompt to the user if access has not been granted to a primary 'DataTracker' folder. Specifically, upon clicking the 'Load Application' button, the program will present a page prompting the user to authorize the relevant folder. A visual of this is shown below:
 
-<div align="center" width="100%">
-    <img src="screenshots/groups_unauthorized_page.png" alt="Image of DataTracker program access screen"/>
-</div>
+![Image of DataTracker program access screen](screenshots/groups_unauthorized_page.png 'Image of DataTracker program access screen')
 
 Pressing the 'Authorize Access' button will prompt you to use a Folder named DataTracker (i.e., "DataTracker" folder in your _Documents_ folder or on your _Desktop_). This is largely as a strategy to avoid accidentally loading a "Group" folder as if it were a "DataTracker" folder. This can be disabled, but for good practice, it is kept as a default setting (i.e., to prevent novice users from losing data). Using **Google Chrome** in Windows, this could appear as the following:
 
-<div align="center" width="100%">
-    <img src="docs/approve_folder.png" alt="Image of relevant 'DataTracker' folder being selected"/>
-</div>
+![Image of relevant 'DataTracker' folder being selected](docs/approve_folder.png 'Image of relevant "DataTracker" folder being selected')
 
 ### Some General Rules for Working with DataTracker Data
 
@@ -44,7 +39,7 @@ The DataTracker program is powerful, and can greatly simplify data collection, b
 
 Several additional rules that are good to follow when working with the DataTracker program are reviewed in the headings below.
 
-#### Hand-editing Data Files: <ins>Not a Good Idea</ins>
+#### Hand-editing Data Files: _Not a Good Idea_
 
 The program saves files in JSON format (JavaScript Object Notation), which is a universal data format that can be read by many programs. It can be read from software such as browsers, statistical software, programming languages, etc. It's used virtually everywhere and by almost everything.
 
@@ -52,7 +47,7 @@ If you attempt to edit this file by hand, without knowing the implications of wh
 
 If you need to _delete files or folders_, it is advised to use the built-in interface to do so.
 
-#### Moving Folders Around in the DataTracker Folder: <ins>Probably Not a Good Idea</ins>
+#### Moving Folders Around in the DataTracker Folder: _Probably Not a Good Idea_
 
 Certain manual operations in the DataTracker program are less impactful than others. For example, adding a folder in an "Evaluation" directory would add a new "Condition" without requiring direct interactions with the program. Likewise, adding a folder in the "Client" directory would similarly add a new individual with the associated folder name. Although these operations have the potential to simplify certain operations, copy/pasting folders in bulk is likely to be problematic.
 
@@ -60,17 +55,17 @@ Various aspects of the program will attempt to 'remember' certain selections, an
 
 If you make major changes to the folder structure, this can introduce significant risks of program error.
 
-#### Copying a KeySet (\*\*.json File): <ins>Maybe Okay</ins>
+#### Copying a KeySet (\*\*.json File): _Maybe Okay_
 
 It is often the case that a common set of targets is shared across Participants in a study. In this case, it is likely that you will want to copy a KeySet file from one case to another. This is generally okay, but it is important to remember that the Keyboard file _must be in the correct location_. If you copy a KeySet file to the wrong location, it will (1) not be accessible in the **Keyboard Designer** or **Session Designer** and (2) could cause the program to crash if the program reads it thinking it is a data file (e.g., when calculating Reliability or summarizing rates).
 
 Although it is possible to copy/paste KeySet files to save time (if you understand how the program is designed to work), it is recommended to use the built-in KeySet import functionality or to sync the individual's folder from a more current remote directory (i.e., files on a shared drive).
 
-#### Creating Evaluation Conditions by Hand: <ins>Probably Okay</ins>
+#### Creating Evaluation Conditions by Hand: _Probably Okay_
 
 It is likely that certain types of conditions will be used across Participants for a given **Evaluation**. For example, a "Baseline" condition is likely to be used for all Participants in a study. In this case, it is likely that you will want to create a "Baseline" folder by hand for each of the Participants. This is generally okay, but it is important to remember that the **Condition** folder _must be in the correct location_ and _must be empty_.
 
-#### Copying Reliability Files: <ins>Probably Okay</ins>
+#### Copying Reliability Files: _Probably Okay_
 
 As a working default, files for the Reliability data collector will need to be moved to a central location for analysis. This is expected behavior, though it is important to remember that the Reliability file _must be in the correct location_ (i.e., correct **Evaluation** and **Condition**). Users can copy/paste these files; however, it is recommended to use the built-in sync functionality to ensure that files are migrated properly.
 

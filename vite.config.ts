@@ -276,6 +276,13 @@ export default defineConfig(({ mode }) => {
       outDir: MODALITY === 'island' ? ISLAND_OUT_DIR : PROD_OUT_DIR,
       rollupOptions: {
         external: [/\.test\.(js|ts|tsx)$/, '**/__tests__/**/*', '**/*.test.{ts,tsx}', '/docs/*.png'],
+        output: {
+          manualChunks: (id) => {
+            if (id.includes('react-markdown')) {
+              return 'react-markdown';
+            }
+          },
+        },
       },
     },
   };

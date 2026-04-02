@@ -21,15 +21,11 @@ The rationale behind using **Evaluation** folders in this fashion is to facilita
 
 To create a new **Evaluation** folder, you can do so by clicking the "Create" button available within the **Individual** folder associated with the participant. This will prompt a dialog box to appear, asking you to enter a name for the new **Evaluation** folder. Once you have provided the desired name (e.g., "Functional Analysis"), the new **Evaluation** folder will be added to the program's hierarchy. You can then begin populating the **Evaluation** folder with data files, notes, and other relevant information from that session. A visual of this interface is provided below:
 
-<div align="center" width="100%">
-    <img src="screenshots/evaluation_page.png" alt="Image Evaluation Dashboard interface"/>
-</div>
+![Image Evaluation Dashboard interface](screenshots/evaluation_page.png 'Image Evaluation Dashboard interface')
 
 Once you create an evaluation folder, you will need to provide additional information before sessions can be run/recorded. Specifically, you will need to provide relevant conditions for the **Evaluation** (e.g. Baseline, Intervention folders) as well as construct or import a KeySet to be used with the **Evaluation**. Procedures for deleting **Evaluation** folders are similar to those for **Group** and **Individual** folders, as outlined in the previous sections. Please exercise caution when deleting **Evaluation** folders, as this action cannot be undone, and all data within the folder will be lost. Recommendations for deletion permissions are similar to those for **Group** and **Individual** folders, as outlined in the previous sections. A relevant visual for this is provided below:
 
-<div align="center" width="100%">
-    <img src="docs/folder_preview_evaluations_delete.png" alt="Image for Evaluation Dashboard interface related to deletion"/>
-</div>
+![Image for Evaluation Dashboard interface related to deletion](docs/folder_preview_evaluations_delete.png 'Image for Evaluation Dashboard interface related to deletion')
 
 ### Duplicating Evaluation Folders
 

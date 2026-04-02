@@ -75,8 +75,8 @@ vi.mock('@tanstack/react-router', () => ({
   ),
 }));
 
-vi.mock('@/components/pages/documentation/views/md-viewer', () => ({
-  MdViewer: ({ source }) => <div data-testid="md-viewer">{source}</div>,
+vi.mock('@/components/pages/documentation/views/md-viewer-lite', () => ({
+  MdViewerLite: ({ source }) => <div data-testid="md-viewer-lite">{source}</div>,
 }));
 
 vi.mock('@/components/elements/page-wrapper', () => ({
@@ -247,7 +247,7 @@ describe('DocumentationEntryPage', () => {
         Settings={createMockSettings()}
       />,
     );
-    await expect.element(page.getByTestId('md-viewer')).toHaveTextContent('# Test Content');
+    await expect.element(page.getByTestId('md-viewer-lite')).toHaveTextContent('# Test Content');
   });
 
   it('disables previous button when PreviousEntry is undefined', async () => {

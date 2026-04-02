@@ -29,15 +29,11 @@ As a reminder, it is **not required** to 'install' DataTracker on your device to
 
 Specific browsers each provide numerous pathways to install DataTracker. The simplest and most direct method would be to use the button provided on the site homepage. The button prompting install will be displayed whenever it is relevant and possible to install the program. It will not be displayed if you are visiting the site on a mobile device. A visual of the installation button is shown below.
 
-<div align="center" width="100%">
-    <img src="screenshots/home_page.png" alt="Image of DataTracker home page with install button"/>
-</div>
+![Image of DataTracker home page with install button](screenshots/home_page.png 'DataTracker Home Page with Install Button')
 
 The installation of the program completes in less than a second and is generally a seamless process. Once the program is installed, your computer will treat it similarly as it would any other program installed on the computer (e.g., would show up in Windows menu as an app). At this time, you may create a shortcut to the program on your desktop or pin it to your Taskbar/Dock for quick and easy access. Furthermore, across various operating systems, you can set the program to launch automatically when you start your computer if that is most convenient (e.g., for supporting the training of new recorders). Once the respective shortcut is clicked, it would open a window that resembles a traditional program, but is actually a web app running natively on your machine. Shown below is the DataTracker program pinned to the Task/Menu bar in Microsoft Windows.
 
-<div align="center" width="100%">
-    <img src="docs/pin_taskbar.png" alt="Image of program pinned to task bar"/>
-</div>
+![Image of program pinned to task bar](docs/pin_taskbar.png 'DataTracker Pinned to Task Bar')
 
 #### Installation for Windows Users
 
@@ -49,17 +45,13 @@ On a Windows machine, it is simplest to install DataTracker using **Microsoft Ed
 
 Should you decide not to install using the button the home screen (the recommended option), you can install the program by clicking the 'Install' button that emerges in the browser bar. A visual of the native support provided via **Microsoft Edge** is shown below.
 
-<div align="center" width="100%">
-    <img src="docs/edge_install.png" alt="Image of DataTracker install option on Edge"/>
-</div>
+![Image of DataTracker install option on Edge](docs/edge_install.png 'DataTracker Install Option on Edge')
 
 ##### Alternative Installation on Google Chrome
 
 The installation of DataTracker on **Google Chrome** is also straightforward and a very strong option for most users (particularly if **Google Chrome** is your preferred/existing default browser). This is largely the same process as with **Microsoft Edge**, but would require the installation of **Google Chrome** if you do not already have it on your machine. You can install the program by selecting the 'Install' button on the home screen, or alternatively, you can install the program manually by selecting the 'Install' option in the browser menu. A visual of the native support provided via **Google Chrome** is shown below.
 
-<div align="center" width="100%">
-    <img src="docs/chrome_install.png" alt="Image of DataTracker install option on Chrome"/>
-</div>
+![Image of DataTracker install option on Chrome](docs/chrome_install.png 'DataTracker Install Option on Chrome')
 
 #### Installation for macOS Users
 

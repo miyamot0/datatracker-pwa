@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import BackButton from '@/components/ui/back-button';
 import { Link } from '@tanstack/react-router';
-import { MdViewer } from './views/md-viewer';
+import { MdViewerLite } from './views/md-viewer-lite';
 import { TRANSITION_CLASSES } from '@/types/transitions';
 import PageWrapper from '@/components/elements/page-wrapper';
 import { BuildDocumentationBreadcrumb } from '@/components/ui/breadcrumb-entries';
@@ -58,7 +58,7 @@ export default function DocumentationEntryPage({ KeywordArray, PreviousEntry, Ne
           <BackButton />
         </CardHeader>
         <CardContent className="prose dark:prose-invert !max-w-none">
-          <MdViewer source={Entry.value} />
+          <MdViewerLite source={Entry.value} />
         </CardContent>
         <CardFooter className="flex flex-row justify-between">
           <Link

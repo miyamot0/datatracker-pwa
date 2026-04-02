@@ -1,4 +1,4 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-97.49_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-94.63_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-98.53_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-97.48_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-94.63_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-98.53_Percent-green>)
 
 ![Static Badge Version](https://img.shields.io/badge/Version-0.5.8-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
@@ -79,8 +79,6 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
  
 @hookform/resolvers (3.9.0). Copyright bluebill1049 <bluebill1049@hotmail.com> -- MIT Licensed: [Repo](https://github.com/react-hook-form/resolvers.git) 
  
-@mdx-js/mdx (3.0.1). Copyright John Otander <johnotander@gmail.com> (https://johno.com) -- MIT Licensed: [Repo](https://github.com/mdx-js/mdx.git) 
- 
 @radix-ui/react-checkbox (1.3.2). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
 @radix-ui/react-dialog (1.1.15). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
@@ -136,6 +134,8 @@ react (18.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/faceboo
 react-dom (18.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/facebook/react.git) 
  
 react-hook-form (7.53.0). Copyright <bluebill1049@hotmail.com> -- MIT Licensed: [Repo](https://github.com/react-hook-form/react-hook-form.git) 
+ 
+react-markdown (10.1.0). Copyright Espen Hovlandsdal <espen@hovlandsdal.com> -- MIT Licensed: [Repo](https://github.com/remarkjs/react-markdown.git) 
  
 react-spreadsheet (0.9.5). Copyright Iddan Aaronsohn <mail@aniddan.com> (https://aniddan.com) -- MIT Licensed: [Repo](https://github.com/iddan/react-spreadsheet.git) 
  
