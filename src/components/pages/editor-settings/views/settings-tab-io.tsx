@@ -1,14 +1,12 @@
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ApplicationSettingsTypes, SettingsDisplayEnum } from '@/types/settings/application-settings';
 import {
-  ApplicationSettingsTypes,
   CACHE_OPTIONS,
   CacheSettingTypes,
-  POST_SESSION_BX_OPTIONS,
-  PostSessionBxTypes,
   SESSION_RECORDER_POLLING_OPTIONS,
   SessionRecorderPolling,
-  SettingsDisplayEnum,
-} from '@/types/settings';
+} from '@/types/settings/performance-settings';
+import { POST_SESSION_BX_OPTIONS, PostSessionBxTypes } from '@/types/settings/notification-settings';
 import { displayConditionalNotification } from '@/lib/notifications';
 import SettingsFormItemWrapper from './settings-form-item-wrapper';
 import { TabsContent } from '../../../ui/tabs';

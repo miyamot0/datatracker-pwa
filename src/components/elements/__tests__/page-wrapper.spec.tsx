@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
 import PageWrapper from '../page-wrapper';
-import { DEFAULT_APPLICATION_SETTINGS } from '@/types/settings';
+import { DEFAULT_APPLICATION_SETTINGS } from '@/types/settings/application-settings';
 import { FolderHandleContext } from '@/context/folder-context';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 vi.mock('../header/navigation-bar', () => ({
   default: ({

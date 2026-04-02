@@ -20,7 +20,7 @@ vi.mock('@/lib/notifications', () => ({
 
 import { Tabs } from '@/components/ui/tabs';
 import { SettingsTabIO } from '../settings-tab-io';
-import { DEFAULT_APPLICATION_SETTINGS, SettingsDisplayEnum } from '@/types/settings';
+import { DEFAULT_APPLICATION_SETTINGS, SettingsDisplayEnum } from '@/types/settings/application-settings';
 import { FolderHandleContext } from '@/context/folder-context';
 
 // ----- Tests -----

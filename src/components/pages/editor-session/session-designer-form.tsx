@@ -34,7 +34,7 @@ import { useNavigate, useRouter, useRouterState } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { DataCollectorRoles } from '@/types/roles';
 import { filteredSessionTerminationOptions, SessionTerminationOptionsDescriptions } from '@/types/terminations';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 type Props = {
   Group: string;

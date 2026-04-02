@@ -19,7 +19,7 @@ import SessionFigure from './session-figure';
 import SessionKeyList from './session-key-list';
 import { ExpandedSavedSessionResult } from '@/lib/dtos';
 import { ToggleDisplayKey } from '@/types/visuals';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 export default function SessionViewerContent({
   Group,

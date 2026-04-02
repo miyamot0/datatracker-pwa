@@ -27,7 +27,7 @@ import {
   ScheduleMappingOptionsType,
   ScoringOptionsMapType,
 } from '@/types/schedules';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 export default function ResultsProportionVisualsPage({
   Group,

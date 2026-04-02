@@ -26,7 +26,7 @@ vi.mock('@/lib/notifications', () => ({
 
 import { Tabs } from '@/components/ui/tabs';
 import { SettingsTabAdministrative } from '../settings-tab-admin';
-import { DEFAULT_APPLICATION_SETTINGS, SettingsDisplayEnum } from '@/types/settings';
+import { DEFAULT_APPLICATION_SETTINGS, SettingsDisplayEnum } from '@/types/settings/application-settings';
 import { FolderHandleContext } from '@/context/folder-context';
 
 // ----- Tests -----

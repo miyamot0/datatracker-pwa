@@ -1,6 +1,6 @@
 import { chunking } from '@/lib/arrays';
 import { KeySet, KeySetInstance } from '@/types/keyset';
-import { ScreenSizingTypes } from '@/types/settings';
+import { ScreenSizingTypes } from '@/types/settings/display-settings';
 
 const MIN_KEY_COUNT_FOR_SPLIT_TWO_COL = 6;
 const MIN_KEY_COUNT_FOR_SPLIT_THREE_COL = 12;

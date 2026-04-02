@@ -15,7 +15,7 @@ import { usePWAInstall } from 'react-use-pwa-install';
 import { useEffect, useState } from 'react';
 import { isOnMobilePlatform } from '@/lib/user-agent';
 import ImageCarousel from './views/img-carousel';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { toast } from 'sonner';
 import { Link, useNavigate, useRouter } from '@tanstack/react-router';
 

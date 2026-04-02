@@ -1,7 +1,7 @@
 import { generateChunkedVisuals } from '../displays';
 import { chunking } from '../arrays';
 import { KeySet, KeySetInstance } from '@/types/keyset';
-import { ScreenSizingTypes } from '@/types/settings';
+import { ScreenSizingTypes } from '@/types/settings/display-settings';
 
 // Mock the arrays module
 vi.mock('../arrays', () => ({

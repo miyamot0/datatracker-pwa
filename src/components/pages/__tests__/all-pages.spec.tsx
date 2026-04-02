@@ -6,7 +6,7 @@ import EvaluationsPage from '../dashboard-evaluations/evaluations-page';
 import PageWrapper from '@/components/elements/page-wrapper';
 import { ThemeProvider } from '@/components/ui/theme-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { DEFAULT_APPLICATION_SETTINGS } from '@/types/settings';
+import { DEFAULT_APPLICATION_SETTINGS } from '@/types/settings/application-settings';
 import { FolderHandleContext } from '@/context/folder-context';
 import '@/styles/globals.css';
 import HomePage from '../home/home-page';

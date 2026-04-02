@@ -1,5 +1,5 @@
-import { ApplicationSettingsTypes } from "@/types/settings";
-import { toast } from "sonner";
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
+import { toast } from 'sonner';
 
 /**
  * Display a conditional notification
@@ -15,7 +15,7 @@ export function displayConditionalNotification(
   title: string,
   description: string,
   duration?: number,
-  isError: boolean = false
+  isError: boolean = false,
 ) {
   if (isError) {
     toast.error(title, {
@@ -26,11 +26,7 @@ export function displayConditionalNotification(
     return;
   }
 
-  if (
-    settings.NotificationSettings === "ShowNone" ||
-    settings.NotificationSettings === "ShowErrorsOnly"
-  )
-    return;
+  if (settings.NotificationSettings === 'ShowNone' || settings.NotificationSettings === 'ShowErrorsOnly') return;
 
   toast.success(title, {
     description,

@@ -10,7 +10,7 @@ import { mutationGroups } from '@/queries/groups/mutate-groups';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { DataTable } from '@/components/ui/data-table-common';
 import { DemoDataFolderName } from '@/lib/query-mutate';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 type Props = {
   Groups: string[];

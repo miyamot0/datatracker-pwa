@@ -10,7 +10,7 @@ import SyncToRemoteTable from './views/sync-to-remote-table';
 import SyncFromRemoteTable from './views/sync-from-remote-table';
 import { Badge } from '../../ui/badge';
 import { toast } from 'sonner';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 const WrappedButton = ({ active, children }: { active: boolean; children: ReactNode }) => {
   return (

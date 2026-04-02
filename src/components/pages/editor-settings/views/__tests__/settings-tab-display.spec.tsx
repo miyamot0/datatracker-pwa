@@ -37,7 +37,7 @@ vi.mock('@/types/transitions', () => ({
 
 import { Tabs } from '@/components/ui/tabs';
 import { SettingsTabDisplay } from '../settings-tab-display';
-import { DEFAULT_APPLICATION_SETTINGS, SettingsDisplayEnum } from '@/types/settings';
+import { DEFAULT_APPLICATION_SETTINGS, SettingsDisplayEnum } from '@/types/settings/application-settings';
 import { FolderHandleContext } from '@/context/folder-context';
 
 // ----- Tests -----

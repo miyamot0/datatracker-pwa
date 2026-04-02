@@ -12,7 +12,7 @@ import { useMutation } from '@tanstack/react-query';
 import { mutationKeyboards } from '@/queries/keysets/mutate-keyboards';
 import { queryClient } from '@/App';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 export default function KeySetsPage({
   Group,

@@ -1,12 +1,11 @@
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ApplicationSettingsTypes, SettingsDisplayEnum } from '@/types/settings/application-settings';
 import {
-  ApplicationSettingsTypes,
   ELEVATED_PRIVILEGES_OPTIONS,
   ElevatedPrivilegesType,
   ENFORCED_NAMING_OPTIONS,
   EnforceDataFolderType,
-  SettingsDisplayEnum,
-} from '@/types/settings';
+} from '@/types/settings/administrative-settings';
 import { displayConditionalNotification } from '@/lib/notifications';
 import SettingsFormItemWrapper from './settings-form-item-wrapper';
 import { TabsContent } from '../../../ui/tabs';

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
 import NavigationBar from '../navigation-bar';
-import { DEFAULT_APPLICATION_SETTINGS } from '@/types/settings';
+import { DEFAULT_APPLICATION_SETTINGS } from '@/types/settings/application-settings';
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ to, children, className }: { to: string; children: React.ReactNode; className?: string }) => (

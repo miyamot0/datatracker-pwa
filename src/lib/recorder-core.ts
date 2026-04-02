@@ -1,7 +1,7 @@
 import { KeySet } from '@/types/keyset';
 import { SavedSettings } from '@/lib/dtos';
 import { KeyManageType, KeyTiming, TimerSetting } from '@/types/timing';
-import { SessionPollingIntervals, SessionRecorderPolling } from '@/types/settings';
+import { SessionPollingIntervals, SessionRecorderPolling } from '@/types/settings/performance-settings';
 
 const TIME_DELTA = 10; /** Polling interval in milliseconds */
 const TIME_UNIT = 1000; /** Number of milliseconds in one second */

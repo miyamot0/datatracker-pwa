@@ -21,7 +21,7 @@ import { Link } from '@tanstack/react-router';
 import { Switch } from '@/components/ui/switch';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import {
   filteredSessionScoringOptions,
   ScheduleMappingOptions,

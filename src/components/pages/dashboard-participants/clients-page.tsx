@@ -7,7 +7,7 @@ import { DataTable } from '@/components/ui/data-table-common';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { CleanUpString } from '@/lib/strings';
 import { mutationIndividuals } from '@/queries/individuals/mutate-individuals';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { useMutation } from '@tanstack/react-query';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { ColumnDef } from '@tanstack/react-table';

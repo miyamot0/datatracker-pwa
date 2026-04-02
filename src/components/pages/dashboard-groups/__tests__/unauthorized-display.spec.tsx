@@ -26,7 +26,7 @@ vi.mock('@tanstack/react-router', async (importOriginal) => {
 
 import UnauthorizedDisplay from '../unauthorized-display';
 import { FolderHandleContext } from '@/context/folder-context';
-import { DEFAULT_APPLICATION_SETTINGS } from '@/types/settings';
+import { DEFAULT_APPLICATION_SETTINGS } from '@/types/settings/application-settings';
 
 const renderPage = (enforce = false) =>
   render(

@@ -10,7 +10,7 @@ import { TRANSITION_CLASSES } from '@/types/transitions';
 import PageWrapper from '@/components/elements/page-wrapper';
 import { BuildDocumentationBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { FrontMatterUniversalType, ParsedFrontMatterType } from '@/types/mdx';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { KeywordColors } from '@/types/colors';
 
 type Props = {

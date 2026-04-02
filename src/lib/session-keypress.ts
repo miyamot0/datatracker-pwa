@@ -1,5 +1,5 @@
 import { KeySet } from '@/types/keyset';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { KeyManageType, TimerSetting } from '@/types/timing';
 import { WorkerMessage, WorkerResponse } from '@/workers/timing/types/session-recorder-worker-messaging';
 import {

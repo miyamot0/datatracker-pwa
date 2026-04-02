@@ -13,7 +13,7 @@ import { MenuIcon, RefreshCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from '@tanstack/react-router';
 import { TRANSITION_CLASSES } from '@/types/transitions';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 export type BreadCrumbListing = {
   label: string;

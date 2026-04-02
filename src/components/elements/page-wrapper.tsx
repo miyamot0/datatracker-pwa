@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
 import LayoutFooter from './footer/footer';
 import ScrollReset from './behavior/scroll-reset';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 type Props = {
   children: React.ReactNode;

@@ -6,7 +6,7 @@ import { SettingsTabDisplay } from './views/settings-tab-display';
 import { SettingsTabIO } from './views/settings-tab-io';
 import { SettingsTabNotifications } from './views/settings-tab-notifications';
 import { SettingsTabAdministrative } from './views/settings-tab-admin';
-import { SettingsDisplayEnum } from '@/types/settings';
+import { SettingsDisplayEnum } from '@/types/settings/application-settings';
 
 export default function SettingsPage() {
   return (

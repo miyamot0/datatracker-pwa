@@ -1,7 +1,7 @@
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table-common';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { ExpandedSavedSessionResult } from '@/lib/dtos';
 import { KeyManageType } from '@/types/timing';
 

@@ -13,7 +13,7 @@ import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outc
 import { toast } from 'sonner';
 import { queryClient } from '@/App';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 export default function DashboardHistoryPage({
   Group,

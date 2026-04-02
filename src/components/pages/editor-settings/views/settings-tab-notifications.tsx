@@ -2,14 +2,13 @@ import { TabsContent } from '@/components/ui/tabs';
 import SettingsFormItemWrapper from './settings-form-item-wrapper';
 import { SettingsTabContainer } from './settings-tab-container';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ApplicationSettingsTypes, SettingsDisplayEnum } from '@/types/settings/application-settings';
 import {
-  ApplicationSettingsTypes,
   NOTIFICATION_SETTINGS_OPTIONS,
   NotificationSettingsTypes,
   TOOL_TIP_OPTIONS,
   ToolTipOptionTypes,
-  SettingsDisplayEnum,
-} from '@/types/settings';
+} from '@/types/settings/notification-settings';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useContext } from 'react';
 import { displayConditionalNotification } from '@/lib/notifications';
