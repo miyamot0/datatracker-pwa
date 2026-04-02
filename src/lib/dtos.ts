@@ -5,16 +5,8 @@
  */
 
 // Re-exports from focused files for backward compatibility
-export type {
-  SavedSettings,
-} from './dtos/session-settings';
+export type { SavedSettings } from './dtos/session-settings';
 
-export {
-  DEFAULT_SESSION_SETTINGS,
-  toSavedSettings,
-} from './dtos/session-settings';
+export { DEFAULT_SESSION_SETTINGS, toSavedSettings } from './dtos/session-settings';
 
-export type {
-  SavedSessionResult,
-  ExpandedSavedSessionResult,
-} from './dtos/session-results';
+export type { SavedSessionResult, ExpandedSavedSessionResult } from './dtos/session-results';
