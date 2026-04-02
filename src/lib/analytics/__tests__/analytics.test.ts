@@ -277,6 +277,7 @@ describe('Analytics Module Full Coverage', () => {
     it('should queue event when offline', async () => {
       Object.defineProperty(navigator, 'onLine', { value: false, writable: true });
       vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'test-measurement-id');
 
       const { analytics } = await import('@/lib/analytics/analytics-client');
       await analytics.track('page_view', { path: '/offline' });
@@ -302,6 +303,7 @@ describe('Analytics Module Full Coverage', () => {
 
     it('should generate and store client ID', async () => {
       vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'test-measurement-id');
       vi.stubEnv('DEV', false);
 
       mockFetch.mockResolvedValue(new Response('', { status: 200 }));
@@ -315,6 +317,7 @@ describe('Analytics Module Full Coverage', () => {
     it('should reuse existing client ID', async () => {
       mockLocalStorage.set('ga_client_id', 'existing-id');
       vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'test-measurement-id');
       vi.stubEnv('DEV', false);
 
       mockFetch.mockResolvedValue(new Response('', { status: 200 }));
@@ -563,6 +566,7 @@ describe('Analytics Module Full Coverage', () => {
 
     it('should set up sync when analytics enabled', async () => {
       vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'test-measurement-id');
       vi.stubEnv('PROD', true);
 
       const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
@@ -599,9 +603,12 @@ describe('Analytics Module Full Coverage', () => {
     });
 
     it('should clear events when consent is revoked', async () => {
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'test-measurement-id');
       mockLocalStorage.set('analytics_consent', 'denied');
 
-      await import('../analytics-sync');
+      const { startAnalyticsSync } = await import('../analytics-sync');
+      startAnalyticsSync(); // This registers the event listener
 
       // Trigger consent change event
       window.dispatchEvent(new CustomEvent('analytics-consent-changed', { detail: 'denied' }));

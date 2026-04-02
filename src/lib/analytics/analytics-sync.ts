@@ -48,21 +48,67 @@ export async function flushEvents() {
 }
 
 /**
+ * Initialize Google Analytics configuration
+ * This replaces the inline script configuration for better CSP compliance
+ */
+function initializeGoogleAnalytics() {
+  // Check if gtag is available (loaded by external script)
+  if (typeof window.gtag !== 'function') {
+    if (analyticsConfig.isDev) {
+      console.warn('gtag not available - Google Analytics not loaded');
+    }
+    return;
+  }
+
+  if (analyticsConfig.measurementId) {
+    window.gtag('config', analyticsConfig.measurementId, {
+      send_page_view: false, // important for SPA/PWA
+      // Enhanced privacy settings
+      anonymize_ip: true,
+      allow_google_signals: false,
+      allow_ad_personalization_signals: false,
+      // Performance settings
+      transport_type: 'beacon',
+      // Custom settings for your research app
+      custom_map: {
+        custom_parameter_1: 'research_session',
+      },
+    });
+
+    if (analyticsConfig.isDev) {
+      console.log('✅ Google Analytics initialized:', analyticsConfig.measurementId);
+    }
+  }
+}
+
+/**
  * Start syncing queued analytics events when back online and at regular intervals in production
  */
 export function startAnalyticsSync() {
-  if (!analyticsConfig.enabled) return;
+  if (!analyticsConfig.enabled) {
+    if (analyticsConfig.isDev) {
+      console.log('📊 Analytics disabled via config');
+    }
+    return;
+  }
+
+  // Initialize Google Analytics configuration
+  initializeGoogleAnalytics();
 
   window.addEventListener('online', flushEvents);
+
+  // Listen in case user revokes consent after events have been queued, to clear any stored data
+  window.addEventListener('analytics-consent-changed', async () => {
+    if (!hasConsent()) {
+      await deleteAllEvents();
+    }
+  });
 
   if (analyticsConfig.isProd) {
     setInterval(flushEvents, RETRY_INTERVAL);
   }
-}
 
-// Listen in case user revokes consent after events have been queued, to clear any stored data
-window.addEventListener('analytics-consent-changed', async () => {
-  if (!hasConsent()) {
-    await deleteAllEvents();
+  if (analyticsConfig.isDev) {
+    console.log('📊 Analytics sync started');
   }
-});
+}
