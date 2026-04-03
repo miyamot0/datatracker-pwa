@@ -18,7 +18,9 @@ export default function BackButton({ Label, Silence }: Props) {
   };
 
   // Convenience support for going back with the Escape key
-  useHotkey('Escape', () => handleClick(Silence));
+  useHotkey('Escape', () => handleClick(Silence), {
+    conflictBehavior: 'replace',
+  });
 
   //if (!Href) {
   return (

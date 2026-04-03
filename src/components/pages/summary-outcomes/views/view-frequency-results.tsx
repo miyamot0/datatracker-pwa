@@ -43,10 +43,6 @@ export default function ViewFrequencyResults({
 }: Props) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeysFreq);
 
-  // Keyset
-
-  console.log(Results);
-
   const frequencyRates = processMultipleSessionDataWithKeys(
     Results,
     LatestKeyset,
