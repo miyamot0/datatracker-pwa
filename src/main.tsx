@@ -33,3 +33,11 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 );
+
+// @ts-expect-error - Trusted Types is not yet fully supported in TypeScript's DOM typings
+if (window.trustedTypes && window.trustedTypes.createPolicy) {
+  // @ts-expect-error - Trusted Types is not yet fully supported in TypeScript's DOM typings
+  window.trustedTypes.createPolicy('default', {
+    createScriptURL: (url: string) => url,
+  });
+}
