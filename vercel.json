@@ -30,7 +30,7 @@
                 },
                 {
                     "key": "Content-Security-Policy",
-                    "value": "frame-ancestors 'none';"
+                    "value": "frame-ancestors 'none'; require-trusted-types-for 'script'; trusted-types default;"
                 },
                 {
                     "key": "Referrer-Policy",
