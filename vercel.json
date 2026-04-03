@@ -9,10 +9,6 @@
             "source": "/(.*)",
             "headers": [
                 {
-                    "key": "Content-Security-Policy",
-                    "value": "default-src 'self'; script-src 'self' https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://analytics.google.com; img-src 'self' data: https:; style-src 'self' 'unsafe-hashes' 'sha256-jHz1uEQzbzHpEiwgMp5KulH2KNgcGdQBFzHJAc/dWCY=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'sha256-CIxDM5jnsGiKqXs2v7NKCY5MzdR9gu6TtiMJrDw29AY=' 'sha256-2iSQIlN3GY/IC1qwamGiwy8zJAqK2y4dPEi4BYEBio4=' 'sha256-441zG27rExd4/il+NvIqyL8zFx5XmyNQtE381kSkUJk='; style-src-elem 'self' 'sha256-jHz1uEQzbzHpEiwgMp5KulH2KNgcGdQBFzHJAc/dWCY=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'sha256-CIxDM5jnsGiKqXs2v7NKCY5MzdR9gu6TtiMJrDw29AY=' 'sha256-2iSQIlN3GY/IC1qwamGiwy8zJAqK2y4dPEi4BYEBio4=' 'sha256-441zG27rExd4/il+NvIqyL8zFx5XmyNQtE381kSkUJk='; style-src-attr 'unsafe-hashes' 'sha256-jHz1uEQzbzHpEiwgMp5KulH2KNgcGdQBFzHJAc/dWCY=' 'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=' 'sha256-CIxDM5jnsGiKqXs2v7NKCY5MzdR9gu6TtiMJrDw29AY=' 'sha256-2iSQIlN3GY/IC1qwamGiwy8zJAqK2y4dPEi4BYEBio4=' 'sha256-441zG27rExd4/il+NvIqyL8zFx5XmyNQtE381kSkUJk='; font-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';"
-                },
-                {
                     "key": "Cross-Origin-Embedder-Policy",
                     "value": "require-corp"
                 },

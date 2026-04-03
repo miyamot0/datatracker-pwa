@@ -90,7 +90,7 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
             'script-src': ["'self'", 'https://www.google-analytics.com', 'https://www.googletagmanager.com'],
             'script-src-elem': ["'self'", 'https://www.google-analytics.com', 'https://www.googletagmanager.com'],
             'style-src': ["'self'", "'unsafe-hashes'"],
-            'style-src-elem': ["'self'"],
+            'style-src-elem': ["'self'", "'unsafe-inline'"],
             'style-src-attr': ["'unsafe-hashes'"],
             'connect-src': [
               "'self'",
