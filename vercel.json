@@ -34,7 +34,7 @@
                 },
                 {
                     "key": "Content-Security-Policy-Report-Only",
-                    "value": "require-trusted-types-for 'script'; trusted-types default;"
+                    "value": "require-trusted-types-for 'script'; trusted-types default goog#html;"
                 },
                 {
                     "key": "Referrer-Policy",
