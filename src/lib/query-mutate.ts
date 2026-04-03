@@ -4,10 +4,11 @@ import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
 import { v4 as uuidv4 } from 'uuid';
 import { KeySet, KeySetExtended } from '@/types/keyset';
 import { ModifiedSessionResult } from '@/types/storage';
-import { SavedSessionResult, SavedSettings } from '@/lib/dtos';
+import { SavedSettings } from '@/lib/dtos/session-settings';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { GenerateSavedFileName } from '@/lib/writer';
 import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
-import { importExistingKeysets } from '@/queries/keysets/helpers/import-keysets';
+import { importExistingKeysets } from '@/lib/keysets/import-keysets';
 
 export const DemoDataFolderName = 'Example DataTracker Group';
 
@@ -475,8 +476,33 @@ export async function mutateKeysets(
       }
 
       case 'Rename': {
-        // TODO: Implement rename functionality in future
-        throw new Error('Rename action not yet implemented');
+        const keySetMatch = keysets.find((ks) => ks.Name === keysetNames[0].trim());
+        if (!keySetMatch) {
+          throw new Error('No matching KeySet found.');
+        }
+
+        const newKeySet = {
+          ...keySetMatch,
+          Name: renameTo ?? keySetMatch.Name,
+          lastModified: new Date(),
+        } satisfies KeySet;
+
+        const newFileHandle = await individual_dir.getFileHandle(`${renameTo}.json`, { create: true });
+
+        const writable = await newFileHandle.createWritable();
+        await writable.write(serializeKeySet(newKeySet));
+        await writable.close();
+
+        await individual_dir.removeEntry(`${keySetMatch.Name}.json`);
+
+        newKeysetsList = newKeysetsList.map((k) => {
+          if (k.Name === keySetMatch.Name) {
+            return newKeySet;
+          }
+          return k;
+        });
+
+        break;
       }
     }
 
@@ -670,9 +696,7 @@ export async function mutateSessionOutcomes(
 
             for await (const sub_dir_file of await condition_folder.values()) {
               if (file_names_to_move.includes(sub_dir_file.name)) {
-                const relevant_result = outcomes.find((r) => r.Filename === sub_dir_file.name);
-
-                if (!relevant_result) continue;
+                const relevant_result = outcomes.find((r) => r.Filename === sub_dir_file.name)!;
 
                 const new_object = { ...relevant_result };
                 new_object.SessionSettings.Condition = conditionRename.trim();

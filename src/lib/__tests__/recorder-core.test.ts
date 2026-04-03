@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SessionRecorderCore, getHighResTime, formatTimestamp } from '../recorder-core';
-import { SavedSettings } from '@/lib/dtos';
-import { KeySet } from '@/types/keyset';
+import { SavedSettings } from '@/lib/dtos/session-settings';
+import { KeySet } from '@/types/keyset/core';
 
 describe('SessionRecorderCore', () => {
   let core: SessionRecorderCore;
@@ -165,6 +165,19 @@ describe('SessionRecorderCore', () => {
 
       expect(result.startTime).not.toBeNull();
       expect(result.startTime).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
+    });
+
+    it('should auto-close odd duration intervals before session end', () => {
+      core.startSession();
+
+      // Single duration press means an open interval that must be closed at end.
+      core.processKey('1', 49);
+
+      const result = core.endSession('Completed');
+      const durationEvents = result.keysPressed.filter((k) => k.KeyType === 'Duration' && k.KeyCode === 49);
+
+      expect(durationEvents).toHaveLength(2);
+      expect(durationEvents[1].TimeIntoSession).toBeGreaterThanOrEqual(durationEvents[0].TimeIntoSession);
     });
   });
 

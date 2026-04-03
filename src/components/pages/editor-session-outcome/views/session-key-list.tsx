@@ -1,8 +1,8 @@
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table-common';
-import { ApplicationSettingsTypes } from '@/types/settings';
-import { ExpandedSavedSessionResult } from '@/lib/dtos';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
+import { ExpandedSavedSessionResult } from '@/lib/dtos/session-results';
 import { KeyManageType } from '@/types/timing';
 
 type Props = {

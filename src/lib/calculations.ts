@@ -12,10 +12,10 @@ import {
   getUnifiedTimerMinutes,
   getUnifiedTimerLabel,
   identifyStrategyTimingStrategy,
-} from '@/calculations/calculation-helpers';
-import { processFrequencyKeys } from '@/calculations/calculation-frequency';
-import { processDurationKeys } from '@/calculations/calculation-duration';
-import { processDerivedKeys } from '@/calculations/calculation-derived';
+} from '@/lib/calculations/calculation-helpers';
+import { processFrequencyKeys } from '@/lib/calculations/calculation-frequency';
+import { processDurationKeys } from '@/lib/calculations/calculation-duration';
+import { processDerivedKeys } from '@/lib/calculations/calculation-derived';
 
 /**
  * Processes a single session with unified system

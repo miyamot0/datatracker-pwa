@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { KeySetLogical } from '@/types/keyset';
+import { KeySetLogical } from '@/types/keyset/serialization';
 import { type LogicState, OperationTypes, generateFormula, evaluateLogic } from '@/lib/logic';
 
 // Helper function to create mock KeySetLogical

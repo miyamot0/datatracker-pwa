@@ -1,10 +1,10 @@
 import { cn } from '@/lib/utils';
-import NavigationBar, { BreadCrumbListing } from './navigation-bar';
+import NavigationBar, { BreadCrumbListing } from './header/navigation-bar';
 import { useContext } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
-import LayoutFooter from './footer';
-import ScrollReset from './scroll-reset';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import LayoutFooter from './footer/footer';
+import ScrollReset from './behavior/scroll-reset';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 type Props = {
   children: React.ReactNode;
@@ -25,7 +25,7 @@ export default function PageWrapper({
   HideFooter,
   Settings,
 }: Props) {
-  const { settings: preSettings } = useContext(FolderHandleContext);
+  const { settings: preSettings, handle } = useContext(FolderHandleContext);
 
   const settings = Settings ?? preSettings;
 
@@ -39,7 +39,7 @@ export default function PageWrapper({
         'max-w-full w-full': settings.SessionDisplay === 'FullScreen',
       })}
     >
-      {!HideNavbar && <NavigationBar breadcrumbs={breadcrumbs} label={label} />}
+      {!HideNavbar && <NavigationBar breadcrumbs={breadcrumbs} label={label} Settings={settings} Handle={handle} />}
 
       {children}
 

@@ -1,7 +1,7 @@
 import { KeyManageType, TimerSetting } from '@/types/timing';
-import { SavedSettings } from '@/lib/dtos';
+import { SavedSettings } from '@/lib/dtos/session-settings';
 import { KeySet } from '@/types/keyset';
-import { SessionRecorderPolling } from '@/types/settings';
+import { SessionRecorderPolling } from '@/types/settings/performance-settings';
 
 /**
  * Typing for worker messaging (Main --> Worker)

@@ -1,4 +1,4 @@
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { KeySet } from '@/types/keyset';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,7 @@ import {
   ScheduleMappingOptionsType,
   ScoringOptionsMapType,
 } from '@/types/schedules';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 export default function ResultsProportionVisualsPage({
   Group,

@@ -4,6 +4,8 @@ import { routeTree } from './routeTree.gen';
 import { RouterProvider, createHashHistory, createRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFolderHandleContext } from '@/hooks/use-folder-context';
+import { useMemo } from 'react';
+import { setupQueryDevTools } from './lib/dev';
 
 export interface CustomizedRouterContext {
   queryClient: QueryClient;
@@ -34,39 +36,9 @@ declare module '@tanstack/react-router' {
 // Initialize the query client for React Query
 export const queryClient = new QueryClient();
 
+// Attach logging if in dev mode
 if (import.meta.env.DEV) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const prevStates = new Map<string, any>();
-
-  queryClient.getQueryCache().subscribe((event) => {
-    if (event?.type !== 'updated') return;
-
-    const query = event.query;
-    const key = JSON.stringify(query.queryKey);
-
-    const prev = prevStates.get(key);
-    const curr = query.state;
-
-    if (curr.fetchStatus === 'fetching' && prev?.fetchStatus !== 'fetching') {
-      console.log('[FETCH START]', query.queryKey);
-    }
-
-    if (prev && curr.dataUpdatedAt !== prev.dataUpdatedAt && prev.fetchStatus === 'fetching') {
-      console.log('[FETCH SUCCESS]', query.queryKey);
-    }
-
-    if (
-      curr.status === 'success' &&
-      curr.fetchStatus === 'idle' &&
-      prev &&
-      prev.fetchStatus === 'idle' &&
-      curr.dataUpdatedAt === prev.dataUpdatedAt
-    ) {
-      console.log('[CACHE HIT]', query.queryKey);
-    }
-
-    prevStates.set(key, curr);
-  });
+  setupQueryDevTools(queryClient);
 }
 
 /**
@@ -77,28 +49,26 @@ if (import.meta.env.DEV) {
 const InnerApp = () => {
   const folderHandleContext = useFolderHandleContext();
 
-  return (
-    <RouterProvider
-      router={router}
-      context={{
-        queryClient: queryClient,
-        folderHandleContext: folderHandleContext,
-      }}
-    />
+  const routerContext = useMemo(
+    () => ({
+      queryClient,
+      folderHandleContext,
+    }),
+    [folderHandleContext],
   );
+
+  return <RouterProvider router={router} context={routerContext} />;
 };
 
 function App() {
   return (
-    <>
-      <ThemeProvider defaultTheme="system">
-        <FolderContextProvider>
-          <QueryClientProvider client={queryClient}>
-            <InnerApp />
-          </QueryClientProvider>
-        </FolderContextProvider>
-      </ThemeProvider>
-    </>
+    <ThemeProvider defaultTheme="system">
+      <FolderContextProvider>
+        <QueryClientProvider client={queryClient}>
+          <InnerApp />
+        </QueryClientProvider>
+      </FolderContextProvider>
+    </ThemeProvider>
   );
 }
 

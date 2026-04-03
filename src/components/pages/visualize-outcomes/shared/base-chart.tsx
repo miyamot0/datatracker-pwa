@@ -15,12 +15,14 @@ import {
 import { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { getShape } from '@/lib/shapes';
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { cn } from '@/lib/utils';
 import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import { ExpandedKeySetInstance } from '@/types/keyset';
 import { splitAtPoints } from '@/lib/arrays';
-import { getUniqueSessionConditions, calculateSplitPoints, getChartConfiguration } from '@/lib/graphing';
+import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
+import { calculateSplitPoints } from '@/lib/graphing/data-preparation';
+import { getChartConfiguration } from '@/lib/graphing/chart-setup';
 
 type BaseChartProps = {
   title: string;

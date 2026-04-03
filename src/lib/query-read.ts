@@ -1,7 +1,8 @@
 import { deserializeKeySet } from '@/lib/keyset';
 import { CleanUpString } from '@/lib/strings';
 import { KeySet, KeySetExtended } from '@/types/keyset';
-import { DEFAULT_SESSION_SETTINGS, SavedSettings, SavedSessionResult } from '@/lib/dtos';
+import { DEFAULT_SESSION_SETTINGS, SavedSettings } from '@/lib/dtos/session-settings';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { ModifiedSessionResult } from '@/types/storage';
 import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
 import { readKeyboardParameters } from '@/lib/reader';

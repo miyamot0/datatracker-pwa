@@ -12,7 +12,7 @@ import {
 } from '@/types/schedules';
 import { DataCollectorRolesType } from '@/types/roles';
 import { ToggleDisplayKey } from '@/types/visuals';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 type Props = {
   TimerMapping: ScoringOptionsMapType;

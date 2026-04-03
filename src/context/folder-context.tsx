@@ -1,7 +1,7 @@
 import { queryClient } from '@/App';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { ApplicationSettingsTypes, DEFAULT_APPLICATION_SETTINGS } from '@/types/settings';
+import { ApplicationSettingsTypes, DEFAULT_APPLICATION_SETTINGS } from '@/types/settings/application-settings';
 import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react';
 
 export interface FolderHandleContextType {

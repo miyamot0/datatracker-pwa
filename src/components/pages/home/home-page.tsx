@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { BookTextIcon, ChartLineIcon, HardDriveDownloadIcon, PackageIcon } from 'lucide-react';
-import createHref from '@/lib/links';
 import {
   Dialog,
   DialogContent,
@@ -16,17 +15,15 @@ import { usePWAInstall } from 'react-use-pwa-install';
 import { useEffect, useState } from 'react';
 import { isOnMobilePlatform } from '@/lib/user-agent';
 import ImageCarousel from './views/img-carousel';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { toast } from 'sonner';
 import { Link, useNavigate, useRouter } from '@tanstack/react-router';
+import PageWrapper from '@/components/elements/page-wrapper';
+import { Route } from '@/routes/index';
 
-type Props = {
-  Settings: ApplicationSettingsTypes;
-  SaveSettings: (settings: ApplicationSettingsTypes) => void;
-  SetSettings: (settings: ApplicationSettingsTypes) => void;
-};
+export default function HomePage() {
+  const { Settings, SaveSettings, SetSettings } = Route.useLoaderData();
 
-export default function HomePage({ Settings, SaveSettings, SetSettings }: Props) {
   const install = usePWAInstall();
   const router = useRouter();
   const [display, setDisplay] = useState<'loading' | 'desktop' | 'mobile'>('loading');
@@ -60,7 +57,7 @@ export default function HomePage({ Settings, SaveSettings, SetSettings }: Props)
   }, [navigate, SaveSettings, SetSettings, Settings]);
 
   return (
-    <>
+    <PageWrapper className="flex flex-col gap-6 select-none" Settings={Settings}>
       <div className="pb-4">
         <div className="text-center mx-auto">
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">DataTracker</h1>
@@ -72,7 +69,7 @@ export default function HomePage({ Settings, SaveSettings, SetSettings }: Props)
       </div>
       <ImageCarousel />
       <div className="max-w-lg flex flex-col w-full py-8 gap-4">
-        <Link to={createHref({ type: 'Documentation' })} className="flex flex-row gap-2 items-center">
+        <Link to="/documentation" className="flex flex-row gap-2 items-center">
           <Button variant={'outline'} className="w-full shadow-xl">
             <BookTextIcon className="mr-2 h-4 w-4" />
             Program Documentation
@@ -140,6 +137,6 @@ export default function HomePage({ Settings, SaveSettings, SetSettings }: Props)
           </Button>
         )}
       </div>
-    </>
+    </PageWrapper>
   );
 }

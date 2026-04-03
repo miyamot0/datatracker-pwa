@@ -3,11 +3,8 @@ import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 import { KeySet } from '@/types/keyset';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
-import {
-  extractAndDeduplicateKeysets,
-  filterSessionsByPrimaryRole,
-  mapKeysWithStoragePreference,
-} from '@/lib/graphing';
+import { extractAndDeduplicateKeysets, mapKeysWithStoragePreference } from '@/lib/graphing/keyset-utils';
+import { filterSessionsByPrimaryRole } from '@/lib/graphing/session-filters';
 import { pullMostRecentSession } from '@/lib/keyset';
 import { ToggleDisplayKey } from '@/types/visuals';
 import ResultsRateVisualsPage from '@/components/pages/visualize-outcomes/rate/results-rate-visuals-page';
@@ -18,9 +15,9 @@ import {
   BuildIndividualsBreadcrumb,
   BuildEvaluationsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { ModifiedSessionResult } from '@/types/storage';
-import { ErrorDisplay } from '@/components/suspense/error-display';
+import { ErrorDisplay } from '@/components/elements/suspense/error-display';
 import { filteredSessionScoringOptions } from '@/types/schedules';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/rate')({

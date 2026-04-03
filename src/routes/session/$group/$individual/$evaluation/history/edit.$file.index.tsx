@@ -8,10 +8,10 @@ import {
   BuildEvaluationsBreadcrumb,
   BuildSessionHistoryBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { ModifiedSessionResult } from '@/types/storage';
 import SessionManagerContent from '@/components/pages/editor-session-outcome/session-manager-content';
-import { ErrorDisplay } from '@/components/suspense/error-display';
+import { ErrorDisplay } from '@/components/elements/suspense/error-display';
 import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/edit/$file/')({

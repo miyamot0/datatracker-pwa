@@ -10,8 +10,8 @@ import {
   BuildEvaluationsBreadcrumb,
   BuildSessionDesignerBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
-import { ErrorDisplay } from '@/components/suspense/error-display';
+import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
+import { ErrorDisplay } from '@/components/elements/suspense/error-display';
 import { KeySet } from '@/types/keyset';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/run/$keyset')({

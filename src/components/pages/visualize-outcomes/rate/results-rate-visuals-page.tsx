@@ -1,4 +1,4 @@
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { KeySet } from '@/types/keyset';
 import { useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,7 +21,7 @@ import { Link } from '@tanstack/react-router';
 import { Switch } from '@/components/ui/switch';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import {
   filteredSessionScoringOptions,
   ScheduleMappingOptions,

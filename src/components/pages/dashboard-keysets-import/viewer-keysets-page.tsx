@@ -5,7 +5,7 @@ import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { DataTable } from '@/components/ui/data-table-common';
 import { mutateKeyboardsAll } from '@/queries/keysets/mutate-keyboards-all';
 import { KeySet, KeySetExtended, KeySetInstance } from '@/types/keyset';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter, useRouterState } from '@tanstack/react-router';
 import { ColumnDef } from '@tanstack/react-table';

@@ -1,4 +1,4 @@
-import { SavedSessionResult } from '@/lib/dtos';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 
 /**
  * A key that has been selected for reliability metrics.

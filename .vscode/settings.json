@@ -1,3 +1,15 @@
 {
-  "cSpell.words": ["dtos", "lucide", "sandboxed", "SCED", "singlefile", "wakelock", "wakelocks"]
+  "cSpell.words": [
+    "dtos",
+    "geolocation",
+    "Interobserver",
+    "lucide",
+    "nosniff",
+    "RPMA",
+    "sandboxed",
+    "SCED",
+    "singlefile",
+    "wakelock",
+    "wakelocks"
+  ]
 }

@@ -1,9 +1,6 @@
-import PageWrapper from '@/components/elements/page-wrapper';
-import AuthorizedDisplayContent from '@/components/pages/dashboard-groups/gated-displays/authorized-display-content';
-import UnauthorizedDisplay from '@/components/pages/dashboard-groups/gated-displays/unauthorized-display';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
 import { groupQueryOptions } from '@/queries/groups/query-groups';
-import { Await, createFileRoute } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
+import { DashboardGate } from '@/components/pages/dashboard-groups/dashboard-gate';
 
 export const Route = createFileRoute('/dashboard/')({
   loader: ({ context }) => {
@@ -25,25 +22,5 @@ export const Route = createFileRoute('/dashboard/')({
       Settings: context.folderHandleContext.settings,
     };
   },
-  component: RouteComponent,
+  component: DashboardGate,
 });
-
-function RouteComponent() {
-  const { handle, isAuthorized, fetchGroups, Settings } = Route.useLoaderData();
-
-  if (!isAuthorized || !handle) {
-    return (
-      <PageWrapper label={'Folder Authorization'} className="select-none">
-        <UnauthorizedDisplay />
-      </PageWrapper>
-    );
-  }
-
-  return (
-    <PageWrapper label={'Group Dashboard'} className="select-none" Settings={Settings}>
-      <Await promise={fetchGroups} fallback={<LoadingDisplay />}>
-        {(groups: string[]) => <AuthorizedDisplayContent Groups={groups} Settings={Settings} Handle={handle} />}
-      </Await>
-    </PageWrapper>
-  );
-}

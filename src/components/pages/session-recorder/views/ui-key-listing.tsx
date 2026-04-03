@@ -3,7 +3,7 @@ import { TimerSetting } from '@/types/timing';
 import { KeySetInstance } from '@/types/keyset';
 import { cn } from '@/lib/utils';
 import { formatTimeSeconds } from '@/lib/time';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 type Props = {
   KeySetSpecialKeys: KeySetInstance[];

@@ -1,13 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SavedSessionResult } from '../dtos';
-import { KeySet, KeySetInstance, ExpandedKeySetInstance } from '@/types/keyset';
+import { KeySet, KeySetInstance } from '@/types/keyset/core';
+import { ExpandedKeySetInstance } from '@/types/keyset/display';
 import { ModifiedSessionResult } from '@/types/storage';
 import { ToggleDisplayKey } from '@/types/visuals';
 
 // Mock the helper functions from schedule_parser
 vi.mock('@/lib/schedule-parser', () => ({
   walkSessionFrequencyKey: vi.fn(),
-  walkSessionDurationKey: vi.fn(),
+  walkSessionDurationKeyStateAware: vi.fn(),
 }));
 
 // Mock colors and shapes
@@ -44,11 +45,11 @@ import {
 } from '../graphing';
 
 // Import the mocked functions for use in tests
-import { walkSessionFrequencyKey, walkSessionDurationKey } from '@/lib/schedule-parser';
+import { walkSessionFrequencyKey, walkSessionDurationKeyStateAware } from '@/lib/schedule-parser';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { getShape } from '@/lib/shapes';
 import { evaluateLogic, LogicState } from '@/lib/logic';
-import { ProcessedSessionData } from '@/lib/calculations';
+import { ProcessedSessionData } from '@/types/calculation';
 
 describe('graphing utility functions', () => {
   beforeEach(() => {
@@ -65,6 +66,7 @@ describe('graphing utility functions', () => {
     createdAt: new Date('2024-01-01'),
     lastModified: new Date('2024-01-01'),
     SpecialDurationKeys: [],
+    ScorableDurationKeys: [],
   });
 
   // Helper function to create mock SavedSessionResult
@@ -244,7 +246,7 @@ describe('graphing utility functions', () => {
         Bouts: -1,
       });
 
-      (walkSessionDurationKey as any).mockReturnValue({
+      (walkSessionDurationKeyStateAware as any).mockReturnValue({
         KeyName: 'DurKey1',
         KeyDescription: 'Duration Key 1',
         Schedule: 'Primary',
@@ -285,8 +287,8 @@ describe('graphing utility functions', () => {
       expect(result[0].SessionTime).toBe(450); // TimerTwo
       expect(result[0].Scores).toHaveLength(1);
 
-      // Verify walkSessionDurationKey was called with correct parameters
-      expect(walkSessionDurationKey).toHaveBeenCalledWith(
+      // Verify walkSessionDurationKeyStateAware was called with correct parameters
+      expect(walkSessionDurationKeyStateAware).toHaveBeenCalledWith(
         sessions[0],
         'Secondary', // converted schedule
         mockDurationKey,
@@ -371,14 +373,14 @@ describe('graphing utility functions', () => {
       const keyset = createMockKeySet([], [mockDurationKey, mockDurationKey]);
       const sessions = [createMockSession(1, 'Primary', 'Baseline', keyset)];
 
-      (walkSessionDurationKey as any)
+      (walkSessionDurationKeyStateAware as any)
         .mockReturnValueOnce({ KeyName: 'DurKey1', Value: 30.5 })
         .mockReturnValueOnce({ KeyName: 'DurKey2', Value: 45.2 });
 
       const result = generateChartPreparation(sessions, 'End on Timer #1', 'Duration');
 
       expect(result[0].Scores).toHaveLength(2);
-      expect(walkSessionDurationKey).toHaveBeenCalledTimes(2);
+      expect(walkSessionDurationKeyStateAware).toHaveBeenCalledTimes(2);
     });
 
     it('should throw error for invalid schedule option in convertScheduleSetting', () => {
@@ -559,6 +561,46 @@ describe('graphing utility functions', () => {
       expect(result.derivedKeys).toEqual([derived1, derived2]);
     });
 
+    it('should deduplicate special and scorable duration keys', () => {
+      const special1: KeySetInstance = { KeyName: 'Special1', KeyDescription: 'Special 1', KeyCode: 71 };
+      const special1Duplicate: KeySetInstance = { KeyName: 'Special1', KeyDescription: 'Special 1', KeyCode: 71 };
+      const special2: KeySetInstance = { KeyName: 'Special2', KeyDescription: 'Special 2', KeyCode: 72 };
+
+      const scorable1: KeySetInstance = { KeyName: 'Scorable1', KeyDescription: 'Scorable 1', KeyCode: 81 };
+      const scorable1Duplicate: KeySetInstance = { KeyName: 'Scorable1', KeyDescription: 'Scorable 1', KeyCode: 81 };
+      const scorable2: KeySetInstance = { KeyName: 'Scorable2', KeyDescription: 'Scorable 2', KeyCode: 82 };
+
+      const sessions = [
+        {
+          ...createMockModifiedSession(1),
+          Keyset: {
+            ...createMockKeySet(),
+            SpecialDurationKeys: [special1, special2],
+            ScorableDurationKeys: [scorable1],
+          },
+        },
+        {
+          ...createMockModifiedSession(2),
+          Keyset: {
+            ...createMockKeySet(),
+            SpecialDurationKeys: [special1Duplicate],
+            ScorableDurationKeys: [scorable1Duplicate, scorable2],
+          },
+        },
+      ] as ModifiedSessionResult[];
+
+      const keyset = {
+        ...createMockKeySet(),
+        SpecialDurationKeys: [special1],
+        ScorableDurationKeys: [scorable1],
+      } as KeySet;
+
+      const result = extractAndDeduplicateKeysets(sessions, keyset);
+
+      expect(result.specialDurationKeys).toEqual([special1, special2]);
+      expect(result.scorableDurationKeys).toEqual([scorable1, scorable2]);
+    });
+
     it('should handle sessions with no keys', () => {
       const sessions = [createMockModifiedSession(1, [], []), createMockModifiedSession(2, [], [])];
 
@@ -628,6 +670,29 @@ describe('graphing utility functions', () => {
 
       expect(result.frequencyKeys).toHaveLength(1);
       expect(result.derivedKeys).toHaveLength(0); // Should handle undefined gracefully
+    });
+
+    it('should handle undefined special and scorable duration keys', () => {
+      const session: ModifiedSessionResult = {
+        ...createMockSession(1),
+        Keyset: {
+          ...createMockKeySet(),
+          SpecialDurationKeys: undefined as any,
+          ScorableDurationKeys: undefined as any,
+        },
+        Filename: 'session1.json',
+      };
+
+      const keyset = {
+        ...createMockKeySet(),
+        SpecialDurationKeys: undefined as any,
+        ScorableDurationKeys: undefined as any,
+      } as KeySet;
+
+      const result = extractAndDeduplicateKeysets([session], keyset);
+
+      expect(result.specialDurationKeys).toEqual([]);
+      expect(result.scorableDurationKeys).toEqual([]);
     });
   });
 
@@ -1528,6 +1593,34 @@ describe('graphing utility functions', () => {
         'Zero Rate Key': 0,
         'Negative Rate Key': -1.5,
       });
+    });
+
+    it('should keep maxY when derived rate is lower than current max', () => {
+      const scoredSessions = [
+        createMockProcessedSession(
+          1,
+          'DerivedBelowMax',
+          [
+            {
+              keyName: 'FreqMax',
+              keyDescription: 'Frequency Max',
+              rate: 5.5,
+            },
+          ],
+          [
+            {
+              keyName: 'DerivedLower',
+              keyDescription: 'Derived Lower',
+              rate: 1.2,
+            },
+          ],
+        ),
+      ];
+
+      const result = prepareRateDataUniversal(scoredSessions);
+
+      expect(result.maxY).toBe(5.5);
+      expect(result.preparedData[0]['Derived Lower']).toBe(1.2);
     });
   });
 

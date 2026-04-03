@@ -1,12 +1,12 @@
-import {
+﻿import {
   walkSessionFrequencyKey,
-  walkSessionDurationKey,
+  walkSessionDurationKeyStateAware,
   combineAndSortKeyPresses,
-  sumDurationSpecialKey,
-  sumDurationScoringKey,
+  sumDurationSpecialKeyStateAware,
+  sumDurationScoringKeyStateAware,
 } from '../schedule-parser';
-import { SavedSessionResult } from '@/lib/dtos';
-import { KeySetInstance } from '@/types/keyset';
+import { SavedSessionResult } from '@/lib/dtos/session-results';
+import { KeySetInstance } from '@/types/keyset/core';
 import { ModifiedSessionResult } from '@/types/storage';
 
 describe('walkSessionFrequencyKey', () => {
@@ -42,25 +42,68 @@ describe('walkSessionFrequencyKey', () => {
     TimerThree: 0,
   };
 
-  it('should throw error when schedule changes are odd number', () => {
+  it('should handle odd number of schedule changes by processing from last change to session end', () => {
     const sessionWithOddSchedule: SavedSessionResult = {
       ...baseSessionSettings,
       SystemKeyPresses: [
         {
           KeyName: 'Primary',
           KeyCode: -1,
-          KeyDescription: 'Primary Timer',
+          KeyDescription: 'Primary Timer Start',
           KeyScheduleRecording: 'Primary',
           TimePressed: new Date('2023-01-01T10:00:05Z'),
           TimeIntoSession: 5.0,
           KeyType: 'System',
         },
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary Timer End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:15Z'),
+          TimeIntoSession: 15.0,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary Timer Start (unpaired)',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:25Z'),
+          TimeIntoSession: 25.0,
+          KeyType: 'System',
+        },
+      ],
+      FrequencyKeyPresses: [
+        {
+          KeyName: 'TestKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Frequency Key',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:08Z'),
+          TimeIntoSession: 8.0,
+          KeyType: 'Frequency',
+        },
+        {
+          KeyName: 'TestKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Frequency Key',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:30Z'),
+          TimeIntoSession: 30.0,
+          KeyType: 'Frequency',
+        },
       ],
     };
 
-    expect(() => walkSessionFrequencyKey(sessionWithOddSchedule, 'Primary', mockKey)).toThrow(
-      'Schedule changes must be even',
-    );
+    const result = walkSessionFrequencyKey(sessionWithOddSchedule, 'Primary', mockKey);
+    expect(result).toEqual({
+      KeyName: 'TestKey',
+      KeyDescription: 'Test Frequency Key',
+      Schedule: 'Primary',
+      Value: 2, // 1 from first period (8-15) + 1 from last unpaired period (30 before session end)
+      Bouts: -1,
+    });
   });
 
   it('should return zero count when no schedule changes exist', () => {
@@ -461,7 +504,7 @@ describe('walkSessionFrequencyKey', () => {
     });
   });
 
-  it('should throw error when using Special schedule without SpecialKey parameter', () => {
+  it('should handle odd special schedule without SpecialKey parameter by treating as regular schedule', () => {
     const sessionWithSpecialSchedule: SavedSessionResult = {
       ...baseSessionSettings,
       SystemKeyPresses: [
@@ -474,12 +517,55 @@ describe('walkSessionFrequencyKey', () => {
           TimeIntoSession: 5.0,
           KeyType: 'System',
         },
+        {
+          KeyName: 'Special',
+          KeyCode: -3,
+          KeyDescription: 'Special Timer End',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:15Z'),
+          TimeIntoSession: 15.0,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'Special',
+          KeyCode: -3,
+          KeyDescription: 'Special Timer Start (unpaired)',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:25Z'),
+          TimeIntoSession: 25.0,
+          KeyType: 'System',
+        },
+      ],
+      FrequencyKeyPresses: [
+        {
+          KeyName: 'TestKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Frequency Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10.0,
+          KeyType: 'Frequency',
+        },
+        {
+          KeyName: 'TestKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Frequency Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:30Z'),
+          TimeIntoSession: 30.0,
+          KeyType: 'Frequency',
+        },
       ],
     };
 
-    expect(() => walkSessionFrequencyKey(sessionWithSpecialSchedule, 'Special', mockKey)).toThrow(
-      'Schedule changes must be even',
-    );
+    const result = walkSessionFrequencyKey(sessionWithSpecialSchedule, 'Special', mockKey);
+    expect(result).toEqual({
+      KeyName: 'TestKey',
+      KeyDescription: 'Test Frequency Key',
+      Schedule: 'Special',
+      Value: 2,
+      Bouts: -1,
+    });
   });
 
   it('should handle empty key presses within valid schedule period', () => {
@@ -592,7 +678,7 @@ describe('walkSessionFrequencyKey', () => {
     });
   });
 
-  it('should throw when duration strategy has odd schedule changes', () => {
+  it('should handle duration strategy with odd schedule changes', () => {
     const mockKeyset = {
       id: 'test-keyset',
       Name: 'Test KeySet',
@@ -610,28 +696,62 @@ describe('walkSessionFrequencyKey', () => {
         {
           KeyName: 'ScheduleKey',
           KeyCode: 5,
-          KeyDescription: 'Schedule Key',
+          KeyDescription: 'Schedule Key Start',
           KeyScheduleRecording: 'Special',
           TimePressed: new Date('2023-01-01T10:00:05Z'),
           TimeIntoSession: 5.0,
           KeyType: 'Duration',
         },
+        {
+          KeyName: 'ScheduleKey',
+          KeyCode: 5,
+          KeyDescription: 'Schedule Key End',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:15Z'),
+          TimeIntoSession: 15.0,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScheduleKey',
+          KeyCode: 5,
+          KeyDescription: 'Schedule Key Start (unpaired)',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:25Z'),
+          TimeIntoSession: 25.0,
+          KeyType: 'Duration',
+        },
+      ],
+      FrequencyKeyPresses: [
+        {
+          KeyName: 'TestKey',
+          KeyCode: 1,
+          KeyDescription: 'Test Frequency Key',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10.0,
+          KeyType: 'Frequency',
+        },
       ],
     };
 
-    expect(() =>
-      walkSessionFrequencyKey(sessionWithOddDuration, 'Special', mockKey, {
-        special: true,
-        schedule: 'duration',
-        specialKeyName: 'ScheduleKey',
-        keyset: mockKeyset,
-        timerType: 'Total',
-      }),
-    ).toThrow('Schedule changes must be even');
+    const result = walkSessionFrequencyKey(sessionWithOddDuration, 'Special', mockKey, {
+      special: true,
+      schedule: 'duration',
+      specialKeyName: 'ScheduleKey',
+      keyset: mockKeyset,
+      timerType: 'Total',
+    });
+    expect(result).toEqual({
+      KeyName: 'TestKey',
+      KeyDescription: 'Test Frequency Key',
+      Schedule: 'Special',
+      Value: 1,
+      Bouts: -1,
+    });
   });
 });
 
-describe('walkSessionDurationKey', () => {
+describe('walkSessionDurationKeyStateAware', () => {
   const mockKey: KeySetInstance = {
     KeyName: 'DurationKey',
     KeyDescription: 'Test Duration Key',
@@ -664,143 +784,26 @@ describe('walkSessionDurationKey', () => {
     TimerThree: 0,
   };
 
-  it('should throw error when schedule changes are odd number', () => {
-    const sessionWithOddSchedule: SavedSessionResult = {
+  it('counts from schedule start when key is already active', () => {
+    const session: SavedSessionResult = {
       ...baseSessionSettings,
       SystemKeyPresses: [
         {
           KeyName: 'Primary',
           KeyCode: -1,
-          KeyDescription: 'Primary Timer',
+          KeyDescription: 'Primary Start',
           KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'System',
-        },
-      ],
-    };
-
-    expect(() => walkSessionDurationKey(sessionWithOddSchedule, 'Primary', mockKey)).toThrow(
-      'Schedule changes must be even',
-    );
-  });
-
-  it('should return zero duration when no schedule changes exist', () => {
-    const result = walkSessionDurationKey(baseSessionSettings, 'Primary', mockKey);
-
-    expect(result).toEqual({
-      KeyName: 'DurationKey',
-      KeyDescription: 'Test Duration Key',
-      Schedule: 'Primary',
-      Value: 0,
-      Bouts: 0,
-    });
-  });
-
-  it('should handle zero duration key events within schedule period', () => {
-    const sessionWithScheduleNoKeys: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        {
-          KeyName: 'Primary',
-          KeyCode: -1,
-          KeyDescription: 'Primary Timer Start',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10,
           KeyType: 'System',
         },
         {
           KeyName: 'Primary',
           KeyCode: -1,
-          KeyDescription: 'Primary Timer End',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:15Z'),
-          TimeIntoSession: 15.0,
-          KeyType: 'System',
-        },
-      ],
-      DurationKeyPresses: [],
-    };
-
-    const result = walkSessionDurationKey(sessionWithScheduleNoKeys, 'Primary', mockKey);
-
-    expect(result).toEqual({
-      KeyName: 'DurationKey',
-      KeyDescription: 'Test Duration Key',
-      Schedule: 'Primary',
-      Value: 0,
-      Bouts: 0,
-    });
-  });
-
-  it('should handle single duration key event (from event to end of period)', () => {
-    const sessionWithSingleKey: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        {
-          KeyName: 'Primary',
-          KeyCode: -1,
-          KeyDescription: 'Primary Timer Start',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'Primary',
-          KeyCode: -1,
-          KeyDescription: 'Primary Timer End',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:15Z'),
-          TimeIntoSession: 15.0,
-          KeyType: 'System',
-        },
-      ],
-      DurationKeyPresses: [
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:08Z'),
-          TimeIntoSession: 8.0,
-          KeyType: 'Duration',
-        },
-      ],
-    };
-
-    const result = walkSessionDurationKey(sessionWithSingleKey, 'Primary', mockKey);
-
-    expect(result).toEqual({
-      KeyName: 'DurationKey',
-      KeyDescription: 'Test Duration Key',
-      Schedule: 'Primary',
-      Value: 7, // From 8s to 15s = 7 seconds
-      Bouts: 1,
-    });
-  });
-
-  it('should handle two duration key events (duration between them)', () => {
-    const sessionWithTwoKeys: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        {
-          KeyName: 'Primary',
-          KeyCode: -1,
-          KeyDescription: 'Primary Timer Start',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'Primary',
-          KeyCode: -1,
-          KeyDescription: 'Primary Timer End',
+          KeyDescription: 'Primary End',
           KeyScheduleRecording: 'Primary',
           TimePressed: new Date('2023-01-01T10:00:20Z'),
-          TimeIntoSession: 20.0,
+          TimeIntoSession: 20,
           KeyType: 'System',
         },
       ],
@@ -808,129 +811,49 @@ describe('walkSessionDurationKey', () => {
         {
           KeyName: 'DurationKey',
           KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:08Z'),
-          TimeIntoSession: 8.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:15Z'),
-          TimeIntoSession: 15.0,
-          KeyType: 'Duration',
-        },
-      ],
-    };
-
-    const result = walkSessionDurationKey(sessionWithTwoKeys, 'Primary', mockKey);
-
-    expect(result).toEqual({
-      KeyName: 'DurationKey',
-      KeyDescription: 'Test Duration Key',
-      Schedule: 'Primary',
-      Value: 7, // From 8s to 15s = 7 seconds
-      Bouts: 1,
-    });
-  });
-
-  it('should handle four duration key events (two pairs)', () => {
-    const sessionWithFourKeys: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        {
-          KeyName: 'Primary',
-          KeyCode: -1,
-          KeyDescription: 'Primary Timer Start',
+          KeyDescription: 'DurationKey Toggle On',
           KeyScheduleRecording: 'Primary',
           TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'Primary',
-          KeyCode: -1,
-          KeyDescription: 'Primary Timer End',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:30Z'),
-          TimeIntoSession: 30.0,
-          KeyType: 'System',
-        },
-      ],
-      DurationKeyPresses: [
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:08Z'),
-          TimeIntoSession: 8.0,
+          TimeIntoSession: 5,
           KeyType: 'Duration',
         },
         {
           KeyName: 'DurationKey',
           KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
+          KeyDescription: 'DurationKey Toggle Off',
           KeyScheduleRecording: 'Primary',
           TimePressed: new Date('2023-01-01T10:00:12Z'),
-          TimeIntoSession: 12.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:18Z'),
-          TimeIntoSession: 18.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:25Z'),
-          TimeIntoSession: 25.0,
+          TimeIntoSession: 12,
           KeyType: 'Duration',
         },
       ],
     };
 
-    const result = walkSessionDurationKey(sessionWithFourKeys, 'Primary', mockKey);
+    const result = walkSessionDurationKeyStateAware(session, 'Primary', mockKey);
 
-    expect(result).toEqual({
-      KeyName: 'DurationKey',
-      KeyDescription: 'Test Duration Key',
-      Schedule: 'Primary',
-      Value: 11, // (12-8) + (25-18) = 4 + 7 = 11 seconds
-      Bouts: 2,
-    });
+    expect(result.Value).toBe(2);
   });
 
-  it('should handle odd number of duration key events (pairs plus last to end)', () => {
-    const sessionWithFiveKeys: SavedSessionResult = {
+  it('handles release then re-press within window when active at start', () => {
+    const session: SavedSessionResult = {
       ...baseSessionSettings,
       SystemKeyPresses: [
         {
           KeyName: 'Primary',
           KeyCode: -1,
-          KeyDescription: 'Primary Timer Start',
+          KeyDescription: 'Primary Start',
           KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10,
           KeyType: 'System',
         },
         {
           KeyName: 'Primary',
           KeyCode: -1,
-          KeyDescription: 'Primary Timer End',
+          KeyDescription: 'Primary End',
           KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:30Z'),
-          TimeIntoSession: 30.0,
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20,
           KeyType: 'System',
         },
       ],
@@ -938,709 +861,137 @@ describe('walkSessionDurationKey', () => {
         {
           KeyName: 'DurationKey',
           KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
+          KeyDescription: 'Toggle On',
           KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:08Z'),
-          TimeIntoSession: 8.0,
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5,
           KeyType: 'Duration',
         },
         {
           KeyName: 'DurationKey',
           KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
+          KeyDescription: 'Toggle Off',
           KeyScheduleRecording: 'Primary',
           TimePressed: new Date('2023-01-01T10:00:12Z'),
-          TimeIntoSession: 12.0,
+          TimeIntoSession: 12,
           KeyType: 'Duration',
         },
         {
           KeyName: 'DurationKey',
           KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
+          KeyDescription: 'Toggle On',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:16Z'),
+          TimeIntoSession: 16,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Toggle Off',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:24Z'),
+          TimeIntoSession: 24,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    const result = walkSessionDurationKeyStateAware(session, 'Primary', mockKey);
+
+    expect(result.Value).toBe(6);
+  });
+
+  it('treats event at interval start as state-defining for the interval', () => {
+    const session: SavedSessionResult = {
+      ...baseSessionSettings,
+      SystemKeyPresses: [
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary Start',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20,
+          KeyType: 'System',
+        },
+      ],
+      DurationKeyPresses: [
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Toggle On At Start',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Toggle Off At End',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20,
+          KeyType: 'Duration',
+        },
+      ],
+    };
+
+    const result = walkSessionDurationKeyStateAware(session, 'Primary', mockKey);
+
+    expect(result.Value).toBe(10);
+  });
+
+  it('closes odd schedule windows at session end', () => {
+    const session: SavedSessionResult = {
+      ...baseSessionSettings,
+      SessionEnd: '2023-01-01T10:00:30Z',
+      SystemKeyPresses: [
+        {
+          KeyName: 'Primary',
+          KeyCode: -1,
+          KeyDescription: 'Primary Start Only',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:10Z'),
+          TimeIntoSession: 10,
+          KeyType: 'System',
+        },
+      ],
+      DurationKeyPresses: [
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Toggle On',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:12Z'),
+          TimeIntoSession: 12,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'DurationKey',
+          KeyCode: 1,
+          KeyDescription: 'Toggle Off',
           KeyScheduleRecording: 'Primary',
           TimePressed: new Date('2023-01-01T10:00:18Z'),
-          TimeIntoSession: 18.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:22Z'),
-          TimeIntoSession: 22.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:25Z'),
-          TimeIntoSession: 25.0,
+          TimeIntoSession: 18,
           KeyType: 'Duration',
         },
       ],
     };
 
-    const result = walkSessionDurationKey(sessionWithFiveKeys, 'Primary', mockKey);
+    const result = walkSessionDurationKeyStateAware(session, 'Primary', mockKey);
 
-    expect(result).toEqual({
-      KeyName: 'DurationKey',
-      KeyDescription: 'Test Duration Key',
-      Schedule: 'Primary',
-      Value: 13, // (12-8) + (22-18) + (30-25) = 4 + 4 + 5 = 13 seconds
-      Bouts: 3,
-    });
-  });
-
-  it('should handle multiple schedule periods with duration calculations', () => {
-    const sessionWithMultipleSchedules: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        // First period
-        {
-          KeyName: 'Primary',
-          KeyCode: -1,
-          KeyDescription: 'Primary Timer Start 1',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'Primary',
-          KeyCode: -1,
-          KeyDescription: 'Primary Timer End 1',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:15Z'),
-          TimeIntoSession: 15.0,
-          KeyType: 'System',
-        },
-        // Second period
-        {
-          KeyName: 'Primary',
-          KeyCode: -1,
-          KeyDescription: 'Primary Timer Start 2',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:25Z'),
-          TimeIntoSession: 25.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'Primary',
-          KeyCode: -1,
-          KeyDescription: 'Primary Timer End 2',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:35Z'),
-          TimeIntoSession: 35.0,
-          KeyType: 'System',
-        },
-      ],
-      DurationKeyPresses: [
-        // Single key in first period (from key to end of period)
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:10Z'),
-          TimeIntoSession: 10.0,
-          KeyType: 'Duration',
-        },
-        // Two keys in second period (duration between them)
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:28Z'),
-          TimeIntoSession: 28.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:32Z'),
-          TimeIntoSession: 32.0,
-          KeyType: 'Duration',
-        },
-      ],
-    };
-
-    const result = walkSessionDurationKey(sessionWithMultipleSchedules, 'Primary', mockKey);
-
-    expect(result).toEqual({
-      KeyName: 'DurationKey',
-      KeyDescription: 'Test Duration Key',
-      Schedule: 'Primary',
-      Value: 9, // First period: 15-10=5, Second period: 32-28=4, Total: 9 seconds
-      Bouts: 2,
-    });
-  });
-
-  it('should only process keys matching the specified key name', () => {
-    const sessionWithMultipleKeyTypes: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        {
-          KeyName: 'Primary',
-          KeyCode: -1,
-          KeyDescription: 'Primary Timer Start',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'Primary',
-          KeyCode: -1,
-          KeyDescription: 'Primary Timer End',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:20Z'),
-          TimeIntoSession: 20.0,
-          KeyType: 'System',
-        },
-      ],
-      DurationKeyPresses: [
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:08Z'),
-          TimeIntoSession: 8.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'OtherDurationKey',
-          KeyCode: 2,
-          KeyDescription: 'Other Duration Key',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:10Z'),
-          TimeIntoSession: 10.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:15Z'),
-          TimeIntoSession: 15.0,
-          KeyType: 'Duration',
-        },
-      ],
-    };
-
-    const result = walkSessionDurationKey(sessionWithMultipleKeyTypes, 'Primary', mockKey);
-
-    expect(result).toEqual({
-      KeyName: 'DurationKey',
-      KeyDescription: 'Test Duration Key',
-      Schedule: 'Primary',
-      Value: 7, // Only DurationKey events: 15-8=7 seconds
-      Bouts: 1,
-    });
-  });
-
-  it('should handle Special schedule using system-based strategy', () => {
-    const mockKeyset = {
-      id: 'test-keyset',
-      Name: 'Test KeySet',
-      FrequencyKeys: [],
-      DurationKeys: [mockKey],
-      createdAt: new Date('2023-01-01'),
-      lastModified: new Date('2023-01-02'),
-      SpecialDurationKeys: [],
-      ScorableDurationKeys: [],
-      DerivedKeys: [],
-    };
-    const sessionWithSystemStrategy: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        {
-          KeyName: 'SpecialScheduleKey',
-          KeyCode: -5,
-          KeyDescription: 'Special Schedule Start',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'SpecialScheduleKey',
-          KeyCode: -5,
-          KeyDescription: 'Special Schedule End',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:20Z'),
-          TimeIntoSession: 20.0,
-          KeyType: 'System',
-        },
-      ],
-      DurationKeyPresses: [
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:08Z'),
-          TimeIntoSession: 8.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:14Z'),
-          TimeIntoSession: 14.0,
-          KeyType: 'Duration',
-        },
-      ],
-    };
-
-    const result = walkSessionDurationKey(sessionWithSystemStrategy, 'Special', mockKey, {
-      special: true,
-      schedule: 'system',
-      specialKeyName: 'SpecialScheduleKey',
-      keyset: mockKeyset,
-      timerType: 'Total',
-    });
-
-    expect(result).toEqual({
-      KeyName: 'DurationKey',
-      KeyDescription: 'Test Duration Key',
-      Schedule: 'Special',
-      Value: 6, // 14 - 8 = 6 seconds
-      Bouts: 1,
-    });
-  });
-
-  it('should handle Special schedule using duration-based strategy', () => {
-    const mockKeyset = {
-      id: 'test-keyset',
-      Name: 'Test KeySet',
-      FrequencyKeys: [],
-      DurationKeys: [mockKey],
-      createdAt: new Date('2023-01-01'),
-      lastModified: new Date('2023-01-02'),
-      SpecialDurationKeys: [],
-      ScorableDurationKeys: [],
-      DerivedKeys: [],
-    };
-    const scheduleKey: KeySetInstance = {
-      KeyName: 'ScheduleKey',
-      KeyDescription: 'Schedule Duration Key',
-      KeyCode: 99,
-    };
-    const sessionWithDurationStrategy: SavedSessionResult = {
-      ...baseSessionSettings,
-      DurationKeyPresses: [
-        // Schedule changes (ScheduleKey)
-        {
-          KeyName: 'ScheduleKey',
-          KeyCode: 99,
-          KeyDescription: 'Schedule Duration Key Start',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'ScheduleKey',
-          KeyCode: 99,
-          KeyDescription: 'Schedule Duration Key End',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:20Z'),
-          TimeIntoSession: 20.0,
-          KeyType: 'Duration',
-        },
-        // Target key events (DurationKey) - within schedule period
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:09Z'),
-          TimeIntoSession: 9.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'DurationKey',
-          KeyCode: 1,
-          KeyDescription: 'Test Duration Key',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:15Z'),
-          TimeIntoSession: 15.0,
-          KeyType: 'Duration',
-        },
-      ],
-    };
-
-    const result = walkSessionDurationKey(sessionWithDurationStrategy, 'Special', mockKey, {
-      special: true,
-      schedule: 'duration',
-      specialKeyName: 'ScheduleKey',
-      keyset: mockKeyset,
-      timerType: 'Total',
-    });
-
-    expect(result).toEqual({
-      KeyName: 'DurationKey',
-      KeyDescription: 'Test Duration Key',
-      Schedule: 'Special',
-      Value: 6, // 15 - 9 = 6 seconds
-      Bouts: 1,
-    });
-  });
-
-  it('should throw when system strategy has odd schedule changes for duration key', () => {
-    const mockKeyset = {
-      id: 'test-keyset',
-      Name: 'Test KeySet',
-      FrequencyKeys: [],
-      DurationKeys: [mockKey],
-      createdAt: new Date('2023-01-01'),
-      lastModified: new Date('2023-01-02'),
-      SpecialDurationKeys: [],
-      ScorableDurationKeys: [],
-      DerivedKeys: [],
-    };
-    const sessionWithOddSystem: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        {
-          KeyName: 'SpecialScheduleKey',
-          KeyCode: -5,
-          KeyDescription: 'Special Schedule',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'System',
-        },
-      ],
-    };
-
-    expect(() =>
-      walkSessionDurationKey(sessionWithOddSystem, 'Special', mockKey, {
-        special: true,
-        schedule: 'system',
-        specialKeyName: 'SpecialScheduleKey',
-        keyset: mockKeyset,
-        timerType: 'Total',
-      }),
-    ).toThrow('Schedule changes must be even');
-  });
-});
-
-describe('sumDurationSpecialKey', () => {
-  const baseSessionSettings: SavedSessionResult = {
-    Keyset: {
-      id: 'test-keyset',
-      Name: 'Test KeySet',
-      FrequencyKeys: [],
-      DurationKeys: [],
-      createdAt: new Date('2023-01-01'),
-      lastModified: new Date('2023-01-02'),
-      DerivedKeys: [],
-      SpecialDurationKeys: [],
-      ScorableDurationKeys: [],
-    },
-    SessionSettings: {} as any,
-    SpecialKeyTimers: {},
-    SystemKeyPresses: [],
-    FrequencyKeyPresses: [],
-    DurationKeyPresses: [],
-    SessionStart: '2023-01-01T10:00:00Z',
-    SessionEnd: '2023-01-01T10:10:00Z',
-    EndedEarly: false,
-    TimerMain: 600,
-    TimerOne: 0,
-    TimerTwo: 0,
-    TimerThree: 0,
-  };
-
-  it('should throw error when special key presses are odd number', () => {
-    const sessionWithOddSpecialKey: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'System',
-        },
-      ],
-    };
-
-    expect(() => sumDurationSpecialKey(sessionWithOddSpecialKey, 'SpecialTimer')).toThrow(
-      'Schedule changes must be even',
-    );
-  });
-
-  it('should return zero duration when no special key presses exist', () => {
-    const result = sumDurationSpecialKey(baseSessionSettings, 'NonExistentKey');
-    expect(result).toBe(0);
-  });
-
-  it('should calculate duration for single pair of special key presses', () => {
-    const sessionWithSpecialPair: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer Start',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer End',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:15Z'),
-          TimeIntoSession: 15.0,
-          KeyType: 'System',
-        },
-      ],
-    };
-
-    const result = sumDurationSpecialKey(sessionWithSpecialPair, 'SpecialTimer');
-    expect(result).toBe(10); // 15 - 5 = 10 seconds
-  });
-
-  it('should calculate duration for multiple pairs of special key presses', () => {
-    const sessionWithMultipleSpecialPairs: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        // First pair
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer Start 1',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer End 1',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:10Z'),
-          TimeIntoSession: 10.0,
-          KeyType: 'System',
-        },
-        // Second pair
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer Start 2',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:20Z'),
-          TimeIntoSession: 20.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer End 2',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:30Z'),
-          TimeIntoSession: 30.0,
-          KeyType: 'System',
-        },
-        // Third pair
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer Start 3',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:40Z'),
-          TimeIntoSession: 40.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer End 3',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:45Z'),
-          TimeIntoSession: 45.0,
-          KeyType: 'System',
-        },
-      ],
-    };
-
-    const result = sumDurationSpecialKey(sessionWithMultipleSpecialPairs, 'SpecialTimer');
-    expect(result).toBe(20); // (10-5) + (30-20) + (45-40) = 5 + 10 + 5 = 20 seconds
-  });
-
-  it('should only process keys matching the specified special key name', () => {
-    const sessionWithMultipleSpecialKeys: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        // Target special key pair
-        {
-          KeyName: 'TargetSpecialKey',
-          KeyCode: -3,
-          KeyDescription: 'Target Special Key Start',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'TargetSpecialKey',
-          KeyCode: -3,
-          KeyDescription: 'Target Special Key End',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:15Z'),
-          TimeIntoSession: 15.0,
-          KeyType: 'System',
-        },
-        // Other special key pair (should be ignored)
-        {
-          KeyName: 'OtherSpecialKey',
-          KeyCode: -4,
-          KeyDescription: 'Other Special Key Start',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:20Z'),
-          TimeIntoSession: 20.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'OtherSpecialKey',
-          KeyCode: -4,
-          KeyDescription: 'Other Special Key End',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:35Z'),
-          TimeIntoSession: 35.0,
-          KeyType: 'System',
-        },
-      ],
-    };
-
-    const result = sumDurationSpecialKey(sessionWithMultipleSpecialKeys, 'TargetSpecialKey');
-    expect(result).toBe(10); // Only the target key: (15-5) = 10 seconds
-  });
-
-  it('should handle special keys with fractional seconds', () => {
-    const sessionWithFractionalTimes: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer Start',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:05.250Z'), // 5.25 seconds
-          TimeIntoSession: 5.25,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer End',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:12.750Z'), // 12.75 seconds
-          TimeIntoSession: 12.75,
-          KeyType: 'System',
-        },
-      ],
-    };
-
-    const result = sumDurationSpecialKey(sessionWithFractionalTimes, 'SpecialTimer');
-    expect(result).toBe(7.5); // 12.75 - 5.25 = 7.5 seconds
-  });
-
-  it('should handle very short durations', () => {
-    const sessionWithShortDuration: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer Start',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:05.000Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer End',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:05.100Z'), // 100ms later
-          TimeIntoSession: 5.1,
-          KeyType: 'System',
-        },
-      ],
-    };
-
-    const result = sumDurationSpecialKey(sessionWithShortDuration, 'SpecialTimer');
-    expect(result).toBe(0.1); // 0.1 seconds
-  });
-
-  it('should handle mixed special key system presses', () => {
-    const sessionWithMixedKeys: SavedSessionResult = {
-      ...baseSessionSettings,
-      SystemKeyPresses: [
-        // Non-target system key
-        {
-          KeyName: 'Primary',
-          KeyCode: -1,
-          KeyDescription: 'Primary Timer',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:03Z'),
-          TimeIntoSession: 3.0,
-          KeyType: 'System',
-        },
-        // Target special key pair
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer Start',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'System',
-        },
-        {
-          KeyName: 'SpecialTimer',
-          KeyCode: -3,
-          KeyDescription: 'Special Timer End',
-          KeyScheduleRecording: 'Special',
-          TimePressed: new Date('2023-01-01T10:00:08Z'),
-          TimeIntoSession: 8.0,
-          KeyType: 'System',
-        },
-        // Another non-target system key
-        {
-          KeyName: 'Secondary',
-          KeyCode: -2,
-          KeyDescription: 'Secondary Timer',
-          KeyScheduleRecording: 'Secondary',
-          TimePressed: new Date('2023-01-01T10:00:10Z'),
-          TimeIntoSession: 10.0,
-          KeyType: 'System',
-        },
-      ],
-    };
-
-    const result = sumDurationSpecialKey(sessionWithMixedKeys, 'SpecialTimer');
-    expect(result).toBe(3); // Only the special key pair: (8-5) = 3 seconds
+    expect(result.Value).toBe(6);
   });
 });
 
@@ -1823,7 +1174,7 @@ describe('combineAndSortKeyPresses', () => {
   });
 });
 
-describe('sumDurationScoringKey', () => {
+describe('sumDurationSpecialKeyStateAware', () => {
   const baseSessionSettings: SavedSessionResult = {
     Keyset: {
       id: 'test-keyset',
@@ -1850,179 +1201,161 @@ describe('sumDurationScoringKey', () => {
     TimerThree: 0,
   };
 
-  it('should throw error when duration key presses are odd number', () => {
-    const sessionWithOdd: SavedSessionResult = {
+  it('matches legacy behavior for standard start-end pairs', () => {
+    const session: SavedSessionResult = {
       ...baseSessionSettings,
-      DurationKeyPresses: [
+      SystemKeyPresses: [
         {
-          KeyName: 'ScoringKey',
-          KeyCode: 10,
-          KeyDescription: 'Scoring Key',
-          KeyScheduleRecording: 'Primary',
+          KeyName: 'SpecialTimer',
+          KeyCode: -3,
+          KeyDescription: 'Start',
+          KeyScheduleRecording: 'Special',
           TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'Duration',
+          TimeIntoSession: 5,
+          KeyType: 'System',
+        },
+        {
+          KeyName: 'SpecialTimer',
+          KeyCode: -3,
+          KeyDescription: 'End',
+          KeyScheduleRecording: 'Special',
+          TimePressed: new Date('2023-01-01T10:00:15Z'),
+          TimeIntoSession: 15,
+          KeyType: 'System',
         },
       ],
     };
 
-    expect(() => sumDurationScoringKey(sessionWithOdd, 'ScoringKey')).toThrow('Schedule changes must be even');
+    expect(sumDurationSpecialKeyStateAware(session, 'SpecialTimer')).toBe(10);
   });
 
-  it('should return zero when no matching duration key presses exist', () => {
-    const result = sumDurationScoringKey(baseSessionSettings, 'NonExistentKey');
-    expect(result).toBe(0);
-  });
-
-  it('should calculate duration for a single pair of duration key presses', () => {
+  it('supports release-first sessions when key starts active', () => {
     const session: SavedSessionResult = {
       ...baseSessionSettings,
-      DurationKeyPresses: [
+      SystemKeyPresses: [
         {
-          KeyName: 'ScoringKey',
-          KeyCode: 10,
-          KeyDescription: 'Scoring Key Start',
-          KeyScheduleRecording: 'Primary',
+          KeyName: 'SpecialTimer',
+          KeyCode: -3,
+          KeyDescription: 'Release',
+          KeyScheduleRecording: 'Special',
           TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'Duration',
+          TimeIntoSession: 5,
+          KeyType: 'System',
         },
         {
-          KeyName: 'ScoringKey',
-          KeyCode: 10,
-          KeyDescription: 'Scoring Key End',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:18Z'),
-          TimeIntoSession: 18.0,
-          KeyType: 'Duration',
-        },
-      ],
-    };
-
-    const result = sumDurationScoringKey(session, 'ScoringKey');
-    expect(result).toBe(13); // 18 - 5 = 13 seconds
-  });
-
-  it('should calculate duration for multiple pairs of duration key presses', () => {
-    const session: SavedSessionResult = {
-      ...baseSessionSettings,
-      DurationKeyPresses: [
-        {
-          KeyName: 'ScoringKey',
-          KeyCode: 10,
-          KeyDescription: 'Scoring Key Start 1',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'ScoringKey',
-          KeyCode: 10,
-          KeyDescription: 'Scoring Key End 1',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:10Z'),
-          TimeIntoSession: 10.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'ScoringKey',
-          KeyCode: 10,
-          KeyDescription: 'Scoring Key Start 2',
-          KeyScheduleRecording: 'Primary',
+          KeyName: 'SpecialTimer',
+          KeyCode: -3,
+          KeyDescription: 'Press',
+          KeyScheduleRecording: 'Special',
           TimePressed: new Date('2023-01-01T10:00:20Z'),
-          TimeIntoSession: 20.0,
-          KeyType: 'Duration',
+          TimeIntoSession: 20,
+          KeyType: 'System',
         },
         {
-          KeyName: 'ScoringKey',
-          KeyCode: 10,
-          KeyDescription: 'Scoring Key End 2',
-          KeyScheduleRecording: 'Primary',
+          KeyName: 'SpecialTimer',
+          KeyCode: -3,
+          KeyDescription: 'Release',
+          KeyScheduleRecording: 'Special',
           TimePressed: new Date('2023-01-01T10:00:30Z'),
-          TimeIntoSession: 30.0,
-          KeyType: 'Duration',
+          TimeIntoSession: 30,
+          KeyType: 'System',
         },
       ],
     };
 
-    const result = sumDurationScoringKey(session, 'ScoringKey');
-    expect(result).toBe(15); // (10-5) + (30-20) = 5 + 10 = 15 seconds
+    expect(sumDurationSpecialKeyStateAware(session, 'SpecialTimer', { startsActive: true })).toBe(15);
   });
+});
 
-  it('should only sum durations for the specified key name', () => {
+describe('sumDurationScoringKeyStateAware', () => {
+  const baseSessionSettings: SavedSessionResult = {
+    Keyset: {
+      id: 'test-keyset',
+      Name: 'Test KeySet',
+      FrequencyKeys: [],
+      DurationKeys: [],
+      createdAt: new Date('2023-01-01'),
+      lastModified: new Date('2023-01-02'),
+      DerivedKeys: [],
+      SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
+    },
+    SessionSettings: {} as any,
+    SpecialKeyTimers: {},
+    SystemKeyPresses: [],
+    FrequencyKeyPresses: [],
+    DurationKeyPresses: [],
+    SessionStart: '2023-01-01T10:00:00Z',
+    SessionEnd: '2023-01-01T10:10:00Z',
+    EndedEarly: false,
+    TimerMain: 600,
+    TimerOne: 0,
+    TimerTwo: 0,
+    TimerThree: 0,
+  };
+
+  it('matches legacy behavior for standard start-end pairs', () => {
     const session: SavedSessionResult = {
       ...baseSessionSettings,
       DurationKeyPresses: [
         {
           KeyName: 'ScoringKey',
           KeyCode: 10,
-          KeyDescription: 'Scoring Key Start',
+          KeyDescription: 'Start',
           KeyScheduleRecording: 'Primary',
           TimePressed: new Date('2023-01-01T10:00:05Z'),
-          TimeIntoSession: 5.0,
+          TimeIntoSession: 5,
           KeyType: 'Duration',
         },
         {
           KeyName: 'ScoringKey',
           KeyCode: 10,
-          KeyDescription: 'Scoring Key End',
+          KeyDescription: 'End',
           KeyScheduleRecording: 'Primary',
           TimePressed: new Date('2023-01-01T10:00:12Z'),
-          TimeIntoSession: 12.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'OtherKey',
-          KeyCode: 11,
-          KeyDescription: 'Other Key Start',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:15Z'),
-          TimeIntoSession: 15.0,
-          KeyType: 'Duration',
-        },
-        {
-          KeyName: 'OtherKey',
-          KeyCode: 11,
-          KeyDescription: 'Other Key End',
-          KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:25Z'),
-          TimeIntoSession: 25.0,
+          TimeIntoSession: 12,
           KeyType: 'Duration',
         },
       ],
     };
 
-    const result = sumDurationScoringKey(session, 'ScoringKey');
-    expect(result).toBe(7); // Only ScoringKey: 12 - 5 = 7 seconds
+    expect(sumDurationScoringKeyStateAware(session, 'ScoringKey')).toBe(7);
   });
 
-  it('should handle fractional second durations', () => {
+  it('supports release-first sessions when key starts active', () => {
     const session: SavedSessionResult = {
       ...baseSessionSettings,
       DurationKeyPresses: [
         {
           KeyName: 'ScoringKey',
           KeyCode: 10,
-          KeyDescription: 'Scoring Key Start',
+          KeyDescription: 'Release',
           KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:05.250Z'),
-          TimeIntoSession: 5.25,
+          TimePressed: new Date('2023-01-01T10:00:05Z'),
+          TimeIntoSession: 5,
           KeyType: 'Duration',
         },
         {
           KeyName: 'ScoringKey',
           KeyCode: 10,
-          KeyDescription: 'Scoring Key End',
+          KeyDescription: 'Press',
           KeyScheduleRecording: 'Primary',
-          TimePressed: new Date('2023-01-01T10:00:10.750Z'),
-          TimeIntoSession: 10.75,
+          TimePressed: new Date('2023-01-01T10:00:20Z'),
+          TimeIntoSession: 20,
+          KeyType: 'Duration',
+        },
+        {
+          KeyName: 'ScoringKey',
+          KeyCode: 10,
+          KeyDescription: 'Release',
+          KeyScheduleRecording: 'Primary',
+          TimePressed: new Date('2023-01-01T10:00:30Z'),
+          TimeIntoSession: 30,
           KeyType: 'Duration',
         },
       ],
     };
 
-    const result = sumDurationScoringKey(session, 'ScoringKey');
-    expect(result).toBe(5.5); // 10.75 - 5.25 = 5.5 seconds
+    expect(sumDurationScoringKeyStateAware(session, 'ScoringKey', { startsActive: true })).toBe(15);
   });
 });

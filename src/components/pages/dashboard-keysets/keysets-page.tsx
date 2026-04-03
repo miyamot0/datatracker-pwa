@@ -12,7 +12,7 @@ import { useMutation } from '@tanstack/react-query';
 import { mutationKeyboards } from '@/queries/keysets/mutate-keyboards';
 import { queryClient } from '@/App';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 export default function KeySetsPage({
   Group,
@@ -94,6 +94,7 @@ export default function KeySetsPage({
             <Button
               size={'sm'}
               variant={'outline'}
+              className="shadow"
               onClick={async () => {
                 const new_key_set_name = window.prompt(
                   'Enter the name for the duplicated KeySet:',
@@ -137,7 +138,7 @@ export default function KeySetsPage({
                 keyset: row.original.Name,
               }}
             >
-              <Button size={'sm'} variant={'outline'}>
+              <Button size={'sm'} variant={'outline'} className="shadow">
                 <Edit2 className="h-4 w-4 mr-2" />
                 Edit
               </Button>

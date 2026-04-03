@@ -1,7 +1,7 @@
 import SessionRecorderInterface from './views/session-recorder-interface';
 import { KeySet } from '@/types/keyset';
-import { SavedSettings } from '@/lib/dtos';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { SavedSettings } from '@/lib/dtos/session-settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 export default function SessionRecorderPage({
   Group,

@@ -7,12 +7,14 @@ import {
   BuildEvaluationsBreadcrumb,
   BuildSessionHistoryBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { ModifiedSessionResult } from '@/types/storage';
-import { ErrorDisplay } from '@/components/suspense/error-display';
-import { ExpandedSavedSessionResult, SavedSettings } from '@/lib/dtos';
-import { extractAndDeduplicateKeysets, generateTicks, mapKeysWithStoragePreference } from '@/lib/graphing';
+import { ErrorDisplay } from '@/components/elements/suspense/error-display';
+import { ExpandedSavedSessionResult } from '@/lib/dtos/session-results';
+import { SavedSettings } from '@/lib/dtos/session-settings';
+import { extractAndDeduplicateKeysets, mapKeysWithStoragePreference } from '@/lib/graphing/keyset-utils';
+import { generateTicks } from '@/lib/graphing/chart-setup';
 import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
 import { preparePlotDataCumulative } from '@/lib/summary';
 import { GenerateSavedFileName } from '@/lib/writer';
@@ -57,7 +59,6 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
   loader: async ({ context }) => {
     const { Group, Individual, Evaluation, FileString, CleanHandle, Settings } = context;
 
-    // TODO: This is doing more work than needed, ideally we would just pull the one session that matches the file string, but this is easier for now and the performance should be fine since it's all local
     const fetchSessionOutcomes = context.queryClient.fetchQuery(
       sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );

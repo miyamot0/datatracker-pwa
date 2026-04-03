@@ -1,6 +1,6 @@
 import PageWrapper from '@/components/elements/page-wrapper';
 import EvaluationsPage from '@/components/pages/dashboard-evaluations/evaluations-page';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { BuildGroupBreadcrumb, BuildIndividualsBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { CleanUpString } from '@/lib/strings';
 import { evaluationQueryOptions } from '@/queries/evaluations/query-evaluations';

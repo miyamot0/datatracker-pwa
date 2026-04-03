@@ -1,7 +1,7 @@
 import { KeySet } from '@/types/keyset';
-import { SavedSettings } from '@/lib/dtos';
+import { SavedSettings } from '@/lib/dtos/session-settings';
 import { KeyManageType, KeyTiming, TimerSetting } from '@/types/timing';
-import { SessionPollingIntervals, SessionRecorderPolling } from '@/types/settings';
+import { SessionPollingIntervals, SessionRecorderPolling } from '@/types/settings/performance-settings';
 
 const TIME_DELTA = 10; /** Polling interval in milliseconds */
 const TIME_UNIT = 1000; /** Number of milliseconds in one second */
@@ -234,6 +234,7 @@ export class SessionRecorderCore {
         const specialKeyName = this.keyset?.SpecialDurationKeys.find(
           (key) => key.KeyCode === this.settings!.TimerOption,
         )?.KeyName;
+
         if (specialKeyName) {
           timerUpdate = {
             ...timerUpdate,
@@ -463,11 +464,23 @@ export class SessionRecorderCore {
    */
   endSession(reason: 'Completed' | 'Cancelled'): SessionEndResult {
     this.state.isRunning = false;
+    const sessionEndTimestamp = getHighResTime();
 
     // Create final system events using the helper method
     const endTimerEvent = this.createEndEventForCurrentTimer();
 
-    const endSessionEvent = this.createSystemEvent('Escape', 0, 'End of Session', 'Primary' as KeyTiming, 'End');
+    // Close any open duration bouts before the end-of-session marker so interval
+    // calculations always receive even start/end pairs.
+    const autoClosedDurationEvents = this.createAutoClosedDurationEvents(sessionEndTimestamp);
+
+    const endSessionEvent = this.createSystemEvent(
+      'Escape',
+      0,
+      'End of Session',
+      'Primary' as KeyTiming,
+      'End',
+      sessionEndTimestamp,
+    );
 
     const finalSystemKeys = [...this.systemKeysPressed, endTimerEvent, endSessionEvent];
 
@@ -479,7 +492,7 @@ export class SessionRecorderCore {
 
     const result: SessionEndResult = {
       reason,
-      keysPressed: [...this.keysPressed],
+      keysPressed: [...this.keysPressed, ...autoClosedDurationEvents],
       systemKeysPressed: finalSystemKeys,
       timers: {
         total: this.state.secondsElapsedTotal,
@@ -495,6 +508,58 @@ export class SessionRecorderCore {
     this.resetState();
 
     return result;
+  }
+
+  /**
+   * Creates synthetic duration end events for any duration keys with an odd
+   * number of presses when the session ends.
+   * @param timestamp The timestamp to use for the synthetic events (should be session end time)
+   * @returns An array of synthetic key events to close out any open duration bouts
+   */
+  private createAutoClosedDurationEvents(timestamp: number): KeyManageType[] {
+    if (!this.keyset) return [];
+
+    const uniqueDurationKeysByCode = new Map<number, KeySet['DurationKeys'][number]>();
+
+    // Note Pull all relevant keys into map (But not special Timer Durations)
+    [...(this.keyset.DurationKeys || []), ...(this.keyset.ScorableDurationKeys || [])].forEach((durationKey) => {
+      if (!uniqueDurationKeysByCode.has(durationKey.KeyCode)) {
+        uniqueDurationKeysByCode.set(durationKey.KeyCode, durationKey);
+      }
+    });
+
+    const allDurationKeys = [...uniqueDurationKeysByCode.values()];
+
+    // Bail if no duration keys
+    if (allDurationKeys.length === 0) return [];
+
+    const durationPressCountsByCode = new Map<number, number>();
+
+    // Generate tally of relevant duration key presses by key code
+    this.keysPressed.forEach((keyEvent) => {
+      if (keyEvent.KeyType !== 'Duration') return;
+      durationPressCountsByCode.set(keyEvent.KeyCode, (durationPressCountsByCode.get(keyEvent.KeyCode) || 0) + 1);
+    });
+
+    const autoCloseEvents: KeyManageType[] = [];
+
+    // For each duration key, if it has an odd number of presses, create a synthetic end event to close it out
+    allDurationKeys.forEach((durationKey) => {
+      const pressCount = durationPressCountsByCode.get(durationKey.KeyCode) || 0;
+      if (pressCount % 2 === 0) return;
+
+      autoCloseEvents.push(
+        this.createKeyEvent(
+          durationKey.KeyName,
+          durationKey.KeyCode,
+          durationKey.KeyDescription,
+          'Duration',
+          timestamp,
+        ),
+      );
+    });
+
+    return autoCloseEvents;
   }
 
   /**

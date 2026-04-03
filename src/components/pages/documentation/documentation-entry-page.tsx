@@ -5,20 +5,16 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import BackButton from '@/components/ui/back-button';
 import { Link } from '@tanstack/react-router';
-import { MdViewer } from './views/md-viewer';
-import { useContext } from 'react';
-import { FolderHandleContext } from '@/context/folder-context';
+import { MdViewerLite } from './views/md-viewer-lite';
 import { TRANSITION_CLASSES } from '@/types/transitions';
 import PageWrapper from '@/components/elements/page-wrapper';
 import { BuildDocumentationBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { Route } from '@/routes/documentation/$slug';
 
 export default function DocumentationEntryPage() {
-  const { KeywordArray, PreviousEntry, NextEntry, Entry, Settings } = Route.useLoaderData();
+  const { KeywordArray, Settings, PreviousEntry, NextEntry, Entry } = Route.useLoaderData();
 
-  const { settings } = useContext(FolderHandleContext);
-
-  const animTypes = TRANSITION_CLASSES[settings.TransitionBehavior];
+  const animTypes = TRANSITION_CLASSES[Settings.TransitionBehavior];
 
   const animLeft = animTypes.length > 0 ? [animTypes[animTypes.length - 1]] : [];
   const animRight = animTypes.length > 0 ? [animTypes[0]] : [];
@@ -54,7 +50,7 @@ export default function DocumentationEntryPage() {
           <BackButton />
         </CardHeader>
         <CardContent className="prose dark:prose-invert !max-w-none">
-          <MdViewer source={Entry.value} />
+          <MdViewerLite source={Entry.value} />
         </CardContent>
         <CardFooter className="flex flex-row justify-between">
           <Link

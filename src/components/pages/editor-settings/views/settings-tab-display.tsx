@@ -2,10 +2,10 @@ import { TabsContent } from '@/components/ui/tabs';
 import SettingsFormItemWrapper from './settings-form-item-wrapper';
 import { SettingsTabContainer } from './settings-tab-container';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ApplicationSettingsTypes, SettingsDisplayEnum } from '@/types/settings/application-settings';
 import {
   APPLICATION_FOOTER_OPTIONS,
   ApplicationFooterDisplay,
-  ApplicationSettingsTypes,
   KEY_DISPLAY_OPTIONS,
   KeyDisplayTypes,
   ScreenSizingOptions,
@@ -14,10 +14,9 @@ import {
   SessionDisplayOptions,
   THEME_OPTIONS,
   ThemeTypes,
-  SettingsDisplayEnum,
   TransitionSettingTypes,
   TRANSITION_SETTING_OPTIONS,
-} from '@/types/settings';
+} from '@/types/settings/display-settings';
 import { FolderHandleContext } from '@/context/folder-context';
 import { useTheme } from '@/components/ui/theme-provider';
 import { useContext } from 'react';

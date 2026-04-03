@@ -1,4 +1,4 @@
-import { DEFAULT_SESSION_SETTINGS, SavedSettings } from '@/lib/dtos';
+import { DEFAULT_SESSION_SETTINGS, SavedSettings } from '@/lib/dtos/session-settings';
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
 import { FetchSessionParamsRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
 import { v4 as uuidv4 } from 'uuid';

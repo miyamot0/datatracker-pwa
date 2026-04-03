@@ -92,7 +92,7 @@ export default function KeySetEditor({
       // Note: hack to kick off re-render
       FrequencyKeys: [...KeySetObject.FrequencyKeys],
       DurationKeys: [...KeySetObject.DurationKeys],
-      DerivedKeys: [...(KeySetObject.DerivedKeys || []), logic],
+      DerivedKeys: [...KeySetObject.DerivedKeys, logic],
       SpecialDurationKeys: [...(KeySetObject.SpecialDurationKeys || [])],
       lastModified: new Date(),
     } satisfies KeySet;
@@ -106,7 +106,7 @@ export default function KeySetEditor({
       // Note: hack to kick off re-render
       DurationKeys: [...base_keyset.DurationKeys],
       FrequencyKeys: [...base_keyset.FrequencyKeys],
-      DerivedKeys: [...(base_keyset.DerivedKeys || [])],
+      DerivedKeys: [...base_keyset.DerivedKeys],
       SpecialDurationKeys: [...(base_keyset.SpecialDurationKeys || []), new_key],
       ScorableDurationKeys: [...(base_keyset.ScorableDurationKeys || [])],
       lastModified: new Date(),
@@ -121,7 +121,7 @@ export default function KeySetEditor({
       // Note: hack to kick off re-render
       DurationKeys: [...base_keyset.DurationKeys],
       FrequencyKeys: [...base_keyset.FrequencyKeys],
-      DerivedKeys: [...(base_keyset.DerivedKeys || [])],
+      DerivedKeys: [...base_keyset.DerivedKeys],
       SpecialDurationKeys: [...(base_keyset.SpecialDurationKeys || [])],
       ScorableDurationKeys: [...(base_keyset.ScorableDurationKeys || []), new_key],
       lastModified: new Date(),
@@ -144,16 +144,20 @@ export default function KeySetEditor({
   const btnProps = buttonVariants({ variant: 'outline', size: 'sm' });
 
   return (
-    <div className="w-full max-w-screen-2xl grid grid-cols-2 gap-2">
-      <Card className="w-full flex flex-col justify-between">
-        <CardHeader className="flex flex-col md:flex-row justify-between">
-          <div className="flex flex-col gap-1.5">
+    <Card className="w-full max-w-screen-2xl ">
+      <CardHeader className="flex flex-col md:flex-row justify-between">
+        <div className="flex flex-col gap-1.5">
+          <CardTitle>KeySet Entries</CardTitle>
+          <CardDescription>Add/Remove KeySet Entries</CardDescription>
+        </div>
+        <BackButton Silence />
+      </CardHeader>
+      <CardContent className="flex flex-col md:flex-row gap-4">
+        <div className="w-full flex flex-col justify-between">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-2">
             <CardTitle>Frequency Keys</CardTitle>
-            <CardDescription>Manage Frequency Keys</CardDescription>
-          </div>
 
-          <div className="flex flex-row gap-2">
-            <div className={cn(btnProps, 'pl-3 pr-0')}>
+            <div className={cn(btnProps, 'pl-3 pr-0 shadow my-0 py-0 w-full md:w-fit')}>
               <FrequencyDialogKeyCreator KeySet={KeySetObject} Callback={addKeyCallback} />
 
               <DropdownMenu modal={false}>
@@ -175,123 +179,118 @@ export default function KeySetEditor({
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-
-            <BackButton />
           </div>
-        </CardHeader>
-        <CardContent className="flex-1">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Target</TableHead>
-                <TableHead>Key</TableHead>
-                <TableHead className="w-[50px] text-right">Editor</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {KeySetObject.FrequencyKeys.map((key, index) => (
-                <TableRow key={index}>
-                  <TableCell>{key.KeyDescription}</TableCell>
-                  <TableCell>{key.KeyName}</TableCell>
-                  <TableCell className="flex flex-row gap-2">
-                    <Button
-                      size={'sm'}
-                      variant={'outline'}
-                      disabled={index === 0}
-                      onClick={async () => {
-                        const newFrequencyKeys = moveItemUp(KeySetObject.FrequencyKeys, index);
-                        const new_state = {
-                          ...KeySetObject,
-                          FrequencyKeys: newFrequencyKeys,
-                        };
-                        await mutateKeySet(new_state);
-                      }}
-                    >
-                      <ArrowUp size={14} className="mr" />
-                    </Button>
-
-                    <Button
-                      size={'sm'}
-                      variant={'outline'}
-                      disabled={index === KeySetObject.FrequencyKeys.length - 1}
-                      onClick={async () => {
-                        const newFrequencyKeys = moveItemDown(KeySetObject.FrequencyKeys, index);
-                        const new_state = {
-                          ...KeySetObject,
-                          FrequencyKeys: newFrequencyKeys,
-                        };
-                        await mutateKeySet(new_state);
-                      }}
-                    >
-                      <ArrowDown size={14} className="mr" />
-                    </Button>
-
-                    <Button
-                      size={'sm'}
-                      variant={'destructive'}
-                      className="shadow-xl"
-                      onClick={async () => {
-                        const confirmation = window.confirm('Are you sure you want to remove this key?');
-
-                        if (!confirmation) return;
-
-                        const new_state = {
-                          ...KeySetObject,
-                          FrequencyKeys: KeySetObject.FrequencyKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
-                        };
-
-                        await mutateKeySet(new_state);
-                      }}
-                    >
-                      <DeleteIcon size={14} className="mr-2" />
-                      Delete
-                    </Button>
-                  </TableCell>
+          <div className="flex-1">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Target</TableHead>
+                  <TableHead>Key</TableHead>
+                  <TableHead className="w-[50px] text-right">Editor</TableHead>
                 </TableRow>
-              ))}
+              </TableHeader>
+              <TableBody>
+                {KeySetObject.FrequencyKeys.map((key, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{key.KeyDescription}</TableCell>
+                    <TableCell>{key.KeyName}</TableCell>
+                    <TableCell className="flex flex-row gap-2">
+                      <Button
+                        size={'sm'}
+                        variant={'outline'}
+                        className="shadow"
+                        disabled={index === 0}
+                        onClick={async () => {
+                          const newFrequencyKeys = moveItemUp(KeySetObject.FrequencyKeys, index);
+                          const new_state = {
+                            ...KeySetObject,
+                            FrequencyKeys: newFrequencyKeys,
+                          };
+                          await mutateKeySet(new_state);
+                        }}
+                      >
+                        <ArrowUp size={14} className="mr" />
+                      </Button>
 
-              {KeySetObject.DerivedKeys?.map((state, index) => (
-                <TableRow key={index} className="bg-muted">
-                  <TableCell>{state.name} (Derived)</TableCell>
-                  <TableCell>{generateFormula(state)}</TableCell>
-                  <TableCell className="flex flex-row gap-2 justify-end">
-                    <Button
-                      size={'sm'}
-                      variant={'destructive'}
-                      className="shadow-xl"
-                      onClick={async () => {
-                        const confirmation = window.confirm('Are you sure you want to remove this key?');
+                      <Button
+                        size={'sm'}
+                        variant={'outline'}
+                        className="shadow"
+                        disabled={index === KeySetObject.FrequencyKeys.length - 1}
+                        onClick={async () => {
+                          const newFrequencyKeys = moveItemDown(KeySetObject.FrequencyKeys, index);
+                          const new_state = {
+                            ...KeySetObject,
+                            FrequencyKeys: newFrequencyKeys,
+                          };
+                          await mutateKeySet(new_state);
+                        }}
+                      >
+                        <ArrowDown size={14} className="mr" />
+                      </Button>
 
-                        if (!confirmation) return;
+                      <Button
+                        size={'sm'}
+                        variant={'destructive'}
+                        className="shadow"
+                        onClick={async () => {
+                          const confirmation = window.confirm('Are you sure you want to remove this key?');
 
-                        const new_state = {
-                          ...KeySetObject,
-                          DerivedKeys: KeySetObject.DerivedKeys?.filter((_key) => _key.id !== state.id),
-                        } satisfies KeySet;
+                          if (!confirmation) return;
 
-                        await mutateKeySet(new_state);
-                      }}
-                    >
-                      <DeleteIcon size={14} className="mr-2" />
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                          const new_state = {
+                            ...KeySetObject,
+                            FrequencyKeys: KeySetObject.FrequencyKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
+                          };
 
-      <Card className="w-full flex flex-col justify-between">
-        <CardHeader className="flex flex-col md:flex-row justify-between">
-          <div className="flex flex-col gap-1.5">
+                          await mutateKeySet(new_state);
+                        }}
+                      >
+                        <DeleteIcon size={14} className="mr-2" />
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                {KeySetObject.DerivedKeys?.map((state, index) => (
+                  <TableRow key={index} className="bg-muted">
+                    <TableCell>{state.name} (Derived)</TableCell>
+                    <TableCell>{generateFormula(state)}</TableCell>
+                    <TableCell className="flex flex-row gap-2 justify-end">
+                      <Button
+                        size={'sm'}
+                        variant={'destructive'}
+                        className="shadow-xl"
+                        onClick={async () => {
+                          const confirmation = window.confirm('Are you sure you want to remove this key?');
+
+                          if (!confirmation) return;
+
+                          const new_state = {
+                            ...KeySetObject,
+                            DerivedKeys: KeySetObject.DerivedKeys?.filter((_key) => _key.id !== state.id),
+                          } satisfies KeySet;
+
+                          await mutateKeySet(new_state);
+                        }}
+                      >
+                        <DeleteIcon size={14} className="mr-2" />
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        <div className="w-full flex flex-col justify-between">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-2">
             <CardTitle>Duration Keys</CardTitle>
-            <CardDescription>Manage Duration Keys</CardDescription>
-          </div>
 
-          <div className="flex flex-row gap-2">
-            <div className={cn(btnProps, 'pl-3 pr-0')}>
+            <div className={cn(btnProps, 'pl-3 pr-0 shadow my-0 py-0 w-full md:w-fit')}>
               <DurationDialogKeyCreator KeySet={KeySetObject} Callback={addKeyCallback} />
 
               <DropdownMenu modal={false}>
@@ -306,145 +305,146 @@ export default function KeySetEditor({
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-
-            <BackButton />
           </div>
-        </CardHeader>
-        <CardContent className="flex-1">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Target</TableHead>
-                <TableHead>Key</TableHead>
-                <TableHead className="w-[50px] text-right">Editor</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {KeySetObject.DurationKeys.map((key, index) => (
-                <TableRow key={index}>
-                  <TableCell>{key.KeyDescription}</TableCell>
-                  <TableCell>{key.KeyName}</TableCell>
-                  <TableCell className="flex flex-row gap-2">
-                    <Button
-                      size={'sm'}
-                      variant={'outline'}
-                      disabled={index === 0}
-                      onClick={async () => {
-                        const newDurationKeys = moveItemUp(KeySetObject.DurationKeys, index);
-                        const new_state = {
-                          ...KeySetObject,
-                          DurationKeys: newDurationKeys,
-                        };
-                        await mutateKeySet(new_state);
-                      }}
-                    >
-                      <ArrowUp size={14} className="mr" />
-                    </Button>
-
-                    <Button
-                      size={'sm'}
-                      variant={'outline'}
-                      disabled={index === KeySetObject.DurationKeys.length - 1}
-                      onClick={async () => {
-                        const newDurationKeys = moveItemDown(KeySetObject.DurationKeys, index);
-                        const new_state = {
-                          ...KeySetObject,
-                          DurationKeys: newDurationKeys,
-                        };
-                        await mutateKeySet(new_state);
-                      }}
-                    >
-                      <ArrowDown size={14} className="mr" />
-                    </Button>
-
-                    <Button
-                      size={'sm'}
-                      variant={'destructive'}
-                      onClick={async () => {
-                        const confirmation = window.confirm('Are you sure you want to remove this key?');
-
-                        if (!confirmation) return;
-
-                        const new_state = {
-                          ...KeySetObject,
-                          DurationKeys: KeySetObject.DurationKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
-                        };
-
-                        await mutateKeySet(new_state);
-                      }}
-                    >
-                      <DeleteIcon size={14} className="mr-2" />
-                      Delete
-                    </Button>
-                  </TableCell>
+          <div className="flex-1">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Target</TableHead>
+                  <TableHead>Key</TableHead>
+                  <TableHead className="w-[50px] text-right">Editor</TableHead>
                 </TableRow>
-              ))}
+              </TableHeader>
+              <TableBody>
+                {KeySetObject.DurationKeys.map((key, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{key.KeyDescription}</TableCell>
+                    <TableCell>{key.KeyName}</TableCell>
+                    <TableCell className="flex flex-row gap-2">
+                      <Button
+                        size={'sm'}
+                        variant={'outline'}
+                        className="shadow"
+                        disabled={index === 0}
+                        onClick={async () => {
+                          const newDurationKeys = moveItemUp(KeySetObject.DurationKeys, index);
+                          const new_state = {
+                            ...KeySetObject,
+                            DurationKeys: newDurationKeys,
+                          };
+                          await mutateKeySet(new_state);
+                        }}
+                      >
+                        <ArrowUp size={14} className="mr" />
+                      </Button>
 
-              {KeySetObject.SpecialDurationKeys?.map((key, index) => (
-                <TableRow key={index} className="bg-muted">
-                  <TableCell>{key.KeyDescription} (Special Timing)</TableCell>
-                  <TableCell>{key.KeyName}</TableCell>
-                  <TableCell className="flex flex-row gap-2 justify-end">
-                    <Button
-                      size={'sm'}
-                      variant={'destructive'}
-                      className="shadow-xl"
-                      onClick={async () => {
-                        const confirmation = window.confirm('Are you sure you want to remove this key?');
+                      <Button
+                        size={'sm'}
+                        variant={'outline'}
+                        className="shadow"
+                        disabled={index === KeySetObject.DurationKeys.length - 1}
+                        onClick={async () => {
+                          const newDurationKeys = moveItemDown(KeySetObject.DurationKeys, index);
+                          const new_state = {
+                            ...KeySetObject,
+                            DurationKeys: newDurationKeys,
+                          };
+                          await mutateKeySet(new_state);
+                        }}
+                      >
+                        <ArrowDown size={14} className="mr" />
+                      </Button>
 
-                        if (!confirmation) return;
+                      <Button
+                        size={'sm'}
+                        variant={'destructive'}
+                        className="shadow"
+                        onClick={async () => {
+                          const confirmation = window.confirm('Are you sure you want to remove this key?');
 
-                        const new_state = {
-                          ...KeySetObject,
-                          SpecialDurationKeys: KeySetObject.SpecialDurationKeys?.filter(
-                            (_key) => _key.KeyCode !== key.KeyCode,
-                          ),
-                        } satisfies KeySet;
+                          if (!confirmation) return;
 
-                        await mutateKeySet(new_state);
-                      }}
-                    >
-                      <DeleteIcon size={14} className="mr-2" />
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+                          const new_state = {
+                            ...KeySetObject,
+                            DurationKeys: KeySetObject.DurationKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
+                          };
 
-              {KeySetObject.ScorableDurationKeys?.map((key, index) => (
-                <TableRow key={index} className="bg-muted">
-                  <TableCell>{key.KeyDescription} (Scored Duration)</TableCell>
-                  <TableCell>{key.KeyName}</TableCell>
-                  <TableCell className="flex flex-row gap-2 justify-end">
-                    <Button
-                      size={'sm'}
-                      variant={'destructive'}
-                      className="shadow-xl"
-                      onClick={async () => {
-                        const confirmation = window.confirm('Are you sure you want to remove this key?');
+                          await mutateKeySet(new_state);
+                        }}
+                      >
+                        <DeleteIcon size={14} className="mr-2" />
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
 
-                        if (!confirmation) return;
+                {KeySetObject.SpecialDurationKeys?.map((key, index) => (
+                  <TableRow key={index} className="bg-muted">
+                    <TableCell>{key.KeyDescription} (Special Timing)</TableCell>
+                    <TableCell>{key.KeyName}</TableCell>
+                    <TableCell className="flex flex-row gap-2 justify-end">
+                      <Button
+                        size={'sm'}
+                        variant={'destructive'}
+                        className="shadow"
+                        onClick={async () => {
+                          const confirmation = window.confirm('Are you sure you want to remove this key?');
 
-                        const new_state = {
-                          ...KeySetObject,
-                          ScorableDurationKeys: KeySetObject.ScorableDurationKeys?.filter(
-                            (_key) => _key.KeyCode !== key.KeyCode,
-                          ),
-                        } satisfies KeySet;
+                          if (!confirmation) return;
 
-                        await mutateKeySet(new_state);
-                      }}
-                    >
-                      <DeleteIcon size={14} className="mr-2" />
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+                          const new_state = {
+                            ...KeySetObject,
+                            SpecialDurationKeys: KeySetObject.SpecialDurationKeys?.filter(
+                              (_key) => _key.KeyCode !== key.KeyCode,
+                            ),
+                          } satisfies KeySet;
+
+                          await mutateKeySet(new_state);
+                        }}
+                      >
+                        <DeleteIcon size={14} className="mr-2" />
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                {KeySetObject.ScorableDurationKeys?.map((key, index) => (
+                  <TableRow key={index} className="bg-muted">
+                    <TableCell>{key.KeyDescription} (Scored Duration)</TableCell>
+                    <TableCell>{key.KeyName}</TableCell>
+                    <TableCell className="flex flex-row gap-2 justify-end">
+                      <Button
+                        size={'sm'}
+                        variant={'destructive'}
+                        className="shadow"
+                        onClick={async () => {
+                          const confirmation = window.confirm('Are you sure you want to remove this key?');
+
+                          if (!confirmation) return;
+
+                          const new_state = {
+                            ...KeySetObject,
+                            ScorableDurationKeys: KeySetObject.ScorableDurationKeys?.filter(
+                              (_key) => _key.KeyCode !== key.KeyCode,
+                            ),
+                          } satisfies KeySet;
+
+                          await mutateKeySet(new_state);
+                        }}
+                      >
+                        <DeleteIcon size={14} className="mr-2" />
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -539,27 +539,27 @@ export function prepareFrequencyReliTable(paired: ReliabilityPairType[], keyset:
 
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       (temp_array.push({
-        value: EIA.toFixed(2) ?? '',
+        value: EIA.toFixed(2),
         readOnly: true,
       }),
         temp_array.push({
-          value: PIA.toFixed(2) ?? '',
+          value: PIA.toFixed(2),
           readOnly: true,
         }),
         temp_array.push({
-          value: TIA.toFixed(2) ?? '',
+          value: TIA.toFixed(2),
           readOnly: true,
         }),
         temp_array.push({
-          value: OIA.toFixed(2) ?? '',
+          value: OIA.toFixed(2),
           readOnly: true,
         }),
         temp_array.push({
-          value: NIA.toFixed(2) ?? '',
+          value: NIA.toFixed(2),
           readOnly: true,
         }),
         temp_array.push({
-          value: PMA.toFixed(2) ?? '',
+          value: PMA.toFixed(2),
           readOnly: true,
         }));
     });
@@ -591,32 +591,32 @@ export function prepareFrequencyReliTable(paired: ReliabilityPairType[], keyset:
     );
 
     mean_row.push({
-      value: (relevantEIA_values.reduce((a, b) => a + b, 0) / relevantEIA_values.length).toFixed(2) ?? '',
+      value: (relevantEIA_values.reduce((a, b) => a + b, 0) / relevantEIA_values.length).toFixed(2),
       readOnly: true,
     });
 
     mean_row.push({
-      value: (relevantPIA_values.reduce((a, b) => a + b, 0) / relevantPIA_values.length).toFixed(2) ?? '',
+      value: (relevantPIA_values.reduce((a, b) => a + b, 0) / relevantPIA_values.length).toFixed(2),
       readOnly: true,
     });
 
     mean_row.push({
-      value: (relevantTIA_values.reduce((a, b) => a + b, 0) / relevantTIA_values.length).toFixed(2) ?? '',
+      value: (relevantTIA_values.reduce((a, b) => a + b, 0) / relevantTIA_values.length).toFixed(2),
       readOnly: true,
     });
 
     mean_row.push({
-      value: (relevantOIA_values.reduce((a, b) => a + b, 0) / relevantOIA_values.length).toFixed(2) ?? '',
+      value: (relevantOIA_values.reduce((a, b) => a + b, 0) / relevantOIA_values.length).toFixed(2),
       readOnly: true,
     });
 
     mean_row.push({
-      value: (relevantNIA_values.reduce((a, b) => a + b, 0) / relevantNIA_values.length).toFixed(2) ?? '',
+      value: (relevantNIA_values.reduce((a, b) => a + b, 0) / relevantNIA_values.length).toFixed(2),
       readOnly: true,
     });
 
     mean_row.push({
-      value: (relevantPMA_values.reduce((a, b) => a + b, 0) / relevantPMA_values.length).toFixed(2) ?? '',
+      value: (relevantPMA_values.reduce((a, b) => a + b, 0) / relevantPMA_values.length).toFixed(2),
       readOnly: true,
     });
   });
@@ -678,27 +678,27 @@ export function prepareDurationReliTable(paired: ReliabilityPairType[], keyset: 
 
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       (temp_array.push({
-        value: EIA.toFixed(2) ?? '',
+        value: EIA.toFixed(2),
         readOnly: true,
       }),
         temp_array.push({
-          value: PIA.toFixed(2) ?? '',
+          value: PIA.toFixed(2),
           readOnly: true,
         }),
         temp_array.push({
-          value: TIA.toFixed(2) ?? '',
+          value: TIA.toFixed(2),
           readOnly: true,
         }),
         temp_array.push({
-          value: OIA.toFixed(2) ?? '',
+          value: OIA.toFixed(2),
           readOnly: true,
         }),
         temp_array.push({
-          value: NIA.toFixed(2) ?? '',
+          value: NIA.toFixed(2),
           readOnly: true,
         }),
         temp_array.push({
-          value: PMA.toFixed(2) ?? '',
+          value: PMA.toFixed(2),
           readOnly: true,
         }));
     });
@@ -730,32 +730,32 @@ export function prepareDurationReliTable(paired: ReliabilityPairType[], keyset: 
     );
 
     mean_row.push({
-      value: (relevantEIA_values.reduce((a, b) => a + b, 0) / relevantEIA_values.length).toFixed(2) ?? '',
+      value: (relevantEIA_values.reduce((a, b) => a + b, 0) / relevantEIA_values.length).toFixed(2),
       readOnly: true,
     });
 
     mean_row.push({
-      value: (relevantPIA_values.reduce((a, b) => a + b, 0) / relevantPIA_values.length).toFixed(2) ?? '',
+      value: (relevantPIA_values.reduce((a, b) => a + b, 0) / relevantPIA_values.length).toFixed(2),
       readOnly: true,
     });
 
     mean_row.push({
-      value: (relevantTIA_values.reduce((a, b) => a + b, 0) / relevantTIA_values.length).toFixed(2) ?? '',
+      value: (relevantTIA_values.reduce((a, b) => a + b, 0) / relevantTIA_values.length).toFixed(2),
       readOnly: true,
     });
 
     mean_row.push({
-      value: (relevantOIA_values.reduce((a, b) => a + b, 0) / relevantOIA_values.length).toFixed(2) ?? '',
+      value: (relevantOIA_values.reduce((a, b) => a + b, 0) / relevantOIA_values.length).toFixed(2),
       readOnly: true,
     });
 
     mean_row.push({
-      value: (relevantNIA_values.reduce((a, b) => a + b, 0) / relevantNIA_values.length).toFixed(2) ?? '',
+      value: (relevantNIA_values.reduce((a, b) => a + b, 0) / relevantNIA_values.length).toFixed(2),
       readOnly: true,
     });
 
     mean_row.push({
-      value: (relevantPMA_values.reduce((a, b) => a + b, 0) / relevantPMA_values.length).toFixed(2) ?? '',
+      value: (relevantPMA_values.reduce((a, b) => a + b, 0) / relevantPMA_values.length).toFixed(2),
       readOnly: true,
     });
   });
@@ -764,3 +764,4 @@ export function prepareDurationReliTable(paired: ReliabilityPairType[], keyset: 
 
   return { headings, rows };
 }
+

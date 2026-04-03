@@ -30,6 +30,7 @@ describe('preparePlotDataCumulative', () => {
       createdAt: new Date('2023-01-01'),
       lastModified: new Date('2023-01-02'),
       DerivedKeys: [],
+      ScorableDurationKeys: [],
     },
     SessionSettings: {} as any,
     SpecialKeyTimers: {},

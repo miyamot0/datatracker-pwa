@@ -19,7 +19,7 @@ import type { Row, Table as TableData } from '@tanstack/react-table';
 import { Button } from './button';
 import { ChevronDown, Delete } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from './dropdown-menu';
 
 export type RowSelectOptions = 'None';

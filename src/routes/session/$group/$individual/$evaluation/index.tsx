@@ -1,6 +1,6 @@
 import PageWrapper from '@/components/elements/page-wrapper';
 import SessionDesignerForm from '@/components/pages/editor-session/session-designer-form';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import {
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,

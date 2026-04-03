@@ -19,7 +19,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { SavedSettings, toSavedSettings } from '@/lib/dtos';
+import { SavedSettings, toSavedSettings } from '@/lib/dtos/session-settings';
 import { KeySet } from '@/types/keyset';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { displayConditionalNotification } from '@/lib/notifications';
@@ -34,7 +34,7 @@ import { useNavigate, useRouter, useRouterState } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { DataCollectorRoles } from '@/types/roles';
 import { filteredSessionTerminationOptions, SessionTerminationOptionsDescriptions } from '@/types/terminations';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 type Props = {
   Group: string;
@@ -445,7 +445,7 @@ export default function SessionDesigner({
                   </FormItem>
                 )}
               />
-              <Button variant={'outline'} className="w-full" type="submit">
+              <Button variant={'outline'} className="w-full shadow" type="submit">
                 Run Session
               </Button>
             </form>

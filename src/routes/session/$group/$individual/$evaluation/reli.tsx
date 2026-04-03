@@ -1,13 +1,13 @@
 import PageWrapper from '@/components/elements/page-wrapper';
 import ReliabilityViewerPage from '@/components/pages/summary-agreement/reli-viewer-page';
 import ReliabilityBlank from '@/components/pages/summary-agreement/views/reli-blank';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import {
   BuildEvaluationsBreadcrumb,
   BuildGroupBreadcrumb,
   BuildIndividualsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { filterSessionsByPrimaryRole, filterSessionsByReliabilityRole } from '@/lib/graphing';
+import { filterSessionsByPrimaryRole, filterSessionsByReliabilityRole } from '@/lib/graphing/session-filters';
 import { pullMostRecentKeySet } from '@/lib/keyset';
 import { getCorrespondingSessionPairs } from '@/lib/reli';
 import { CleanUpString } from '@/lib/strings';

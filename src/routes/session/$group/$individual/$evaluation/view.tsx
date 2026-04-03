@@ -3,7 +3,7 @@ import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { pullMostRecentSession } from '@/lib/keyset';
-import { extractAndDeduplicateKeysets, mapKeysWithStoragePreference } from '@/lib/graphing';
+import { extractAndDeduplicateKeysets, mapKeysWithStoragePreference } from '@/lib/graphing/keyset-utils';
 import { KeySet } from '@/types/keyset';
 import { ToggleDisplayKey } from '@/types/visuals';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
@@ -13,9 +13,9 @@ import {
   BuildIndividualsBreadcrumb,
   BuildEvaluationsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
-import { LoadingDisplay } from '@/components/suspense/loading-display';
+import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { ModifiedSessionResult } from '@/types/storage';
-import { ErrorDisplay } from '@/components/suspense/error-display';
+import { ErrorDisplay } from '@/components/elements/suspense/error-display';
 import ResultsViewerContent from '@/components/pages/summary-outcomes/results-viewer-content';
 import { filteredSessionScoringOptions } from '@/types/schedules';
 

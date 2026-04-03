@@ -1,67 +1,16 @@
-import { LogicState } from '@/lib/logic';
-
 /**
- * Type for holding the key values
+ * @deprecated This barrel export is deprecated. Import directly from focused files:
+ * - Core types: @/types/keyset/core
+ * - Extended types: @/types/keyset/extended
+ * - Serialization types: @/types/keyset/serialization
+ * - Display types: @/types/keyset/display
  */
-export type KeySetInstance = {
-  KeyName: string;
-  KeyDescription: string;
-  KeyCode: number;
-};
 
-/**
- * Type for holding the *set* of keys
- */
-export type KeySet = {
-  id: string;
-  Name: string;
-  FrequencyKeys: KeySetInstance[];
-  DurationKeys: KeySetInstance[];
-  createdAt: Date;
-  lastModified: Date;
+// Re-exports from focused files for backward compatibility
+export type { KeySetInstance, KeySet } from './keyset/core';
 
-  // Note: These are derived on-the-fly based on logic states
-  DerivedKeys: LogicState[];
-  SpecialDurationKeys: KeySetInstance[];
-  ScorableDurationKeys: KeySetInstance[];
-};
+export type { KeySetExtended, EnhancedKeySetInstance } from './keyset/extended';
 
-/**
- * Type for extending keyset
- */
-export type KeySetExtended = KeySet & { Group: string; Individual: string };
+export type { KeySetLogical, KeySetSerialize } from './keyset/serialization';
 
-/**
- * Type for extending keyset with visibility and type information
- */
-export type EnhancedKeySetInstance = KeySetInstance & { Visible: boolean; Type: 'Key' | 'Summary' };
-
-/**
- * Type for extending keyset
- */
-export type KeySetLogical = KeySetInstance & { Value: number; Tag: string };
-
-/**
- * Keyset type more amenable to serialization
- */
-export type KeySetSerialize = {
-  id: string;
-  Name: string;
-  FrequencyKeys: KeySetInstance[];
-  DurationKeys: KeySetInstance[];
-  createdAt: string;
-  lastModified: string;
-
-  // Note: Special keys
-  DerivedKeys: LogicState[];
-  SpecialDurationKeys: KeySetInstance[];
-  ScorableDurationKeys: KeySetInstance[];
-};
-
-/**
- * Keysets representation for toggles/display
- */
-export type ExpandedKeySetInstance = {
-  KeyDescription: string;
-  Visible: boolean;
-};
+export type { ExpandedKeySetInstance } from './keyset/display';

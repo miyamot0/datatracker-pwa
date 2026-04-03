@@ -17,9 +17,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import SessionFigure from './session-figure';
 import SessionKeyList from './session-key-list';
-import { ExpandedSavedSessionResult } from '@/lib/dtos';
+import { ExpandedSavedSessionResult } from '@/lib/dtos/session-results';
 import { ToggleDisplayKey } from '@/types/visuals';
-import { ApplicationSettingsTypes } from '@/types/settings';
+import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 export default function SessionViewerContent({
   Group,
