@@ -8,6 +8,7 @@ import fs from 'node:fs/promises';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import imagemin from 'imagemin';
 import imageminWebp from 'imagemin-webp';
+import csp from 'vite-plugin-csp-guard';
 
 const common_screenshot_params = {
   sizes: '1148x969',
@@ -78,6 +79,39 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
           */
         },
       });
+      plugins.push(
+        csp({
+          dev: {
+            run: false,
+            outlierSupport: ['tailwind'],
+          },
+          policy: {
+            'default-src': ["'self'"],
+            'script-src': ["'self'", 'https://www.google-analytics.com', 'https://www.googletagmanager.com'],
+            'script-src-elem': ["'self'", 'https://www.google-analytics.com', 'https://www.googletagmanager.com'],
+            'style-src': ["'self'", "'unsafe-hashes'"],
+            'style-src-elem': ["'self'"],
+            'style-src-attr': ["'unsafe-hashes'"],
+            'connect-src': [
+              "'self'",
+              'https://www.google-analytics.com',
+              'https://analytics.google.com',
+              'https://region1.google-analytics.com',
+              'https://www.googletagmanager.com',
+            ],
+            'img-src': ["'self'", 'data:', 'https:'],
+            'font-src': ["'self'"],
+            'worker-src': ["'self'"],
+            'manifest-src': ["'self'"],
+            'base-uri': ["'self'"],
+            'form-action': ["'self'"],
+            'frame-ancestors': ["'none'"],
+          },
+          build: {
+            sri: true,
+          },
+        }),
+      );
       plugins.push(
         VitePWA({
           registerType: 'autoUpdate',
