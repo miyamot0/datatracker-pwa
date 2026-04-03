@@ -105,7 +105,6 @@ function PluginSetup(plugins: PluginOption[], approach: Modality) {
             'manifest-src': ["'self'"],
             'base-uri': ["'self'"],
             'form-action': ["'self'"],
-            'frame-ancestors': ["'none'"],
           },
           build: {
             sri: true,
