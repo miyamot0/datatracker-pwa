@@ -28,3 +28,8 @@ declare global {
     dataLayer: any[];
   }
 }
+
+declare module '*?raw' {
+  const content: string;
+  export default content;
+}
