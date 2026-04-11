@@ -10,17 +10,10 @@ import '@/styles/Spreadsheet.css';
 import { initializeSharedArrayBufferSupport } from '@/lib/shared-buffer.ts';
 import { startAnalyticsSync } from './lib/analytics/analytics-sync.ts';
 import { setupErrorTracking } from './lib/analytics/analytics-errors.ts';
-//import { registerSW } from 'virtual:pwa-register';
+import { registerSW } from 'virtual:pwa-register';
 
-/*
-const updateSW = registerSW({
-  onNeedRefresh() {
-    if (window.confirm('New content available. Reload?')) {
-      updateSW(true);
-    }
-  },
-});
-*/
+// Update the service worker immediately when a new version is available
+registerSW({ immediate: true });
 
 // Initialize SharedArrayBuffer support check
 initializeSharedArrayBufferSupport();

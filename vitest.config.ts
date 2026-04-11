@@ -20,6 +20,8 @@ const componentProj: TestProjectConfiguration = {
       screenshotDirectory: './public/screenshots',
       instances: [{ browser: 'chromium' }],
     },
+    maxConcurrency: 20,
+    //maxWorkers: 1,
     include: ['./**/*.spec.tsx'],
     exclude: [...configDefaults.exclude, '**/*.test.{ts,tsx}'],
     globals: true,
@@ -60,27 +62,27 @@ export default defineConfig(({ command, mode }) => {
 
   const coverage: CoverageV8Options | undefined = isVercel
     ? {
-        provider: 'v8',
-        reporter: [],
-        clean: false,
-        reportsDirectory: undefined,
-        include: [],
-        exclude: [],
-      }
+      provider: 'v8',
+      reporter: [],
+      clean: false,
+      reportsDirectory: undefined,
+      include: [],
+      exclude: [],
+    }
     : {
-        provider: 'v8',
-        reporter: ['json', 'lcov', 'text', 'clover', 'json-summary'],
-        clean: true,
-        reportsDirectory: './coverage',
-        include: [
-          'src/lib/**/*.{ts,tsx}',
-          'src/calculations/**/*.ts',
-          'src/analytics/**/*.ts',
-          'src/components/elements/**/*.{ts,tsx}',
-          'src/components/pages/**/*.{ts,tsx}',
-        ],
-        exclude: ['**/__tests__/**/*', '**/types/**/*', 'src/lib/utils.ts', 'src/components/ui/**'],
-      };
+      provider: 'v8',
+      reporter: ['json', 'lcov', 'text', 'clover', 'json-summary'],
+      clean: true,
+      reportsDirectory: './coverage',
+      include: [
+        'src/lib/**/*.{ts,tsx}',
+        'src/calculations/**/*.ts',
+        'src/analytics/**/*.ts',
+        'src/components/elements/**/*.{ts,tsx}',
+        'src/components/pages/**/*.{ts,tsx}',
+      ],
+      exclude: ['**/__tests__/**/*', '**/types/**/*', 'src/lib/utils.ts', 'src/components/ui/**'],
+    };
 
   return {
     resolve: {
