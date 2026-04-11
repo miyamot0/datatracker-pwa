@@ -960,6 +960,8 @@ describe('prepareFrequencyReliTable', () => {
 
     expect(result.headings).toEqual([
       'Session #',
+      'Primary Coder',
+      'Reliability Coder',
       'Key A (EIA)',
       'Key A (PIA)',
       'Key A (TIA)',
@@ -990,8 +992,8 @@ describe('prepareFrequencyReliTable', () => {
 
     expect(result.rows).toHaveLength(2); // 1 session + 1 averaged row
     // First session should have data for Key A but 100.00 for Key B (all bins empty = perfect match)
-    expect(result.rows[0][1].value).toBeTruthy(); // Key A EIA value
-    expect(result.rows[0][7].value).toBe('100.00'); // Key B EIA value (empty bins = 100% match)
+    expect(result.rows[0][3].value).toBeTruthy(); // Key A EIA value
+    expect(result.rows[0][9].value).toBe('100.00'); // Key B EIA value (empty bins = 100% match)
   });
 
   it('should calculate averages correctly', () => {
@@ -1006,7 +1008,7 @@ describe('prepareFrequencyReliTable', () => {
   it('should handle empty paired sessions', () => {
     const result = prepareFrequencyReliTable([], mockKeySet);
 
-    expect(result.headings).toHaveLength(13); // Session # + 6 metrics × 2 keys
+    expect(result.headings).toHaveLength(15); // Session # + 6 metrics × 2 keys
     expect(result.rows).toHaveLength(1); // Only averaged row
     expect(result.rows[0][0].value).toBe('Averaged');
   });
@@ -1019,11 +1021,11 @@ describe('prepareFrequencyReliTable', () => {
 
     const result = prepareFrequencyReliTable(mockPairedSessions, emptyKeySet);
 
-    expect(result.headings).toEqual(['Session #']);
+    expect(result.headings).toEqual(['Session #', 'Primary Coder', 'Reliability Coder']);
     expect(result.rows).toHaveLength(3); // 2 sessions + 1 averaged row
-    expect(result.rows[0]).toHaveLength(1); // Only session number
-    expect(result.rows[1]).toHaveLength(1); // Only session number
-    expect(result.rows[2]).toHaveLength(1); // Only session number
+    expect(result.rows[0]).toHaveLength(3); // Only session number, primary coder, reliability coder
+    expect(result.rows[1]).toHaveLength(3); // Only session number, primary coder, reliability coder
+    expect(result.rows[2]).toHaveLength(3); // Only session number, primary coder, reliability coder
   });
 
   it('should handle all values as readOnly', () => {
@@ -1141,6 +1143,8 @@ describe('prepareDurationReliTable', () => {
 
     expect(result.headings).toEqual([
       'Session #',
+      'Primary Coder',
+      'Reliability Coder',
       'Duration Key 1 (EIA)',
       'Duration Key 1 (PIA)',
       'Duration Key 1 (TIA)',
@@ -1171,8 +1175,8 @@ describe('prepareDurationReliTable', () => {
 
     expect(result.rows).toHaveLength(2); // 1 session + 1 averaged row
     // First session should have data for Duration Key 1 but 100.00 for Duration Key 2 (all bins empty = perfect match)
-    expect(result.rows[0][1].value).toBeTruthy(); // Duration Key 1 EIA value
-    expect(result.rows[0][7].value).toBe('100.00'); // Duration Key 2 EIA value (empty bins = 100% match)
+    expect(result.rows[0][3].value).toBeTruthy(); // Duration Key 1 EIA value
+    expect(result.rows[0][9].value).toBe('100.00'); // Duration Key 2 EIA value (empty bins = 100% match)
   });
 
   it('should calculate duration averages correctly', () => {
@@ -1187,7 +1191,7 @@ describe('prepareDurationReliTable', () => {
   it('should handle empty duration paired sessions', () => {
     const result = prepareDurationReliTable([], mockDurationKeySet);
 
-    expect(result.headings).toHaveLength(13); // Session # + 6 metrics × 2 keys
+    expect(result.headings).toHaveLength(15); // Session # + 6 metrics × 2 keys
     expect(result.rows).toHaveLength(1); // Only averaged row
     expect(result.rows[0][0].value).toBe('Averaged');
   });
@@ -1200,11 +1204,11 @@ describe('prepareDurationReliTable', () => {
 
     const result = prepareDurationReliTable(mockDurationPairedSessions, emptyDurationKeySet);
 
-    expect(result.headings).toEqual(['Session #']);
+    expect(result.headings).toEqual(['Session #', "Primary Coder", "Reliability Coder"]);
     expect(result.rows).toHaveLength(3); // 2 sessions + 1 averaged row
-    expect(result.rows[0]).toHaveLength(1); // Only session number
-    expect(result.rows[1]).toHaveLength(1); // Only session number
-    expect(result.rows[2]).toHaveLength(1); // Only session number
+    expect(result.rows[0]).toHaveLength(3); // Only session number
+    expect(result.rows[1]).toHaveLength(3); // Only session number
+    expect(result.rows[2]).toHaveLength(3); // Only session number
   });
 
   it('should handle odd number of duration key presses', () => {
@@ -1234,7 +1238,7 @@ describe('prepareDurationReliTable', () => {
     const result = prepareDurationReliTable(oddDurationSessions, mockDurationKeySet);
 
     expect(result.rows).toHaveLength(2); // 1 session + 1 averaged row
-    expect(result.rows[0][1].value).toBeTruthy(); // Should have calculated EIA
+    expect(result.rows[0][3].value).toBeTruthy(); // Should have calculated EIA
   });
 
   it('should format duration numeric values to 2 decimal places', () => {
