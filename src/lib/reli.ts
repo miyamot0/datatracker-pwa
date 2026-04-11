@@ -501,6 +501,8 @@ export function prepareFrequencyReliTable(paired: ReliabilityPairType[], keyset:
       `${key.KeyDescription} (PMA)`,
     ];
   });
+  headings.unshift('Reliability Coder');
+  headings.unshift('Primary Coder');
   headings.unshift('Session #');
 
   const EIA_values: KeyedReli[] = [];
@@ -511,7 +513,12 @@ export function prepareFrequencyReliTable(paired: ReliabilityPairType[], keyset:
   const PMA_values: KeyedReli[] = [];
 
   const rows = sessions.map((session) => {
-    const temp_array = [{ value: session.toString(), readOnly: true }];
+    const sessionPair = paired.find((pair) => pair.primary?.SessionSettings.Session === session && pair.reli?.SessionSettings.Session === session);
+
+    const temp_array = [{ value: session.toString(), readOnly: true },
+    { value: sessionPair?.primary?.SessionSettings?.Initials ?? "", readOnly: true },
+    { value: sessionPair?.reli?.SessionSettings?.Initials ?? "", readOnly: true }
+    ];
 
     keyset.FrequencyKeys.forEach((key) => {
       const session_to_show = sessions_scored_frequency
@@ -568,7 +575,10 @@ export function prepareFrequencyReliTable(paired: ReliabilityPairType[], keyset:
   });
 
   // Calculate mean row
-  const mean_row = [{ value: 'Averaged', readOnly: true }];
+  const mean_row = [{ value: 'Averaged', readOnly: true },
+  { value: '---', readOnly: true },
+  { value: '---', readOnly: true }
+  ];
 
   keyset.FrequencyKeys.forEach((key) => {
     const relevantEIA_values = EIA_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
@@ -640,6 +650,8 @@ export function prepareDurationReliTable(paired: ReliabilityPairType[], keyset: 
       `${key.KeyDescription} (PMA)`,
     ];
   });
+  headings.unshift('Reliability Coder');
+  headings.unshift('Primary Coder');
   headings.unshift('Session #');
 
   const EIA_values: KeyedReli[] = [];
@@ -650,7 +662,11 @@ export function prepareDurationReliTable(paired: ReliabilityPairType[], keyset: 
   const PMA_values: KeyedReli[] = [];
 
   const rows = sessions.map((session) => {
-    const temp_array = [{ value: session.toString(), readOnly: true }];
+    const sessionPair = paired.find((pair) => pair.primary?.SessionSettings.Session === session && pair.reli?.SessionSettings.Session === session);
+
+    const temp_array = [{ value: session.toString(), readOnly: true },
+    { value: sessionPair?.primary?.SessionSettings?.Initials ?? "", readOnly: true },
+    { value: sessionPair?.reli?.SessionSettings?.Initials ?? "", readOnly: true }];
 
     keyset.DurationKeys.forEach((key) => {
       const session_to_show = sessions_scored_duration
@@ -707,7 +723,7 @@ export function prepareDurationReliTable(paired: ReliabilityPairType[], keyset: 
   });
 
   // Calculate mean row
-  const mean_row = [{ value: 'Averaged', readOnly: true }];
+  const mean_row = [{ value: 'Averaged', readOnly: true }, { value: '---', readOnly: true }, { value: '---', readOnly: true }];
 
   keyset.DurationKeys.forEach((key) => {
     const relevantEIA_values = EIA_values.filter((k) => k.KeyName == key.KeyName && !Number.isNaN(k.Value)).map(
