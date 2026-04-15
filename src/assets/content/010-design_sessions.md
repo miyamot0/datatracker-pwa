@@ -1,7 +1,7 @@
 ---
 title: Customizing Session Parameters using Session Designer Page
 description: This documentation entry provides an overview of the Session Designer interface within DataTracker, including its purpose, structure, and how to customize session parameters for efficient data collection.
-date: 09/26/2024
+date: 04/15/2026
 keywords: 'Session Designer, Session Conditions'
 author: 'Shawn Gilroy'
 index: 10
@@ -41,15 +41,15 @@ Users can also define the **Session Duration** by specifying the duration of the
 
 The user must specify how the session should terminate by selecting _which_ timer should be used to conclude the session (e.g., Total time reaching **Session Duration** vs. Timer #1 reaching **Session Duration**). By default, the option for "End on Primary Timer" means that the session will conclude when the primary timer reaches the session duration. However, DataTracker provides multiple timers that can be used to end session under specific conditions, allowing for flexibility in how the session is terminated. This ensures that the session ends at the appropriate time based on the specific requirements of the study.
 
-For example, it may be necessary to distinguish between "time spent working" from "time when reinforcers were being accessed/consumed." In this example, Timer #1 (the 'main timer') would correspond with 'work time' and another timer (e.g., Timer #2) would correspond with 'reinforcement time.' In this arrangement, one might choose to have the session 'End on Timer #1' meeting the session duration, since it would separate out 'work time' from 'reinforcement time' in the calculations of behavior rates.
+For example, it may be necessary to distinguish between "time spent working" from "time when reinforcers were being accessed/consumed." In this example, Timer #1 would correspond with 'Work Time' and another timer (e.g., Timer #2) would correspond with 'Reinforcement Time.' In this arrangement, one might choose to have the session 'End on Timer #1' meeting the session duration, since it would separate out 'Work Time' from 'Reinforcement Time' in the calculations of behavior rates.
 
-DataTracker allows for the use of up to _three_ timers; with each timer providing flexibility in the customization of session termination rules. These are purely optional and useful insofar as they meet the specific needs of studies and evaluations.
+DataTracker allows for the use of various timers; with each timer providing flexibility in the customization of session termination rules. Generally, only a single 'primary' schedule is needed; however, specific clinical or research questions may require the use of multiple timers to provide comparable estimations across sessions (e.g., partialling out reinforcement or break time within a larger session). Various options are available for session termination, and these are discussed in more detail in the documentation section on Session Timers.
 
 ### Session Numbering
 
 The **Session Number** field allows the user to specify which session is being conducted. This is useful because participants undergo multiple sessions over time and this allows for a visualization of behavior changes over time. For example, if this is the second session for a participant, the user would enter "2" to clearly identify the position in the sequence of data.
 
-Additionally, DataTracker will attempt to 'remember' sessions and increment the session number automatically. This numbering helps in tracking progress and minimizing the risk of human error.
+The program will attempt to 'remember' sessions and increment the session number automatically. This numbering helps in tracking progress and minimizing the risk of human error; however, it is recommended that users ensure that the correct session number is entered because this could potentially overwrite existing data.
 
 ## Conclusion and Summary
 

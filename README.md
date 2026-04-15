@@ -2,46 +2,48 @@
 
 ![Static Badge Version](https://img.shields.io/badge/Version-0.5.8-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
+[![GitHub Bug Tracker](https://img.shields.io/badge/GitHub-Issues-181717?logo=github&logoColor=fff)](https://github.com/miyamot0/datatracker-pwa/issues) [![Slack Support Channel](https://img.shields.io/badge/Slack-4A154B?logo=slack&logoColor=fff)](https://datatrackerworkspace.slack.com/)
+
 # DataTracker (Installable PWA Build)
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=fff) ![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=fff) ![Vitest](https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=fff) ![TailwindCSS](https://img.shields.io/badge/Tailwind%20CSS-%2338B2AC.svg?logo=tailwind-css&logoColor=white) ![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-000?logo=shadcnui&logoColor=fff)
 
-DataTracker is a web-based application (installable PWA) designed to assist researchers and clinicians with measuring behavior. This program can be used by multiple observers (e.g., a primary and secondary observer) to record, assess agreement/reliability, and later compare those records for clinical and research purposes.
+DataTracker is a portable web application (PWA) designed to assist researchers and clinicians with observing and recording behavior for clinical or other research purposes. This program can be used by multiple observers (e.g., a primary and secondary rater) to record and quantify behavior (i.e., frequency/rate, duration/proportion), assess agreement and reliability between raters, and summarize these outcomes for clinical or research purposes.
 
-## Purpose and Rationale
+## Program Description
 
-The goal of DataTracker was to provide an open source tool for support various aspects of behavior therapy and behavioral research. This is an 'installable' program (i.e., it can be pinned to your desktop) that works in a native-like fashion that does not require accessing any app marketplace. It is presently platform-agnostic, and **No data recorded or scored ever leaves your machine**. It is designed to be used by clinicians and researchers using Single-Case Experimental Design (SCEDs) to evaluate the effectiveness of interventions.
+The goal of DataTracker was to provide an open source tool for support various aspects of behavior therapy and behavioral research. This is an 'installable' program (i.e., it can be pinned to your desktop) that works in a native-like fashion but does not require accessing any app marketplace. The program is largely platform-agnostic, but can be installed from the Windows Marketplace if more convenient (i.e., the result is the same PWA in either case).
 
-This tool supports multiple methods of assessing reliability of behavioral measurement (e.g., exact interval agreement), session-by-session viewing and interpretation of data (e.g., basic data displays), and some automation of clinical responsibilities (e.g., calculating response rates across contexts within sessions). The tool also supports syncing data across multiple locations in a local context (e.g., shared networked drive in secure settings).
+The program is a free tool designed to be used in secure environments (e.g., hospitals, schools). It is designed to work with minimal privileges and is largely specialized to Single-Case Experimental Design (SCED) methodologies. It is largely reminiscent of legacy desktop applications (e.g., DataTracker3) but is designed to be more flexible and adaptable to a range of use cases, machines, and settings.
 
-## Current and Planned Features
+### Current and Planned Features
 
-DataTracker has been ported to a PWA program, which is one way to flexibly manage requirements for data security as well as to work within secure systems that require strict administrative control (i.e., the program does not need user privileges to install). The app is designed to provide high-performance, real-time data collection through the use of modern timing conventions and web-workers (i.e., SharedArrayBuffers, MessageChannel). It presently provides latency and fidelity consistent with native alternatives.
+DataTracker has been ported to a PWA program, which is one way to flexibly balance requirements for data security in secure systems with administrative control (i.e., the program does not need user privileges to install). The app is designed to provide high-performance, real-time data collection through the use of modern timing conventions and web-workers (i.e., SharedArrayBuffers, MessageChannel). It presently provides latency and fidelity consistent with native alternatives with broad support across browsers and machines.
 
-This program can be easily installed as a Desktop 'app' (Note: PWAs are simply bundled websites) and accessed easily from your desktop as if it were a standalone application. It is not a true 'native' application nor is it designed to be used for mobile devices at this time (e.g., tablets, phones).
+This PWA can be easily installed as a Desktop 'app' (Note: PWAs are simply bundled websites) and accessed easily from your desktop as if it were a standalone application. It is not a true 'native' application and the program as designed does not support mobile devices at this time (i.e., modeled around keyboard entry).
 
 Features include the following:
 
-- [x] Versatile interface for designing measurement systems
 - [x] Cross-platform support (installable as Progressive Web App [PWA])
 - [x] Automated updates and delivery of bug fixes and new features
+- [x] Versatile interface for designing measurement systems
 - [x] Simultaneous recording of behavior across multiple observers with sync support
+- [x] Highly-optimized real-time data recording with millisecond-level fidelity
 - [x] Automated calculations of interobserver agreement (IOA) across multiple methods
 - [x] Automated visualization and summarization tools (e.g., visual analysis)
-- [x] Highly-optimized real-time data recording with millisecond-level fidelity
-- [x] Manual export of data in multiple formats (i.e., JSON, CSV)
 - [x] Support for deriving new keys/targets based on existing keys (e.g., percentage of compliance, multiple targets in a shared response class)
 - [x] Support for duration logging that permits inter-scoring (i.e., events occurring during a respective) period or periods of time (e.g., 30s intervals)
+- [x] Manual export of data in multiple formats (i.e., JSON, CSV)
 
-## Alternative/Islanded Mode for Highly Secure Environments
+### Islanded Mode for Highly Secure Environments
 
-In addition to the standard PWA build, there is also an 'islanded' mode that allows for use in highly secure environments where internet access is restricted or virtually unavailable (i.e., all non-internal traffic is blocked). This mode is designed to function entirely offline after the initial installation, ensuring that all data remains local to the device. In practice, this would be similar to an 'on-prem' solution that would not have any external dependencies (or updates, for that matter).
+In addition to the standard PWA build, there is also an 'islanded' mode that allows for use in highly secure environments where internet access is restricted (i.e., internet access is white-list only) or virtually unavailable (i.e., all non-internal traffic is blocked). This mode is designed to function entirely offline after the initial installation, essentially fully cached, ensuring that data remains local to the device at all times. In practice, this would be similar to an 'on-prem' solution that would not have any external dependencies (or updates, for that matter).
 
-This is not provided via the hosted site per se, but rather, is available for download and installation by users who need this level of security. The islanded version includes all the features of the standard PWA but is optimized for environments with stringent data security requirements (e.g., hospital security with largely whitelisted network access).
+This is not provided via the hosted site per se, but rather, is available for download and installation by users who need this level of security. The islanded version includes all the features of the standard PWA but is optimized for environments with more stringent data security requirements (e.g., hospital security with largely whitelisted network access, air-gapped machines, etc.).
 
-Islanded builds are compiled as numbered releases (main-branch) available on the [GitHub releases page](https://github.com/miyamot0/datatracker-pwa/releases).
+Islanded builds are compiled as main branch releases and are made available via the [GitHub releases page](https://github.com/miyamot0/datatracker-pwa/releases).
 
-## Screenshots and Visuals
+### Screenshots and Visuals
 
 ![DataTracker Home Page](public/screenshots/home_page.png 'Visual of landing page for program')
 
@@ -57,13 +59,19 @@ Islanded builds are compiled as numbered releases (main-branch) available on the
 
 ![Session Recorder Page](public/screenshots/session_recorder_page.png 'Options for displaying session recording progress')
 
-## Program Support
+### Program Support
 
-The PWA approach allows for easy installation and seamless updates over time. For support, there is a dedicated Slack channel for users to ask questions and troubleshoot issues. There is also a formal bug tracker available through GitHub to assist with identifying issues and submitting feature requests.
+The PWA approach allows for easy installation and seamless updates as they are released. The program is currently under active evaluation and new features and fixes will be pushed as developed and evaluated. Generally, the program will fetch updates from the secure hosting site (i.e., datatracker.smallnstats.com via HTTPS) without any specific action required by the user. The program will check for updates at startup and will automatically download and apply them in the background.
 
-PRs will be considered on a case-by-case basis, but the project is primarily maintained by a single developer.
+Bugs, issues, and other problems can be reported through the GitHub issue tracker, which is monitored by the developer. Users are encouraged to submit detailed reports of any issues they encounter, including steps to reproduce the problem and any relevant screenshots or error messages. This helps ensure that issues can be addressed promptly and effectively. Screenshots can be help to include as well with written descriptions of the issue to help with troubleshooting and resolution. Issue and bug tracking is provided through the [GitHub Bug Tracker](https://github.com/miyamot0/datatracker-pwa/issues).
 
-[![Slack Support Channel](https://img.shields.io/badge/Slack-4A154B?logo=slack&logoColor=fff)](https://datatrackerworkspace.slack.com/) [![GitHub Bug Tracker](https://img.shields.io/badge/GitHub-Issues-181717?logo=github&logoColor=fff)](https://github.com/miyamot0/datatracker-pwa/issues)
+Support can be provided via email; however, there is a dedicated Slack channel for users to ask questions and troubleshoot issues. The [Slack Support Channel](https://datatrackerworkspace.slack.com/) is the preferred method for support, as it allows for more immediate responses and facilitates community engagement among users. Users can join the Slack workspace to connect with the developer and other users for support and discussion.
+
+### Collaboration and Contributions
+
+The DataTracker project is open source and welcomes contributions from the community. However, given the specialized nature of the program and the need for careful consideration of changes to ensure data integrity and security, contributions are evaluated on a case-by-case basis. The project is currently maintained by a single developer, and while contributions are appreciated, they may not be accepted if they do not align with the project's goals or if they introduce potential issues.
+
+PRs that appear to be AI-generated may be automatically without review, given the potential for introducing errors or inconsistencies that may impact clinical service.
 
 ## Acknowledgements
 

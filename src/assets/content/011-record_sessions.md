@@ -1,7 +1,7 @@
 ---
 title: Recording Behavior using Session Recorder Page
 description: This documentation entry provides an overview of the Session Recorder page within DataTracker, including its purpose, structure, and how to record behaviors and manage timers during observation sessions.
-date: 09/26/2024
+date: 04/15/2026
 keywords: 'Data Collection, Session Conditions'
 author: 'Shawn Gilroy'
 index: 11
@@ -23,14 +23,16 @@ The **Session Recorder** provides the data collector with information on all rel
 
 ### Managing Timers
 
-Throughout the session, the data collector can actively manage up to three timers using the 'Z', 'X', and 'C' keys. These timers correspond to the Primary (#1), Secondary (#2), and Tertiary timers (#3), respectively. The Primary Timer (Timer #1; e.g., 'work' or 'session' timer) is typically used to track the overall session duration, while the Secondary Timer (Timer #2) and Tertiary Timer (Timer #3) can be used to monitor other time-sensitive behaviors or events. For example, Timer #2 might track the duration of a context (e.g., time related to reinforcer delivery is handled/addressed separately). The data collector can start and stop each timer independently using the designated keys, ensuring that multiple time frames are accurately recorded during the session.
+Throughout the session, the data collector can actively manage up to system-level timers using the 'Z', 'X', and 'C' keys, respectively. Alternatively, users can override this functionality through the use of special duration keys (e.g., a "Work Time" key) created in the **KeySet** and specified in the **Session Designer** page. The Primary Timer (e.g., 'work' or 'session' timer) is typically used to track the overall session duration, other timers may be used to monitor other time-sensitive behaviors or events (Note: The Total Timer is not synonymous with Timer #1 and instead reflect TOTAL time independent of timer).
+
+For example, a specific timer might be used to track the duration of a specific context (i.e., when task demands are present; e.g., Timer #1) while a second, separate timer might be introduced to separately score events distinct from the prior context (e.g., time spent accessing reinforcers; Timer #2). This allows for a more controlled analysis of behavior in relation to specific contexts or events, providing valuable insights into the dynamics of behavior during the session. Data collectors can start and stop each timer independently using the designated keys, ensuring that multiple time frames are accurately recorded during the session.
 
 ### Procedures for Terminating Session
 
-The session concludes when the predefined termination criteria are met, as set in the **Session Designer**. This could occur when the 'Total Time' reaches the session duration limit, or when any of the timers (Timer #1, #2, or #3) meets the specified criteria. For example, if the session is set to end after 10 minutes for Timer #1, the session will automatically conclude when Timer #1 hits 600 seconds. Alternatively, in the case that session time is open-ended, the session can be concluded at any time; however, the user must indicate that they wish to _keep_ a 'partial' session and its data.
+The session concludes when the predefined termination criteria are met, as set in the **Session Designer**. This could occur when the 'Total Time' reaches the session duration limit (i.e., time independent of specific timers uses), or when any of the specific timers (e.g., Timer #1) meets the specified criteria. For example, if the session is set to end after 10 minutes for Timer #1, the session will automatically conclude when Timer #1 hits 600 seconds. Alternatively, in the case that session time is open-ended, the session can be concluded at any time; however, the user must indicate that they wish to _keep_ a 'partial' session and its data (i.e., to confirm the data is a representative sample).
 
 ## Summary and Overview
 
 The **Session Recording** page is the heart of the DataTracker program. It provides a straightforward 'heads-up' display that allows data collectors to efficiently record behaviors and manage timers during observation sessions. By integrating the parameters set in the **Session Designer**, this page ensures that all data is accurately captured and organized in real-time. The user-friendly interface simplifies the data collection process, allowing researchers and clinicians to focus on the observation and analysis of participant behaviors without the need for manual data entry or post-session data processing.
 
-Data recorded at the end of the session (if not discarded) is managed and stored in the respective location within the **Evaluation** folder. This data can then be accessed for further analysis, comparison, and interpretation, providing valuable insights into the behavior of participants over time.
+Data recorded at the end of the session (if not discarded) is managed and stored in the respective location within the **Evaluation** folder, under the respective **Condition**. This data can then be accessed for further analysis, comparison, and interpretation, providing valuable insights into the behavior of participants over time.

@@ -1,7 +1,7 @@
 ---
 title: Creating and Working with Condition Folders in Evaluations
 description: This documentation entry provides an overview of the Condition folders within the Data Tracker program, including its purpose, structure, and how to create and delete Condition folders.
-date: 09/03/2024
+date: 04/15/2026
 keywords: 'Behavioral Procedures, Data Organization'
 author: 'Shawn Gilroy'
 index: 6
@@ -27,4 +27,6 @@ Adding a **Condition** to the relevant **Evaluation** will change the options av
 
 ### Clearing Blank/Unnecessary Conditions
 
-In rare cases that conditions added are no longer necessary, they can be removed using the interface for the Session Designer. To do this, you can click the "Clear Blank Conditions" button, which will remove any conditions that do not have data associated with them. This is particularly useful for keeping the **Evaluation** organized and free of unnecessary folders that may have been created during the planning phase but were not ultimately used for data collection. It is important to note that this action will only remove conditions that are blank (i.e., those that do not contain any data files or notes). If a condition contains data, it will not be removed by this action, ensuring that valuable information is not accidentally deleted. In cases when removing certain conditions is desired, users must navigate to the Session Reviewer portion of the application and delete this manually.
+In rare cases that conditions added are no longer necessary, they can be removed using the interface for the Session Designer. To do this, you can click the "Clear Blank Conditions" button, which will remove any conditions that do not have data associated with them. This is particularly useful for keeping the **Evaluation** organized and free of unnecessary folders that may have been created during the planning phase but were not ultimately used for data collection. It is important to note that this action will only remove conditions that are blank (i.e., those that do not contain any data files or notes).
+
+If a condition contains data, it will not be removed by this action. This has been designed to ensure that information is not accidentally deleted without specific user confirmation. In cases when removing certain conditions is desired, users must navigate to the Session Reviewer portion of the application and delete this manually from the respective **Evaluation** and **Condition** folders.

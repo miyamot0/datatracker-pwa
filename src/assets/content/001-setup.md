@@ -1,7 +1,7 @@
 ---
 title: Program Use, Installation Options, and General Guidance
 description: This documentation entry provides a brief overview of the DataTracker program, its intended audience, common uses for the program, and some of the conventions reflected in its design (i.e., how the program is structured and the reasons for doing so).
-date: 08/31/2024
+date: 04/15/2026
 keywords: 'New Users, Program Use, Installation'
 author: 'Shawn Gilroy'
 index: 1

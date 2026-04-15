@@ -1,7 +1,7 @@
 ---
 title: Previewing DataTracker with Mock Data
 description: Example data is provided in the DataTracker program to preview the visualization functionality, sync behavior, and calculations of inter-observer agreement (IOA). This guide provides an overview of this material and how it can be used to support evaluations of the software for various purposes.
-date: 05/22/2025
+date: 04/15/2026
 keywords: 'Data Organization, New Users'
 author: 'Shawn Gilroy'
 index: 16

@@ -1,7 +1,7 @@
 ---
 title: Organizational Structure and Design
 description: This documentation entry provides an overview of the recommended organizational structure for data within the DataTracker program. It also outlines several conventions to follow when using the program.
-date: 08/31/2024
+date: 04/15/2026
 keywords: 'Program Use, Data Organization'
 author: 'Shawn Gilroy'
 index: 2

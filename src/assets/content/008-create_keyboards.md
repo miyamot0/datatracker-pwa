@@ -1,7 +1,7 @@
 ---
 title: Creating and Managing Key/Behavior Mappings ("KeySets")
 description: This documentation entry provides an overview of the KeySet functionality within Data Tracker, including its purpose, structure, and how to create and manage KeySets for efficient data collection.
-date: 09/03/2024
+date: 04/15/2026
 keywords: 'Key/Behavior Mappings, Data Organization'
 author: 'Shawn Gilroy'
 index: 8
@@ -46,3 +46,9 @@ By default, virtually all manually recorded keys are defined as "Observed." This
 Derived keys are calculated based on the presence of other keys. For example, a "Derived Key" could be created to represent "Aggression + Disruption" by combining the "Physical Aggression" and "Disruption" keys. This allows users to track more complex behavior patterns without needing to manually record every instance of each individual behavior. Similarly, a derived key could be created to calculate the percentage of compliance by dividing the number of compliant responses by the total number of instructional tasks, and multiplying that number by 100, providing a quick and efficient way to monitor progress towards intervention goals.
 
 As a general rule, all Observed and Derived keys are scored and available in the results sections as well as in visual displays. This allows users to easily analyze and interpret the data collected during sessions, providing insights into behavior patterns and the effectiveness of interventions. By utilizing both Observed and Derived keys, users can gain a comprehensive understanding of the behaviors being tracked and make informed decisions based on the data collected.
+
+### Special Duration Keys
+
+Special Duration keys are used to track behaviors that have a duration component, such as the length of time a behavior occurs. These are keys that provide users with flexibility for quantify targets within a specific scope (e.g., rates taking place while that duration key is active) or for dynamically setting an end point for session (e.g., a "Work Time" key that ends session when it exceeds 300 seconds).
+
+Two types of special duration keys are provide and these are addressed in a specific, later section of the documentation (i.e., Session Timers).
