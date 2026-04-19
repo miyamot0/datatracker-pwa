@@ -83,9 +83,9 @@ function RouteComponent() {
           const resultsReli = filterSessionsByReliabilityRole(sessions);
           const pairedSessionData = getCorrespondingSessionPairs(resultsPrimary, resultsReli);
 
-          // If there are no paired sessions, show the blank state
+          // If there are no sessions, show the blank state
           if (pairedSessionData.length < 1) {
-            return <ReliabilityBlank Group={Group} Individual={Individual} Evaluation={Evaluation} />;
+            return <ReliabilityBlank />;
           }
 
           return (
