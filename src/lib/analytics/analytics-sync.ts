@@ -63,16 +63,10 @@ function initializeGoogleAnalytics() {
   if (analyticsConfig.measurementId) {
     window.gtag('config', analyticsConfig.measurementId, {
       send_page_view: false, // important for SPA/PWA
-      // Enhanced privacy settings
       anonymize_ip: true,
       allow_google_signals: false,
       allow_ad_personalization_signals: false,
-      // Performance settings
       transport_type: 'beacon',
-      // Custom settings for your research app
-      custom_map: {
-        custom_parameter_1: 'research_session',
-      },
     });
 
     if (analyticsConfig.isDev) {
@@ -88,6 +82,8 @@ export function startAnalyticsSync() {
   if (!analyticsConfig.enabled) {
     if (analyticsConfig.isDev) {
       console.log('📊 Analytics disabled via config');
+
+      return;
     }
     return;
   }
