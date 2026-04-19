@@ -10,10 +10,12 @@ import '@/styles/Spreadsheet.css';
 import { initializeSharedArrayBufferSupport } from '@/lib/shared-buffer.ts';
 import { startAnalyticsSync } from './lib/analytics/analytics-sync.ts';
 import { setupErrorTracking } from './lib/analytics/analytics-errors.ts';
-import { registerSW } from 'virtual:pwa-register';
 
-// Update the service worker immediately when a new version is available
-registerSW({ immediate: true });
+if (import.meta.env.VITE_MODE !== 'island') {
+  import('./config/pwa-registration').then(({ init }) => {
+    init();
+  });
+}
 
 // Initialize SharedArrayBuffer support check
 initializeSharedArrayBufferSupport();
