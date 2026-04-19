@@ -8,12 +8,16 @@ import {
   BuildIndividualsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
 import { filterSessionsByPrimaryRole, filterSessionsByReliabilityRole } from '@/lib/graphing/session-filters';
-import { pullMostRecentKeySet } from '@/lib/keyset';
+import { pullMostRecentSession } from '@/lib/keyset';
 import { getCorrespondingSessionPairs } from '@/lib/reli';
 import { CleanUpString } from '@/lib/strings';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { ModifiedSessionResult } from '@/types/storage';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
+import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
+import { KeySet } from '@/types/keyset';
+import { ErrorDisplay } from '@/components/elements/suspense/error-display';
+import { extractAndDeduplicateKeysets } from '@/lib/graphing';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/reli')({
   beforeLoad: ({ context, params }) => {
@@ -51,12 +55,15 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/re
     const fetchSessionOutcomes = context.queryClient.fetchQuery(
       sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
+    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
+
+    const totalQuery = Promise.all([fetchSessionOutcomes, fetchKeyboards]);
 
     return {
       Group,
       Individual,
       Evaluation,
-      fetchSessionOutcomes,
+      totalQuery,
       Settings,
     };
   },
@@ -64,7 +71,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/re
 });
 
 function RouteComponent() {
-  const { Group, Individual, Evaluation, fetchSessionOutcomes } = Route.useLoaderData();
+  const { Group, Individual, Evaluation, totalQuery } = Route.useLoaderData();
 
   return (
     <PageWrapper
@@ -76,24 +83,63 @@ function RouteComponent() {
       label={`Reliability for ${Evaluation}`}
       className="select-none"
     >
-      <Await promise={fetchSessionOutcomes} fallback={<LoadingDisplay />}>
-        {(sessions: ModifiedSessionResult[]) => {
-          const KeySet = pullMostRecentKeySet(sessions);
+      <Await promise={totalQuery} fallback={<LoadingDisplay />}>
+        {([sessions, keyboards]: [ModifiedSessionResult[], KeySet[]]) => {
           const resultsPrimary = filterSessionsByPrimaryRole(sessions);
           const resultsReli = filterSessionsByReliabilityRole(sessions);
           const pairedSessionData = getCorrespondingSessionPairs(resultsPrimary, resultsReli);
 
-          // If there are no paired sessions, show the blank state
+          // If there are no sessions, show the blank state
           if (pairedSessionData.length < 1) {
-            return <ReliabilityBlank Group={Group} Individual={Individual} Evaluation={Evaluation} />;
+            return <ReliabilityBlank />;
           }
+
+          const resultsFiltered = filterSessionsByPrimaryRole(sessions);
+          const recentKeysetName = pullMostRecentSession(resultsFiltered);
+
+          const designerKeySet = keyboards.find((k: KeySet) => k.Name == recentKeysetName.SessionSettings.KeySet);
+          const sessionKeySet = recentKeysetName.Keyset;
+
+          if (!sessionKeySet) {
+            return <ErrorDisplay Text={'KeySet not found.'} />;
+          }
+
+          const {
+            frequencyKeys: targetedFKeys,
+            durationKeys: targetedDKeys,
+            derivedKeys: targetedDerivedKeys,
+            specialDurationKeys,
+            scorableDurationKeys,
+          } = extractAndDeduplicateKeysets(sessions, {
+            ...sessionKeySet,
+            FrequencyKeys: [...sessionKeySet.FrequencyKeys, ...(designerKeySet?.FrequencyKeys || [])],
+            DurationKeys: [...sessionKeySet.DurationKeys, ...(designerKeySet?.DurationKeys || [])],
+            DerivedKeys: [...(sessionKeySet.DerivedKeys || []), ...(designerKeySet?.DerivedKeys || [])],
+            SpecialDurationKeys: [
+              ...(sessionKeySet.SpecialDurationKeys || []),
+              ...(designerKeySet?.SpecialDurationKeys || []),
+            ],
+            ScorableDurationKeys: [
+              ...(sessionKeySet.ScorableDurationKeys || []),
+              ...(designerKeySet?.ScorableDurationKeys || []),
+            ],
+          });
+
+          const dynamicKeyset = {
+            ...sessionKeySet,
+            FrequencyKeys: targetedFKeys,
+            DurationKeys: targetedDKeys,
+            DerivedKeys: targetedDerivedKeys,
+            SpecialDurationKeys: specialDurationKeys,
+            ScorableDurationKeys: scorableDurationKeys,
+          } satisfies KeySet;
 
           return (
             <ReliabilityViewerPage
               Group={Group}
               Individual={Individual}
               PairedSession={pairedSessionData}
-              Keyset={KeySet}
+              Keyset={dynamicKeyset}
             />
           );
         }}

@@ -49,15 +49,6 @@ import { FolderContextProvider } from '@/context/folder-context';
 describe('ReliabilityBlank', () => {
   const defaultProps = { Group: 'GroupA', Individual: 'ClientB', Evaluation: 'Eval1' };
 
-  it('renders inside a PageWrapper', async () => {
-    await render(
-      <FolderContextProvider>
-        <ReliabilityBlank {...defaultProps} />
-      </FolderContextProvider>,
-    );
-    await expect.element(page.getByRole('main')).toBeInTheDocument();
-  });
-
   it('renders the Reliability Viewer card title', async () => {
     await render(
       <FolderContextProvider>
@@ -94,4 +85,3 @@ describe('ReliabilityBlank', () => {
     await expect.element(page.getByText('No data files are currently available to inspect.')).toBeInTheDocument();
   });
 });
-

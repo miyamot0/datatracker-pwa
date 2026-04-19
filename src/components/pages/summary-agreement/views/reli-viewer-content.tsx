@@ -17,7 +17,7 @@ export default function ReliabilityViewerContent({ Paired, Keyset }: Props) {
   const durationData = prepareDurationReliTable(Paired, Keyset);
 
   return (
-    <div className="flex flex-col w-full gap-4">
+    <>
       <Card className="w-full">
         <CardHeader className="flex flex-row justify-between">
           <div className="flex flex-col gap-1.5 grow">
@@ -57,6 +57,6 @@ export default function ReliabilityViewerContent({ Paired, Keyset }: Props) {
           />
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 }

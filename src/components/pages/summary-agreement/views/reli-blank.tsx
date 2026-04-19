@@ -1,42 +1,20 @@
-import PageWrapper from '@/components/elements/page-wrapper';
 import BackButton from '@/components/ui/back-button';
-import {
-  BuildEvaluationsBreadcrumb,
-  BuildGroupBreadcrumb,
-  BuildIndividualsBreadcrumb,
-} from '@/components/ui/breadcrumb-entries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CleanUpString } from '@/lib/strings';
 
-type Props = {
-  Group: string;
-  Individual: string;
-  Evaluation: string;
-};
-
-export default function ReliabilityBlank({ Group, Individual, Evaluation }: Props) {
+export default function ReliabilityBlank() {
   return (
-    <PageWrapper
-      breadcrumbs={[
-        BuildGroupBreadcrumb(),
-        BuildIndividualsBreadcrumb(Group),
-        BuildEvaluationsBreadcrumb(Group, Individual),
-      ]}
-      label={`Reliability for ${CleanUpString(Evaluation)}`}
-    >
-      <div className="flex flex-col w-full gap-4">
-        <Card className="w-full">
-          <CardHeader className="flex flex-row justify-between">
-            <div className="flex flex-col gap-1.5 grow">
-              <CardTitle>Reliability Viewer</CardTitle>
-              <CardDescription>Error in Calculating Reliability</CardDescription>
-            </div>
-            <BackButton />
-          </CardHeader>
+    <div className="flex flex-col w-full gap-4">
+      <Card className="w-full">
+        <CardHeader className="flex flex-row justify-between">
+          <div className="flex flex-col gap-1.5 grow">
+            <CardTitle>Reliability Viewer</CardTitle>
+            <CardDescription>Error in Calculating Reliability</CardDescription>
+          </div>
+          <BackButton />
+        </CardHeader>
 
-          <CardContent>No data files are currently available to inspect.</CardContent>
-        </Card>
-      </div>
-    </PageWrapper>
+        <CardContent>No data files are currently available to inspect.</CardContent>
+      </Card>
+    </div>
   );
 }
