@@ -26,7 +26,6 @@ const islandPlugins: PluginOption[] = [
     autoCodeSplitting: true,
   }),
   react(),
-  compressPNGPlugin,
   viteSingleFile({
     removeViteModuleLoader: true,
     overrideConfig: {
