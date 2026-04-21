@@ -2,6 +2,9 @@ import { PluginOption } from 'vite';
 import fs from 'node:fs/promises';
 import { ISLAND_OUT_DIR } from '../../vite.config';
 
+/**
+ * Deletes files from the island build output that are not needed and may cause CSP issues.
+ */
 export const deleteUnnecessaryPlugin: PluginOption = {
   name: 'delete-unnecessary',
   async writeBundle() {
