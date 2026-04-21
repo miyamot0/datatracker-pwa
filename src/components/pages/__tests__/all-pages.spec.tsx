@@ -262,11 +262,7 @@ describe('HomePage', () => {
         >
           <TooltipProvider>
             <PageWrapper Settings={{ ...DEFAULT_APPLICATION_SETTINGS, EnableFileDeletion: true }} label="Home">
-              <HomePage
-                Settings={{ ...DEFAULT_APPLICATION_SETTINGS, EnableFileDeletion: true }}
-                SaveSettings={() => {}}
-                SetSettings={() => {}}
-              />
+              <HomePage />
             </PageWrapper>
           </TooltipProvider>
         </FolderHandleContext.Provider>
@@ -301,7 +297,7 @@ describe('DocumentationListingPage', () => {
               breadcrumbs={[{ label: 'Documentation', to: '/documentation' }]}
               label="Documentation"
             >
-              <DocumentationListingPage FrontMatter={mockFrontMatter} KeywordArray={mockKeywordArray} />
+              <DocumentationListingPage />
             </PageWrapper>
           </TooltipProvider>
         </FolderHandleContext.Provider>
@@ -330,13 +326,7 @@ describe('DocumentationEntryPage', () => {
           }}
         >
           <TooltipProvider>
-            <DocumentationEntryPage
-              Entry={mockEntry}
-              KeywordArray={mockKeywordArray}
-              PreviousEntry={undefined}
-              NextEntry={mockFrontMatter[1]}
-              Settings={DEFAULT_APPLICATION_SETTINGS}
-            />
+            <DocumentationEntryPage />
           </TooltipProvider>
         </FolderHandleContext.Provider>
       </ThemeProvider>,
@@ -1304,6 +1294,7 @@ describe('ResultsRateVisualsPage', () => {
                 Group="Evaluation Study"
                 Individual="Participant 001"
                 Evaluation="Demand Treatment Evaluation"
+                Conditions={['Baseline', 'Intervention']}
                 Handle={mockHandle}
                 Results={demandTreatmentSessions}
                 ResultsFiltered={demandTreatmentSessions}
@@ -1356,6 +1347,7 @@ describe('ResultsProportionVisualsPage', () => {
                 Group="Evaluation Study"
                 Individual="Participant 001"
                 Evaluation="Demand Treatment Evaluation"
+                Conditions={['Baseline', 'Intervention']}
                 Results={demandTreatmentSessions}
                 ResultsFiltered={demandTreatmentSessions}
                 DynamicKeySet={demandTreatmentKeyset}

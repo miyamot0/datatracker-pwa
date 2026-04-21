@@ -41,7 +41,7 @@ describe('shared-buffer.ts', () => {
     (global as any).Atomics = undefined;
     (global as any).self = { crossOriginIsolated: false };
     (global as any).navigator = { userAgent: 'Test Browser' };
-    (global as any).window = { isSecureContext: true };
+    (global as any).window = { isSecureContext: true, location: { protocol: 'https:' } };
 
     // Mock import.meta.env
     vi.stubGlobal('import.meta', { env: { DEV: false } });
@@ -274,6 +274,19 @@ describe('shared-buffer.ts', () => {
 
       expect(result).toBe(false);
       expect(mockConsole.warn).toHaveBeenCalled();
+    });
+
+    it('should return false and suppress warnings when loaded from file:// origin', () => {
+      (global as any).window = { isSecureContext: true, location: { protocol: 'file:' } };
+      (global as any).SharedArrayBuffer = class MockSharedArrayBuffer {};
+      (global as any).Atomics = { load: vi.fn() };
+      (global as any).self = { crossOriginIsolated: false };
+
+      const result = initializeSharedArrayBufferSupport();
+
+      expect(result).toBe(false);
+      expect(mockConsole.warn).not.toHaveBeenCalled();
+      expect(mockConsole.group).not.toHaveBeenCalled();
     });
   });
 
