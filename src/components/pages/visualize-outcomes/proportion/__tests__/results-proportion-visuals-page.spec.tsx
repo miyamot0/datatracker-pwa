@@ -77,12 +77,13 @@ vi.mock('@/components/ui/back-button', () => ({
 }));
 
 vi.mock('../proportion-figure', () => ({
-  default: ({ ScheduleOption, KeySetFull, FigureTextSize, ConnectSpans }: any) => (
+  default: ({ ScheduleOption, KeySetFull, FigureTextSize, ConnectSpans, FilteredSessions }: any) => (
     <div data-testid="proportion-figure">
       <span data-testid="figure-schedule">{ScheduleOption}</span>
       <span data-testid="figure-visible-keys">{KeySetFull.filter((k: any) => k.Visible).length}</span>
       <span data-testid="figure-text-size">{FigureTextSize}</span>
       <span data-testid="figure-connect">{String(ConnectSpans)}</span>
+      <span data-testid="figure-session-count">{FilteredSessions.length}</span>
     </div>
   ),
 }));
@@ -94,6 +95,7 @@ const makeProps = () =>
     Group: 'GroupA',
     Individual: 'ClientB',
     Evaluation: 'Eval1',
+    Conditions: ['Baseline', 'Treatment'],
     DynamicKeySet: {
       Name: 'KeysetA',
       FrequencyKeys: [],
@@ -107,7 +109,7 @@ const makeProps = () =>
       { KeyDescription: 'Aggression', KeyName: 'a', KeyType: 'Observed', Visible: true },
       { KeyDescription: 'Special', KeyName: 's', KeyType: 'Derived', Visible: true },
     ],
-    ResultsFiltered: [],
+    ResultsFiltered: [{ SessionSettings: { Condition: 'Baseline' } }, { SessionSettings: { Condition: 'Treatment' } }],
     MinX: 1,
     MaxX: 10,
     Settings: {
@@ -141,6 +143,7 @@ describe('ResultsProportionVisualsPage', () => {
     await expect.element(page.getByText('Visualization of Behavioral Rates')).toBeInTheDocument();
     await expect.element(page.getByRole('link', { name: 'See Rate' })).toBeInTheDocument();
     await expect.element(page.getByText('Edit Keys Displayed')).toBeInTheDocument();
+    await expect.element(page.getByText('Edit Conditions Displayed')).toBeInTheDocument();
     await expect.element(page.getByText('Select Timer to Reference:')).toBeInTheDocument();
     await expect.element(page.getByText('Element Magnification:')).toBeInTheDocument();
     await expect.element(page.getByText('Connect All Spans:')).toBeInTheDocument();
@@ -148,6 +151,7 @@ describe('ResultsProportionVisualsPage', () => {
     await expect.element(page.getByTestId('figure-visible-keys')).toHaveTextContent('2');
     await expect.element(page.getByTestId('figure-text-size')).toHaveTextContent('base');
     await expect.element(page.getByTestId('figure-connect')).toHaveTextContent('false');
+    await expect.element(page.getByTestId('figure-session-count')).toHaveTextContent('2');
   });
 
   it('updates to a fixed schedule option and passes it to the figure', async () => {
@@ -201,5 +205,33 @@ describe('ResultsProportionVisualsPage', () => {
     await renderPage({ DynamicKeySet: undefined });
 
     expect(await page.getByTestId('proportion-figure').query()).toBeNull();
+  });
+
+  it('renders condition names in the Edit Conditions Displayed dropdown', async () => {
+    await renderPage();
+
+    await expect.element(page.getByRole('button', { name: 'Baseline' })).toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Treatment' })).toBeInTheDocument();
+  });
+
+  it('toggles a condition off and reduces sessions passed to the figure', async () => {
+    await renderPage();
+
+    await expect.element(page.getByTestId('figure-session-count')).toHaveTextContent('2');
+
+    await page.getByRole('button', { name: 'Baseline' }).click();
+
+    await expect.element(page.getByTestId('figure-session-count')).toHaveTextContent('1');
+  });
+
+  it('toggles multiple conditions off and then back on', async () => {
+    await renderPage();
+
+    await page.getByRole('button', { name: 'Baseline' }).click();
+    await page.getByRole('button', { name: 'Treatment' }).click();
+    await expect.element(page.getByTestId('figure-session-count')).toHaveTextContent('0');
+
+    await page.getByRole('button', { name: 'Baseline' }).click();
+    await expect.element(page.getByTestId('figure-session-count')).toHaveTextContent('1');
   });
 });
