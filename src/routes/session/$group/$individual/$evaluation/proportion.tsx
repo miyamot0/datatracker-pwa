@@ -19,6 +19,7 @@ import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { ErrorDisplay } from '@/components/elements/suspense/error-display';
 import { ModifiedSessionResult } from '@/types/storage';
 import { filteredSessionScoringOptions } from '@/types/schedules';
+import { conditionQueryOptions } from '@/queries/conditions/query-conditions';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/proportion')({
   beforeLoad: ({ context, params }) => {
@@ -59,7 +60,11 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/pr
       sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const totalQuery = Promise.all([fetchKeyboards, fetchSessionOutcomes]);
+    const fetchConditions = context.queryClient.fetchQuery(
+      conditionQueryOptions(CleanHandle, Group, Individual, Evaluation),
+    );
+
+    const totalQuery = Promise.all([fetchKeyboards, fetchSessionOutcomes, fetchConditions]);
 
     return {
       Group,
@@ -93,6 +98,7 @@ function RouteComponent() {
           (results: any[]) => {
             const keyboards: KeySet[] = results[0];
             const sessionOutcomes: ModifiedSessionResult[] = results[1];
+            const conditions: string[] = results[2];
 
             const resultsFiltered = filterSessionsByPrimaryRole(sessionOutcomes);
 
@@ -170,6 +176,7 @@ function RouteComponent() {
                 Group={Group}
                 Individual={Individual}
                 Evaluation={Evaluation}
+                Conditions={conditions}
                 Results={sessionOutcomes}
                 ResultsFiltered={resultsFiltered}
                 MinX={minX}

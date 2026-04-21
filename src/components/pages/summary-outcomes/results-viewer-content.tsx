@@ -100,7 +100,7 @@ export default function ResultsViewerContent({
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {filteredSessionScoringOptions(Settings, Keyset, true, true).map((option) => (
+                {filteredSessionScoringOptions(Settings, Keyset, false, true).map((option) => (
                   <SelectItem key={option.value} value={option.value.toString()}>
                     {option.label}
                   </SelectItem>

@@ -43,3 +43,11 @@ export type ToggleDisplayKey = KeySetInstance & {
   KeyType: 'Observed' | 'Derived';
   Visible: boolean;
 };
+
+/**
+ * Type definition for conditions with visibility toggling in visualizations, used for user preferences and dynamic display handling
+ */
+export type ToggleDisplayCondition = {
+  Condition: string;
+  Visible: boolean;
+};

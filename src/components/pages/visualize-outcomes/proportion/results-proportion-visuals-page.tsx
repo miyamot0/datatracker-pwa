@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
-import { Edit3Icon, ScatterChartIcon } from 'lucide-react';
+import { Edit3Icon, LineChartIcon, ScatterChartIcon } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +20,7 @@ import ProportionFigureVisualization from '@/components/pages/visualize-outcomes
 import { Link } from '@tanstack/react-router';
 import { Switch } from '@/components/ui/switch';
 import { SessionTerminationOptionsType } from '@/types/terminations';
-import { ToggleDisplayKey } from '@/types/visuals';
+import { ToggleDisplayCondition, ToggleDisplayKey } from '@/types/visuals';
 import {
   filteredSessionScoringOptions,
   ScheduleMappingOptions,
@@ -33,6 +33,7 @@ export default function ResultsProportionVisualsPage({
   Group,
   Individual,
   Evaluation,
+  Conditions,
   DynamicKeySet,
   TimerMapping,
   ShowKeys,
@@ -44,6 +45,7 @@ export default function ResultsProportionVisualsPage({
   Group: string;
   Individual: string;
   Evaluation: string;
+  Conditions: string[];
   Results: SavedSessionResult[];
   DynamicKeySet: KeySet;
   TimerMapping: ScoringOptionsMapType;
@@ -54,6 +56,9 @@ export default function ResultsProportionVisualsPage({
   Settings: ApplicationSettingsTypes;
 }) {
   const [filteredKeys, setFilteredKeys] = useState(ShowKeys);
+  const [filteredConditions, setFilteredConditions] = useState<ToggleDisplayCondition[]>(
+    Conditions.map((condition) => ({ Condition: condition, Visible: true })),
+  );
   const [connectAllPoints, setConnectAllPoints] = useState(false);
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
   const [schedule, setSchedule] = useState<ScheduleMappingOptionsType | { value: string; label: string }>(TimerMapping);
@@ -85,47 +90,87 @@ export default function ResultsProportionVisualsPage({
 
       <CardContent className="flex flex-col gap-4">
         <div className="w-full flex flex-row justify-between">
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-fit">
-                <Edit3Icon className="mr-2 w-4 h-4" />
-                Edit Keys Displayed
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {filteredKeys.map((key, index) => (
-                <DropdownMenuCheckboxItem
-                  key={`key-${index}`}
-                  checked={key.Visible}
-                  onCheckedChange={(checked) => {
-                    const updatedKeys = filteredKeys.map((k) => {
-                      if (k.KeyDescription === key.KeyDescription) {
-                        return {
-                          ...k,
-                          Visible: checked,
-                        };
-                      }
+          <div className="flex flex-row gap-2">
+            <div className="flex flex-row gap-4">
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-fit">
+                    <Edit3Icon className="mr-2 w-4 h-4" />
+                    Edit Keys Displayed
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {filteredKeys.map((key, index) => (
+                    <DropdownMenuCheckboxItem
+                      key={`key-${index}`}
+                      checked={key.Visible}
+                      onCheckedChange={(checked) => {
+                        const updatedKeys = filteredKeys.map((k) => {
+                          if (k.KeyDescription === key.KeyDescription) {
+                            return {
+                              ...k,
+                              Visible: checked,
+                            };
+                          }
 
-                      return k;
-                    });
+                          return k;
+                        });
 
-                    setFilteredKeys(updatedKeys);
+                        setFilteredKeys(updatedKeys);
 
-                    const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+                        const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
 
-                    setLocalCachedPrefs(Group, Individual, Evaluation, 'Duration', {
-                      KeyDescription: hidden_keys,
-                      Schedule: schedule.value,
-                    });
-                  }}
-                >
-                  {key.KeyDescription}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                        setLocalCachedPrefs(Group, Individual, Evaluation, 'Duration', {
+                          KeyDescription: hidden_keys,
+                          Schedule: schedule.value,
+                        });
+                      }}
+                    >
+                      {key.KeyDescription}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-fit">
+                    <LineChartIcon className="mr-2 w-4 h-4" />
+                    Edit Conditions Displayed
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {filteredConditions.map((condition, index) => (
+                    <DropdownMenuCheckboxItem
+                      className="flex flex-row justify-between"
+                      key={`condition-${index}`}
+                      checked={condition.Visible}
+                      onCheckedChange={(checked) => {
+                        const updatedConditions = filteredConditions.map((c) => {
+                          if (c.Condition === condition.Condition) {
+                            return {
+                              ...c,
+                              Visible: checked,
+                            };
+                          }
+
+                          return c;
+                        });
+
+                        setFilteredConditions(updatedConditions);
+                      }}
+                    >
+                      <p>{condition.Condition}</p>
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
 
           <div className="flex flex-row items-center gap-2 w-fit">
             <p>Select Timer to Reference:</p>
@@ -209,7 +254,10 @@ export default function ResultsProportionVisualsPage({
             Group={Group}
             Individual={Individual}
             Evaluation={Evaluation}
-            FilteredSessions={ResultsFiltered}
+            FilteredSessions={ResultsFiltered.filter((result) => {
+              const conditionMatch = filteredConditions.find((c) => c.Condition === result.SessionSettings.Condition);
+              return conditionMatch ? conditionMatch.Visible : true;
+            })}
             DynamicKeySet={DynamicKeySet}
             MinX={MinX}
             MaxX={MaxX}

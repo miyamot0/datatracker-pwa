@@ -19,6 +19,7 @@ import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { ModifiedSessionResult } from '@/types/storage';
 import { ErrorDisplay } from '@/components/elements/suspense/error-display';
 import { filteredSessionScoringOptions } from '@/types/schedules';
+import { conditionQueryOptions } from '@/queries/conditions/query-conditions';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/rate')({
   beforeLoad: ({ context, params }) => {
@@ -59,7 +60,11 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
       sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const totalQuery = Promise.all([fetchKeyboards, fetchSessionOutcomes]);
+    const fetchConditions = context.queryClient.fetchQuery(
+      conditionQueryOptions(CleanHandle, Group, Individual, Evaluation),
+    );
+
+    const totalQuery = Promise.all([fetchKeyboards, fetchSessionOutcomes, fetchConditions]);
 
     return {
       Group,
@@ -92,11 +97,10 @@ function RouteComponent() {
           (results: any[]) => {
             const keyboards: KeySet[] = results[0];
             const sessionOutcomes: ModifiedSessionResult[] = results[1];
+            const conditions: string[] = results[2];
 
             const resultsFiltered = filterSessionsByPrimaryRole(sessionOutcomes);
-
             const recentKeysetName = pullMostRecentSession(sessionOutcomes);
-
             const sessionKeySet = recentKeysetName.Keyset;
             const designerKeySet = keyboards.find((k: KeySet) => k.Name == recentKeysetName.SessionSettings.KeySet);
 
@@ -177,6 +181,7 @@ function RouteComponent() {
                 Group={Group}
                 Individual={Individual}
                 Evaluation={Evaluation}
+                Conditions={conditions}
                 Handle={Handle}
                 Results={sessionOutcomes}
                 ResultsFiltered={resultsFiltered}
