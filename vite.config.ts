@@ -8,6 +8,8 @@ import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import csp from 'vite-plugin-csp-guard';
 import { deleteUnnecessaryPlugin } from './scripts/plugins/delete-unnecessary-files';
 import { compressPNGPlugin } from './scripts/plugins/compress-png-files';
+import { scrubIslandHtmlPlugin } from './scripts/plugins/scrub-island-html';
+import { inlineWorkersPlugin } from './scripts/plugins/inline-workers';
 
 const common_screenshot_params = {
   sizes: '1148x969',
@@ -26,6 +28,8 @@ const islandPlugins: PluginOption[] = [
     autoCodeSplitting: true,
   }),
   react(),
+  inlineWorkersPlugin,
+  scrubIslandHtmlPlugin,
   viteSingleFile({
     removeViteModuleLoader: true,
     overrideConfig: {
