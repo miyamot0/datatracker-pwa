@@ -21,7 +21,7 @@ export const COLOR_LIST = [
  * Generate a list of keyword colors for the front matter data
  *
  * @param front_matter_data non-unique keywords
- * @returns
+ * @returns a list of unique keywords with assigned colors
  */
 export function generateKeywordColors(front_matter_data: FrontMatterUniversalType[]): KeywordColors[] {
   const untrimmed_array = front_matter_data

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2023", "ES2021.String", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
+    "lib": ["ES2023", "ES2021.String", "DOM", "DOM.Iterable", "DOM.AsyncIterable", "es2022"],
     "module": "ESNext",
     "skipLibCheck": true,
     "incremental": false,
@@ -18,7 +18,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["vite-plugin-pwa/client", "vitest/globals", "@types/wicg-file-system-access"]
+    "typeRoots": ["./node_modules/@types", "./node_modules"],
+    "types": ["vite-plugin-pwa/client", "vitest/globals", "@types/wicg-file-system-access", "node"]
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts"],
+  "exclude": ["node_modules", "./src/**/*.test.{ts,tsx}", "**/*.test.{ts,tsx}"]
 }

@@ -1,9 +1,10 @@
 ---
 title: Creating and Working with Evaluation Folders for Individuals
 description: This documentation entry provides an overview of the Evaluation folders within the Data Tracker program, including its purpose, structure, and how to create and delete Evaluation folders.
-date: 09/03/2024
+date: 04/15/2026
 keywords: 'Behavioral Procedures, Data Organization'
 author: 'Shawn Gilroy'
+index: 5
 ---
 
 The **Evaluation** folders, found within respective **Individual** folders, are essential for organizing data from specific sessions conducted with a client/participant. These folders capture snapshots of a participant's behavior in a specific context (e.g., assessment vs. treatment) at distinct points in time. Each **Evaluation** folder is typically labeled according to the procedure or method. For example, one evaluation might consist of a "Functional Analysis" while another might consist of a "Treatment Evaluation." This naming convention helps researchers and clinicians quickly identify the purpose of each Evaluation and understand the context from which recorded data had emerged. Note: an example of this possible arrangement is provided in the 'mock' data included in the program.
@@ -20,12 +21,14 @@ The rationale behind using **Evaluation** folders in this fashion is to facilita
 
 To create a new **Evaluation** folder, you can do so by clicking the "Create" button available within the **Individual** folder associated with the participant. This will prompt a dialog box to appear, asking you to enter a name for the new **Evaluation** folder. Once you have provided the desired name (e.g., "Functional Analysis"), the new **Evaluation** folder will be added to the program's hierarchy. You can then begin populating the **Evaluation** folder with data files, notes, and other relevant information from that session. A visual of this interface is provided below:
 
-<div align="center" width="100%">
-    <img src="docs/folder_preview_evaluations.png" alt="Image Evaluation Dashboard interface"/>
-</div>
+![Image Evaluation Dashboard interface](screenshots/evaluation_page.png 'Image Evaluation Dashboard interface')
 
 Once you create an evaluation folder, you will need to provide additional information before sessions can be run/recorded. Specifically, you will need to provide relevant conditions for the **Evaluation** (e.g. Baseline, Intervention folders) as well as construct or import a KeySet to be used with the **Evaluation**. Procedures for deleting **Evaluation** folders are similar to those for **Group** and **Individual** folders, as outlined in the previous sections. Please exercise caution when deleting **Evaluation** folders, as this action cannot be undone, and all data within the folder will be lost. Recommendations for deletion permissions are similar to those for **Group** and **Individual** folders, as outlined in the previous sections. A relevant visual for this is provided below:
 
-<div align="center" width="100%">
-    <img src="docs/folder_preview_evaluations_delete.png" alt="Image for Evaluation Dashboard interface related to deletion"/>
-</div>
+![Image for Evaluation Dashboard interface related to deletion](docs/folder_preview_evaluations_delete.png 'Image for Evaluation Dashboard interface related to deletion')
+
+### Duplicating Evaluation Folders
+
+The process for duplicating **Evaluation** folders is similar to that of **Group** and **Individual** folders, as outlined in the previous sections. To duplicate an **Evaluation** folder, you can click the "Duplicate" button associated with the specific folder you wish to copy. This will create a new **Evaluation** folder with the same name appended with "Copy" (e.g., "Functional Analysis Copy") unless you elect to name this otherwise. The duplicated folder will contain all the same data files, notes, and conditions as the original folder, allowing you to easily create a new evaluation based on an existing one. This is particularly useful when building from a prior experimental assessment (e.g., functional analysis conditions serving as a baseline for treatment development).
+
+Although duplicating evaluations is straightforward, it is important to note that not all of the copied files in the new directory may be relevant. For example, if you duplicate a "Functional Analysis" folder to create a "Treatment Evaluation" folder, you may need to remove certain files that are specific to the functional analysis (e.g., data from specific conditions that are not relevant to the treatment evaluation). Therefore, after duplicating an **Evaluation** folder, it is recommended to review the contents and remove any files that are not pertinent to the new evaluation context. This ensures that the new **Evaluation** folder remains organized and relevant to its intended purpose. Similarly, for the sake of clarity, it is recommended to rename conditions in the software to more appropriate labels (e.g., Baseline, Intervention, etc.).

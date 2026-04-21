@@ -3,11 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#F2F2F2" />
+    <meta name="theme-color" content="#F2F2F2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
     <title>DataTracker PWA</title>
+    <script src="/trusted-types-init.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=%VITE_G4A_MEASUREMENT_ID%"></script>
+    <script src="/analytics-init.js"></script>
   </head>
 
-  <body class="flex flex-col min-h-screen mx-2 light:grainy antialiased">
+  <body class="flex flex-col min-h-screen mx-2 light:grainy antialiased [view-transition-name:main-content]">
     <div id="root" class="flex flex-row justify-center"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

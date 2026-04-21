@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 
-export const LIGHT = '#F2F2F2';
-export const DARK = '#333333';
+const LIGHT = '#F2F2F2';
+const DARK = '#333333';
 
 type Theme = 'dark' | 'light' | 'system';
 
@@ -65,7 +65,6 @@ export function ThemeProvider({
   );
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
 

@@ -1,9 +1,10 @@
 ---
 title: Creating and Working with Individual Client Folders
 description: This documentation entry provides an overview of the individual client folders within the Data Tracker program, including its purpose, structure, and how to create and delete Individual folders.
-date: 09/02/2024
+date: 04/15/2026
 keywords: 'Data Organization'
 author: 'Shawn Gilroy'
+index: 4
 ---
 
 The **Individual** folders, which are nested under respective **Group** folders, are a critical part of the data management strategy and hierarchy. These folders are dedicated to housing _all_ data related to a specific participant or subject within the larger context of a research study or clinical service (e.g., inpatient vs. outpatient care). Each **Individual** folder is named after the participant it represents, typically using a unique identifier such as a participant ID or name, like "Participant_001" or "Subject_A." This structure ensures that all data collected from a particular individual is systematically stored in one location, facilitating easy access and analysis. As a note, you must follow research and clinical data management practices for your institution when naming and storing data; however, DataTracker works only on local data and no information is ever transmitted to the internet.
@@ -20,12 +21,8 @@ The rationale for this structure is to provide a systematic way to organize part
 
 To create a new **Individual** folder, you can do so by clicking the "Create" button available within the **Group** folder associated with the study or clinical service. This will prompt a dialog box to appear, asking you to enter a name for the new **Individual** folder. Once you have provided the desired name (e.g., "Participant_001"), the new **Individual** folder will be added to the program's hierarchy. You can then begin populating the **Individual** folder with data files, evaluations, and other relevant information for that participant. Note: each individual folder name must be unique and duplicate folder names are not permitted. A visual of this interface is provided below:
 
-<div align="center" width="100%">
-    <img src="docs/folder_preview_clients.png" alt="Image Individuals Dashboard interface"/>
-</div>
+![Image Individuals Dashboard interface](screenshots/clients_page.png 'Image Individuals Dashboard interface')
 
 If you need to delete an **Individual** folder, you can do so by pressing the checkbox next to the individual row (i.e., folder) you wish to delete. This will enable the "Delete" button at the top of the dashboard. You can then click this button to initiate the deletion process. Clicking this button will trigger a confirmation dialog to ensure that you want to delete the **Individual** folder and all its contents. Once you confirm the deletion, the **Individual** folder and all its subfolders will be permanently removed from the program. Please exercise caution when deleting **Individual** folders, as this action cannot be undone, and all data within the folder will be lost. Recommendations for deletion permissions are similar to those for **Group** folders, as outlined in the previous section. A relevant visual for this is provided below:
 
-<div align="center" width="100%">
-    <img src="docs/folder_preview_clients_delete.png" alt="Image for Client Dashboard interface related to deletion"/>
-</div>
+![Image for Client Dashboard interface related to deletion](docs/folder_preview_clients_delete.png 'Image for Client Dashboard interface related to deletion')

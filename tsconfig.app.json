@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "ES2021.String", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
+    "lib": ["ES2022", "ES2021.String", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
     "module": "ESNext",
     "skipLibCheck": true,
     "incremental": false,
@@ -17,14 +17,17 @@
 
     /* Linting */
     "strict": true,
+    "noImplicitAny": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["vite-plugin-pwa/client", "vitest/globals", "@types/wicg-file-system-access"],
-    "baseUrl": ".",
+    "typeRoots": ["./node_modules/@types", "./node_modules"],
+    "types": ["vite-plugin-pwa/client", "vitest/globals", "@types/wicg-file-system-access", "node"],
+    //"baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["node_modules", "./src/**/*.test.{ts,tsx}", "**/*.test.{ts,tsx}", "src/**/*.test.{ts,tsx}"]
 }

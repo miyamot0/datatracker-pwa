@@ -1,8 +1,8 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ReactNode } from 'react';
-import { KeyManageType } from '../types/session-recorder-types';
 import { KeySetInstance } from '@/types/keyset';
 import { cn } from '@/lib/utils';
+import { KeyManageType } from '@/types/timing';
 
 type Props = {
   Keys: KeySetInstance[];

@@ -1,9 +1,10 @@
 ---
 title: Reviewing Interobserver Agreement for Specific Evaluation Data
 description: This documentation entry provides an overview of the process of calculating inter-rater reliability for specific evaluation data in DataTracker, including the purpose, methods, and types of agreement calculations available.
-date: 09/27/2024
+date: 04/15/2026
 keywords: 'Data Collection, Interobserver Agreement, Data Export'
 author: 'Shawn Gilroy'
+index: 14
 ---
 
 The DataTracker program makes it easy to calculate several forms of Inter Observer Agreement (IOA). This is a measure of the agreement between two or more raters. The program can calculate several forms of agreement. As a general default, agreement is estimated using 10s bins of data recorded in real time through the session. This entry first provides an overview of the _types_ of IOA supported followed by a description of _how_ the software proceeds with determining agreement between raters.

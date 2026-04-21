@@ -17,14 +17,14 @@ import {
 import { useState } from 'react';
 import { Button } from './button';
 import { RefreshCcw } from 'lucide-react';
-import { SyncEntryTableRow } from '../pages/viewer-sync-queue/types/sync-entry-table-row';
+import { SyncEntryTableRow } from '@/types/sync';
 
-export type RowSelectOptions = 'None';
+//export type RowSelectOptions = 'None';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  rowSelectOptions?: RowSelectOptions;
+  //rowSelectOptions?: RowSelectOptions;
   optionalButtons?: React.ReactNode;
   callback: (row: SyncEntryTableRow[]) => void;
   direction: 'Local' | 'Remote';
@@ -35,7 +35,7 @@ export function ReliabilityDataTable<TData, TValue>({
   data,
   optionalButtons,
   callback,
-  rowSelectOptions = 'None',
+  //rowSelectOptions = 'None',
   direction,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -85,8 +85,10 @@ export function ReliabilityDataTable<TData, TValue>({
             size={'sm'}
             variant={'outline'}
             onClick={() => {
-              //@ts-expect-error - rowSelection is not typed correctly
-              callback(table.getFilteredSelectedRowModel().rows.map((row) => row.original));
+              const selectedRows = table
+                .getFilteredSelectedRowModel()
+                .rows.map((row) => row.original) as SyncEntryTableRow[];
+              callback(selectedRows);
 
               setRowSelection({});
             }}
@@ -137,7 +139,7 @@ export function ReliabilityDataTable<TData, TValue>({
           )}
         </TableBody>
       </Table>
-      <DataTablePagination table={table} rowSelectOptions={rowSelectOptions} />
+      <DataTablePagination table={table} rowSelectOptions={'None'} />
     </div>
   );
 }

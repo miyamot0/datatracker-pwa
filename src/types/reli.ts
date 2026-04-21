@@ -1,4 +1,4 @@
-import { SavedSessionResult } from "@/lib/dtos";
+import { SavedSessionResult } from '@/lib/dtos/session-results';
 
 /**
  * A key that has been selected for reliability metrics.
@@ -32,4 +32,20 @@ export type BinValueType = {
 export type ReliabilityPairType = {
   primary: SavedSessionResult;
   reli: SavedSessionResult;
+};
+
+/**
+ * A key/value pairing for reliability metrics, used for preparing data for display in the reliability viewer
+ */
+export type KeyedReli = {
+  KeyName: string;
+  Value: number;
+};
+
+/**
+ * This is the type definition for the PreparedReliabilityData type, which is the format of the data used to display reliability metrics in the reliability viewer
+ */
+export type PreparedReliabilityData = {
+  headings: string[];
+  rows: Array<Array<{ value: string; readOnly: boolean }>>;
 };

@@ -1,71 +1,12 @@
-import { KeyManageType } from '@/components/pages/session-recorder/types/session-recorder-types';
-import {
-  DataCollectorRolesType,
-  SessionDesignerSchemaType,
-  SessionTerminationOptionsType,
-} from '@/forms/schema/session-designer-schema';
-import { KeySet } from '@/types/keyset';
-
 /**
- * This is the type definition for the HumanReadableResults type
+ * @deprecated This barrel export is deprecated. Import directly from focused files:
+ * - Session settings: @/lib/dtos/session-settings
+ * - Session results: @/lib/dtos/session-results
  */
-export type SavedSettings = {
-  Therapist: string;
-  Condition: string;
-  KeySet: string;
-  TimerOption: SessionTerminationOptionsType;
-  Initials: string;
-  Role: DataCollectorRolesType;
-  Session: number;
-  DurationS: number;
-};
 
-export const DEFAULT_SESSION_SETTINGS: SavedSettings = {
-  Condition: '',
-  TimerOption: 'End on Timer #1',
-  Role: 'Primary',
-  Initials: '',
-  Session: 1,
-  DurationS: 600,
-  KeySet: '',
-  Therapist: '',
-};
+// Re-exports from focused files for backward compatibility
+export type { SavedSettings } from './dtos/session-settings';
 
-/**
- * This is the type definition for the SavedSessionResult type
- */
-export type SavedSessionResult = {
-  Keyset: KeySet;
-  SessionSettings: SavedSettings;
-  SystemKeyPresses: KeyManageType[];
-  FrequencyKeyPresses: KeyManageType[];
-  DurationKeyPresses: KeyManageType[];
-  SessionStart: string;
-  SessionEnd: string;
-  EndedEarly: boolean;
-  TimerMain: number;
-  TimerOne: number;
-  TimerTwo: number;
-  TimerThree: number;
-  Filename?: string;
-  Comments?: string;
-};
+export { DEFAULT_SESSION_SETTINGS, toSavedSettings } from './dtos/session-settings';
 
-/**
- * Convert the session designer schema to the saved settings type
- *
- * @param data session designer schema
- * @returns saved settings
- */
-export const toSavedSettings = (data: SessionDesignerSchemaType) => {
-  return {
-    Therapist: data.SessionTherapistID,
-    Initials: data.DataCollectorID,
-    Role: data.DataCollectorRole,
-    DurationS: data.SessionDurationS,
-    TimerOption: data.SessionTerminationOption,
-    Session: Math.floor(data.SessionNumber),
-    KeySet: data.SessionKeySet,
-    Condition: data.SessionCondition,
-  } satisfies SavedSettings;
-};
+export type { SavedSessionResult, ExpandedSavedSessionResult } from './dtos/session-results';

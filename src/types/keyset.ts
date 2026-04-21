@@ -1,37 +1,16 @@
 /**
- * Type for holding the key values
+ * @deprecated This barrel export is deprecated. Import directly from focused files:
+ * - Core types: @/types/keyset/core
+ * - Extended types: @/types/keyset/extended
+ * - Serialization types: @/types/keyset/serialization
+ * - Display types: @/types/keyset/display
  */
-export type KeySetInstance = {
-  KeyName: string;
-  KeyDescription: string;
-  KeyCode: number;
-};
 
-/**
- * Type for holding the *set* of keys
- */
-export type KeySet = {
-  id: string;
-  Name: string;
-  FrequencyKeys: KeySetInstance[];
-  DurationKeys: KeySetInstance[];
-  createdAt: Date;
-  lastModified: Date;
-};
+// Re-exports from focused files for backward compatibility
+export type { KeySetInstance, KeySet } from './keyset/core';
 
-/**
- * Type for extending keyset
- */
-export type KeySetExtended = KeySet & { Group: string; Individual: string };
+export type { KeySetExtended, EnhancedKeySetInstance } from './keyset/extended';
 
-/**
- * Keyset type more amenable to serialization
- */
-export type KeySetSerialize = {
-  id: string;
-  Name: string;
-  FrequencyKeys: KeySetInstance[];
-  DurationKeys: KeySetInstance[];
-  createdAt: string;
-  lastModified: string;
-};
+export type { KeySetLogical, KeySetSerialize } from './keyset/serialization';
+
+export type { ExpandedKeySetInstance } from './keyset/display';

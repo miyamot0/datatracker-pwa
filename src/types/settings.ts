@@ -1,123 +1,58 @@
 /**
- * Types for theme options
- */
-export type ThemeTypes = 'light' | 'dark' | 'system';
-
-export const THEME_OPTIONS: { value: ThemeTypes; label: string }[] = [
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'system', label: 'System' },
-];
-
-/**
- * Types for key display options
- */
-export type KeyDisplayTypes = 'standard' | 'dense';
-
-export const KEY_DISPLAY_OPTIONS: { value: KeyDisplayTypes; label: string }[] = [
-  { value: 'standard', label: 'Standard' },
-  { value: 'dense', label: 'Dense' },
-];
-
-/**
- * Types for screen size options
+ * @deprecated Use focused imports instead:
+ * - @/types/settings/application-settings for ApplicationSettingsTypes, DEFAULT_APPLICATION_SETTINGS, SettingsDisplayEnum
+ * - @/types/settings/display-settings for display/UI related settings
+ * - @/types/settings/performance-settings for cache and polling settings
+ * - @/types/settings/notification-settings for notification related settings
+ * - @/types/settings/administrative-settings for admin settings
  */
 
-export type ScreenSizingTypes = 'standard' | 'wide' | 'extra-wide';
+// Main application settings (most commonly used)
+export {
+  ApplicationSettingsTypes,
+  DEFAULT_APPLICATION_SETTINGS,
+  SettingsDisplayEnum,
+} from './settings/application-settings';
 
-export const ScreenSizingOptions: { value: ScreenSizingTypes; label: string }[] = [
-  { value: 'standard', label: 'Standard' },
-  { value: 'wide', label: 'Wide' },
-  { value: 'extra-wide', label: 'Extra Wide' },
-];
+// Display settings
+export {
+  SessionDisplayOptions,
+  SESSION_DISPLAY_OPTIONS,
+  ApplicationFooterDisplay,
+  APPLICATION_FOOTER_OPTIONS,
+  KeyDisplayTypes,
+  KEY_DISPLAY_OPTIONS,
+  ScreenSizingTypes,
+  ScreenSizingOptions,
+  ThemeTypes,
+  THEME_OPTIONS,
+  TransitionSettingTypes,
+  TRANSITION_SETTING_OPTIONS,
+} from './settings/display-settings';
 
-/**
- * Types for after-session recording preferences
- */
-export type PostSessionBxTypes = 'AwaitInput' | 'AutoAdvance';
+// Performance settings
+export {
+  CacheSettingTypes,
+  CACHE_OPTIONS,
+  SessionRecorderPolling,
+  SESSION_RECORDER_POLLING_OPTIONS,
+  SessionPollingIntervals,
+} from './settings/performance-settings';
 
-export const POST_SESSION_BX_OPTIONS: {
-  value: PostSessionBxTypes;
-  label: string;
-}[] = [
-  { value: 'AwaitInput', label: 'Await Input' },
-  { value: 'AutoAdvance', label: 'Auto Advance' },
-];
+// Notification settings
+export {
+  NotificationSettingsTypes,
+  NOTIFICATION_SETTINGS_OPTIONS,
+  PostSessionBxTypes,
+  POST_SESSION_BX_OPTIONS,
+  ToolTipOptionTypes,
+  TOOL_TIP_OPTIONS,
+} from './settings/notification-settings';
 
-/**
- * Types for notification settings
- */
-export type NotificationSettingsTypes = 'ShowAll' | 'ShowErrorsOnly' | 'ShowNone';
-
-export const NOTIFICATION_SETTINGS_OPTIONS: {
-  value: NotificationSettingsTypes;
-  label: string;
-}[] = [
-  { value: 'ShowAll', label: 'Show All' },
-  { value: 'ShowErrorsOnly', label: 'Show Errors Only' },
-  { value: 'ShowNone', label: 'Show None' },
-];
-
-/**
- * Types for data privileges
- */
-export type ElevatedPrivilegesType = 'true' | 'false';
-
-export const ELEVATED_PRIVILEGES_OPTIONS: {
-  value: ElevatedPrivilegesType;
-  label: string;
-}[] = [
-  { value: 'true', label: 'Allow' },
-  { value: 'false', label: 'Disable' },
-];
-
-/**
- * Types for folder naming permissions
- */
-export type EnforceDataFolderType = 'true' | 'false';
-
-export const ENFORCED_NAMING_OPTIONS: {
-  value: EnforceDataFolderType;
-  label: string;
-}[] = [
-  { value: 'true', label: "'DataTracker' Name Required" },
-  { value: 'false', label: 'Disable Requirements' },
-];
-
-/**
- * Types for tooltip displays
- */
-export type ToolTipOptionTypes = 'All' | 'None';
-
-export const TOOL_TIP_OPTIONS: {
-  value: ToolTipOptionTypes;
-  label: string;
-}[] = [
-  { value: 'All', label: 'Show All Tooltips' },
-  { value: 'None', label: 'Disable Tooltips' },
-];
-
-/**
- * Type for application settings
- */
-export type ApplicationSettingsTypes = {
-  PostSessionBx: PostSessionBxTypes;
-  NotificationSettings: NotificationSettingsTypes;
-  EnableFileDeletion: boolean;
-  EnforceDataFolderName: boolean;
-  EnableToolTip: boolean;
-  IsReturningUser: boolean;
-  KeyDisplay: KeyDisplayTypes;
-  DisplaySize: ScreenSizingTypes;
-};
-
-export const DEFAULT_APPLICATION_SETTINGS: ApplicationSettingsTypes = {
-  PostSessionBx: 'AwaitInput',
-  NotificationSettings: 'ShowAll',
-  EnableFileDeletion: false,
-  EnforceDataFolderName: true,
-  EnableToolTip: true,
-  IsReturningUser: true,
-  KeyDisplay: 'standard',
-  DisplaySize: 'standard',
-};
+// Administrative settings
+export {
+  ElevatedPrivilegesType,
+  ELEVATED_PRIVILEGES_OPTIONS,
+  EnforceDataFolderType,
+  ENFORCED_NAMING_OPTIONS,
+} from './settings/administrative-settings';

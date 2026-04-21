@@ -1,23 +1,30 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
-//import { registerSW } from 'virtual:pwa-register';
 import '@/styles/globals.css';
 import '@/styles/github.min.css';
 import '@/styles/github-dark.min.css';
+import 'sonner/dist/styles.css';
+import '@/styles/Spreadsheet.css';
 
-/*
-const updateSW = registerSW({
-  onNeedRefresh() {
-    if (window.confirm('New content available. Reload?')) {
-      updateSW(true);
-    }
-  },
-});
-*/
+import { initializeSharedArrayBufferSupport } from '@/lib/shared-buffer.ts';
+import { startAnalyticsSync } from './lib/analytics/analytics-sync.ts';
+import { setupErrorTracking } from './lib/analytics/analytics-errors.ts';
+
+if (import.meta.env.VITE_MODE !== 'island') {
+  import('./config/pwa-registration').then(({ init }) => {
+    init();
+  });
+}
+
+// Initialize SharedArrayBuffer support check
+initializeSharedArrayBufferSupport();
+
+startAnalyticsSync();
+setupErrorTracking();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
-  </StrictMode>
+  </StrictMode>,
 );

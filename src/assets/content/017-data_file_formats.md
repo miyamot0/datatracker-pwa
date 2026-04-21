@@ -1,9 +1,10 @@
 ---
 title: (Advanced) Data File Fields and Types
 description: This documentation entry provides an overview of the fields and types of data contained in DataTracker output files, including the purpose, structure, and how to interpret the data from other software.
-date: 09/27/2024
+date: 04/15/2026
 keywords: 'Data Organization, Data Export, Data Parsing'
 author: 'Shawn Gilroy'
+index: 17
 ---
 
 The DataTracker program uses a consistent structure for output files to support consistent parsing as well as flexibility in archiving/compiling outcomes. For example, the systematic format would allow current or future researchers to directly access event-level recording (e.g., times associated with specific targets) rather than relying on aggregated metrics (e.g., rate without specific event-level details).

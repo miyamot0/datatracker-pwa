@@ -1,9 +1,10 @@
 ---
 title: Options to Import Existing Evaluations
 description: This documentation entry provides an overview of the process of importing existing Evaluations in DataTracker, including the purpose, benefits, and steps to import Evaluations from other individuals.
-date: 11/14/2024
+date: 04/15/2026
 keywords: 'Behavioral Procedures, Data Organization'
 author: 'Shawn Gilroy'
+index: 7
 ---
 
 The DataTracker program allows for the importing of _existing_ **Evaluations** saved elsewhere in the program to facilitate quick and efficient design of session conditions and behavior recording. In certain situations, it may be more efficient to import **Evaluations** from other individuals rather than re-create a new evaluation. For example, certain clinics may use a common baseline assessment protocol (e.g., some derivative of functional analysis) across most individuals and constructing these repeatedly would be tedious and time-consuming.
@@ -18,8 +19,8 @@ The first option is to manually create **Evaluations** is by using the associate
 
 The second option is to import **Evaluations** that have been previously saved in the program. For instance, this may be an evaluation used with _another_ client that is similar to the one you are currently working with. To begin, press the 'Open Evaluations' button for a specific individual to access the relevant **Evaluations**. On this page, there is an option to 'Import' from the various **Evaluations** that currently exist in the DataTracker directory. Specifically, these are **Evaluations** that have been saved in the directories of _other_ individuals. A visual of this section is provided below:
 
-<div align="center" width="100%">
-    <img src="docs/preview_import_evaluation_ui.png" alt="Image of DataTracker keyset import options"/>
-</div>
+![Image of DataTracker keyset import options](docs/preview_import_evaluation_ui.png 'Image of DataTracker keyset import options')
 
 The 'Prior Import Evaluation' page will provide a review of various **Evaluations** that are available for import. The user can select the desired evaluation and import it into the current individual's evaluation list. This is a quick and efficient way to create **Evaluations** for a new individual that is similar to an existing individual. Pressing the relevant button to import the evaluation will add the evaluation to the **current individual's** directory. The evaluation will then be available for use and editing in the 'Open Evaluation' section. As a reminder, this is independent of the **KeySet** import functionality provided in the program, and the import of any existing **KeySet** is an independent process.
+
+In cases where the imported evaluation contains conditions that are not relevant to the new individual, it is recommended to review the conditions and remove any that are not pertinent to the new evaluation context. This ensures that the new **Evaluation** folder remains organized and relevant to its intended purpose. Similarly, for the sake of clarity, it is recommended to rename conditions in the software to more appropriate labels (e.g., Baseline, Intervention, etc.) or the name of the evaluation entirely (e.g., a different function being targeted).

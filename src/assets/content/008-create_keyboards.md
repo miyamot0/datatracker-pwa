@@ -1,18 +1,17 @@
 ---
 title: Creating and Managing Key/Behavior Mappings ("KeySets")
 description: This documentation entry provides an overview of the KeySet functionality within Data Tracker, including its purpose, structure, and how to create and manage KeySets for efficient data collection.
-date: 09/03/2024
+date: 04/15/2026
 keywords: 'Key/Behavior Mappings, Data Organization'
 author: 'Shawn Gilroy'
+index: 8
 ---
 
 The **KeySet** functionality offered by Data Tracker allows users to efficiently record and track specific behaviors during observation sessions in real time. By mapping keys on a **KeySet** to particular behaviors (e.g., "1" represents and instance of "Aggression"), the program can be used to perform data collection across multiple targets as behavior occurs. Each **KeySet** (i.e., mappings of keys to behavior, of which there can be multiple) customized to include _two_ types of key/behavior mappings: "Frequency Keys" and "Duration Keys". These mappings help users accurately record behaviors that are best measured either by how often they occur (Frequency) or by how long they last (Duration).
 
 An example of multiple "KeySets" featured for a specific client are illustrated below:
 
-<div align="center" width="100%">
-    <img src="docs/keyboards_ui.png" alt="Visual of available keyboards"/>
-</div>
+![Visual of available keyboards](docs/keyboards_ui.png 'Visual of available keyboards')
 
 ### Key/Behavior Mappings for Frequency Measurement
 
@@ -20,9 +19,7 @@ Frequency key/behavior mappings are designed for behaviors that are easily count
 
 An example illustration of a **KeySet** containing several Frequency event keys is provided below. Note: the "Frequency" keys are on the left side of the keyboard, while the "Duration" keys are on the right side of the keyboard.
 
-<div align="center" width="100%">
-    <img src="docs/key_set_editor_both.png" alt="Example of Keys in KeySet (frequency)"/>
-</div>
+![Example of Keys in KeySet (frequency)](docs/key_set_editor_both.png 'Example of Keys in KeySet (frequency)')
 
 ### Key/Behavior Mappings for Duration Measurement
 
@@ -30,9 +27,7 @@ Duration key/behavior mappings, on the other hand, are used for behavior that is
 
 An example illustration of a **KeySet** containing several "Duration" event keys is provided below. Note: the "Duration" keys are on the left side of the keyboard, while the "Duration" keys are on the right side of the keyboard.
 
-<div align="center" width="100%">
-    <img src="docs/key_set_editor_both.png" alt="Example of Keys in KeySet (duration)"/>
-</div>
+![Example of Keys in KeySet (duration)](docs/key_set_editor_both.png 'Example of Keys in KeySet (duration)')
 
 ### Reasoning and Rationale for Key/Behavior Mappings
 
@@ -40,8 +35,20 @@ The rationale behind these customizable key/behavior mappings is to streamline t
 
 Any number of keys can be added to a **KeySet**. Individual Frequency or Duration keys can be assigned using the 'Add Key' button in the respective areas. This prompts a dialog that requires a description of the event (e.g., Physical Aggression) and a designated key (e.g., '4'). A visual of the key assignment interface is provided below:
 
-<div align="center" width="100%">
-    <img src="docs/keys_dialog.png" alt="Example of Keys in KeySet (duration)"/>
-</div>
+![Example of Keys in KeySet (duration)](docs/keys_dialog.png 'Example of Keys in KeySet (duration)')
 
 Although there is considerable flexibility in how many keys can be added to a **KeySet**, a few guidelines are recommended to ensure usability and efficiency. First, not all keys can be used to track behavior (e.g., some are 'reserved' or special functions, such as Escape for ending a session). Second, all keys must be unique within a **KeySet**. For example, if the "1" key is already assigned to "Physical Aggression," it cannot be reassigned to another behavior like "Verbal Aggression." This uniqueness helps prevent confusion during data collection and ensures that each key corresponds to a specific behavior. Lastly, each **KeySet** is specific to an **Individual** but not to **Evaluation**. For example, there may be a similar **KeySet** for a single individual, such between a "Functional Analysis" or a "Treatment Evaluation." In most cases, when a treatment is ready to be evaluated, it may be useful to duplicate a prior **KeySet** and then modify it to reflect the new behaviors or changes in the treatment plan (e.g., adding a key for an alternative response to problem behavior).
+
+### Observed and Derived Keys
+
+By default, virtually all manually recorded keys are defined as "Observed." This is the typical use of the program; however, it is often the case that users may want to track the presence of a greater response class (e.g., aggression + disruption) rather than individual keys. Alternative, there may be instances when the goal is to understand a _proportion_ of responses under some respective condition (e.g., percentage of compliance with instructional tasks). The software supports several simple operations in the form of "Derived Keys" in the KeySet Editor.
+
+Derived keys are calculated based on the presence of other keys. For example, a "Derived Key" could be created to represent "Aggression + Disruption" by combining the "Physical Aggression" and "Disruption" keys. This allows users to track more complex behavior patterns without needing to manually record every instance of each individual behavior. Similarly, a derived key could be created to calculate the percentage of compliance by dividing the number of compliant responses by the total number of instructional tasks, and multiplying that number by 100, providing a quick and efficient way to monitor progress towards intervention goals.
+
+As a general rule, all Observed and Derived keys are scored and available in the results sections as well as in visual displays. This allows users to easily analyze and interpret the data collected during sessions, providing insights into behavior patterns and the effectiveness of interventions. By utilizing both Observed and Derived keys, users can gain a comprehensive understanding of the behaviors being tracked and make informed decisions based on the data collected.
+
+### Special Duration Keys
+
+Special Duration keys are used to track behaviors that have a duration component, such as the length of time a behavior occurs. These are keys that provide users with flexibility for quantify targets within a specific scope (e.g., rates taking place while that duration key is active) or for dynamically setting an end point for session (e.g., a "Work Time" key that ends session when it exceeds 300 seconds).
+
+Two types of special duration keys are provide and these are addressed in a specific, later section of the documentation (i.e., Session Timers).

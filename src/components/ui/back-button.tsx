@@ -1,37 +1,44 @@
 import { ChevronLeft } from 'lucide-react';
 import { Button } from './button';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from '@tanstack/react-router';
+import { useHotkey } from '@tanstack/react-hotkeys';
 
 type Props = {
   Label?: string;
-  Href?: string;
+  Silence?: boolean;
 };
 
-export default function BackButton({ Label, Href }: Props) {
-  const navigate = useNavigate();
+export default function BackButton({ Label, Silence }: Props) {
+  const { history } = useRouter();
 
-  const handleClick = () => {
-    if (window.history.state && window.history.state.idx > 0) {
-      navigate(-1);
-    }
+  const handleClick = (silence?: boolean) => {
+    if (silence) return;
+
+    history.go(-1);
   };
 
-  if (!Href) {
-    return (
-      <Button variant={'outline'} className="shadow" size={'sm'} onClick={handleClick}>
-        <ChevronLeft className="mr-2 h-4 w-4" />
-        {Label ?? 'Back'}
-      </Button>
-    );
-  }
+  // Convenience support for going back with the Escape key
+  useHotkey('Escape', () => handleClick(Silence), {
+    conflictBehavior: 'replace',
+  });
 
+  //if (!Href) {
   return (
-    <Link to={Href} unstable_viewTransition>
+    <Button variant={'outline'} className="shadow" size={'sm'} onClick={() => handleClick()}>
+      <ChevronLeft className="mr-2 h-4 w-4" />
+      {Label ?? 'Back'}
+    </Button>
+  );
+  //}
+
+  /*
+  return (
+    <Link to={Href}>
       <Button variant={'outline'} className="shadow" size={'sm'}>
         <ChevronLeft className="mr-2 h-4 w-4" />
         {Label ?? 'Back'}
       </Button>
     </Link>
   );
+  */
 }
