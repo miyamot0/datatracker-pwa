@@ -87,6 +87,14 @@ export const displaySharedArrayBufferDiagnostics = (): void => {
  * Initialize SharedArrayBuffer support check on app startup
  */
 export const initializeSharedArrayBufferSupport = (): boolean => {
+  // When loaded from a file:// origin (e.g. island/offline mode) there is no
+  // server to supply COOP/COEP headers, so cross-origin isolation is structurally
+  // impossible and SharedArrayBuffer cannot be used. Suppress the warning and
+  // return false so callers fall back to compatibility mode.
+  if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
+    return false;
+  }
+
   const check = checkCrossOriginIsolation();
 
   // Always display diagnostics in development
