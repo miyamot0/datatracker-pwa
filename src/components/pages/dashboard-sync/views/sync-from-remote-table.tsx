@@ -1,17 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ReliabilityDataTable } from '@/components/ui/data-table-reli';
-import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ColumnDef } from '@tanstack/react-table';
 import { toast } from 'sonner';
 import { SyncEntryTableRow, ParsedSyncFile } from '@/types/sync';
 import { useMainThreadSync } from '@/hooks/use-main-thread-sync';
+import { syncColumns } from './sync-columns';
 
 type Props = {
   Handle: FileSystemDirectoryHandle;
   RemoteHandle: FileSystemDirectoryHandle;
 };
 
+/**
+ * Component for syncing files from the remote directory to the local directory.
+ *
+ * @param {FileSystemDirectoryHandle} Handle - The handle for the local directory.
+ * @param {FileSystemDirectoryHandle} RemoteHandle - The handle for the remote directory.
+ * @return {ReactNode} A table component displaying the sync status of files.
+ */
 export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
   const [localFileList, setLocalFileList] = useState<ParsedSyncFile[]>([]);
   const [remoteFileList, setRemoteFileList] = useState<ParsedSyncFile[]>([]);
@@ -53,42 +58,18 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
       .filter((value) => value.status === 'Unsynced');
   }, [localFileList, remoteFileList]);
 
-  const columns: ColumnDef<SyncEntryTableRow>[] = [
-    {
-      id: 'select',
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      accessorKey: 'file',
-      header: ({ column }) => <DataTableColumnHeader className="w-full" column={column} title="Unsynced File Path" />,
-    },
-  ];
-
   return (
     <ReliabilityDataTable
       key={`from-remote-${localFileList.length}-${remoteFileList.length}`}
       direction="Local"
-      columns={columns}
+      columns={syncColumns}
       data={sync_status.map((g, index) => {
         return {
           id: `from-remote-${index}`,
-          file: g.file || '',
+          file: g.file,
+          group: g.group,
+          individual: g.individual,
+          evaluation: g.evaluation,
           status: g.status,
           direction: 'Remote --> Local',
         } satisfies SyncEntryTableRow;
