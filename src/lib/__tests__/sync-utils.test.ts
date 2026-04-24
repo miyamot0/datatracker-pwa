@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   validateFilePath,
   normalizeFilePath,
+  classifySyncFileType,
   readFileAsync,
   iterativeRead,
   listFilesInDirectory,
@@ -322,7 +323,24 @@ describe('Sync Utilities', () => {
 
       const result = await listFilesInDirectory(mockHandle);
 
-      expect(result).toEqual(['/testdir/file1.txt', '/testdir/file2.txt']);
+      expect(result).toEqual([
+        {
+          file: '/testdir/file1.txt',
+          group: 'testdir',
+          individual: 'file1.txt',
+          evaluation: '',
+          condition: '',
+          type: 'session_outcome',
+        },
+        {
+          file: '/testdir/file2.txt',
+          group: 'testdir',
+          individual: 'file2.txt',
+          evaluation: '',
+          condition: '',
+          type: 'session_outcome',
+        },
+      ]);
     });
 
     it('should handle nested directory structures', async () => {
@@ -334,7 +352,24 @@ describe('Sync Utilities', () => {
 
       const result = await listFilesInDirectory(mockHandle);
 
-      expect(result).toEqual(['/maindir/file1.txt', '/maindir/subdir/file2.txt']);
+      expect(result).toEqual([
+        {
+          file: '/maindir/file1.txt',
+          group: 'maindir',
+          individual: 'file1.txt',
+          evaluation: '',
+          condition: '',
+          type: 'session_outcome',
+        },
+        {
+          file: '/maindir/subdir/file2.txt',
+          group: 'maindir',
+          individual: 'subdir',
+          evaluation: 'file2.txt',
+          condition: '',
+          type: 'keyset',
+        },
+      ]);
     });
 
     it('should handle empty directories', async () => {
@@ -354,7 +389,16 @@ describe('Sync Utilities', () => {
       const result = await listFilesInDirectory(mockHandle);
 
       // Should only include files from subdirectories, not root files
-      expect(result).toEqual(['/subdir/sub-file.txt']);
+      expect(result).toEqual([
+        {
+          file: '/subdir/sub-file.txt',
+          group: 'subdir',
+          individual: 'sub-file.txt',
+          evaluation: '',
+          condition: '',
+          type: 'session_outcome',
+        },
+      ]);
     });
 
     it('should handle multiple top-level directories', async () => {
@@ -366,7 +410,59 @@ describe('Sync Utilities', () => {
 
       const result = await listFilesInDirectory(mockHandle);
 
-      expect(result).toEqual(['/dir1/file1.txt', '/dir2/file2.txt']);
+      expect(result).toEqual([
+        {
+          file: '/dir1/file1.txt',
+          group: 'dir1',
+          individual: 'file1.txt',
+          evaluation: '',
+          condition: '',
+          type: 'session_outcome',
+        },
+        {
+          file: '/dir2/file2.txt',
+          group: 'dir2',
+          individual: 'file2.txt',
+          evaluation: '',
+          condition: '',
+          type: 'session_outcome',
+        },
+      ]);
+    });
+  });
+
+  describe('classifySyncFileType', () => {
+    it('should classify depth-3 paths as keyset', () => {
+      expect(classifySyncFileType(['Group', 'Individual', 'keyset.json'])).toBe('keyset');
+      expect(classifySyncFileType(['Group', 'Individual', 'AnyName.json'])).toBe('keyset');
+    });
+
+    it('should classify depth-3 settings.json as keyset, not session_parameters', () => {
+      // settings.json directly in individual folder is a keyset, depth check takes priority
+      expect(classifySyncFileType(['Group', 'Individual', 'settings.json'])).toBe('keyset');
+    });
+
+    it('should classify depth-4 settings.json as session_parameters', () => {
+      expect(classifySyncFileType(['Group', 'Individual', 'Evaluation', 'settings.json'])).toBe('session_parameters');
+    });
+
+    it('should classify depth-4 non-settings files as session_outcome', () => {
+      expect(classifySyncFileType(['Group', 'Individual', 'Evaluation', 'data.json'])).toBe('session_outcome');
+      expect(classifySyncFileType(['Group', 'Individual', 'Evaluation', 'other.json'])).toBe('session_outcome');
+    });
+
+    it('should classify depth-5 paths as session_outcome', () => {
+      expect(classifySyncFileType(['Group', 'Individual', 'Evaluation', 'Condition', 'data.json'])).toBe(
+        'session_outcome',
+      );
+      expect(classifySyncFileType(['Group', 'Individual', 'Evaluation', 'Condition', 'settings.json'])).toBe(
+        'session_outcome',
+      );
+    });
+
+    it('should classify shallow paths (depth < 3) as session_outcome', () => {
+      expect(classifySyncFileType(['Group', 'file.txt'])).toBe('session_outcome');
+      expect(classifySyncFileType(['file.txt'])).toBe('session_outcome');
     });
   });
 

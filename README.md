@@ -1,6 +1,6 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-97.37_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-94.84_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-98.19_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-97.55_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-94.95_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-98.59_Percent-green>)
 
-![Static Badge Version](https://img.shields.io/badge/Version-0.5.8-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge Version](https://img.shields.io/badge/Version-0.5.9-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 [![GitHub Bug Tracker](https://img.shields.io/badge/GitHub-Issues-181717?logo=github&logoColor=fff)](https://github.com/miyamot0/datatracker-pwa/issues) [![Slack Support Channel](https://img.shields.io/badge/Slack-4A154B?logo=slack&logoColor=fff)](https://datatrackerworkspace.slack.com/)
 
@@ -173,4 +173,4 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Current Version
 
-0.5.8
+0.5.9

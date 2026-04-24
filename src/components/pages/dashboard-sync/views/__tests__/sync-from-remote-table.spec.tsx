@@ -88,6 +88,15 @@ import SyncFromRemoteTable from '../sync-from-remote-table';
 
 const makeHandle = (name = 'handle') => ({ name }) as FileSystemDirectoryHandle;
 
+const makeSyncFile = (file: string) => ({
+  file,
+  group: '',
+  individual: '',
+  evaluation: '',
+  condition: '',
+  type: 'session_outcome' as const,
+});
+
 const flushMicrotasks = async () => {
   await Promise.resolve();
   await Promise.resolve();
@@ -106,7 +115,10 @@ describe('SyncFromRemoteTable', () => {
 
   it('shows loading indicator initially', async () => {
     mockListBothFiles.mockImplementationOnce(
-      () => new Promise<{ localFiles: string[]; remoteFiles: string[] }>(() => {}),
+      () =>
+        new Promise<{ localFiles: ReturnType<typeof makeSyncFile>[]; remoteFiles: ReturnType<typeof makeSyncFile>[] }>(
+          () => {},
+        ),
     );
     await render(<SyncFromRemoteTable Handle={makeHandle('local')} RemoteHandle={makeHandle('remote')} />);
     await expect.element(page.getByText('Loading files...')).toBeInTheDocument();
@@ -133,8 +145,8 @@ describe('SyncFromRemoteTable', () => {
 
   it('shows remote files that are not in local (unsynced)', async () => {
     mockListBothFiles.mockResolvedValue({
-      localFiles: ['a.json'],
-      remoteFiles: ['a.json', 'b.json'],
+      localFiles: [makeSyncFile('a.json')],
+      remoteFiles: [makeSyncFile('a.json'), makeSyncFile('b.json')],
     });
 
     await render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
@@ -143,8 +155,8 @@ describe('SyncFromRemoteTable', () => {
 
   it('does not show remote files that are already in local (synced)', async () => {
     mockListBothFiles.mockResolvedValue({
-      localFiles: ['a.json'],
-      remoteFiles: ['a.json', 'b.json'],
+      localFiles: [makeSyncFile('a.json')],
+      remoteFiles: [makeSyncFile('a.json'), makeSyncFile('b.json')],
     });
 
     await render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
@@ -154,8 +166,8 @@ describe('SyncFromRemoteTable', () => {
 
   it('renders no rows when all remote files are already local', async () => {
     mockListBothFiles.mockResolvedValue({
-      localFiles: ['a.json', 'b.json'],
-      remoteFiles: ['a.json', 'b.json'],
+      localFiles: [makeSyncFile('a.json'), makeSyncFile('b.json')],
+      remoteFiles: [makeSyncFile('a.json'), makeSyncFile('b.json')],
     });
 
     await render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
@@ -248,7 +260,10 @@ describe('SyncFromRemoteTable', () => {
   });
 
   it('removes file from unsynced list after successful sync', async () => {
-    mockListBothFiles.mockResolvedValue({ localFiles: ['a.json'], remoteFiles: ['a.json', 'b.json'] });
+    mockListBothFiles.mockResolvedValue({
+      localFiles: [makeSyncFile('a.json')],
+      remoteFiles: [makeSyncFile('a.json'), makeSyncFile('b.json')],
+    });
     mockSyncFiles.mockResolvedValue(['b.json']);
     mockToastPromise.mockImplementationOnce(async (asyncFn: () => Promise<unknown>) => {
       await asyncFn();
@@ -277,7 +292,10 @@ describe('SyncFromRemoteTable', () => {
   });
 
   it('renders row select checkbox for each unsynced file', async () => {
-    mockListBothFiles.mockResolvedValue({ localFiles: ['a.json'], remoteFiles: ['a.json', 'b.json'] });
+    mockListBothFiles.mockResolvedValue({
+      localFiles: [makeSyncFile('a.json')],
+      remoteFiles: [makeSyncFile('a.json'), makeSyncFile('b.json')],
+    });
     await render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
     await expect.element(page.getByText('b.json')).toBeInTheDocument();
     const rowCheckbox = page.getByRole('checkbox', { name: 'Select row' });
@@ -286,7 +304,7 @@ describe('SyncFromRemoteTable', () => {
 
   it('renders Unsynced File Path column header', async () => {
     await render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
-    await expect.element(page.getByText('Unsynced File Path')).toBeInTheDocument();
+    await expect.element(page.getByText('File Path')).toBeInTheDocument();
   });
 
   it('triggers select-all toggle when header checkbox is clicked', async () => {
@@ -298,7 +316,10 @@ describe('SyncFromRemoteTable', () => {
   });
 
   it('triggers row toggle when row checkbox is clicked', async () => {
-    mockListBothFiles.mockResolvedValue({ localFiles: ['a.json'], remoteFiles: ['a.json', 'b.json'] });
+    mockListBothFiles.mockResolvedValue({
+      localFiles: [makeSyncFile('a.json')],
+      remoteFiles: [makeSyncFile('a.json'), makeSyncFile('b.json')],
+    });
     await render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
     await expect.element(page.getByText('b.json')).toBeInTheDocument();
     const rowCheckbox = page.getByRole('checkbox', { name: 'Select row' });
@@ -334,7 +355,10 @@ describe('SyncFromRemoteTable', () => {
 
   it('renders row checkbox as checked when row is selected', async () => {
     mockRowSelected.value = true;
-    mockListBothFiles.mockResolvedValue({ localFiles: ['a.json'], remoteFiles: ['a.json', 'b.json'] });
+    mockListBothFiles.mockResolvedValue({
+      localFiles: [makeSyncFile('a.json')],
+      remoteFiles: [makeSyncFile('a.json'), makeSyncFile('b.json')],
+    });
     await render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
     await expect.element(page.getByText('b.json')).toBeInTheDocument();
     const rowCheckbox = page.getByRole('checkbox', { name: 'Select row' });
@@ -359,7 +383,7 @@ describe('SyncFromRemoteTable', () => {
     // Mock sync_status to return incomplete objects to test fallback rendering
     mockListBothFiles.mockResolvedValue({
       localFiles: [],
-      remoteFiles: ['file1.json', '', 'file2.json'],
+      remoteFiles: [makeSyncFile('file1.json'), makeSyncFile(''), makeSyncFile('file2.json')],
     });
     await render(<SyncFromRemoteTable Handle={makeHandle()} RemoteHandle={makeHandle()} />);
 
