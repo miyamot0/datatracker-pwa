@@ -18,6 +18,7 @@ import { useState } from 'react';
 import { Button } from './button';
 import { RefreshCcw, X } from 'lucide-react';
 import { Badge } from './badge';
+import { DataTableViewOptions } from './data-table-column-visibility';
 import { SyncEntryTableRow } from '@/types/sync';
 
 interface DataTableProps<TData, TValue> {
@@ -50,7 +51,10 @@ export function ReliabilityDataTable<TData, TValue>({
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    condition: false,
+    type: false,
+  });
   const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
@@ -107,27 +111,32 @@ export function ReliabilityDataTable<TData, TValue>({
           className="max-w-sm"
         />
 
-        <div
-          className={cn('hidden', {
-            'visible flex': table.getFilteredSelectedRowModel().rows.length > 0,
-          })}
-        >
-          <Button
-            size={'sm'}
-            variant={'outline'}
-            onClick={() => {
-              const selectedRows = table
-                .getFilteredSelectedRowModel()
-                .rows.map((row) => row.original) as SyncEntryTableRow[];
-              callback(selectedRows);
-
-              setRowSelection({});
-            }}
+        <div className="flex items-center gap-2">
+          <div
+            className={cn('hidden', {
+              'visible flex': table.getFilteredSelectedRowModel().rows.length > 0,
+            })}
           >
-            <RefreshCcw className="h-4 w-4 mr-2" />
-            {`Sync File to ${direction}`}
-          </Button>
-          {optionalButtons}
+            <Button
+              size={'sm'}
+              variant={'outline'}
+              className="shadow-sm"
+              onClick={() => {
+                const selectedRows = table
+                  .getFilteredSelectedRowModel()
+                  .rows.map((row) => row.original) as SyncEntryTableRow[];
+                callback(selectedRows);
+
+                setRowSelection({});
+              }}
+            >
+              <RefreshCcw className="h-4 w-4 mr-2" />
+              {`Sync File to ${direction}`}
+            </Button>
+            {optionalButtons}
+          </div>
+
+          <DataTableViewOptions table={table} />
         </div>
       </div>
       <Table>
