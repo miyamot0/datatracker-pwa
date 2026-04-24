@@ -12,6 +12,7 @@ export type SyncEntryTableRow = {
   group: string;
   individual: string;
   evaluation: string;
+  type: string;
   direction: string;
   status: string;
 };
@@ -19,4 +20,4 @@ export type SyncEntryTableRow = {
 /**
  * Type for parsing syncable file with respective identifiers
  */
-export type { ParsedSyncFile } from '../workers/sync/types/sync-worker-types';
+export type { ParsedSyncFile, SyncFileType } from '../workers/sync/types/sync-worker-types';

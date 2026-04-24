@@ -1,4 +1,17 @@
-import { ParsedSyncFile, SyncEntryTableRow } from '../workers/sync/types/sync-worker-types';
+import { ParsedSyncFile, SyncEntryTableRow, SyncFileType } from '../workers/sync/types/sync-worker-types';
+
+/**
+ * Derives the file type from the parsed path segments.
+ * - session_parameters: filename is settings.json
+ * - session_outcome: file sits inside an evaluation subfolder (depth >= 4)
+ * - keyset: file sits directly in the individual folder (depth 3), not settings.json
+ */
+function classifySyncFileType(parts: string[]): SyncFileType {
+  const filename = parts[parts.length - 1];
+  if (filename === 'settings.json') return 'session_parameters';
+  if (parts.length >= 4) return 'session_outcome';
+  return 'keyset';
+}
 
 /**
  * Parses a file path string into a ParsedSyncFile with group/individual/evaluation segments.
@@ -11,6 +24,7 @@ function parseSyncFilePath(path: string): ParsedSyncFile {
     group: parts[0] ?? '',
     individual: parts[1] ?? '',
     evaluation: parts[2] ?? '',
+    type: classifySyncFileType(parts),
   };
 }
 

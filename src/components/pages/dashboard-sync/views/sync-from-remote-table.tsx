@@ -70,6 +70,7 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
           group: g.group,
           individual: g.individual,
           evaluation: g.evaluation,
+          type: g.type,
           status: g.status,
           direction: 'Remote --> Local',
         } satisfies SyncEntryTableRow;

@@ -8,14 +8,20 @@ export interface SyncEntryTableRow {
 }
 
 /**
+ * Categorization of a synced file based on its path structure
+ */
+export type SyncFileType = 'session_outcome' | 'session_parameters' | 'keyset';
+
+/**
  * A file entry returned from directory listing with parsed path segments
  */
 export interface ParsedSyncFile {
-  /** Full relative path, e.g. "/Group/Individual/Evaluation.json" */
+  /** Note: relative path, e.g. "/Group/Individual/Evaluation.json" */
   file: string;
   group: string;
   individual: string;
   evaluation: string;
+  type: SyncFileType;
 }
 
 /**
