@@ -8,6 +8,17 @@ export interface SyncEntryTableRow {
   status: string;
 }
 
+/**
+ * A file entry returned from directory listing with parsed path segments
+ */
+export interface ParsedSyncFile {
+  /** Full relative path, e.g. "/Group/Individual/Evaluation.json" */
+  file: string;
+  group: string;
+  individual: string;
+  evaluation: string;
+}
+
 export type WorkerMessage =
   | { type: 'LIST_FILES_LOCAL'; localHandle: FileSystemDirectoryHandle }
   | { type: 'LIST_FILES_REMOTE'; remoteHandle: FileSystemDirectoryHandle }
@@ -21,9 +32,9 @@ export type WorkerMessage =
     };
 
 export type WorkerResponse =
-  | { type: 'FILES_LISTED_LOCAL'; files: string[] }
-  | { type: 'FILES_LISTED_REMOTE'; files: string[] }
-  | { type: 'FILES_LISTED_BOTH'; localFiles: string[]; remoteFiles: string[] }
+  | { type: 'FILES_LISTED_LOCAL'; files: ParsedSyncFile[] }
+  | { type: 'FILES_LISTED_REMOTE'; files: ParsedSyncFile[] }
+  | { type: 'FILES_LISTED_BOTH'; localFiles: ParsedSyncFile[]; remoteFiles: ParsedSyncFile[] }
   | { type: 'FILES_SYNCED'; syncedFiles: string[]; direction: 'to_remote' | 'from_remote' }
   | { type: 'ERROR'; message: string; operation: string };
 

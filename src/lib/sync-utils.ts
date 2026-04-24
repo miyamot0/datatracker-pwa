@@ -1,4 +1,18 @@
-import { SyncEntryTableRow } from '../workers/sync/types/sync-worker-types';
+import { ParsedSyncFile, SyncEntryTableRow } from '../workers/sync/types/sync-worker-types';
+
+/**
+ * Parses a file path string into a ParsedSyncFile with group/individual/evaluation segments.
+ * Expects paths of the form "/Group/Individual/Evaluation.json".
+ */
+function parseSyncFilePath(path: string): ParsedSyncFile {
+  const parts = path.split('/').filter((p) => p.length > 0);
+  return {
+    file: path,
+    group: parts[0] ?? '',
+    individual: parts[1] ?? '',
+    evaluation: parts[2] ?? '',
+  };
+}
 
 /**
  * Recursively reads directory structure and builds file path array
@@ -25,9 +39,9 @@ export async function iterativeRead(
 /**
  * Lists all files in a directory handle
  * @param handle - FileSystemDirectoryHandle to list files from
- * @returns Promise<string[]> - Array of file paths
+ * @returns Promise<ParsedSyncFile[]> - Array of parsed file entries
  */
-export async function listFilesInDirectory(handle: FileSystemDirectoryHandle): Promise<string[]> {
+export async function listFilesInDirectory(handle: FileSystemDirectoryHandle): Promise<ParsedSyncFile[]> {
   const pathArray: string[] = [];
   const groups = handle.values();
 
@@ -37,7 +51,7 @@ export async function listFilesInDirectory(handle: FileSystemDirectoryHandle): P
     }
   }
 
-  return pathArray;
+  return pathArray.map(parseSyncFilePath);
 }
 
 /**

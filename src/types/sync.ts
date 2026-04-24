@@ -12,3 +12,5 @@ export type SyncEntryTableRow = {
   direction: string;
   status: string;
 };
+
+export type { ParsedSyncFile } from '../workers/sync/types/sync-worker-types';

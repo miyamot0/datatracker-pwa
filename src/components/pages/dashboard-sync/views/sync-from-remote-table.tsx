@@ -4,7 +4,7 @@ import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { Checkbox } from '@/components/ui/checkbox';
 import { ColumnDef } from '@tanstack/react-table';
 import { toast } from 'sonner';
-import { SyncEntryTableRow } from '@/types/sync';
+import { SyncEntryTableRow, ParsedSyncFile } from '@/types/sync';
 import { useMainThreadSync } from '@/hooks/use-main-thread-sync';
 
 type Props = {
@@ -13,8 +13,8 @@ type Props = {
 };
 
 export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
-  const [localFileList, setLocalFileList] = useState<string[]>([]);
-  const [remoteFileList, setRemoteFileList] = useState<string[]>([]);
+  const [localFileList, setLocalFileList] = useState<ParsedSyncFile[]>([]);
+  const [remoteFileList, setRemoteFileList] = useState<ParsedSyncFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const { listBothFiles, syncFiles } = useMainThreadSync();
@@ -41,12 +41,13 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
   }, [Handle, RemoteHandle, listBothFiles]);
 
   const sync_status = useMemo(() => {
+    const localFilePaths = new Set(localFileList.map((l) => l.file));
     return remoteFileList
-      .map((file) => {
-        if (localFileList.includes(file)) {
-          return { file, status: 'Synced' };
+      .map((entry) => {
+        if (localFilePaths.has(entry.file)) {
+          return { ...entry, status: 'Synced' };
         } else {
-          return { file, status: 'Unsynced' };
+          return { ...entry, status: 'Unsynced' };
         }
       })
       .filter((value) => value.status === 'Unsynced');
@@ -97,7 +98,9 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
           async () => {
             const syncedFiles = await syncFiles(rows, RemoteHandle, Handle);
 
-            setLocalFileList((prev) => [...prev, ...syncedFiles]);
+            const syncedPaths = new Set(syncedFiles);
+            const newEntries = remoteFileList.filter((e) => syncedPaths.has(e.file));
+            setLocalFileList((prev) => [...prev, ...newEntries]);
             return syncedFiles;
           },
           {

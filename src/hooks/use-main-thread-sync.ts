@@ -5,10 +5,24 @@
  */
 
 import { useCallback } from 'react';
-import { SyncEntryTableRow } from '@/types/sync';
+import { ParsedSyncFile, SyncEntryTableRow } from '@/types/sync';
 
 // Helper function to yield to the event loop
 const yieldToEventLoop = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+/**
+ * Parses a file path string into a ParsedSyncFile with group/individual/evaluation segments.
+ * Expects paths of the form "/Group/Individual/Evaluation.json".
+ */
+function parseSyncFilePath(path: string): ParsedSyncFile {
+  const parts = path.split('/').filter((p) => p.length > 0);
+  return {
+    file: path,
+    group: parts[0] ?? '',
+    individual: parts[1] ?? '',
+    evaluation: parts[2] ?? '',
+  };
+}
 
 /**
  * Recursively reads directory structure and builds file path array
@@ -39,7 +53,7 @@ async function iterativeRead(
 /**
  * Lists all files in a directory handle with UI responsiveness
  */
-async function listFilesInDirectory(handle: FileSystemDirectoryHandle): Promise<string[]> {
+async function listFilesInDirectory(handle: FileSystemDirectoryHandle): Promise<ParsedSyncFile[]> {
   try {
     const pathArray: string[] = [];
     const processedCount = { count: 0 };
@@ -58,7 +72,7 @@ async function listFilesInDirectory(handle: FileSystemDirectoryHandle): Promise<
       await yieldToEventLoop();
     }
 
-    return pathArray;
+    return pathArray.map(parseSyncFilePath);
   } catch (error) {
     console.error('Error listing files:', error);
     return [];
@@ -190,7 +204,7 @@ async function writeFileToTarget(
 }
 
 export function useMainThreadSync() {
-  const listLocalFiles = useCallback(async (handle: FileSystemDirectoryHandle): Promise<string[]> => {
+  const listLocalFiles = useCallback(async (handle: FileSystemDirectoryHandle): Promise<ParsedSyncFile[]> => {
     try {
       return await listFilesInDirectory(handle);
     } catch (error) {
@@ -199,7 +213,7 @@ export function useMainThreadSync() {
     }
   }, []);
 
-  const listRemoteFiles = useCallback(async (handle: FileSystemDirectoryHandle): Promise<string[]> => {
+  const listRemoteFiles = useCallback(async (handle: FileSystemDirectoryHandle): Promise<ParsedSyncFile[]> => {
     try {
       return await listFilesInDirectory(handle);
     } catch (error) {
@@ -212,7 +226,7 @@ export function useMainThreadSync() {
     async (
       localHandle: FileSystemDirectoryHandle,
       remoteHandle: FileSystemDirectoryHandle,
-    ): Promise<{ localFiles: string[]; remoteFiles: string[] }> => {
+    ): Promise<{ localFiles: ParsedSyncFile[]; remoteFiles: ParsedSyncFile[] }> => {
       try {
         const [localFiles, remoteFiles] = await Promise.all([
           listFilesInDirectory(localHandle),
