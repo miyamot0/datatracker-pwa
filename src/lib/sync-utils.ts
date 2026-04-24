@@ -2,15 +2,17 @@ import { ParsedSyncFile, SyncEntryTableRow, SyncFileType } from '../workers/sync
 
 /**
  * Derives the file type from the parsed path segments.
- * - session_parameters: filename is settings.json
- * - session_outcome: file sits inside an evaluation subfolder (depth >= 4)
- * - keyset: file sits directly in the individual folder (depth 3), not settings.json
+ * Full path structure: /Group/Individual/Evaluation/Condition/file
+ *
+ * - keyset:             depth 3 — file directly in the individual folder (/G/I/file)
+ * - session_parameters: depth 4, filename is 'settings.json' — inside an evaluation folder (/G/I/Eval/settings.json)
+ * - session_outcome:    depth 5 — nested inside an evaluation's condition folder (/G/I/Eval/Condition/file)
  */
-function classifySyncFileType(parts: string[]): SyncFileType {
+export function classifySyncFileType(parts: string[]): SyncFileType {
   const filename = parts[parts.length - 1];
-  if (filename === 'settings.json') return 'session_parameters';
-  if (parts.length >= 4) return 'session_outcome';
-  return 'keyset';
+  if (parts.length === 3) return 'keyset';
+  if (parts.length === 4 && filename === 'settings.json') return 'session_parameters';
+  return 'session_outcome';
 }
 
 /**
@@ -24,6 +26,7 @@ function parseSyncFilePath(path: string): ParsedSyncFile {
     group: parts[0] ?? '',
     individual: parts[1] ?? '',
     evaluation: parts[2] ?? '',
+    condition: parts.length === 5 ? parts[3] : '',
     type: classifySyncFileType(parts),
   };
 }

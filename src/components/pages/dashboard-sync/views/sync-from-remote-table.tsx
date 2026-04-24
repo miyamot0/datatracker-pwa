@@ -70,6 +70,7 @@ export default function SyncFromRemoteTable({ Handle, RemoteHandle }: Props) {
           group: g.group,
           individual: g.individual,
           evaluation: g.evaluation,
+          condition: g.condition,
           type: g.type,
           status: g.status,
           direction: 'Remote --> Local',

@@ -21,6 +21,7 @@ export interface ParsedSyncFile {
   group: string;
   individual: string;
   evaluation: string;
+  condition: string;
   type: SyncFileType;
 }
 

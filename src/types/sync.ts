@@ -12,6 +12,7 @@ export type SyncEntryTableRow = {
   group: string;
   individual: string;
   evaluation: string;
+  condition: string;
   type: string;
   direction: string;
   status: string;

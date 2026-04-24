@@ -35,13 +35,14 @@ export function ReliabilityDataTable<TData, TValue>({
   callback,
   direction,
 }: DataTableProps<TData, TValue>) {
-  const FILTER_COLS = ['group', 'individual', 'evaluation', 'type'] as const;
+  const FILTER_COLS = ['group', 'individual', 'evaluation', 'condition', 'type'] as const;
   type FilterCol = (typeof FILTER_COLS)[number];
 
   const BADGE_COLORS: Record<FilterCol, string> = {
     group: 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200',
     individual: 'bg-violet-100 text-violet-800 border-violet-200 hover:bg-violet-200',
     evaluation: 'bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-200',
+    condition: 'bg-rose-100 text-rose-800 border-rose-200 hover:bg-rose-200',
     type: 'bg-teal-100 text-teal-800 border-teal-200 hover:bg-teal-200',
   };
 

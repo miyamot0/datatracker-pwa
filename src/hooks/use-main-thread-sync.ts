@@ -5,7 +5,8 @@
  */
 
 import { useCallback } from 'react';
-import { ParsedSyncFile, SyncEntryTableRow, SyncFileType } from '@/types/sync';
+import { ParsedSyncFile, SyncEntryTableRow } from '@/types/sync';
+import { classifySyncFileType } from '@/lib/sync-utils';
 
 // Helper function to yield to the event loop
 const yieldToEventLoop = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -16,15 +17,13 @@ const yieldToEventLoop = () => new Promise((resolve) => setTimeout(resolve, 0));
  */
 function parseSyncFilePath(path: string): ParsedSyncFile {
   const parts = path.split('/').filter((p) => p.length > 0);
-  const filename = parts[parts.length - 1];
-  const type: SyncFileType =
-    filename === 'settings.json' ? 'session_parameters' : parts.length >= 4 ? 'session_outcome' : 'keyset';
   return {
     file: path,
     group: parts[0] ?? '',
     individual: parts[1] ?? '',
     evaluation: parts[2] ?? '',
-    type,
+    condition: parts.length === 5 ? parts[3] : '',
+    type: classifySyncFileType(parts),
   };
 }
 
