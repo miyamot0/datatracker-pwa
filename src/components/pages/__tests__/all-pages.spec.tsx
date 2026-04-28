@@ -378,7 +378,7 @@ describe('AuthorizedDisplayContent', () => {
       </ThemeProvider>,
     );
 
-    await page.viewport(1295, 850);
+    await page.viewport(1350, 850);
     await page.screenshot({ path: '../../../../public/screenshots/groups_authorized_page.png' });
   });
 });
@@ -407,7 +407,7 @@ describe('UnauthorizedDisplay', () => {
       </ThemeProvider>,
     );
 
-    await page.viewport(1295, 600);
+    await page.viewport(1295, 650);
     await page.screenshot({ path: '../../../../public/screenshots/groups_unauthorized_page.png' });
   });
 });
@@ -447,6 +447,7 @@ describe('ClientsPage', () => {
       </ThemeProvider>,
     );
 
+    await page.viewport(1295, 650);
     await page.screenshot({ path: '../../../../public/screenshots/clients_page.png' });
   });
 });
@@ -942,6 +943,7 @@ describe('KeySetEditor', () => {
       </ThemeProvider>,
     );
 
+    await page.viewport(1295, 700);
     await page.screenshot({ path: '../../../../public/screenshots/keyset_editor_page.png' });
   });
 });
