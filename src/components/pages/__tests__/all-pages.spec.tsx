@@ -70,17 +70,32 @@ vi.hoisted(() => {
 });
 
 // Mock route files to provide useLoaderData
-vi.mock('@/routes/index', () => ({
-  Route: {
-    useLoaderData: () => ({ Settings: { TransitionBehavior: 'none' }, SaveSettings: vi.fn(), SetSettings: vi.fn() }),
-  },
-}));
+vi.mock('@/routes/index', async () => {
+  const { DEFAULT_APPLICATION_SETTINGS } = await import('@/types/settings/application-settings');
+  return {
+    Route: {
+      useLoaderData: () => ({
+        Settings: { ...DEFAULT_APPLICATION_SETTINGS, EnableFileDeletion: true },
+        SaveSettings: vi.fn(),
+        SetSettings: vi.fn(),
+      }),
+    },
+  };
+});
 
-vi.mock('@/routes/documentation/index', () => ({
-  Route: {
-    useLoaderData: () => ({ FrontMatter: [], KeywordArray: [] }),
-  },
-}));
+vi.mock('@/routes/documentation/index', async () => {
+  const { AllFrontMatter, AllKeywordsArray } = await import('@/lib/docs');
+  const { DEFAULT_APPLICATION_SETTINGS } = await import('@/types/settings/application-settings');
+  return {
+    Route: {
+      useLoaderData: () => ({
+        FrontMatter: AllFrontMatter,
+        KeywordArray: AllKeywordsArray,
+        Settings: DEFAULT_APPLICATION_SETTINGS,
+      }),
+    },
+  };
+});
 
 vi.mock('@/routes/documentation/$slug', () => ({
   Route: {
@@ -149,7 +164,7 @@ vi.mock('@tanstack/react-router', () => ({
     }),
   }),
   Outlet: () => <div data-testid="outlet">Outlet</div>,
-  Await: ({ children }) => <div data-testid="await">{children}</div>,
+  Await: ({ children }: { children: React.ReactNode }) => <div data-testid="await">{children}</div>,
   createRootRouteWithContext: () => ({ component: null }),
   redirect: () => ({}),
   RouterProvider: ({ children }: { children: React.ReactNode }) => <div data-testid="router-provider">{children}</div>,
@@ -261,15 +276,13 @@ describe('HomePage', () => {
           }}
         >
           <TooltipProvider>
-            <PageWrapper Settings={{ ...DEFAULT_APPLICATION_SETTINGS, EnableFileDeletion: true }} label="Home">
-              <HomePage />
-            </PageWrapper>
+            <HomePage />
           </TooltipProvider>
         </FolderHandleContext.Provider>
       </ThemeProvider>,
     );
 
-    await page.viewport(1295, 900);
+    await page.viewport(1295, 1000);
     await page.screenshot({ path: '../../../../public/screenshots/home_page.png' });
   });
 });
@@ -292,19 +305,14 @@ describe('DocumentationListingPage', () => {
           }}
         >
           <TooltipProvider>
-            <PageWrapper
-              Settings={DEFAULT_APPLICATION_SETTINGS}
-              breadcrumbs={[{ label: 'Documentation', to: '/documentation' }]}
-              label="Documentation"
-            >
-              <DocumentationListingPage />
-            </PageWrapper>
+            <DocumentationListingPage />
           </TooltipProvider>
         </FolderHandleContext.Provider>
       </ThemeProvider>,
     );
 
-    //await page.screenshot({ path: '../../../../public/screenshots/documentation_listing_page.png' });
+    //await page.viewport( 1295, 1000 );
+    //await page.screenshot({ path: '../../../../public/screenshots/documentation_listing_page.png' },);
   });
 });
 
@@ -399,6 +407,7 @@ describe('UnauthorizedDisplay', () => {
       </ThemeProvider>,
     );
 
+    await page.viewport(1295, 600);
     await page.screenshot({ path: '../../../../public/screenshots/groups_unauthorized_page.png' });
   });
 });
@@ -889,6 +898,7 @@ describe('ViewSyncPage', () => {
       </ThemeProvider>,
     );
 
+    await page.viewport(1295, 500);
     await page.screenshot({ path: '../../../../public/screenshots/view_sync_page.png' });
   });
 });
