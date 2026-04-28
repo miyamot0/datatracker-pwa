@@ -1,22 +1,9 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { SyncEntryTableRow, SyncFileType } from '@/types/sync';
+import { SyncEntryTableRow } from '@/types/sync';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-
-function typeToString(fileType: SyncFileType) {
-  switch (fileType) {
-    case 'keyset':
-      return 'KeySet';
-    case 'session_parameters':
-      return 'Session Parameters';
-    case 'session_outcome':
-      return 'Session Outcome';
-    default:
-      return 'Unknown';
-  }
-}
 
 /**
  * Column definitions for the sync tables.
@@ -72,15 +59,15 @@ export const syncColumns: ColumnDef<SyncEntryTableRow>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Type" />,
     cell: ({ getValue }) => {
       const value = getValue() as string;
-      const label = typeToString(value as SyncFileType);
+      const label = value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
       if (/\.[a-zA-Z0-9]+$/.test(value)) return null;
       return (
         <Badge
           className={cn('', {
-            'bg-blue-600 hover:bg-blue-400': value === 'keyset',
-            'bg-teal-600 hover:bg-teal-400': value === 'session_parameters',
-            'bg-amber-600 hover:bg-amber-400': value === 'session_outcome',
+            'bg-blue-600 hover:bg-blue-400 dark:text-white': value === 'keyset',
+            'bg-teal-600 hover:bg-teal-400 dark:text-white': value === 'session_parameters',
+            'bg-amber-600 hover:bg-amber-400 dark:text-white': value === 'session_outcome',
           })}
         >
           {label}

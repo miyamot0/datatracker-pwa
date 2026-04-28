@@ -76,7 +76,6 @@ export function ReliabilityDataTable<TData, TValue>({
     },
     defaultColumn: {
       minSize: 50, //enforced during column resizing
-      //maxSize: 500, //enforced during column resizing
     },
   });
 
@@ -88,9 +87,12 @@ export function ReliabilityDataTable<TData, TValue>({
           {FILTER_COLS.map((col) => {
             const value = table.getColumn(col)?.getFilterValue() as string | undefined;
             if (!value) return null;
+
+            const label = value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
             return (
               <Badge key={col} variant="outline" className={cn('flex items-center gap-1', BADGE_COLORS[col])}>
-                <span className="capitalize">{col}:</span> {value}
+                <span className="capitalize">{col}:</span> {label}
                 <button
                   onClick={() => table.getColumn(col)?.setFilterValue(undefined)}
                   className="ml-1 rounded-full"
