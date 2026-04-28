@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ReactNode, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileSyncingStatus } from '@/types/sync';
 import { RefreshCw } from 'lucide-react';
@@ -8,33 +8,23 @@ import { displayConditionalNotification } from '@/lib/notifications';
 import BackButton from '@/components/ui/back-button';
 import SyncToRemoteTable from './views/sync-to-remote-table';
 import SyncFromRemoteTable from './views/sync-from-remote-table';
-import { Badge } from '../../ui/badge';
 import { toast } from 'sonner';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
+import { SyncStatusBadge } from './views/sync-status-button';
 
-const WrappedButton = ({ active, children }: { active: boolean; children: ReactNode }) => {
-  return (
-    <div className="flex flex-row items-center gap-2 h-fit">
-      <Badge
-        className={cn('text-nowrap text-white', {
-          'bg-green-500 hover:bg-green-400': active,
-          'bg-red-500 hover:bg-red-400': !active,
-        })}
-      >
-        {active ? 'Remote Access Authorized' : 'No Remote Selected'}
-      </Badge>
-      {children}
-    </div>
-  );
-};
-
-export default function ViewSyncPage({
-  Settings,
-  Handle,
-}: {
+type Props = {
   Settings: ApplicationSettingsTypes;
   Handle: FileSystemDirectoryHandle;
-}) {
+};
+
+/**
+ * Page to support syncing to and from multiple locations
+ *
+ * @param {ApplicationSettingsTypes} Settings - The application settings, used to conditionally display notifications.
+ * @param {FileSystemDirectoryHandle} Handle - The handle for the local directory, used for syncing operations.
+ * @return {*}
+ */
+export default function ViewSyncPage({ Settings, Handle }: Props) {
   const [remote_handle, setRemoteHandle] = useState<FileSystemDirectoryHandle | undefined>();
   const [directionalSync, setDirectionalSync] = useState<FileSyncingStatus>('to_remote');
 
@@ -101,13 +91,13 @@ export default function ViewSyncPage({
 
   const buttonFunctionality = useMemo(() => {
     return (
-      <WrappedButton active={!!remote_handle}>
+      <SyncStatusBadge active={!!remote_handle}>
         {!!remote_handle && buttonChangeDirection}
 
         {!remote_handle && buttonSetRemote}
 
         <BackButton />
-      </WrappedButton>
+      </SyncStatusBadge>
     );
   }, [remote_handle, buttonChangeDirection, buttonSetRemote]);
 

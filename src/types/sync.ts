@@ -9,6 +9,16 @@ export type FileSyncingStatus = 'to_remote' | 'from_remote';
 export type SyncEntryTableRow = {
   id?: string;
   file: string;
+  group: string;
+  individual: string;
+  evaluation: string;
+  condition: string;
+  type: string;
   direction: string;
   status: string;
 };
+
+/**
+ * Type for parsing syncable file with respective identifiers
+ */
+export type { ParsedSyncFile, SyncFileType } from '../workers/sync/types/sync-worker-types';

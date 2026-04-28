@@ -1,4 +1,35 @@
-import { SyncEntryTableRow } from '../workers/sync/types/sync-worker-types';
+import { ParsedSyncFile, SyncEntryTableRow, SyncFileType } from '../workers/sync/types/sync-worker-types';
+
+/**
+ * Derives the file type from the parsed path segments.
+ * Full path structure: /Group/Individual/Evaluation/Condition/file
+ *
+ * - keyset:             depth 3 — file directly in the individual folder (/G/I/file)
+ * - session_parameters: depth 4, filename is 'settings.json' — inside an evaluation folder (/G/I/Eval/settings.json)
+ * - session_outcome:    depth 5 — nested inside an evaluation's condition folder (/G/I/Eval/Condition/file)
+ */
+export function classifySyncFileType(parts: string[]): SyncFileType {
+  const filename = parts[parts.length - 1];
+  if (parts.length === 3) return 'keyset';
+  if (parts.length === 4 && filename === 'settings.json') return 'session_parameters';
+  return 'session_outcome';
+}
+
+/**
+ * Parses a file path string into a ParsedSyncFile with group/individual/evaluation segments.
+ * Expects paths of the form "/Group/Individual/Evaluation.json".
+ */
+function parseSyncFilePath(path: string): ParsedSyncFile {
+  const parts = path.split('/').filter((p) => p.length > 0);
+  return {
+    file: path,
+    group: parts[0] ?? '',
+    individual: parts[1] ?? '',
+    evaluation: parts[2] ?? '',
+    condition: parts.length === 5 ? parts[3] : '',
+    type: classifySyncFileType(parts),
+  };
+}
 
 /**
  * Recursively reads directory structure and builds file path array
@@ -25,9 +56,9 @@ export async function iterativeRead(
 /**
  * Lists all files in a directory handle
  * @param handle - FileSystemDirectoryHandle to list files from
- * @returns Promise<string[]> - Array of file paths
+ * @returns Promise<ParsedSyncFile[]> - Array of parsed file entries
  */
-export async function listFilesInDirectory(handle: FileSystemDirectoryHandle): Promise<string[]> {
+export async function listFilesInDirectory(handle: FileSystemDirectoryHandle): Promise<ParsedSyncFile[]> {
   const pathArray: string[] = [];
   const groups = handle.values();
 
@@ -37,7 +68,7 @@ export async function listFilesInDirectory(handle: FileSystemDirectoryHandle): P
     }
   }
 
-  return pathArray;
+  return pathArray.map(parseSyncFilePath);
 }
 
 /**

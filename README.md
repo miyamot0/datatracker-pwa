@@ -1,6 +1,6 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-97.35_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-94.84_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-98.10_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-97.55_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-94.94_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-98.59_Percent-green>)
 
-![Static Badge Version](https://img.shields.io/badge/Version-0.5.8-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge Version](https://img.shields.io/badge/Version-0.5.10-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 [![GitHub Bug Tracker](https://img.shields.io/badge/GitHub-Issues-181717?logo=github&logoColor=fff)](https://github.com/miyamot0/datatracker-pwa/issues) [![Slack Support Channel](https://img.shields.io/badge/Slack-4A154B?logo=slack&logoColor=fff)](https://datatrackerworkspace.slack.com/)
 
@@ -34,6 +34,19 @@ Features include the following:
 - [x] Support for deriving new keys/targets based on existing keys (e.g., percentage of compliance, multiple targets in a shared response class)
 - [x] Support for duration logging that permits inter-scoring (i.e., events occurring during a respective) period or periods of time (e.g., 30s intervals)
 - [x] Manual export of data in multiple formats (i.e., JSON, CSV)
+
+### Changelog
+
+#### 0.5.10 (2026-04-28):
+
+- Sync widget expanded to include for targeted filtering
+- More responsive/intuitive UI for syncing (for syncing of large folders)
+
+#### 0.5.9 (2026-04-21):
+
+- Visualizer expansion (hide specific conditions as relevant)
+- Restore total session time scoring (mistakenly removed in 0.5.8)
+- Sorting in reli widget--filter by specific Primary/Reli raters
 
 ### Islanded Mode for Highly Secure Environments
 
@@ -173,4 +186,4 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Current Version
 
-0.5.8
+0.5.10
