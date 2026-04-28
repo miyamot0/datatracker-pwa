@@ -98,7 +98,7 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
 
 @base-ui/react (1.2.0). Copyright MUI Team -- MIT Licensed: [Repo](https://github.com/mui/base-ui.git) 
  
-@hookform/resolvers (3.9.0). Copyright bluebill1049 <bluebill1049@hotmail.com> -- MIT Licensed: [Repo](https://github.com/react-hook-form/resolvers.git) 
+@hookform/resolvers (3.10.0). Copyright bluebill1049 <bluebill1049@hotmail.com> -- MIT Licensed: [Repo](https://github.com/react-hook-form/resolvers.git) 
  
 @radix-ui/react-checkbox (1.3.2). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
@@ -128,7 +128,7 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
  
 @radix-ui/react-tooltip (1.1.2). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
-@tanstack/react-hotkeys (0.9.1). Copyright Tanner Linsley -- MIT Licensed: [Repo](https://github.com/TanStack/hotkeys.git) 
+@tanstack/react-hotkeys (0.10.0). Copyright Tanner Linsley -- MIT Licensed: [Repo](https://github.com/TanStack/hotkeys.git) 
  
 @tanstack/react-query (5.90.21). Copyright tannerlinsley -- MIT Licensed: [Repo](https://github.com/TanStack/query.git) 
  
@@ -158,7 +158,7 @@ react-hook-form (7.53.0). Copyright <bluebill1049@hotmail.com> -- MIT Licensed: 
  
 react-markdown (10.1.0). Copyright Espen Hovlandsdal <espen@hovlandsdal.com> -- MIT Licensed: [Repo](https://github.com/remarkjs/react-markdown.git) 
  
-react-spreadsheet (0.9.5). Copyright Iddan Aaronsohn <mail@aniddan.com> (https://aniddan.com) -- MIT Licensed: [Repo](https://github.com/iddan/react-spreadsheet.git) 
+react-spreadsheet (0.10.1). Copyright Iddan Aaronsohn <mail@aniddan.com> (https://aniddan.com) -- MIT Licensed: [Repo](https://github.com/iddan/react-spreadsheet.git) 
  
 react-use-pwa-install (1.0.1). Copyright Filip Chalupa chalupa.filip@gmail.com https://www.npmjs.com/~onset -- ISC Licensed: [Repo](https://github.com/FilipChalupa/react-use-pwa-install.git) 
  
@@ -178,7 +178,7 @@ tailwindcss-animate (1.0.7). Copyright Jamie Kyle <me@thejameskyle.com> -- MIT L
  
 uuid (9.0.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/uuidjs/uuid.git) 
  
-zod (3.23.8). Copyright Colin McDonnell <colin@colinhacks.com> -- MIT Licensed: [Repo](https://github.com/colinhacks/zod.git) 
+zod (4.3.6). Copyright Colin McDonnell <zod@colinhacks.com> -- MIT Licensed: [Repo](https://github.com/colinhacks/zod.git) 
 
 ## License
 
