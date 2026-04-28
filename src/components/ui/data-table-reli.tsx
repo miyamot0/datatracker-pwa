@@ -176,7 +176,10 @@ export function ReliabilityDataTable<TData, TValue>({
                     })}
                     onClick={
                       FILTER_COLS.includes(cell.column.id as FilterCol) && !isFilename(cell.getValue())
-                        ? () => table.getColumn(cell.column.id)?.setFilterValue(cell.getValue())
+                        ? () => {
+                            table.getColumn(cell.column.id)?.setFilterValue(cell.getValue());
+                            table.setRowSelection({});
+                          }
                         : undefined
                     }
                   >
@@ -194,7 +197,7 @@ export function ReliabilityDataTable<TData, TValue>({
           )}
         </TableBody>
       </Table>
-      <DataTablePagination table={table} rowSelectOptions={'None'} />
+      <DataTablePagination table={table} />
     </div>
   );
 }

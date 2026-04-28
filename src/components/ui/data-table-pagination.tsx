@@ -1,24 +1,18 @@
 import { Table } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RowSelectOptions } from './data-table-common';
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>;
-  rowSelectOptions: RowSelectOptions;
 }
 
-export function DataTablePagination<TData>({ table, rowSelectOptions }: DataTablePaginationProps<TData>) {
-  const output =
-    rowSelectOptions === 'None' ? (
-      <>{table.getFilteredRowModel().rows.length} row(s) in results.</>
-    ) : (
-      <>
-        {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s) selected.
-      </>
-    );
+export function DataTablePagination<TData>({ table }: DataTablePaginationProps<TData>) {
+  const output = (
+    <>
+      {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s) selected.
+    </>
+  );
 
   return (
     <div className="flex items-center justify-between px-2 mt-2">
