@@ -35,6 +35,19 @@ Features include the following:
 - [x] Support for duration logging that permits inter-scoring (i.e., events occurring during a respective) period or periods of time (e.g., 30s intervals)
 - [x] Manual export of data in multiple formats (i.e., JSON, CSV)
 
+### Changelog
+
+#### 0.5.10 (2026-04-28):
+
+- Sync widget expanded to include for targeted filtering
+- More responsive/intuitive UI for syncing (for syncing of large folders)
+
+#### 0.5.9 (2026-04-21):
+
+- Visualizer expansion (hide specific conditions as relevant)
+- Restore total session time scoring (mistakenly removed in 0.5.8)
+- Sorting in reli widget--filter by specific Primary/Reli raters
+
 ### Islanded Mode for Highly Secure Environments
 
 In addition to the standard PWA build, there is also an 'islanded' mode that allows for use in highly secure environments where internet access is restricted (i.e., internet access is white-list only) or virtually unavailable (i.e., all non-internal traffic is blocked). This mode is designed to function entirely offline after the initial installation, essentially fully cached, ensuring that data remains local to the device at all times. In practice, this would be similar to an 'on-prem' solution that would not have any external dependencies (or updates, for that matter).
