@@ -23,6 +23,7 @@ import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components
 import { formatTimeOfDay } from '@/lib/time';
 import { handleMessageChannel, handleWorkerMessage, SessionProcessKeypress } from '@/lib/session-keypress';
 import { RunningStateOptions } from '@/types/session';
+import { cn } from '@/lib/utils';
 
 type Props = {
   Group: string;
@@ -281,6 +282,8 @@ export default function SessionRecorderInterface({
   }, [activeDurationKeysCount, runningState]);
 
   const DurationCountsSummary = useMemo(() => {
+    if (totalDurationKeys.length === 0) return null;
+
     return <SessionRecorderDurationTallies Keyset={Keyset} KeysPressed={keysPressed} Settings={ApplicationSettings} />;
   }, [Keyset, keysPressed, ApplicationSettings, activeDurationKeysCount > 0 ? durationUpdateTimestamp : null]);
 
@@ -330,7 +333,9 @@ export default function SessionRecorderInterface({
     <div className="flex flex-col w-full gap-4">
       {HeaderComponent}
 
-      <div className="grid grid-cols-2 w-full gap-4 select-none">
+      <div
+        className={cn('grid grid-cols-2 w-full gap-4 select-none', { 'grid-cols-1': totalDurationKeys.length === 0 })}
+      >
         {FrequencyCountsSummary}
         {DurationCountsSummary}
       </div>
