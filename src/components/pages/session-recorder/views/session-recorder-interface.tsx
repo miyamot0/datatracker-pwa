@@ -257,10 +257,6 @@ export default function SessionRecorderInterface({
     return <SessionHeaderComponent Settings={Settings} RunningState={runningState} KeySet={Keyset} />;
   }, [Settings, runningState, Keyset]);
 
-  const FrequencyCountsSummary = useMemo(() => {
-    return <SessionRecorderFrequencyTallies Keyset={Keyset} KeysPressed={keysPressed} Settings={ApplicationSettings} />;
-  }, [Keyset, keysPressed, ApplicationSettings]);
-
   // Use a timestamp state to force re-renders when duration keys are active
   const [durationUpdateTimestamp, setDurationUpdateTimestamp] = useState<number>(0);
 
@@ -286,6 +282,10 @@ export default function SessionRecorderInterface({
 
     return <SessionRecorderDurationTallies Keyset={Keyset} KeysPressed={keysPressed} Settings={ApplicationSettings} />;
   }, [Keyset, keysPressed, ApplicationSettings, activeDurationKeysCount > 0 ? durationUpdateTimestamp : null]);
+
+  const FrequencyCountsSummary = useMemo(() => {
+    return <SessionRecorderFrequencyTallies Keyset={Keyset} KeysPressed={keysPressed} Settings={ApplicationSettings} />;
+  }, [Keyset, keysPressed, ApplicationSettings]);
 
   const SessionInstructions = useMemo(() => {
     return (
@@ -334,7 +334,9 @@ export default function SessionRecorderInterface({
       {HeaderComponent}
 
       <div
-        className={cn('grid grid-cols-2 w-full gap-4 select-none', { 'grid-cols-1': totalDurationKeys.length === 0 })}
+        className={cn('grid grid-cols-2 w-full gap-4 select-none', {
+          'grid-cols-1': DurationCountsSummary === null,
+        })}
       >
         {FrequencyCountsSummary}
         {DurationCountsSummary}

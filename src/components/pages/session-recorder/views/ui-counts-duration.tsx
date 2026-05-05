@@ -15,7 +15,7 @@ export default function SessionRecorderDurationTallies({ Keyset, KeysPressed, Se
   const isDense = Settings.KeyDisplay === 'dense';
   const displaySize = Settings.DisplaySize;
 
-  const { DurationKeyChunks, TablesD } = generateChunkedVisuals(
+  const { DurationKeyChunks, TablesD, TablesF } = generateChunkedVisuals(
     Keyset,
     Keyset.FrequencyKeys,
     [...Keyset.DurationKeys, ...Keyset.ScorableDurationKeys],
@@ -38,6 +38,7 @@ export default function SessionRecorderDurationTallies({ Keyset, KeysPressed, Se
           NumCols={TablesD}
           KeyType="Duration"
           IsSecondary={index > 0}
+          IsSkinny={TablesD > 1 || TablesF > 1}
         />
       ))}
     </div>

@@ -15,10 +15,10 @@ export default function SessionRecorderFrequencyTallies({ Keyset, KeysPressed, S
   const isDense = Settings.KeyDisplay === 'dense';
   const displaySize = Settings.DisplaySize;
 
-  const { FrequencyKeyChunks, TablesF } = generateChunkedVisuals(
+  const { FrequencyKeyChunks, TablesF, TablesD } = generateChunkedVisuals(
     Keyset,
     Keyset.FrequencyKeys,
-    Keyset.DurationKeys,
+    [...Keyset.DurationKeys, ...Keyset.ScorableDurationKeys],
     isDense,
     displaySize,
   );
@@ -38,6 +38,7 @@ export default function SessionRecorderFrequencyTallies({ Keyset, KeysPressed, S
           NumCols={TablesF}
           KeyType="Frequency"
           IsSecondary={index > 0}
+          IsSkinny={TablesD > 1 || TablesF > 1}
         />
       ))}
     </div>
