@@ -17,15 +17,18 @@ import { displayConditionalNotification } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
 import { KeySet, KeySetLogical } from '@/types/keyset';
 import { PlusIcon, Trash } from 'lucide-react';
-import { createRef, useContext, useState } from 'react';
+import { createRef, useContext, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 type Props = {
   KeySet: KeySet;
   Callback: (logic: LogicState) => void;
+  logicToEdit?: LogicState | null;
+  open?: boolean;
+  onClose?: () => void;
 };
 
-export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
+export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit, open, onClose }: Props) {
   const { settings } = useContext(FolderHandleContext);
   const [show, setShow] = useState(false);
   const buttonRef = createRef<HTMLButtonElement>();
@@ -43,7 +46,61 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
     id: uuidv4(),
   } satisfies LogicState;
 
-  const [logicState, setLogicState] = useState(defaultEntry);
+  const [logicState, setLogicState] = useState<LogicState>(logicToEdit ? {
+    ...logicToEdit,
+    fields: [...KeySet.FrequencyKeys, ...KeySet.DurationKeys].map((key) => ({
+      ...key,
+      Value: 0,
+      Tag: 'field.' + key.KeyDescription,
+    })) as KeySetLogical[],
+  } : defaultEntry);
+
+  // Sync state if logicToEdit changes
+  useEffect(() => {
+    if (logicToEdit) {
+      const fields = [...KeySet.FrequencyKeys, ...KeySet.DurationKeys].map((key) => ({
+        ...key,
+        Value: 0,
+        Tag: 'field.' + key.KeyDescription,
+      })) as KeySetLogical[];
+
+      // Helper to find field by KeyCode or Tag
+      const findField = (fieldObj: any) => {
+        if (!fieldObj) return undefined;
+        return fields.find(f => f.KeyCode === fieldObj.KeyCode || f.Tag === fieldObj.Tag);
+      };
+
+      // Remap initial
+      let initial = logicToEdit.initial;
+      if (initial.type === 'field') {
+        const mappedField = findField(initial.field);
+        if (mappedField) {
+          initial = { ...initial, field: mappedField };
+        }
+      }
+
+      // Remap steps
+      const steps = logicToEdit.steps.map((step) => {
+        if (step.operand.type === 'field') {
+          const mappedField = findField(step.operand.field);
+          if (mappedField) {
+            return { ...step, operand: { ...step.operand, field: mappedField } };
+          }
+        }
+        return step;
+      });
+
+      setLogicState({
+        ...logicToEdit,
+        initial,
+        steps,
+        fields,
+      });
+      setShow(true);
+    } else {
+      setLogicState(defaultEntry);
+    }
+  }, [logicToEdit, KeySet.FrequencyKeys, KeySet.DurationKeys]);
 
   const stringBuilderPre = logicState.steps.map((step) => {
     let operatorString = '';
@@ -77,35 +134,44 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
 
   //
 
+  // Determine dialog open state
+  const dialogOpen = typeof open === 'boolean' ? open : show;
+
+  // Only show trigger if not editing
   return (
     <Dialog
-      open={show}
+      open={dialogOpen}
       onOpenChange={(open) => {
         setShow(open);
-        setLogicState({
-          ...defaultEntry,
-          fields: [...KeySet.FrequencyKeys, ...KeySet.DurationKeys].map((key) => ({
-            ...key,
-            Value: 0,
-            Tag: 'field.' + key.KeyDescription,
-          })) as KeySetLogical[],
-          id: uuidv4(),
-        });
+        if (!open && onClose) onClose();
+        if (!logicToEdit) {
+          setLogicState({
+            ...defaultEntry,
+            fields: [...KeySet.FrequencyKeys, ...KeySet.DurationKeys].map((key) => ({
+              ...key,
+              Value: 0,
+              Tag: 'field.' + key.KeyDescription,
+            })),
+            id: uuidv4(),
+          });
+        }
       }}
     >
-      <DialogTrigger asChild>
-        <DropdownMenuItem
-          onSelect={(e) => e.preventDefault()}
-          className={cn('flex flex-row gap-2 items-center cursor-pointer px-2')}
-        >
-          <PlusIcon className="w-4 h-4" /> Add Derived Key
-        </DropdownMenuItem>
-      </DialogTrigger>
+      {!logicToEdit && (
+        <DialogTrigger asChild>
+          <DropdownMenuItem
+            onSelect={(e) => e.preventDefault()}
+            className={cn('flex flex-row gap-2 items-center cursor-pointer px-2')}
+          >
+            <PlusIcon className="w-4 h-4" /> Add Derived Key
+          </DropdownMenuItem>
+        </DialogTrigger>
+      )}
 
       <DialogContent className="bg-card select-none min-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Derived Key Creator</DialogTitle>
-          <DialogDescription>Set key and relevant description</DialogDescription>
+          <DialogTitle>{logicToEdit ? 'Edit Derived Key' : 'Derived Key Creator'}</DialogTitle>
+          <DialogDescription>{logicToEdit ? 'Edit and save changes to this derived key.' : 'Set key and relevant description'}</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 divide-y">
           <div className="flex flex-row gap-4 justify-between items-center">
@@ -125,7 +191,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
             </div>
             <div className="min-w-[300px] flex flex-col gap-2">
               <Select
-                defaultValue={logicState.initial.type}
+                value={logicState.initial.type === 'constant' ? 'constant' : logicState.initial.field.Tag}
                 onValueChange={(value) => {
                   if (value === 'constant') {
                     setLogicState((prev) => ({
@@ -134,16 +200,13 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
                     }));
                   } else {
                     const selectedField = logicState.fields.find((field) => field.Tag === value);
-
                     if (selectedField) {
                       const valueSource: ValueSourceField = { type: 'field', field: selectedField };
-
                       const updatedState: LogicState = {
                         ...logicState,
                         value: valueSource.field.Value,
                         initial: valueSource,
                       };
-
                       setLogicState(updatedState);
                     }
                   }
@@ -186,7 +249,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
               </div>
               <div className="min-w-[100px] flex flex-row gap-2">
                 <Select
-                  defaultValue={step.operation}
+                  value={step.operation}
                   onValueChange={(value) => {
                     const updatedSteps = [...logicState.steps];
                     updatedSteps[index] = { ...updatedSteps[index], operation: value as Operation };
@@ -208,7 +271,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
               <div className="flex flex-1"></div>
               <div className="min-w-[235px] flex flex-col gap-2">
                 <Select
-                  defaultValue={step.operand.type === 'constant' ? 'constant' : step.operand.field.Tag}
+                  value={step.operand.type === 'constant' ? 'constant' : step.operand.field.Tag}
                   onValueChange={(value) => {
                     if (value === 'constant') {
                       const updatedSteps = [...logicState.steps];
@@ -272,7 +335,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
 
           <div className="flex flex-row justify-between items-start pt-2 h-[40px]">
             <p>Formula: {stringBuilder}</p>
-            <span>{}</span>
+            <span>{ }</span>
           </div>
         </div>
         <DialogFooter>
@@ -310,6 +373,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
               Callback(logicState);
 
               setShow(false);
+              if (onClose) onClose();
               setLogicState({
                 ...defaultEntry,
                 fields: [...KeySet.FrequencyKeys, ...KeySet.DurationKeys].map((key) => ({
@@ -321,7 +385,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback }: Props) {
               });
             }}
           >
-            Save Derived Key
+            {logicToEdit ? 'Save Changes' : 'Save Derived Key'}
           </Button>
         </DialogFooter>
       </DialogContent>
