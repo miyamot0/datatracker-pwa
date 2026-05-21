@@ -233,7 +233,7 @@ export default function KeySetEditor({
                               ...KeySetObject,
                               FrequencyKeys: newFrequencyKeys,
                             };
-                            {/* Edit dialog for derived key */ }
+
                             {
                               editingDerivedKey && (
                                 <LogicalDialogKeyCreator
@@ -474,7 +474,7 @@ export default function KeySetEditor({
           </div>
         </CardContent>
       </Card>
-      {/* Edit dialog for derived key, always rendered at root */}
+
       {editingDerivedKey && (
         <LogicalDialogKeyCreator
           KeySet={KeySetObject}
