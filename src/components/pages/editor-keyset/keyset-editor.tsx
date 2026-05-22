@@ -472,6 +472,7 @@ export default function KeySetEditor({
           logicToEdit={editingDerivedKey}
           open={!!editingDerivedKey}
           onClose={() => setEditingDerivedKey(null)}
+          lockName={true}
         />
       )}
     </>

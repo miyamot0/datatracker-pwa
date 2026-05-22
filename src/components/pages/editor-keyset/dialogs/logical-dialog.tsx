@@ -26,9 +26,10 @@ type Props = {
   logicToEdit?: LogicState | null;
   open?: boolean;
   onClose?: () => void;
+  lockName?: boolean;
 };
 
-export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit, open, onClose }: Props) {
+export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit, open, onClose, lockName }: Props) {
   const { settings } = useContext(FolderHandleContext);
   const [show, setShow] = useState(false);
   const buttonRef = createRef<HTMLButtonElement>();
@@ -182,6 +183,8 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit,
               onChange={(event) => {
                 setLogicState({ ...logicState, name: event.target.value });
               }}
+              readOnly={!!lockName}
+              disabled={!!lockName}
             />
           </div>
 
