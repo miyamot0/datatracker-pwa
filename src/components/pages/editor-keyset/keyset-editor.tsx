@@ -234,17 +234,7 @@ export default function KeySetEditor({
                               FrequencyKeys: newFrequencyKeys,
                             };
 
-                            {
-                              editingDerivedKey && (
-                                <LogicalDialogKeyCreator
-                                  KeySet={KeySetObject}
-                                  Callback={addDerivedKeyCallback}
-                                  logicToEdit={editingDerivedKey}
-                                  open={!!editingDerivedKey}
-                                  onClose={() => setEditingDerivedKey(null)}
-                                />
-                              )
-                            }
+                            // Removed unused expression block that caused eslint error
                             await mutateKeySet(new_state);
                           }}
                         >
