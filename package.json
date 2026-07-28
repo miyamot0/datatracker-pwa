@@ -35,6 +35,7 @@
     "dev-island": "vite --mode island",
     "dev": "vite",
     "build-island": "tsgo && vite build --mode island",
+    "build-docker": "tsgo && vite build",
     "build": "tsgo && vite build",
     "build:peek": "tsgo --showConfig --listFiles",
     "build:quick": "vite build",
