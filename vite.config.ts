@@ -77,6 +77,7 @@ const basePlugins: PluginOption[] = [
     },
   }),
   VitePWA({
+    disable: process.env.NODE_ENV !== 'production',
     registerType: 'autoUpdate',
     showMaximumFileSizeToCacheInBytesWarning: false,
     devOptions: {
@@ -232,12 +233,12 @@ export default defineConfig(({ mode }) => {
     MODALITY === 'island'
       ? undefined
       : {
-          manualChunks: (id: string) => {
-            if (id.includes('react-markdown')) {
-              return 'react-markdown';
-            }
-          },
-        };
+        manualChunks: (id: string) => {
+          if (id.includes('react-markdown')) {
+            return 'react-markdown';
+          }
+        },
+      };
 
   return {
     plugins,

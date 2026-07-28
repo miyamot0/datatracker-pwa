@@ -10,11 +10,21 @@ type Props = {
   NumCols: number;
   KeyType: 'Frequency' | 'Duration';
   IsSecondary?: boolean;
+  IsSkinny?: boolean;
 };
 
-export function GenerateTableCols({ Keys, KeysPressed, NumCols, KeyType, IsSecondary = false }: Props): ReactNode {
+export function GenerateTableCols({
+  Keys,
+  KeysPressed,
+  NumCols,
+  KeyType,
+  IsSecondary = false,
+  IsSkinny = false,
+}: Props): ReactNode {
   const isNarrow = NumCols > 1;
   const KeyLabel = KeyType === 'Duration' ? (isNarrow ? '(D)' : '(Duration)') : isNarrow ? '(F)' : '(Frequency)';
+
+  console.log('KeyType:', KeyType, 'Is Skinny:', IsSkinny, 'NumCols:', NumCols);
 
   return (
     <Table
@@ -33,9 +43,9 @@ export function GenerateTableCols({ Keys, KeysPressed, NumCols, KeyType, IsSecon
         {KeyType == 'Frequency' &&
           Keys.map((key, index) => (
             <TableRow key={index}>
-              <TableCell className="text-primary">{key.KeyName}</TableCell>
-              <TableCell className="text-primary">{key.KeyDescription}</TableCell>
-              <TableCell className="text-primary">
+              <TableCell className={cn('text-primary', { 'py-2': IsSkinny })}>{key.KeyName}</TableCell>
+              <TableCell className={cn('text-primary', { 'py-2': IsSkinny })}>{key.KeyDescription}</TableCell>
+              <TableCell className={cn('text-primary', { 'py-2': IsSkinny })}>
                 {KeysPressed.filter((rec_key) => rec_key.KeyCode === key.KeyCode).length}
               </TableCell>
             </TableRow>
@@ -70,10 +80,10 @@ export function GenerateTableCols({ Keys, KeysPressed, NumCols, KeyType, IsSecon
 
             return (
               <TableRow key={index}>
-                <TableHead className="text-primary">{key.KeyName}</TableHead>
-                <TableHead className="text-primary">{key.KeyDescription}</TableHead>
-                <TableHead className="text-primary">{rounds}</TableHead>
-                <TableHead className="w-[150px] flex flex-row items-center text-primary">
+                <TableCell className={cn('text-primary', { 'py-2': IsSkinny })}>{key.KeyName}</TableCell>
+                <TableCell className={cn('text-primary', { 'py-2': IsSkinny })}>{key.KeyDescription}</TableCell>
+                <TableCell className={cn('text-primary', { 'py-2': IsSkinny })}>{rounds}</TableCell>
+                <TableCell className={cn('w-[150px] flex flex-row items-center text-primary', { 'py-2': IsSkinny })}>
                   <div
                     className={cn('transition-colors bg-transparent rounded-full px-2', {
                       'bg-green-500 text-white': is_odd,
@@ -82,7 +92,7 @@ export function GenerateTableCols({ Keys, KeysPressed, NumCols, KeyType, IsSecon
                     {duration.toFixed(2)}
                     {is_odd ? ` + ${active_duration.toFixed(2)}` : ''}
                   </div>
-                </TableHead>
+                </TableCell>
               </TableRow>
             );
           })}

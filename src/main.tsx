@@ -11,7 +11,7 @@ import { initializeSharedArrayBufferSupport } from '@/lib/shared-buffer.ts';
 import { startAnalyticsSync } from './lib/analytics/analytics-sync.ts';
 import { setupErrorTracking } from './lib/analytics/analytics-errors.ts';
 
-if (import.meta.env.VITE_MODE !== 'island') {
+if (import.meta.env.VITE_MODE !== 'island' && import.meta.env.PROD) {
   import('./config/pwa-registration').then(({ init }) => {
     init();
   });

@@ -41,6 +41,9 @@ export async function importExistingKeyset(
     ...keySet,
     FrequencyKeys: keysetBase.FrequencyKeys,
     DurationKeys: keysetBase.DurationKeys,
+    DerivedKeys: keysetBase.DerivedKeys,
+    SpecialDurationKeys: keysetBase.SpecialDurationKeys,
+    ScorableDurationKeys: keysetBase.ScorableDurationKeys,
   };
 
   const keyBoard = await keyboards_folder.getFileHandle(`${keysetBase.Name}.json`, {
