@@ -4,14 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { CleanUpString } from '@/lib/strings';
 import { mutationIndividuals } from '@/queries/individuals/mutate-individuals';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { useMutation } from '@tanstack/react-query';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
-import { ColumnDef } from '@tanstack/react-table';
-import { FolderInput, FolderPlus } from 'lucide-react';
+import { ColumnDef, Row } from '@tanstack/react-table';
+import { ChevronDown, FlaskConical, FolderInput, FolderPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
 type ClientTableRow = {
@@ -45,6 +51,38 @@ export default function ClientsPage({
     },
   });
 
+  const DynamicButtonList = ({ row }: { row: Row<ClientTableRow> }) => {
+    return (
+      <Button size={'sm'} variant={'outline'} className="flex flex-row divide-x justify-between mx-0 px-0 shadow">
+        <Link
+          className="px-3 hover:underline flex flex-row items-center"
+          to="/session/$group/$individual"
+          params={{
+            group: Group,
+            individual: row.original.Individual,
+          }}
+        >
+          <FolderInput className="mr-2 h-4 w-4" />
+          Open Evaluations
+        </Link>
+
+        {Settings.EnableFileDeletion && (
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <ChevronDown className="w-fit px-2" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-64" side="bottom" align="end" sideOffset={12}>
+              <DropdownMenuItem onClick={() => console.log('Test clicked')}>
+                <FlaskConical className="mr-2 h-4 w-4" />
+                Test
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </Button>
+    );
+  };
+
   const columns: ColumnDef<ClientTableRow>[] = [
     {
       accessorKey: 'Individual',
@@ -55,19 +93,7 @@ export default function ClientsPage({
       header: () => <div className="text-right">Client Folder Actions</div>,
       cell: ({ row }) => (
         <div className="flex flex-row justify-end">
-          <Button size={'sm'} variant={'outline'} className="flex flex-row divide-x justify-between mx-0 px-0 shadow">
-            <Link
-              className="px-3 hover:underline flex flex-row items-center"
-              to="/session/$group/$individual"
-              params={{
-                group: Group,
-                individual: row.original.Individual,
-              }}
-            >
-              <FolderInput className="mr-2 h-4 w-4" />
-              Open Evaluations
-            </Link>
-          </Button>
+          <DynamicButtonList row={row} />
         </div>
       ),
     },
