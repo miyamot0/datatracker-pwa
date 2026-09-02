@@ -1006,6 +1006,59 @@ describe('file-query-mutate-actions', () => {
       expect(writtenSessionResult.Comments).toBe('a secret note');
     });
 
+    it('preserves time-of-day while shifting the earliest timestamp onto January 1st of the replacement year', async () => {
+      const customSessionResult = buildSessionResult({
+        SessionStart: '2024-06-15T15:30:45.123Z',
+        SessionEnd: '2024-06-15T15:40:45.123Z',
+        Keyset: {
+          Name: 'KeySet1',
+          FrequencyKeys: [],
+          DurationKeys: [],
+          createdAt: '2025-01-01T00:00:00.000Z',
+          lastModified: '2025-01-01T00:00:00.000Z',
+        },
+      });
+      const { mockRootHandle, sessionWritable } = setupMocks({
+        existingIndividuals: ['Source Individual'],
+        sessionResult: customSessionResult,
+      });
+
+      await mutateDeIdentifyIndividual(mockRootHandle as any, 'group', 'Source Individual', 'New Individual', 2000);
+
+      const writtenSessionResult = JSON.parse(sessionWritable.write.mock.calls[0][0]);
+      const shiftedStart = new Date(writtenSessionResult.SessionStart);
+      const originalStart = new Date('2024-06-15T15:30:45.123Z');
+
+      expect(shiftedStart.getFullYear()).toBe(2000);
+      expect(shiftedStart.getMonth()).toBe(0);
+      expect(shiftedStart.getDate()).toBe(1);
+      expect(shiftedStart.getHours()).toBe(originalStart.getHours());
+      expect(shiftedStart.getMinutes()).toBe(originalStart.getMinutes());
+      expect(shiftedStart.getSeconds()).toBe(originalStart.getSeconds());
+    });
+
+    it('throws a clear error and creates nothing when there are no session files to de-identify', async () => {
+      const mockRootHandle = createMockDirectoryHandle('root');
+      const mockGroupDir = createMockDirectoryHandle('group');
+      const mockSourceDir = createMockDirectoryHandle('Source Individual');
+
+      mockRootHandle.getDirectoryHandle.mockResolvedValue(mockGroupDir);
+      mockGroupDir.entries.mockImplementation(() =>
+        createEntriesIterator([['Source Individual', createMockDirectoryHandle('Source Individual')]]),
+      );
+      mockGroupDir.getDirectoryHandle.mockImplementation((name: string) => {
+        if (name === 'Source Individual') return Promise.resolve(mockSourceDir);
+        throw new Error(`Unexpected group getDirectoryHandle(${name})`);
+      });
+      mockSourceDir.entries.mockImplementation(() => createEntriesIterator([]));
+
+      await expect(
+        mutateDeIdentifyIndividual(mockRootHandle as any, 'group', 'Source Individual', 'New Individual', 2000),
+      ).rejects.toThrow('nothing to de-identify');
+
+      expect(mockGroupDir.getDirectoryHandle).not.toHaveBeenCalledWith('New Individual', { create: true });
+    });
+
     it('throws when the new individual name already exists', async () => {
       const { mockRootHandle } = setupMocks({ existingIndividuals: ['Source Individual', 'New Individual'] });
 

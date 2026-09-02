@@ -10,12 +10,12 @@ import {
 /**
  * De-identifies a source individual into a brand new individual: copies every evaluation/condition/
  * session-result file and every per-individual KeySet file, pseudonymizing names and shifting dates
- * by one shared offset anchored to January 1st of `BirthYear`. The source individual is untouched.
+ * by one shared offset anchored to January 1st of `ReplacementYear`. The source individual is untouched.
  *
  * @param Group - The name of the group associated with the individuals.
  * @param SourceIndividual - The name of the individual to de-identify.
  * @param NewIndividual - The name of the new, de-identified individual to create.
- * @param BirthYear - The replacement year; the individual's earliest timestamp shifts onto January 1st of this year.
+ * @param ReplacementYear - The arbitrary replacement year; the individual's earliest timestamp shifts onto January 1st of this year.
  * @param RedactComments - Whether session `Comments` should be stripped from the de-identified copy.
  * @param Handle - The file system directory handle used to access and manipulate the individual records.
  * @returns - A promise that resolves to the updated list of individual names after the mutation is complete.
@@ -24,14 +24,14 @@ export const mutationDeIdentifyIndividual = async ({
   Group,
   SourceIndividual,
   NewIndividual,
-  BirthYear,
+  ReplacementYear,
   RedactComments,
   Handle,
 }: {
   Group: string;
   SourceIndividual: string;
   NewIndividual: string;
-  BirthYear: number;
+  ReplacementYear: number;
   RedactComments: boolean;
   Handle: FileSystemDirectoryHandle;
 }): Promise<string[]> => {
@@ -46,7 +46,7 @@ export const mutationDeIdentifyIndividual = async ({
     Group,
     SourceIndividual,
     NewIndividual,
-    BirthYear,
+    ReplacementYear,
     RedactComments,
   });
 };
@@ -56,14 +56,14 @@ export const mutationDeIdentifyIndividualWorker = async ({
   Group,
   SourceIndividual,
   NewIndividual,
-  BirthYear,
+  ReplacementYear,
   RedactComments,
 }: {
   Handle: FileSystemDirectoryHandle;
   Group: string;
   SourceIndividual: string;
   NewIndividual: string;
-  BirthYear: number;
+  ReplacementYear: number;
   RedactComments: boolean;
 }) => {
   const worker = new DeIdentifyIndividualWorker();
@@ -73,7 +73,7 @@ export const mutationDeIdentifyIndividualWorker = async ({
     groupName: Group,
     sourceIndividualName: SourceIndividual,
     newIndividualName: NewIndividual,
-    birthYear: BirthYear,
+    replacementYear: ReplacementYear,
     redactComments: RedactComments,
   } satisfies DeIdentifyIndividualRequest;
 

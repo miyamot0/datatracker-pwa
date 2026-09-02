@@ -30,7 +30,7 @@ self.onmessage = async (event: MessageEvent<DeIdentifyIndividualRequest>) => {
       request.groupName,
       request.sourceIndividualName,
       request.newIndividualName,
-      request.birthYear,
+      request.replacementYear,
       request.redactComments,
     );
 

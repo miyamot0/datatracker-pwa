@@ -206,7 +206,7 @@ describe('ClientsPage', () => {
     await expect.element(page.getByText(/Provide a new name/)).toBeInTheDocument();
 
     await page.getByLabelText('New Name').fill('New Client Name');
-    await page.getByLabelText('Birth Year').fill('2000');
+    await page.getByLabelText('Replacement Year').fill('2000');
 
     await page.getByRole('button', { name: 'Submit' }).click();
 
@@ -215,7 +215,7 @@ describe('ClientsPage', () => {
         Group: 'GroupA',
         SourceIndividual: 'Client1',
         NewIndividual: 'New Client Name',
-        BirthYear: 2000,
+        ReplacementYear: 2000,
         RedactComments: true,
       }),
     );
@@ -227,7 +227,7 @@ describe('ClientsPage', () => {
     await page.getByText('De-Identify Case').first().click();
 
     await page.getByLabelText('New Name').fill('New Client Name');
-    await page.getByLabelText('Birth Year').fill('2000');
+    await page.getByLabelText('Replacement Year').fill('2000');
     await page.getByRole('checkbox', { name: 'Redact session comments' }).click();
 
     await page.getByRole('button', { name: 'Submit' }).click();
@@ -241,7 +241,7 @@ describe('ClientsPage', () => {
     await page.getByText('De-Identify Case').first().click();
 
     await page.getByLabelText('New Name').fill('Client2');
-    await page.getByLabelText('Birth Year').fill('2000');
+    await page.getByLabelText('Replacement Year').fill('2000');
 
     await expect.element(page.getByRole('button', { name: 'Submit' })).toBeDisabled();
   });

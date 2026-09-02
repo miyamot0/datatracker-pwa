@@ -44,10 +44,10 @@ const buildDeIdentifySchema = (existingNames: string[]) =>
       .refine((name) => !existingNames.includes(name.trim()), {
         message: 'A client with this name already exists',
       }),
-    BirthYear: z.coerce
+    ReplacementYear: z.coerce
       .number()
-      .min(1970, { message: 'The birth year must be 1970 or later' })
-      .max(2026, { message: 'The birth year must be 2026 or earlier' }),
+      .min(1970, { message: 'The year must be 1970 or later' })
+      .max(2026, { message: 'The year must be 2026 or earlier' }),
     RedactComments: z.boolean().default(true),
   });
 
@@ -100,7 +100,7 @@ export default function ClientsPage({
     const form = useForm<DeIdentifySchemaType>({
       defaultValues: {
         NewName: '',
-        BirthYear: '' as unknown as number,
+        ReplacementYear: '' as unknown as number,
         RedactComments: true,
       },
       mode: 'onChange',
@@ -128,7 +128,7 @@ export default function ClientsPage({
             Group,
             SourceIndividual: row.original.Individual,
             NewIndividual: values.NewName.trim(),
-            BirthYear: Number(values.BirthYear),
+            ReplacementYear: Number(values.ReplacementYear),
             RedactComments: values.RedactComments,
             Handle,
           }),
@@ -143,7 +143,6 @@ export default function ClientsPage({
         },
       );
 
-      form.reset();
       setTestDialogOpen(false);
     }
 
@@ -168,7 +167,12 @@ export default function ClientsPage({
                 <ChevronDown className="w-fit px-2" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-52" side="bottom" align="end" sideOffset={12}>
-                <DropdownMenuItem onClick={() => setTestDialogOpen(true)}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    form.reset();
+                    setTestDialogOpen(true);
+                  }}
+                >
                   <UserIcon className="mr-2 h-4 w-4" />
                   De-Identify Case
                 </DropdownMenuItem>
@@ -177,13 +181,7 @@ export default function ClientsPage({
           )}
         </Button>
 
-        <Dialog
-          open={testDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) form.reset();
-            setTestDialogOpen(open);
-          }}
-        >
+        <Dialog open={testDialogOpen} onOpenChange={setTestDialogOpen}>
           <DialogContent className="bg-card select-none">
             <DialogHeader>
               <DialogTitle>De-Identify Case</DialogTitle>
@@ -208,10 +206,10 @@ export default function ClientsPage({
                 />
                 <FormField
                   control={form.control}
-                  name="BirthYear"
+                  name="ReplacementYear"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Birth Year</FormLabel>
+                      <FormLabel>Replacement Year</FormLabel>
                       <FormControl>
                         <Input placeholder="2000" type="number" {...field} />
                       </FormControl>

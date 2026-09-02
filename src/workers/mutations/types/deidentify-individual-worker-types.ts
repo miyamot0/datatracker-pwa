@@ -10,7 +10,7 @@ export interface DeIdentifyIndividualRequest {
   groupName: string;
   sourceIndividualName: string;
   newIndividualName: string;
-  birthYear: number;
+  replacementYear: number;
   redactComments: boolean;
 }
 
