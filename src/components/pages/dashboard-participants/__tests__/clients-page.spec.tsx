@@ -77,6 +77,13 @@ vi.mock('@/components/ui/back-button', () => ({
   default: () => <div>Back</div>,
 }));
 
+vi.mock('@/components/ui/dropdown-menu', () => ({
+  DropdownMenu: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuTrigger: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuContent: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuItem: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
+}));
+
 vi.mock('sonner', () => ({
   toast: {
     promise: mockToastPromise,
@@ -85,13 +92,13 @@ vi.mock('sonner', () => ({
 
 import ClientsPage from '../clients-page';
 
-const renderPage = () =>
+const renderPage = (settingsOverride: Record<string, unknown> = {}) =>
   render(
     <ClientsPage
       Group="GroupA"
       Clients={['Client1', 'Client2']}
       Handle={{} as FileSystemDirectoryHandle}
-      Settings={{} as any}
+      Settings={{ ...settingsOverride } as any}
     />,
   );
 
@@ -183,5 +190,59 @@ describe('ClientsPage', () => {
     await page.getByRole('button', { name: 'Create' }).click();
 
     expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ Action: 'Add', Individuals: ['Client3'] }));
+  });
+
+  it('does not show the De-Identify Case dropdown when file deletion is disabled', async () => {
+    await renderPage({ EnableFileDeletion: false });
+
+    expect(await page.getByText('De-Identify Case').query()).toBeNull();
+  });
+
+  it('de-identify dialog submits with RedactComments true by default', async () => {
+    await renderPage({ EnableFileDeletion: true });
+
+    await page.getByText('De-Identify Case').first().click();
+
+    await expect.element(page.getByText(/Provide a new name/)).toBeInTheDocument();
+
+    await page.getByLabelText('New Name').fill('New Client Name');
+    await page.getByLabelText('Birth Year').fill('2000');
+
+    await page.getByRole('button', { name: 'Submit' }).click();
+
+    expect(mockMutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({
+        Group: 'GroupA',
+        SourceIndividual: 'Client1',
+        NewIndividual: 'New Client Name',
+        BirthYear: 2000,
+        RedactComments: true,
+      }),
+    );
+  });
+
+  it('de-identify dialog submits with RedactComments false when unchecked', async () => {
+    await renderPage({ EnableFileDeletion: true });
+
+    await page.getByText('De-Identify Case').first().click();
+
+    await page.getByLabelText('New Name').fill('New Client Name');
+    await page.getByLabelText('Birth Year').fill('2000');
+    await page.getByRole('checkbox', { name: 'Redact session comments' }).click();
+
+    await page.getByRole('button', { name: 'Submit' }).click();
+
+    expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ RedactComments: false }));
+  });
+
+  it('de-identify submit button stays disabled when the name duplicates an existing client', async () => {
+    await renderPage({ EnableFileDeletion: true });
+
+    await page.getByText('De-Identify Case').first().click();
+
+    await page.getByLabelText('New Name').fill('Client2');
+    await page.getByLabelText('Birth Year').fill('2000');
+
+    await expect.element(page.getByRole('button', { name: 'Submit' })).toBeDisabled();
   });
 });

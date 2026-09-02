@@ -2,6 +2,7 @@ import { queryClient } from '@/App';
 import BackButton from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -15,14 +16,14 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { CleanUpString } from '@/lib/strings';
+import { mutationDeIdentifyIndividual } from '@/queries/individuals/mutate-deidentify-individual';
 import { mutationIndividuals } from '@/queries/individuals/mutate-individuals';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { ColumnDef, Row } from '@tanstack/react-table';
 import { ChevronDown, FolderInput, FolderPlus, UserIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -31,15 +32,26 @@ type ClientTableRow = {
   Individual: string;
 };
 
-const DeIdentifySchema = z.object({
-  NewName: z.string().min(4, { message: 'The new name must be at least 4 characters long' }).max(128),
-  BirthYear: z.coerce
-    .number()
-    .min(1970, { message: 'The birth year must be 1970 or later' })
-    .max(2026, { message: 'The birth year must be 2026 or earlier' }),
-});
+/**
+ * A client's new name must not collide with any existing client in the current group
+ */
+const buildDeIdentifySchema = (existingNames: string[]) =>
+  z.object({
+    NewName: z
+      .string()
+      .min(4, { message: 'The new name must be at least 4 characters long' })
+      .max(128)
+      .refine((name) => !existingNames.includes(name.trim()), {
+        message: 'A client with this name already exists',
+      }),
+    BirthYear: z.coerce
+      .number()
+      .min(1970, { message: 'The birth year must be 1970 or later' })
+      .max(2026, { message: 'The birth year must be 2026 or earlier' }),
+    RedactComments: z.boolean().default(true),
+  });
 
-type DeIdentifySchemaType = z.infer<typeof DeIdentifySchema>;
+type DeIdentifySchemaType = z.infer<ReturnType<typeof buildDeIdentifySchema>>;
 
 export default function ClientsPage({
   Group,
@@ -68,25 +80,68 @@ export default function ClientsPage({
     },
   });
 
+  const mutateDeIdentify = useMutation({
+    mutationFn: mutationDeIdentifyIndividual,
+    onSuccess: async (data) => {
+      queryClient.setQueryData(['/', Group], data);
+
+      await router.invalidate({
+        filter: (match) => match.routeId === currentRouteId,
+        sync: true,
+      });
+    },
+  });
+
   const DynamicButtonList = ({ row }: { row: Row<ClientTableRow> }) => {
     const [testDialogOpen, setTestDialogOpen] = useState(false);
 
+    const deIdentifySchema = buildDeIdentifySchema(Clients);
+
     const form = useForm<DeIdentifySchemaType>({
-      resolver: zodResolver(DeIdentifySchema),
       defaultValues: {
         NewName: '',
         BirthYear: '' as unknown as number,
+        RedactComments: true,
       },
       mode: 'onChange',
     });
 
-    // computed separately from formState.isValid, which eagerly re-validates via the resolver on mount
+    // validated manually (not via zodResolver) since @hookform/resolvers v3 is incompatible with zod v4
     const watchedValues = form.watch();
-    const isFormValid = DeIdentifySchema.safeParse(watchedValues).success;
+    const parseResult = deIdentifySchema.safeParse(watchedValues);
+    const isFormValid = parseResult.success;
+
+    useEffect(() => {
+      form.clearErrors();
+      if (!parseResult.success) {
+        for (const issue of parseResult.error.issues) {
+          const field = issue.path[0] as keyof DeIdentifySchemaType;
+          form.setError(field, { type: 'manual', message: issue.message });
+        }
+      }
+    }, [JSON.stringify(watchedValues)]);
 
     function onSubmit(values: DeIdentifySchemaType) {
-      // stub: no mutation wired up yet, just close the dialog
-      console.log('De-identify submitted', row.original.Individual, values);
+      toast.promise(
+        async () =>
+          await mutateDeIdentify.mutateAsync({
+            Group,
+            SourceIndividual: row.original.Individual,
+            NewIndividual: values.NewName.trim(),
+            BirthYear: Number(values.BirthYear),
+            RedactComments: values.RedactComments,
+            Handle,
+          }),
+        {
+          loading: 'De-identifying client...',
+          success: () => {
+            return 'Client de-identified successfully!';
+          },
+          error: (e: Error) => {
+            return `An error occurred while de-identifying the client: ${e.message}`;
+          },
+        },
+      );
 
       form.reset();
       setTestDialogOpen(false);
@@ -162,6 +217,21 @@ export default function ClientsPage({
                       </FormControl>
                       <FormDescription>Must be between 1970 and 2026</FormDescription>
                       <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="RedactComments"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start gap-2 space-y-0">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <div className="flex flex-col gap-1">
+                        <FormLabel>Redact session comments</FormLabel>
+                        <FormDescription>Strip free-text comments from the de-identified copy</FormDescription>
+                      </div>
                     </FormItem>
                   )}
                 />

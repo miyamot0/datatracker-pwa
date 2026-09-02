@@ -6,6 +6,7 @@ import {
   mutateEvaluations,
   mutateGroups,
   mutateIndividuals,
+  mutateDeIdentifyIndividual,
   mutateKeysets,
   mutateKeysetsAll,
   duplicateEvaluationRecord,
@@ -790,6 +791,227 @@ describe('file-query-mutate-actions', () => {
       expect(mockGroupDir.removeEntry).toHaveBeenCalledWith('individual1', { recursive: true });
       expect(mockGroupDir.removeEntry).toHaveBeenCalledWith('individual2', { recursive: true });
       expect(result).toEqual(['keep-this']);
+    });
+  });
+
+  describe('mutateDeIdentifyIndividual', () => {
+    const originalKeySetDate = '2020-01-01T00:00:00.000Z';
+
+    function buildSessionResult(overrides: Partial<any> = {}) {
+      return {
+        Keyset: {
+          Name: 'KeySet1',
+          FrequencyKeys: [],
+          DurationKeys: [],
+          createdAt: originalKeySetDate,
+          lastModified: originalKeySetDate,
+        },
+        SessionSettings: {
+          Therapist: 'Jane Doe',
+          Condition: 'Baseline',
+          KeySet: 'KeySet1',
+          TimerOption: 'None',
+          Initials: 'JD',
+          Role: 'Primary',
+          Session: 1,
+          DurationS: 600,
+        },
+        SystemKeyPresses: [],
+        FrequencyKeyPresses: [],
+        DurationKeyPresses: [],
+        SessionStart: '2024-06-01T12:00:00.000Z',
+        SessionEnd: '2024-06-01T12:10:00.000Z',
+        EndedEarly: false,
+        TimerMain: 0,
+        TimerOne: 0,
+        TimerTwo: 0,
+        TimerThree: 0,
+        SpecialKeyTimers: {},
+        Comments: 'a secret note',
+        ...overrides,
+      };
+    }
+
+    function setupMocks({
+      existingIndividuals = [],
+      sessionResult = buildSessionResult(),
+    }: {
+      existingIndividuals?: string[];
+      sessionResult?: any;
+    } = {}) {
+      const mockRootHandle = createMockDirectoryHandle('root');
+      const mockGroupDir = createMockDirectoryHandle('group');
+      const mockSourceDir = createMockDirectoryHandle('Source Individual');
+      const mockTargetDir = createMockDirectoryHandle('New Individual');
+      const mockEvalDir = createMockDirectoryHandle('Eval1');
+      const mockConditionDir = createMockDirectoryHandle('Baseline');
+      const mockTargetEvalDir = createMockDirectoryHandle('Eval1');
+      const mockTargetConditionDir = createMockDirectoryHandle('Baseline');
+
+      const mockSessionFileHandle = createMockFileHandle('1_Baseline_Primary.json');
+      const mockSettingsFileHandle = createMockFileHandle('settings.json');
+      const mockKeySetFileHandle = createMockFileHandle('KeySet1.json');
+      const mockTargetSessionFileHandle = createMockFileHandle('1_Baseline_Primary.json');
+      const mockTargetKeySetFileHandle = createMockFileHandle('KeySet1.json');
+
+      const sessionWritable = createMockWritableStream();
+      const keySetWritable = createMockWritableStream();
+
+      mockRootHandle.getDirectoryHandle.mockResolvedValue(mockGroupDir);
+
+      mockGroupDir.entries.mockImplementation(() =>
+        createEntriesIterator(existingIndividuals.map((name) => [name, createMockDirectoryHandle(name)])),
+      );
+      mockGroupDir.getDirectoryHandle.mockImplementation((name: string) => {
+        if (name === 'Source Individual') return Promise.resolve(mockSourceDir);
+        if (name === 'New Individual') return Promise.resolve(mockTargetDir);
+        throw new Error(`Unexpected group getDirectoryHandle(${name})`);
+      });
+
+      mockSourceDir.entries.mockImplementation(() =>
+        createEntriesIterator([
+          ['Eval1', mockEvalDir],
+          ['KeySet1.json', mockKeySetFileHandle],
+        ]),
+      );
+      mockSourceDir.getFileHandle.mockImplementation((name: string) => {
+        if (name === 'KeySet1.json') return Promise.resolve(mockKeySetFileHandle);
+        throw new Error(`Unexpected source getFileHandle(${name})`);
+      });
+      mockSourceDir.getDirectoryHandle.mockImplementation((name: string) => {
+        if (name === 'Eval1') return Promise.resolve(mockEvalDir);
+        throw new Error(`Unexpected source getDirectoryHandle(${name})`);
+      });
+
+      mockEvalDir.entries.mockImplementation(() => createEntriesIterator([['Baseline', mockConditionDir]]));
+      mockEvalDir.getDirectoryHandle.mockImplementation((name: string) => {
+        if (name === 'Baseline') return Promise.resolve(mockConditionDir);
+        throw new Error(`Unexpected evaluation getDirectoryHandle(${name})`);
+      });
+
+      mockConditionDir.entries.mockImplementation(() =>
+        createEntriesIterator([
+          ['1_Baseline_Primary.json', mockSessionFileHandle],
+          ['settings.json', mockSettingsFileHandle],
+        ]),
+      );
+      mockConditionDir.getFileHandle.mockImplementation((name: string) => {
+        if (name === '1_Baseline_Primary.json') return Promise.resolve(mockSessionFileHandle);
+        throw new Error(`Unexpected condition getFileHandle(${name})`);
+      });
+
+      mockTargetDir.getDirectoryHandle.mockImplementation(() => Promise.resolve(mockTargetEvalDir));
+      mockTargetDir.getFileHandle.mockImplementation((name: string) => {
+        if (name === 'KeySet1.json') return Promise.resolve(mockTargetKeySetFileHandle);
+        throw new Error(`Unexpected target getFileHandle(${name})`);
+      });
+
+      mockTargetEvalDir.getDirectoryHandle.mockImplementation(() => Promise.resolve(mockTargetConditionDir));
+      mockTargetConditionDir.getFileHandle.mockImplementation((name: string) => {
+        if (name === '1_Baseline_Primary.json') return Promise.resolve(mockTargetSessionFileHandle);
+        throw new Error(`Unexpected target condition getFileHandle(${name})`);
+      });
+
+      mockSessionFileHandle.getFile.mockResolvedValue(createMockFile(JSON.stringify(sessionResult)));
+      mockKeySetFileHandle.getFile.mockResolvedValue(
+        createMockFile(
+          JSON.stringify({
+            id: 'ks-1',
+            Name: 'KeySet1',
+            FrequencyKeys: [],
+            DurationKeys: [],
+            createdAt: originalKeySetDate,
+            lastModified: originalKeySetDate,
+            DerivedKeys: [],
+            SpecialDurationKeys: [],
+            ScorableDurationKeys: [],
+          }),
+        ),
+      );
+
+      mockTargetSessionFileHandle.createWritable.mockResolvedValue(sessionWritable);
+      mockTargetKeySetFileHandle.createWritable.mockResolvedValue(keySetWritable);
+
+      mockedSerializeKeySet.mockReturnValue('serialized-keyset');
+
+      return {
+        mockRootHandle,
+        mockGroupDir,
+        mockConditionDir,
+        mockTargetDir,
+        mockTargetEvalDir,
+        sessionWritable,
+        keySetWritable,
+      };
+    }
+
+    it('creates the new individual and copies/anonymizes session results', async () => {
+      const { mockRootHandle, mockGroupDir, mockTargetDir, mockTargetEvalDir, sessionWritable } = setupMocks({
+        existingIndividuals: ['Source Individual'],
+      });
+
+      const result = await mutateDeIdentifyIndividual(
+        mockRootHandle as any,
+        'group',
+        'Source Individual',
+        'New Individual',
+        2000,
+      );
+
+      expect(mockGroupDir.getDirectoryHandle).toHaveBeenCalledWith('New Individual', { create: true });
+      expect(mockTargetDir.getDirectoryHandle).toHaveBeenCalledWith('Eval1', { create: true });
+      expect(mockTargetEvalDir.getDirectoryHandle).toHaveBeenCalledWith('Baseline', { create: true });
+
+      const writtenSessionResult = JSON.parse(sessionWritable.write.mock.calls[0][0]);
+      expect(writtenSessionResult.SessionSettings.Therapist).not.toBe('Jane Doe');
+      expect(writtenSessionResult.SessionSettings.Initials).not.toBe('JD');
+      expect(writtenSessionResult.Comments).toBeUndefined();
+      expect(writtenSessionResult.SessionStart).not.toBe('2024-06-01T12:00:00.000Z');
+
+      expect(result).toEqual(['Source Individual', 'New Individual']);
+    });
+
+    it('never reads or copies settings.json', async () => {
+      const { mockRootHandle, mockConditionDir } = setupMocks({ existingIndividuals: ['Source Individual'] });
+
+      await mutateDeIdentifyIndividual(mockRootHandle as any, 'group', 'Source Individual', 'New Individual', 2000);
+
+      expect(mockConditionDir.getFileHandle).not.toHaveBeenCalledWith('settings.json');
+    });
+
+    it('copies and shifts KeySet files with serializeKeySet', async () => {
+      const { mockRootHandle, keySetWritable } = setupMocks({ existingIndividuals: ['Source Individual'] });
+
+      await mutateDeIdentifyIndividual(mockRootHandle as any, 'group', 'Source Individual', 'New Individual', 2000);
+
+      expect(mockedSerializeKeySet).toHaveBeenCalled();
+      const shiftedKeySet = mockedSerializeKeySet.mock.calls[0][0];
+      expect(shiftedKeySet.createdAt).not.toEqual(new Date(originalKeySetDate));
+      expect(keySetWritable.write).toHaveBeenCalledWith('serialized-keyset');
+    });
+
+    it('preserves comments when redactComments is false', async () => {
+      const { mockRootHandle, sessionWritable } = setupMocks({ existingIndividuals: ['Source Individual'] });
+
+      await mutateDeIdentifyIndividual(
+        mockRootHandle as any,
+        'group',
+        'Source Individual',
+        'New Individual',
+        2000,
+        false,
+      );
+
+      const writtenSessionResult = JSON.parse(sessionWritable.write.mock.calls[0][0]);
+      expect(writtenSessionResult.Comments).toBe('a secret note');
+    });
+
+    it('throws when the new individual name already exists', async () => {
+      const { mockRootHandle } = setupMocks({ existingIndividuals: ['Source Individual', 'New Individual'] });
+
+      await expect(
+        mutateDeIdentifyIndividual(mockRootHandle as any, 'group', 'Source Individual', 'New Individual', 2000),
+      ).rejects.toThrow('already exists');
     });
   });
 

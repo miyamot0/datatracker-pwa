@@ -9,6 +9,8 @@ import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { GenerateSavedFileName } from '@/lib/writer';
 import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
 import { importExistingKeysets } from '@/lib/keysets/import-keysets';
+import { createAnonymizationContext, anonymizeSessionResult } from '@/lib/anonymize/anonymize';
+import { shiftDateLike } from '@/lib/anonymize/date-shifting';
 
 export const DemoDataFolderName = 'Example DataTracker Group';
 
@@ -354,6 +356,131 @@ export async function mutateIndividuals(
     return newIndividualList;
   } catch (error) {
     console.error('Error mutating individuals:', error);
+    throw error;
+  }
+}
+
+/**
+ * Creates a new, de-identified copy of an individual: every evaluation/condition/session-result
+ * file and every per-individual KeySet file is copied from the source individual into a brand
+ * new individual folder, with names pseudonymized and dates shifted by one shared offset anchored
+ * to January 1st of `birthYear`. The source individual is left completely untouched, and
+ * evaluation-level `settings.json` files are intentionally not copied.
+ *
+ * @param handle - The FileSystemDirectoryHandle representing the root directory.
+ * @param groupName - The name of the group containing the source individual.
+ * @param sourceIndividualName - The name of the individual to de-identify.
+ * @param newIndividualName - The name of the new, de-identified individual to create.
+ * @param birthYear - The replacement year; the earliest timestamp across the individual's history shifts onto January 1st of this year.
+ * @param redactComments - Whether session `Comments` should be stripped from the de-identified copy. Defaults to `true`.
+ * @returns A promise that resolves to an array of individual names (including the new one) after the mutation is complete.
+ */
+export async function mutateDeIdentifyIndividual(
+  handle: FileSystemDirectoryHandle,
+  groupName: string,
+  sourceIndividualName: string,
+  newIndividualName: string,
+  birthYear: number,
+  redactComments: boolean = true,
+): Promise<string[]> {
+  try {
+    const group_dir = await handle.getDirectoryHandle(CleanUpString(groupName));
+    const source_dir = await group_dir.getDirectoryHandle(sourceIndividualName);
+
+    const individuals: string[] = [];
+    for await (const [name, entry] of group_dir.entries()) {
+      if (entry.kind === 'directory' && name !== '.DS_Store') {
+        individuals.push(name);
+      }
+    }
+
+    if (individuals.includes(newIndividualName)) {
+      throw new Error(`An individual named "${newIndividualName}" already exists.`);
+    }
+
+    const target_dir = await group_dir.getDirectoryHandle(newIndividualName, { create: true });
+
+    // Pass 1: walk evaluations/conditions, reading every session-result file (settings.json is skipped)
+    const collectedEntries: {
+      evaluationName: string;
+      conditionName: string;
+      filename: string;
+      result: SavedSessionResult;
+    }[] = [];
+
+    for await (const [evaluationName, evaluationEntry] of source_dir.entries()) {
+      if (evaluationEntry.kind !== 'directory' || evaluationName === '.DS_Store') continue;
+
+      const source_evaluation_dir = await source_dir.getDirectoryHandle(evaluationName);
+      const target_evaluation_dir = await target_dir.getDirectoryHandle(evaluationName, { create: true });
+
+      for await (const [conditionName, conditionEntry] of source_evaluation_dir.entries()) {
+        if (conditionEntry.kind !== 'directory' || conditionName === '.DS_Store') continue;
+
+        const source_condition_dir = await source_evaluation_dir.getDirectoryHandle(conditionName);
+        // create the target condition directory even if it ends up empty (e.g. only settings.json was present)
+        await target_evaluation_dir.getDirectoryHandle(conditionName, { create: true });
+
+        for await (const [filename, fileEntry] of source_condition_dir.entries()) {
+          if (fileEntry.kind !== 'file' || filename === '.DS_Store' || !filename.endsWith('.json')) continue;
+          if (filename === 'settings.json') continue;
+
+          const fileHandle = await source_condition_dir.getFileHandle(filename);
+          const file = await fileHandle.getFile();
+          const text = await file.text();
+
+          collectedEntries.push({
+            evaluationName,
+            conditionName,
+            filename,
+            result: JSON.parse(text) as SavedSessionResult,
+          });
+        }
+      }
+    }
+
+    const anchorDate = new Date(birthYear, 0, 1);
+    const context = createAnonymizationContext(
+      collectedEntries.map((entry) => entry.result),
+      anchorDate,
+    );
+
+    for (const entry of collectedEntries) {
+      const anonymized = anonymizeSessionResult(entry.result, context, { redactComments });
+
+      const target_evaluation_dir = await target_dir.getDirectoryHandle(entry.evaluationName);
+      const target_condition_dir = await target_evaluation_dir.getDirectoryHandle(entry.conditionName);
+      const target_file = await target_condition_dir.getFileHandle(entry.filename, { create: true });
+
+      const writer = await target_file.createWritable();
+      await writer.write(JSON.stringify(anonymized));
+      await writer.close();
+    }
+
+    // Pass 2: copy and shift every per-individual KeySet file
+    for await (const [filename, fileEntry] of source_dir.entries()) {
+      if (fileEntry.kind !== 'file' || filename === '.DS_Store' || !filename.endsWith('.json')) continue;
+
+      const fileHandle = await source_dir.getFileHandle(filename);
+      const file = await fileHandle.getFile();
+      const text = await file.text();
+
+      const parsedKeySet = JSON.parse(text) as KeySet;
+      const shiftedKeySet: KeySet = {
+        ...parsedKeySet,
+        createdAt: shiftDateLike(new Date(parsedKeySet.createdAt), context.offsetMs),
+        lastModified: shiftDateLike(new Date(parsedKeySet.lastModified), context.offsetMs),
+      };
+
+      const targetFileHandle = await target_dir.getFileHandle(filename, { create: true });
+      const writer = await targetFileHandle.createWritable();
+      await writer.write(serializeKeySet(shiftedKeySet));
+      await writer.close();
+    }
+
+    return [...individuals, newIndividualName];
+  } catch (error) {
+    console.error('Error de-identifying individual:', error);
     throw error;
   }
 }
