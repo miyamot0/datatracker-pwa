@@ -11,20 +11,35 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { CleanUpString } from '@/lib/strings';
 import { mutationIndividuals } from '@/queries/individuals/mutate-individuals';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { ColumnDef, Row } from '@tanstack/react-table';
-import { ChevronDown, FlaskConical, FolderInput, FolderPlus, UserIcon } from 'lucide-react';
+import { ChevronDown, FolderInput, FolderPlus, UserIcon } from 'lucide-react';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { z } from 'zod';
 
 type ClientTableRow = {
   Individual: string;
 };
+
+const DeIdentifySchema = z.object({
+  NewName: z.string().min(4, { message: 'The new name must be at least 4 characters long' }).max(128),
+  BirthYear: z.coerce
+    .number()
+    .min(1970, { message: 'The birth year must be 1970 or later' })
+    .max(2026, { message: 'The birth year must be 2026 or earlier' }),
+});
+
+type DeIdentifySchemaType = z.infer<typeof DeIdentifySchema>;
 
 export default function ClientsPage({
   Group,
@@ -56,6 +71,27 @@ export default function ClientsPage({
   const DynamicButtonList = ({ row }: { row: Row<ClientTableRow> }) => {
     const [testDialogOpen, setTestDialogOpen] = useState(false);
 
+    const form = useForm<DeIdentifySchemaType>({
+      resolver: zodResolver(DeIdentifySchema),
+      defaultValues: {
+        NewName: '',
+        BirthYear: '' as unknown as number,
+      },
+      mode: 'onChange',
+    });
+
+    // computed separately from formState.isValid, which eagerly re-validates via the resolver on mount
+    const watchedValues = form.watch();
+    const isFormValid = DeIdentifySchema.safeParse(watchedValues).success;
+
+    function onSubmit(values: DeIdentifySchemaType) {
+      // stub: no mutation wired up yet, just close the dialog
+      console.log('De-identify submitted', row.original.Individual, values);
+
+      form.reset();
+      setTestDialogOpen(false);
+    }
+
     return (
       <>
         <Button size={'sm'} variant={'outline'} className="flex flex-row divide-x justify-between mx-0 px-0 shadow">
@@ -86,14 +122,55 @@ export default function ClientsPage({
           )}
         </Button>
 
-        <Dialog open={testDialogOpen} onOpenChange={setTestDialogOpen}>
+        <Dialog
+          open={testDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) form.reset();
+            setTestDialogOpen(open);
+          }}
+        >
           <DialogContent className="bg-card select-none">
             <DialogHeader>
               <DialogTitle>De-Identify Case</DialogTitle>
-              <DialogDescription>
-                This is a placeholder dialog for {row.original.Individual}. Options will be added here later.
-              </DialogDescription>
+              <DialogDescription>Provide a new name and service year for {row.original.Individual}.</DialogDescription>
             </DialogHeader>
+
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+                <FormField
+                  control={form.control}
+                  name="NewName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>New Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter the de-identified name" {...field} />
+                      </FormControl>
+                      <FormDescription>Must be at least 4 characters long</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="BirthYear"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Birth Year</FormLabel>
+                      <FormControl>
+                        <Input placeholder="2000" type="number" {...field} />
+                      </FormControl>
+                      <FormDescription>Must be between 1970 and 2026</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button type="submit" className="w-full shadow" variant={'outline'} disabled={!isFormValid}>
+                  Submit
+                </Button>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </>
