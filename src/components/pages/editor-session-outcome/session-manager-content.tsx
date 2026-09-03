@@ -192,7 +192,7 @@ export default function SessionManagerContent({
                     <div className="flex flex-row gap-1">
                       <Button
                         variant={'destructive'}
-                        className="text-primary flex flex-row gap-1 items-center"
+                        className="text-primary flex flex-row gap-1 items-center text-white"
                         disabled={!(key.KeyType === 'Frequency' || key.KeyType === 'Duration')}
                         onClick={() => {
                           const confirm_delete = window.confirm(
