@@ -1,23 +1,10 @@
 import PageWrapper from '@/components/elements/page-wrapper';
 import BackButton from '@/components/ui/back-button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { checkCrossOriginIsolation } from '@/lib/shared-buffer';
-import { cn } from '@/lib/utils';
 import { Route } from '@/routes/diagnostics';
-
-function AdaptiveBadge({ isSupported }: { isSupported: boolean }) {
-  return (
-    <Badge
-      className={cn('bg-green-500 text-white hover:bg-green-500 cursor-default select-none whitespace-nowrap', {
-        'bg-red-500 hover:bg-red-500': !isSupported,
-      })}
-    >
-      {isSupported ? 'Enabled' : 'Disabled'}
-    </Badge>
-  );
-}
+import { AdaptiveBadge } from './views/adaptive-badge';
 
 export function DiagnosticsPage() {
   const check = checkCrossOriginIsolation();
