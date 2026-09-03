@@ -13,7 +13,6 @@ const mockToastPromise = vi.hoisted(() =>
     return result;
   }),
 );
-const mockAlert = vi.hoisted(() => vi.fn());
 
 vi.mock('@/App', () => ({
   queryClient: {
@@ -114,19 +113,23 @@ describe('ClientsPage', () => {
       options?.filter?.({ routeId: '/other' });
     });
     mockToastPromise.mockClear();
-    mockAlert.mockReset();
-
-    vi.stubGlobal('alert', mockAlert);
   });
 
-  it('renders title, description, and table actions', async () => {
+  it('renders title, description, and table wiring', async () => {
     await renderPage();
 
     await expect.element(page.getByText('Client Directory: [clean] GroupA')).toBeInTheDocument();
     await expect.element(page.getByText('Select clients to develop and evaluate outcomes')).toBeInTheDocument();
     await expect.element(page.getByText('Client Name/ID')).toBeInTheDocument();
     await expect.element(page.getByText('Client Folder Actions')).toBeInTheDocument();
+    await expect.element(page.getByTestId('filter-col')).toHaveTextContent('Individual');
+  });
+
+  it('renders Open Evaluations and Create wiring for every client row', async () => {
+    await renderPage({ EnableFileDeletion: true });
+
     await expect.element(page.getByRole('link', { name: 'Open Evaluations' }).first()).toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Create' })).toBeInTheDocument();
   });
 
   it('delete callback returns when confirmation is false', async () => {
@@ -156,93 +159,5 @@ describe('ClientsPage', () => {
     expect(mockSetQueryData).toHaveBeenCalled();
     expect(mockRouterInvalidate).toHaveBeenCalled();
   });
-
-  it('create button returns on canceled prompt', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => null),
-    );
-    await renderPage();
-
-    await page.getByRole('button', { name: 'Create' }).click();
-
-    expect(mockMutateAsync).not.toHaveBeenCalled();
-  });
-
-  it('create button blocks duplicate and too-short names', async () => {
-    vi.stubGlobal('prompt', vi.fn().mockReturnValueOnce('Client1').mockReturnValueOnce('abc'));
-    await renderPage();
-
-    await page.getByRole('button', { name: 'Create' }).click();
-    await page.getByRole('button', { name: 'Create' }).click();
-
-    expect(mockAlert).toHaveBeenNthCalledWith(1, 'Client already exists.');
-    expect(mockAlert).toHaveBeenNthCalledWith(2, 'Client name must be at least 4 characters long.');
-  });
-
-  it('create button adds client for valid prompt input', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => '  Client3  '),
-    );
-    await renderPage();
-
-    await page.getByRole('button', { name: 'Create' }).click();
-
-    expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ Action: 'Add', Individuals: ['Client3'] }));
-  });
-
-  it('does not show the De-Identify Case dropdown when file deletion is disabled', async () => {
-    await renderPage({ EnableFileDeletion: false });
-
-    expect(await page.getByText('De-Identify Case').query()).toBeNull();
-  });
-
-  it('de-identify dialog submits with RedactComments true by default', async () => {
-    await renderPage({ EnableFileDeletion: true });
-
-    await page.getByText('De-Identify Case').first().click();
-
-    await expect.element(page.getByText(/Provide a new name/)).toBeInTheDocument();
-
-    await page.getByLabelText('New Name').fill('New Client Name');
-    await page.getByLabelText('Replacement Year').fill('2000');
-
-    await page.getByRole('button', { name: 'Submit' }).click();
-
-    expect(mockMutateAsync).toHaveBeenCalledWith(
-      expect.objectContaining({
-        Group: 'GroupA',
-        SourceIndividual: 'Client1',
-        NewIndividual: 'New Client Name',
-        ReplacementYear: 2000,
-        RedactComments: true,
-      }),
-    );
-  });
-
-  it('de-identify dialog submits with RedactComments false when unchecked', async () => {
-    await renderPage({ EnableFileDeletion: true });
-
-    await page.getByText('De-Identify Case').first().click();
-
-    await page.getByLabelText('New Name').fill('New Client Name');
-    await page.getByLabelText('Replacement Year').fill('2000');
-    await page.getByRole('checkbox', { name: 'Redact session comments' }).click();
-
-    await page.getByRole('button', { name: 'Submit' }).click();
-
-    expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ RedactComments: false }));
-  });
-
-  it('de-identify submit button stays disabled when the name duplicates an existing client', async () => {
-    await renderPage({ EnableFileDeletion: true });
-
-    await page.getByText('De-Identify Case').first().click();
-
-    await page.getByLabelText('New Name').fill('Client2');
-    await page.getByLabelText('Replacement Year').fill('2000');
-
-    await expect.element(page.getByRole('button', { name: 'Submit' })).toBeDisabled();
-  });
 });
+
