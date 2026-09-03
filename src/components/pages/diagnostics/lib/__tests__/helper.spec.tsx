@@ -1,16 +1,12 @@
-import { getDiagnosticsData } from '../../lib/helper';
+import { getDiagnosticsData } from '../helper';
 
 describe('getDiagnosticsData', () => {
   it('should return correctly mapped diagnostics data', () => {
-    // Mocking dependencies for the test
-    const mockSettings = { CacheBehavior: 'Standard' };
-    const mockQueryClient = {
-      getDefaultOptions: () => ({
-        queries: { staleTime: 1000, gcTime: 5000 },
-      }),
-    };
-
-    const data = getDiagnosticsData(mockSettings, mockQueryClient);
+    // Note: In a real environment, we would mock Route.useLoaderData and checkCrossOriginIsolation
+    const data = getDiagnosticsData(
+      { CacheBehavior: 'Standard' },
+      { getDefaultOptions: () => ({ queries: { staleTime: 1000, gcTime: 5000 } }) },
+    );
 
     expect(data).toHaveProperty('isolation');
     expect(data).toHaveProperty('issues');

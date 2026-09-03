@@ -10,7 +10,7 @@ export function IsolationStatusView({ data }: IsolationViewProps) {
   return (
     <>
       <div className="flex flex-row justify-between">
-        <p>Shared Array Buffer support:</p> <AdaptiveBadge isSupported={data.isSharedArrayBufferSupported} />
+        <p>Shared Array Buffer support:</p> <AdaptiveBadge isSupported={data.isSupported} />
       </div>
       <div className="flex flex-row justify-between">
         <p>Cross-Origin Isolation:</p> <AdaptiveBadge isSupported={data.isIsolated} />
