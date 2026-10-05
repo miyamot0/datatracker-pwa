@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Edit2Icon, SearchIcon } from 'lucide-react';
-import { GenerateSavedFileName } from '@/lib/writer';
 import BackButton from '@/components/ui/back-button';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
@@ -105,7 +104,8 @@ export default function DashboardHistoryPage({
               group: Group,
               individual: Individual,
               evaluation: Evaluation,
-              file: GenerateSavedFileName(row.original.SessionSettings).replaceAll('.json', ''),
+              // use the real on-disk Filename, not a recomputed name, so de-identified copies (which keep their original filename) still resolve
+              file: row.original.Filename.replace(/\.json$/, ''),
             }}
           >
             <Button variant={'outline'} className="shadow" size={'sm'}>
@@ -122,7 +122,8 @@ export default function DashboardHistoryPage({
                 group: Group,
                 individual: Individual,
                 evaluation: Evaluation,
-                file: GenerateSavedFileName(row.original.SessionSettings).replaceAll('.json', ''),
+                // same reasoning as the View link above: trust the stored Filename over a recomputed one
+                file: row.original.Filename.replace(/\.json$/, ''),
               }}
             >
               <Button variant={'outline'} className="shadow" size={'sm'}>

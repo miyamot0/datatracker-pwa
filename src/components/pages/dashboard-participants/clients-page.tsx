@@ -1,22 +1,15 @@
 import { queryClient } from '@/App';
 import BackButton from '@/components/ui/back-button';
-import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
-import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { CleanUpString } from '@/lib/strings';
 import { mutationIndividuals } from '@/queries/individuals/mutate-individuals';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { useMutation } from '@tanstack/react-query';
-import { Link, useRouter, useRouterState } from '@tanstack/react-router';
-import { ColumnDef } from '@tanstack/react-table';
-import { FolderInput, FolderPlus } from 'lucide-react';
+import { useRouter, useRouterState } from '@tanstack/react-router';
 import { toast } from 'sonner';
-
-type ClientTableRow = {
-  Individual: string;
-};
+import { buildClientColumns } from './views/clients-columns';
+import CreateClientButton from './views/create-client-button';
 
 export default function ClientsPage({
   Group,
@@ -45,33 +38,7 @@ export default function ClientsPage({
     },
   });
 
-  const columns: ColumnDef<ClientTableRow>[] = [
-    {
-      accessorKey: 'Individual',
-      header: ({ column }) => <DataTableColumnHeader column={column} title="Client Name/ID" />,
-    },
-    {
-      accessorKey: 'Actions',
-      header: () => <div className="text-right">Client Folder Actions</div>,
-      cell: ({ row }) => (
-        <div className="flex flex-row justify-end">
-          <Button size={'sm'} variant={'outline'} className="flex flex-row divide-x justify-between mx-0 px-0 shadow">
-            <Link
-              className="px-3 hover:underline flex flex-row items-center"
-              to="/session/$group/$individual"
-              params={{
-                group: Group,
-                individual: row.original.Individual,
-              }}
-            >
-              <FolderInput className="mr-2 h-4 w-4" />
-              Open Evaluations
-            </Link>
-          </Button>
-        </div>
-      ),
-    },
-  ];
+  const columns = buildClientColumns({ Group, Clients, Handle, Settings });
 
   return (
     <Card className="w-full max-w-screen-2xl">
@@ -129,52 +96,7 @@ export default function ClientsPage({
             );
           }}
           filterCol="Individual"
-          optionalButtons={
-            <ToolTipWrapper Label="Add a new client to current group">
-              <Button
-                variant={'outline'}
-                className="shadow"
-                size={'sm'}
-                onClick={async () => {
-                  const input = window.prompt('Enter a name for the new group.');
-
-                  if (!input) return;
-
-                  if (Clients.includes(input.trim())) {
-                    window.alert('Client already exists.');
-                    return;
-                  }
-
-                  if (input.trim().length < 4) {
-                    window.alert('Client name must be at least 4 characters long.');
-                    return;
-                  }
-
-                  toast.promise(
-                    async () =>
-                      await mutateIndividuals.mutateAsync({
-                        Group,
-                        Individuals: [input.trim()],
-                        Handle,
-                        Action: 'Add',
-                      }),
-                    {
-                      loading: 'Creating individual folders...',
-                      success: () => {
-                        return 'New individual folder created!';
-                      },
-                      error: (e: Error) => {
-                        return `An error occurred while adding individual folder: ${e.message}.`;
-                      },
-                    },
-                  );
-                }}
-              >
-                <FolderPlus className="mr-2 h-4 w-4" />
-                Create
-              </Button>
-            </ToolTipWrapper>
-          }
+          optionalButtons={<CreateClientButton Group={Group} Clients={Clients} Handle={Handle} />}
         />
       </CardContent>
     </Card>

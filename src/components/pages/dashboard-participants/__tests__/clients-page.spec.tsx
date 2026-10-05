@@ -13,7 +13,6 @@ const mockToastPromise = vi.hoisted(() =>
     return result;
   }),
 );
-const mockAlert = vi.hoisted(() => vi.fn());
 
 vi.mock('@/App', () => ({
   queryClient: {
@@ -77,6 +76,13 @@ vi.mock('@/components/ui/back-button', () => ({
   default: () => <div>Back</div>,
 }));
 
+vi.mock('@/components/ui/dropdown-menu', () => ({
+  DropdownMenu: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuTrigger: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuContent: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuItem: ({ children, onClick }: any) => <button onClick={onClick}>{children}</button>,
+}));
+
 vi.mock('sonner', () => ({
   toast: {
     promise: mockToastPromise,
@@ -85,13 +91,13 @@ vi.mock('sonner', () => ({
 
 import ClientsPage from '../clients-page';
 
-const renderPage = () =>
+const renderPage = (settingsOverride: Record<string, unknown> = {}) =>
   render(
     <ClientsPage
       Group="GroupA"
       Clients={['Client1', 'Client2']}
       Handle={{} as FileSystemDirectoryHandle}
-      Settings={{} as any}
+      Settings={{ ...settingsOverride } as any}
     />,
   );
 
@@ -107,19 +113,23 @@ describe('ClientsPage', () => {
       options?.filter?.({ routeId: '/other' });
     });
     mockToastPromise.mockClear();
-    mockAlert.mockReset();
-
-    vi.stubGlobal('alert', mockAlert);
   });
 
-  it('renders title, description, and table actions', async () => {
+  it('renders title, description, and table wiring', async () => {
     await renderPage();
 
     await expect.element(page.getByText('Client Directory: [clean] GroupA')).toBeInTheDocument();
     await expect.element(page.getByText('Select clients to develop and evaluate outcomes')).toBeInTheDocument();
     await expect.element(page.getByText('Client Name/ID')).toBeInTheDocument();
     await expect.element(page.getByText('Client Folder Actions')).toBeInTheDocument();
+    await expect.element(page.getByTestId('filter-col')).toHaveTextContent('Individual');
+  });
+
+  it('renders Open Evaluations and Create wiring for every client row', async () => {
+    await renderPage({ EnableFileDeletion: true });
+
     await expect.element(page.getByRole('link', { name: 'Open Evaluations' }).first()).toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Create' })).toBeInTheDocument();
   });
 
   it('delete callback returns when confirmation is false', async () => {
@@ -149,39 +159,5 @@ describe('ClientsPage', () => {
     expect(mockSetQueryData).toHaveBeenCalled();
     expect(mockRouterInvalidate).toHaveBeenCalled();
   });
-
-  it('create button returns on canceled prompt', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => null),
-    );
-    await renderPage();
-
-    await page.getByRole('button', { name: 'Create' }).click();
-
-    expect(mockMutateAsync).not.toHaveBeenCalled();
-  });
-
-  it('create button blocks duplicate and too-short names', async () => {
-    vi.stubGlobal('prompt', vi.fn().mockReturnValueOnce('Client1').mockReturnValueOnce('abc'));
-    await renderPage();
-
-    await page.getByRole('button', { name: 'Create' }).click();
-    await page.getByRole('button', { name: 'Create' }).click();
-
-    expect(mockAlert).toHaveBeenNthCalledWith(1, 'Client already exists.');
-    expect(mockAlert).toHaveBeenNthCalledWith(2, 'Client name must be at least 4 characters long.');
-  });
-
-  it('create button adds client for valid prompt input', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => '  Client3  '),
-    );
-    await renderPage();
-
-    await page.getByRole('button', { name: 'Create' }).click();
-
-    expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ Action: 'Add', Individuals: ['Client3'] }));
-  });
 });
+

@@ -20,10 +20,6 @@ vi.mock('@/App', () => ({
   },
 }));
 
-vi.mock('@/lib/writer', () => ({
-  GenerateSavedFileName: (settings: any) => `session-${settings.Session}.json`,
-}));
-
 vi.mock('@tanstack/react-query', () => ({
   useMutation: vi.fn(({ onSuccess }: { onSuccess?: (data: unknown) => Promise<void> | void }) => ({
     mutateAsync: async (payload: unknown) => {
@@ -92,6 +88,8 @@ import DashboardHistoryPage from '../dashboard-history-page';
 
 const makeSession = (session: number, role: 'Primary' | 'Reliability') =>
   ({
+    // the component now reads Filename directly instead of recomputing it
+    Filename: `${session}_${role === 'Primary' ? 'Baseline' : 'Intervention'}_${role}.json`,
     SessionSettings: {
       Session: session,
       Role: role,
