@@ -8,12 +8,12 @@ import { ExpandedKeySetInstance } from '@/types/keyset/display';
  * Generates an array of tick values for chart axes
  */
 export function generateTicks(maxTick: number, minTick: number) {
-  // Handle edge cases where maxTick is negative or results in invalid array length
-  if (maxTick < 0 || !Number.isFinite(maxTick) || !Number.isFinite(minTick)) {
+  if (!Number.isFinite(maxTick) || !Number.isFinite(minTick)) {
     return [];
   }
 
-  const length = maxTick + 1;
+  // Inclusive range, so the first and last ticks are exactly minTick and maxTick
+  const length = maxTick - minTick + 1;
   if (length <= 0) {
     return [];
   }
@@ -65,13 +65,13 @@ export function getChartConfiguration() {
     },
     xAxisConfig: {
       height: 50,
-      interval: 'equidistantPreserveStart' as const,
+      interval: 'preserveStartEnd' as const,
       minTickGap: 25,
       type: 'number' as const,
       dy: 5,
       padding: {
-        left: 50,
-        right: 50,
+        left: 25,
+        right: 25,
       },
       style: {
         stroke: 'black',

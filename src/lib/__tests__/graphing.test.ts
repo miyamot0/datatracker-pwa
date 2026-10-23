@@ -192,9 +192,9 @@ describe('graphing utility functions', () => {
   });
 
   describe('generateTicks', () => {
-    it('should generate correct tick array for positive range', () => {
+    it('should generate an inclusive tick array from minTick to maxTick', () => {
       const result = generateTicks(5, 1);
-      expect(result).toEqual([1, 2, 3, 4, 5, 6]);
+      expect(result).toEqual([1, 2, 3, 4, 5]);
     });
 
     it('should generate correct tick array starting from 0', () => {
@@ -203,22 +203,22 @@ describe('graphing utility functions', () => {
     });
 
     it('should handle single tick', () => {
-      const result = generateTicks(0, 5);
+      const result = generateTicks(5, 5);
       expect(result).toEqual([5]);
     });
 
     it('should handle negative starting values', () => {
       const result = generateTicks(2, -2);
-      expect(result).toEqual([-2, -1, 0]);
+      expect(result).toEqual([-2, -1, 0, 1, 2]);
     });
 
-    it('should handle when maxTick equals minTick', () => {
-      const result = generateTicks(0, 10);
-      expect(result).toEqual([10]);
+    it('should return an empty array when maxTick is below minTick', () => {
+      const result = generateTicks(2, 98);
+      expect(result).toEqual([]);
     });
 
     it('should handle large ranges', () => {
-      const result = generateTicks(2, 98);
+      const result = generateTicks(100, 98);
       expect(result).toEqual([98, 99, 100]);
     });
   });
@@ -990,13 +990,13 @@ describe('graphing utility functions', () => {
         },
         xAxisConfig: {
           height: 50,
-          interval: 'equidistantPreserveStart',
+          interval: 'preserveStartEnd',
           minTickGap: 25,
           type: 'number',
           dy: 5,
           padding: {
-            left: 50,
-            right: 50,
+            left: 25,
+            right: 25,
           },
           style: {
             stroke: 'black',

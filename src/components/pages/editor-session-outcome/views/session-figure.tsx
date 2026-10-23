@@ -19,6 +19,7 @@ import { ExpandedSavedSessionResult } from '@/lib/dtos/session-results';
 import { CustomTooltipProps, PlotPoint } from '@/types/visuals';
 import { KeyManageType } from '@/types/timing';
 import { generateTicks } from '@/lib/graphing/chart-setup';
+import { AxisSpanLines } from '@/components/pages/visualize-outcomes/shared/axis-span-lines';
 
 type Props = {
   Session?: ExpandedSavedSessionResult;
@@ -75,9 +76,18 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
   const maxYValue = Math.max(...yValues) + 1;
   const yTicks = generateTicks(maxYValue, 0);
 
+  const maxXValue = Math.floor(Session.TimerMain) + 1;
+  const xTicks = generateTicks(maxXValue, 0);
+
   return (
     <div className="flex flex-col gap-4 w-full">
-      <ResponsiveContainer width="100%" height={500} className={'text-base text-primary bg-white nuke-view-transition'}>
+      <ResponsiveContainer
+        width="100%"
+        height={500}
+        className={
+          'text-base text-primary bg-white nuke-view-transition [&_.recharts-legend-item]:!inline-flex [&_.recharts-legend-item]:items-center'
+        }
+      >
         <ComposedChart
           {...noAnimationProps}
           width={600}
@@ -175,16 +185,18 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
 
           <XAxis
             {...noAnimationProps}
+            axisLine={false}
             dataKey="second"
-            domain={[0, Math.floor(Session.TimerMain) + 1]}
+            domain={[0, maxXValue]}
+            ticks={xTicks}
             height={50}
-            interval={'equidistantPreserveStart'}
-            minTickGap={25}
+            interval={'preserveStartEnd'}
+            minTickGap={50}
             type="number"
             dy={5}
             padding={{
-              left: 50,
-              right: 50,
+              left: 25,
+              right: 25,
             }}
             style={{
               stroke: 'black',
@@ -205,6 +217,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
           </XAxis>
           <YAxis
             {...noAnimationProps}
+            axisLine={false}
             min={0}
             max={maxYValue}
             range={[0, maxYValue]}
@@ -228,7 +241,9 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
               value={'Event Recording During Session'}
             />
           </YAxis>
-          <Tooltip {...noAnimationProps} content={<CustomTooltip />} />
+          <AxisSpanLines />
+          <Tooltip {...noAnimationProps} wrapperStyle={{ zIndex: 10 }} content={<CustomTooltip />} />
+
           <Legend
             {...noAnimationProps}
             align="center"

@@ -24,6 +24,7 @@ import { splitAtPoints } from '@/lib/arrays';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { calculateSplitPoints } from '@/lib/graphing/data-preparation';
 import { getChartConfiguration } from '@/lib/graphing/chart-setup';
+import { AxisSpanLines } from './axis-span-lines';
 
 type BaseChartProps = {
   title: string;
@@ -72,6 +73,7 @@ export function BaseChart({
   }));
 
   const visibleKeys = keySetFull.filter((key) => key.Visible === true).map((key) => key.KeyDescription);
+  const hasPlottedData = visibleKeys.length > 0 && preparedData.length > 0 && data_set_parsed_by_condition.length > 0;
 
   let markerSize = 100;
   if (figureTextSize == 'large') {
@@ -181,6 +183,22 @@ export function BaseChart({
           return lines;
         })}
 
+        {/* Invisible point so Recharts registers the X scale (and its ticks) when nothing is plotted */}
+
+        {hasPlottedData ? null : (
+          <Line
+            {...noAnimationProps}
+            stroke="none"
+            dot={false}
+            activeDot={false}
+            tooltipType="none"
+            legendType="none"
+            isAnimationActive={false}
+            data={[{ session: minX, placeholder: null }]}
+            dataKey="placeholder"
+          />
+        )}
+
         <ZAxis {...noAnimationProps} type="number" range={[markerSize, markerSize]} />
 
         <XAxis
@@ -189,14 +207,17 @@ export function BaseChart({
           domain={[minX, maxX]}
           ticks={xTicks}
           {...xAxisConfig}
+          axisLine={false}
           label={undefined}
         >
           <Label {...noAnimationProps} style={labelStyle} offset={0} position={'insideBottom'} value={'Session'} />
         </XAxis>
 
-        <YAxis {...noAnimationProps} {...yAxisConfig} style={yAxisStyle} label={undefined}>
+        <YAxis {...noAnimationProps} {...yAxisConfig} axisLine={false} style={yAxisStyle} label={undefined}>
           <Label {...noAnimationProps} style={labelStyle} position="insideLeft" angle={270} value={yAxisConfig.label} />
         </YAxis>
+
+        <AxisSpanLines />
 
         <Tooltip
           {...noAnimationProps}

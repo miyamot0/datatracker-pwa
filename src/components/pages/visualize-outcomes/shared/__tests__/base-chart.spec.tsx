@@ -326,4 +326,112 @@ describe('BaseChart', () => {
       expect(Math.abs(markerCentre - labelCentre)).toBeLessThan(1);
     }
   });
+
+  it('does not draw the full-length Recharts axis lines', async () => {
+    await render(<BaseChart {...defaultProps} />);
+    await vi.waitFor(() => expect(document.querySelectorAll('.axis-span-line').length).toBe(2));
+
+    expect(document.querySelectorAll('.recharts-cartesian-axis-line').length).toBe(0);
+  });
+
+  it('draws both axis lines when there is no data', async () => {
+    const originalConfig = mockGetChartConfiguration.getMockImplementation();
+    const actual = await vi.importActual<typeof import('@/lib/graphing/chart-setup')>('@/lib/graphing/chart-setup');
+    mockGetChartConfiguration.mockImplementation(actual.getChartConfiguration);
+
+    try {
+      mockGetUniqueSessionConditions.mockReturnValue([]);
+      await render(<BaseChart {...defaultProps} preparedData={[]} filteredSessions={[]} />);
+      await vi.waitFor(() => expect(document.querySelectorAll('.axis-span-line').length).toBe(2));
+
+      const xLine = document.querySelector('.axis-span-line-x')!.getBoundingClientRect();
+      const yLine = document.querySelector('.axis-span-line-y')!.getBoundingClientRect();
+      expect(xLine.width).toBeGreaterThan(100);
+      expect(yLine.height).toBeGreaterThan(100);
+    } finally {
+      mockGetChartConfiguration.mockImplementation(originalConfig!);
+    }
+  });
+
+  it('spans the x axis between the first and last tick when there is no data', async () => {
+    const originalConfig = mockGetChartConfiguration.getMockImplementation();
+    const actual = await vi.importActual<typeof import('@/lib/graphing/chart-setup')>('@/lib/graphing/chart-setup');
+    mockGetChartConfiguration.mockImplementation(actual.getChartConfiguration);
+
+    try {
+      mockGetUniqueSessionConditions.mockReturnValue([]);
+      await render(<BaseChart {...defaultProps} preparedData={[]} filteredSessions={[]} />);
+      await vi.waitFor(() => expect(document.querySelectorAll('.axis-span-line-x').length).toBe(1));
+
+      const tickXs = Array.from(document.querySelectorAll('.recharts-xAxis .recharts-cartesian-axis-tick-line')).map(
+        (el) => el.getBoundingClientRect().left,
+      );
+      const line = document.querySelector('.axis-span-line-x')!.getBoundingClientRect();
+      expect(tickXs.length).toBe(5);
+      expect(Math.abs(line.left - Math.min(...tickXs))).toBeLessThan(1);
+      expect(Math.abs(line.right - Math.max(...tickXs))).toBeLessThan(1);
+    } finally {
+      mockGetChartConfiguration.mockImplementation(originalConfig!);
+    }
+  });
+
+  it('spans the x axis to the last session with the real x axis settings', async () => {
+    const originalConfig = mockGetChartConfiguration.getMockImplementation();
+    const actual = await vi.importActual<typeof import('@/lib/graphing/chart-setup')>('@/lib/graphing/chart-setup');
+    mockGetChartConfiguration.mockImplementation(actual.getChartConfiguration);
+
+    try {
+      const sessions = Array.from({ length: 12 }, (_, i) => i + 1);
+      await render(
+        <BaseChart
+          {...defaultProps}
+          preparedData={sessions.map((session) => ({ session, Condition: 'Baseline', Kicking: 50 }))}
+          maxX={12}
+          xTicks={actual.generateTicks(12, 1)}
+        />,
+      );
+      await vi.waitFor(() => expect(document.querySelectorAll('.axis-span-line-x').length).toBe(1));
+
+      const tickXs = Array.from(document.querySelectorAll('.recharts-xAxis .recharts-cartesian-axis-tick-line')).map(
+        (el) => el.getBoundingClientRect().left,
+      );
+      const line = document.querySelector('.axis-span-line-x')!.getBoundingClientRect();
+      expect(tickXs.length).toBe(12);
+      expect(Math.abs(line.left - Math.min(...tickXs))).toBeLessThan(1);
+      expect(Math.abs(line.right - Math.max(...tickXs))).toBeLessThan(1);
+    } finally {
+      mockGetChartConfiguration.mockImplementation(originalConfig!);
+    }
+  });
+
+  it('spans the x axis line from the first to the last x tick', async () => {
+    await render(
+      <BaseChart
+        {...defaultProps}
+        preparedData={[1, 2, 3, 4, 5].map((session) => ({ session, Condition: 'Baseline', Kicking: 50 }))}
+      />,
+    );
+    await vi.waitFor(() => expect(document.querySelectorAll('.axis-span-line-x').length).toBe(1));
+
+    const tickXs = Array.from(document.querySelectorAll('.recharts-xAxis .recharts-cartesian-axis-tick-line')).map(
+      (el) => el.getBoundingClientRect().left,
+    );
+    const line = document.querySelector('.axis-span-line-x')!.getBoundingClientRect();
+    expect(tickXs.length).toBeGreaterThan(1);
+    expect(Math.abs(line.left - Math.min(...tickXs))).toBeLessThan(1);
+    expect(Math.abs(line.right - Math.max(...tickXs))).toBeLessThan(1);
+  });
+
+  it('spans the y axis line from the first to the last y tick', async () => {
+    await render(<BaseChart {...defaultProps} />);
+    await vi.waitFor(() => expect(document.querySelectorAll('.axis-span-line-y').length).toBe(1));
+
+    const tickYs = Array.from(document.querySelectorAll('.recharts-yAxis .recharts-cartesian-axis-tick-line')).map(
+      (el) => el.getBoundingClientRect().top,
+    );
+    const line = document.querySelector('.axis-span-line-y')!.getBoundingClientRect();
+    expect(tickYs.length).toBeGreaterThan(1);
+    expect(Math.abs(line.top - Math.min(...tickYs))).toBeLessThan(1);
+    expect(Math.abs(line.bottom - Math.max(...tickYs))).toBeLessThan(1);
+  });
 });

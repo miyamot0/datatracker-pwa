@@ -17,13 +17,24 @@ vi.mock('recharts', () => ({
   Scatter: ({ dataKey, shape, fill }: any) => (
     <div data-testid="scatter" data-key={String(dataKey)} data-shape={String(shape)} data-fill={fill} />
   ),
-  XAxis: ({ children, domain }: any) => (
-    <div data-testid="x-axis" data-domain={JSON.stringify(domain)}>
+  XAxis: ({ children, domain, ticks, interval, axisLine }: any) => (
+    <div
+      data-testid="x-axis"
+      data-domain={JSON.stringify(domain)}
+      data-ticks={JSON.stringify(ticks)}
+      data-interval={String(interval)}
+      data-axis-line={String(axisLine)}
+    >
       {children}
     </div>
   ),
-  YAxis: ({ children, max, ticks }: any) => (
-    <div data-testid="y-axis" data-max={String(max)} data-ticks={JSON.stringify(ticks)}>
+  YAxis: ({ children, max, ticks, axisLine }: any) => (
+    <div
+      data-testid="y-axis"
+      data-max={String(max)}
+      data-ticks={JSON.stringify(ticks)}
+      data-axis-line={String(axisLine)}
+    >
       {children}
     </div>
   ),
@@ -64,6 +75,9 @@ vi.mock('@/lib/colors', () => ({
 
 vi.mock('@/lib/shapes', () => ({
   getShape: () => 'circle',
+}));
+vi.mock('@/components/pages/visualize-outcomes/shared/axis-span-lines', () => ({
+  AxisSpanLines: () => <div data-testid="axis-span-lines" />,
 }));
 
 import SessionFigure from '../session-figure';
@@ -234,5 +248,34 @@ describe('SessionFigure', () => {
 
     const xAxis = page.getByTestId('x-axis');
     await expect.element(xAxis).toHaveAttribute('data-domain', '[0,31]');
+  });
+
+  it('gives the x-axis explicit ticks across the full timer domain and keeps the last tick', async () => {
+    await render(
+      <SessionFigure
+        Session={makeSession({ TimerMain: 30.6 })}
+        PlotData={[{ second: 1, Hitting: 1, Kicking: 2 }]}
+        KeysHidden={defaultKeysHidden}
+      />,
+    );
+
+    const xAxis = page.getByTestId('x-axis');
+    await expect.element(xAxis).toHaveAttribute('data-domain', '[0,31]');
+    await expect.element(xAxis).toHaveAttribute('data-ticks', JSON.stringify(Array.from({ length: 32 }, (_, i) => i)));
+    await expect.element(xAxis).toHaveAttribute('data-interval', 'preserveStartEnd');
+  });
+
+  it('turns off the built-in axis lines and draws the span lines instead', async () => {
+    await render(
+      <SessionFigure
+        Session={makeSession({ TimerMain: 30 })}
+        PlotData={[{ second: 1, Hitting: 1, Kicking: 2 }]}
+        KeysHidden={defaultKeysHidden}
+      />,
+    );
+
+    await expect.element(page.getByTestId('x-axis')).toHaveAttribute('data-axis-line', 'false');
+    await expect.element(page.getByTestId('y-axis')).toHaveAttribute('data-axis-line', 'false');
+    await expect.element(page.getByTestId('axis-span-lines')).toBeInTheDocument();
   });
 });
