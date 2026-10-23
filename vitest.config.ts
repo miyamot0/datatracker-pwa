@@ -101,6 +101,7 @@ export default defineConfig(({ command, mode }) => {
       projects: projects,
       reporters: ['default'],
       coverage: coverage,
+      pool: 'vmThreads',
 
       onConsoleLog(log: string, type: 'stdout' | 'stderr') {
         if (type === 'stderr') return false; // Note: Let things fail silently when expected
