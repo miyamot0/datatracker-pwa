@@ -140,7 +140,7 @@ describe('ResultsProportionVisualsPage', () => {
   it('renders headings, controls, navigation, and initial figure props', async () => {
     await renderPage();
 
-    await expect.element(page.getByText('Visualization of Behavioral Rates')).toBeInTheDocument();
+    await expect.element(page.getByText('Visualization of Behavioral Proportions')).toBeInTheDocument();
     await expect.element(page.getByRole('link', { name: 'See Rate' })).toBeInTheDocument();
     await expect.element(page.getByText('Edit Keys Displayed')).toBeInTheDocument();
     await expect.element(page.getByText('Edit Conditions Displayed')).toBeInTheDocument();

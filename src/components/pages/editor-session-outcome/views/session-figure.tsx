@@ -154,6 +154,8 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
                     data={PlotData}
                     type="linear"
                     legendType="none"
+                    dot={false}
+                    activeDot={false}
                     dataKey={`${key.KeyDescription}`}
                     stroke={FIGURE_PATH_COLORS[index]}
                   />

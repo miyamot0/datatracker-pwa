@@ -273,4 +273,27 @@ describe('BaseChart', () => {
     expect(mockCalculateSplitPoints.mock.calls[0][2]).toBe('Baseline');
     expect(mockCalculateSplitPoints.mock.calls[1][2]).toBe('Intervention');
   });
+
+  it('does not draw Line vertex dots over the scatter markers', async () => {
+    mockGetUniqueSessionConditions.mockReturnValue(['Baseline']);
+    await render(
+      <BaseChart
+        {...defaultProps}
+        preparedData={[
+          { session: 1, Condition: 'Baseline', Kicking: 10 },
+          { session: 2, Condition: 'Baseline', Kicking: 40 },
+          { session: 3, Condition: 'Baseline', Kicking: 70 },
+        ]}
+        filteredSessions={[
+          { Condition: 'Baseline' } as any,
+          { Condition: 'Baseline' } as any,
+          { Condition: 'Baseline' } as any,
+        ]}
+      />,
+    );
+
+    await vi.waitFor(() => expect(document.querySelectorAll('.recharts-symbols').length).toBeGreaterThan(0));
+    expect(document.querySelectorAll('.recharts-line-dot').length).toBe(0);
+    expect(document.querySelectorAll('.recharts-active-dot').length).toBe(0);
+  });
 });

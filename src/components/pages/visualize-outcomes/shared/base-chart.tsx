@@ -122,6 +122,8 @@ export function BaseChart({
                       data={condition.data}
                       type="linear"
                       legendType="none"
+                      dot={false}
+                      activeDot={false}
                       dataKey={`${key.KeyDescription}`}
                       stroke={FIGURE_PATH_COLORS[index_dynamic]}
                     />
@@ -152,6 +154,8 @@ export function BaseChart({
                         data={segment}
                         type="linear"
                         legendType="none"
+                        dot={false}
+                        activeDot={false}
                         dataKey={`${key.KeyDescription}`}
                         stroke={FIGURE_PATH_COLORS[index_dynamic]}
                       />
