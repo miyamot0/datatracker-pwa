@@ -72,7 +72,7 @@ export default defineConfig(({ command, mode }) => {
       provider: 'v8',
       reporter: [],
       clean: false,
-      reportsDirectory: undefined,
+      reportsDirectory: './coverage',
       include: [],
       exclude: [],
     }
