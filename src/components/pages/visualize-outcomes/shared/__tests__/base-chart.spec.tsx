@@ -215,15 +215,20 @@ describe('BaseChart', () => {
 
     const wrapper = document.querySelector('.recharts-wrapper') as HTMLElement;
     const rect = wrapper.getBoundingClientRect();
-    wrapper.dispatchEvent(
-      new MouseEvent('mousemove', {
-        bubbles: true,
-        clientX: rect.left + rect.width / 2,
-        clientY: rect.top + rect.height / 2,
-      }),
-    );
 
-    await expect.poll(() => document.body.textContent).toContain('Session #');
+    // Recharts 3 processes hover in a requestAnimationFrame, so re-dispatch until the tooltip appears
+    await expect
+      .poll(() => {
+        wrapper.dispatchEvent(
+          new MouseEvent('mousemove', {
+            bubbles: true,
+            clientX: rect.left + rect.width / 2,
+            clientY: rect.top + rect.height / 2,
+          }),
+        );
+        return document.body.textContent;
+      })
+      .toContain('Session #');
   });
 
   it('shows the same visible items whether hovering a dot or between dots', async () => {

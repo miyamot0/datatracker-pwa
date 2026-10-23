@@ -1,4 +1,4 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-96.30_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-92.71_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-97.14_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-96.31_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-92.78_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-97.14_Percent-green>)
 
 ![Static Badge Version](https://img.shields.io/badge/Version-0.5.11-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
@@ -162,9 +162,9 @@ react-spreadsheet (0.10.1). Copyright Iddan Aaronsohn <mail@aniddan.com> (https:
  
 react-use-pwa-install (1.0.1). Copyright Filip Chalupa chalupa.filip@gmail.com https://www.npmjs.com/~onset -- ISC Licensed: [Repo](https://github.com/FilipChalupa/react-use-pwa-install.git) 
  
-recharts (2.15.3). Copyright recharts group -- MIT Licensed: [Repo](https://github.com/recharts/recharts.git) 
+recharts (3.10.1). Copyright recharts group -- MIT Licensed: [Repo](https://github.com/recharts/recharts.git) 
  
-recharts-to-png (2.4.1). Copyright Brandon M. Mitchell -- MIT Licensed: [Repo](https://github.com/brammitch/recharts-to-png.git) 
+recharts-to-png (3.0.2). Copyright Brandon M. Mitchell -- MIT Licensed: [Repo](https://github.com/brammitch/recharts-to-png.git) 
  
 rehype-highlight (7.0.0). Copyright Titus Wormer <tituswormer@gmail.com> (https://wooorm.com) -- MIT Licensed: [Repo](https://github.com/rehypejs/rehype-highlight.git) 
  

@@ -30,7 +30,7 @@
     "research software"
   ],
   "license": "Apache-2.0",
-  "version": "0.5.11",
+  "version": "0.5.12",
   "scripts": {
     "dev-island": "vite --mode island",
     "dev": "vite",
@@ -86,8 +86,8 @@
     "react-markdown": "^10.1.0",
     "react-spreadsheet": "^0.10.1",
     "react-use-pwa-install": "^1.0.1",
-    "recharts": "^2.13",
-    "recharts-to-png": "2.4.1",
+    "recharts": "3.10.1",
+    "recharts-to-png": "3.0.2",
     "rehype-highlight": "^7.0.0",
     "scheduler": "^0.23.2",
     "sonner": "^2.0.7",
