@@ -1,6 +1,6 @@
 import { PluginOption } from 'vite';
 import fs from 'node:fs/promises';
-import { ISLAND_OUT_DIR } from '../../vite.config';
+import { ISLAND_OUT_DIR } from '../../vite.config.ts';
 
 /**
  * Deletes files from the island build output that are not needed and may cause CSP issues.

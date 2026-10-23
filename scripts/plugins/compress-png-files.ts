@@ -1,6 +1,6 @@
 import { PluginOption } from 'vite';
 import fs from 'node:fs/promises';
-import { PROD_OUT_DIR } from '../../vite.config';
+import { PROD_OUT_DIR } from '../../vite.config.ts';
 import imagemin from 'imagemin';
 import imageminWebp from 'imagemin-webp';
 

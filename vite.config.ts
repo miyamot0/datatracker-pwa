@@ -2,14 +2,14 @@ import { defineConfig, loadEnv, PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
-import package_json from './package.json';
+import package_json from './package.json' with { type: 'json' };
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import csp from 'vite-plugin-csp-guard';
-import { deleteUnnecessaryPlugin } from './scripts/plugins/delete-unnecessary-files';
-import { compressPNGPlugin } from './scripts/plugins/compress-png-files';
-import { scrubIslandHtmlPlugin } from './scripts/plugins/scrub-island-html';
-import { inlineWorkersPlugin } from './scripts/plugins/inline-workers';
+import { deleteUnnecessaryPlugin } from './scripts/plugins/delete-unnecessary-files.ts';
+import { compressPNGPlugin } from './scripts/plugins/compress-png-files.ts';
+import { scrubIslandHtmlPlugin } from './scripts/plugins/scrub-island-html.ts';
+import { inlineWorkersPlugin } from './scripts/plugins/inline-workers.ts';
 
 const common_screenshot_params = {
   sizes: '1148x969',
