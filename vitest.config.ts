@@ -7,7 +7,7 @@ import { loadEnv } from 'vite';
 const componentProj: TestProjectConfiguration = {
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
   test: {
@@ -32,7 +32,7 @@ const componentProj: TestProjectConfiguration = {
 const logicProj: TestProjectConfiguration = {
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
   test: {
@@ -87,7 +87,7 @@ export default defineConfig(({ command, mode }) => {
   return {
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src'),
+        '@': path.resolve(import.meta.dirname, './src'),
       },
     },
     test: {
