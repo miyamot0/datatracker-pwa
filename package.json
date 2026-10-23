@@ -139,9 +139,9 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.57.0",
     "vfile-matter": "^5.0.0",
-    "vite": "^8.0.2",
+    "vite": "^8.3.5",
     "vite-plugin-csp-guard": "^4.0.1",
-    "vite-plugin-pwa": "^1.0.3",
+    "vite-plugin-pwa": "^1.3.0",
     "vite-plugin-singlefile": "^2.3.0",
     "vitest": "^4.1.1",
     "vitest-browser-react": "^2.1.0"
@@ -151,12 +151,5 @@
       "./src/**/*.d.ts",
       "src/**/*.{tsx,ts}"
     ]
-  },
-  "resolutions": {
-    "jest-environment-jsdom/form-data": "^4.0.4",
-    "vite-plugin-pwa/rollup": "^2.79.2",
-    "vite-plugin-pwa/@babel/runtime": "^7.26.10",
-    "vite/esbuild": "^0.25.0",
-    "@vitest/browser/cookie": "^0.7.0"
   }
 }

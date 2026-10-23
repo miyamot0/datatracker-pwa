@@ -1,4 +1,4 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-96.17_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-92.91_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-97.11_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-96.30_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-92.71_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-97.14_Percent-green>)
 
 ![Static Badge Version](https://img.shields.io/badge/Version-0.5.11-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
@@ -55,27 +55,6 @@ In addition to the standard PWA build, there is also an 'islanded' mode that all
 This is not provided via the hosted site per se, but rather, is available for download and installation by users who need this level of security. The islanded version includes all the features of the standard PWA but is optimized for environments with more stringent data security requirements (e.g., hospital security with largely whitelisted network access, air-gapped machines, etc.).
 
 Islanded builds are compiled as main branch releases and are made available via the [GitHub releases page](https://github.com/miyamot0/datatracker-pwa/releases).
-
-### Docker/Self-hosting/On-prem Install
-
-Suggested for use in highly secure environments, the program can be run in a Docker container. This allows for a more controlled environment and can be used to ensure that the program is running in a secure and isolated manner. 
-
-The following command can be used to run the program in a Docker container:
-
-```shell
-
-docker run -d \
-  --name datatracker \
-  --network none \
-  --read-only \
-  --cap-drop ALL \
-  --security-opt no-new-privileges \
-  --tmpfs /tmp \
-  -p 127.0.0.1:8080:8080 \
-  datatracker
-
-
-```
 
 ### Screenshots and Visuals
 
