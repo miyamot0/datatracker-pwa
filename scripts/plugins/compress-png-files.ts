@@ -1,8 +1,7 @@
 import { PluginOption } from 'vite';
 import fs from 'node:fs/promises';
 import { PROD_OUT_DIR } from '../../vite.config.ts';
-import imagemin from 'imagemin';
-import imageminWebp from 'imagemin-webp';
+import sharp from 'sharp';
 
 /**
  * Compresses PNG files in the production build output.
@@ -18,14 +17,14 @@ export const compressPNGPlugin: PluginOption = {
 
     for (const file of pngFiles) {
       if (file.endsWith('.png')) {
+        const inputPath = `${PROD_OUT_DIR}/docs/${file}`;
+        const outputPath = `${PROD_OUT_DIR}/docs/${file.slice(0, -'.png'.length)}.webp`;
+
         // Convert old
-        await imagemin([`${PROD_OUT_DIR}/docs/${file}`], {
-          destination: `${PROD_OUT_DIR}/docs`,
-          plugins: [imageminWebp({ quality: 75 })],
-        });
+        await sharp(inputPath).webp({ quality: 75 }).toFile(outputPath);
 
         // Trash old
-        await fs.rm(`${PROD_OUT_DIR}/docs/${file}`);
+        await fs.rm(inputPath);
       }
     }
 
