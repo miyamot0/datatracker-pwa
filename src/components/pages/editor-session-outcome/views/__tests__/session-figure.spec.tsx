@@ -28,37 +28,10 @@ vi.mock('recharts', () => ({
     </div>
   ),
   Tooltip: ({ content }: any) => {
+    const hoveredRow = { second: 10, Hitting: 2, Kicking: Number.NaN };
     const samplePayload = [
-      {
-        payload: { Condition: 'Baseline', second: 10 },
-        name: 'Baseline-Hitting',
-        dataKey: 'Baseline-Hitting',
-        value: 2,
-      },
-      {
-        payload: { Condition: 'Baseline', second: 10 },
-        name: 'Baseline-Hitting-Points_',
-        dataKey: 'Baseline-Hitting-Points_',
-        value: 2,
-      },
-      {
-        payload: { Condition: 'Baseline', second: 10 },
-        name: 'Baseline-Kicking',
-        dataKey: 'Baseline-Kicking',
-        value: Number.NaN,
-      },
-      {
-        payload: { Condition: 'Other', second: 10 },
-        name: 'Other-Hitting',
-        dataKey: 'Other-Hitting',
-        value: 4,
-      },
-      {
-        payload: { Condition: 'Baseline', second: 10 },
-        name: 'Baseline-Hitting',
-        dataKey: 'Baseline-Hitting',
-        value: 2,
-      },
+      { payload: hoveredRow, name: 'Hitting', dataKey: 'Hitting', value: 2 },
+      { payload: hoveredRow, name: 'session', dataKey: 'session', value: 10 },
     ];
 
     const inactive = content?.type?.({ active: false, payload: [] });
@@ -71,7 +44,8 @@ vi.mock('recharts', () => ({
       </div>
     );
   },
-  Legend: ({ payload }: any) => (
+  Legend: ({ content }: any) => (typeof content === 'function' ? content({}) : null),
+  DefaultLegendContent: ({ payload }: any) => (
     <div data-testid="legend">
       {payload?.map((item: any, i: number) => (
         <span key={i}>{item.value}</span>
@@ -228,7 +202,7 @@ describe('SessionFigure', () => {
     await expect.element(lines[0]).toHaveAttribute('data-key', 'Hitting');
   });
 
-  it('renders tooltip content only for unique, non-NaN, matching condition payload entries', async () => {
+  it('renders tooltip rows from the hovered row, only for visible keys with finite values', async () => {
     await render(
       <SessionFigure
         Session={makeSession()}
@@ -241,6 +215,8 @@ describe('SessionFigure', () => {
     await expect.element(page.getByTestId('tooltip-wrapper').getByText('Hitting')).toBeInTheDocument();
     await expect.element(page.getByText('2 Instances')).toBeInTheDocument();
     expect(await page.getByText('NaN Instances').query()).toBeNull();
+    expect(await page.getByText('Kicking', { exact: true }).query()).toBeNull();
+    expect(await page.getByText('session', { exact: true }).query()).toBeNull();
   });
 
   it('uses computed ticks and max values for y-axis and timer-domain on x-axis', async () => {

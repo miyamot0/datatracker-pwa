@@ -15,7 +15,9 @@ const mockGetChartConfiguration = vi.hoisted(() =>
   })),
 );
 const mockGetUniqueSessionConditions = vi.hoisted(() => vi.fn(() => ['Baseline']));
-const mockCalculateSplitPoints = vi.hoisted(() => vi.fn(() => []));
+const mockCalculateSplitPoints = vi.hoisted(() =>
+  vi.fn((_data: any[], _sessions: any[], _condition: string): number[] => []),
+);
 const mockSplitAtPoints = vi.hoisted(() => vi.fn((data: any) => [data]));
 const mockGetShape = vi.hoisted(() => vi.fn(() => 'circle'));
 
@@ -46,6 +48,7 @@ vi.mock('@/lib/shapes', () => ({
 // ----- Imports under test -----
 
 import { BaseChart } from '../base-chart';
+import { ProportionTooltip } from '../../proportion/proportion-elements';
 
 // ----- Helpers -----
 
@@ -65,7 +68,7 @@ const defaultProps = {
   yAxisConfig: { min: 0, max: 100, domain: [0, 100] as [number, number], label: 'Percentage' },
   customTooltip: mockTooltip,
   onNavigate: vi.fn(),
-  divRef: { current: null } as React.RefObject<HTMLDivElement>,
+  divRef: { current: null } as React.RefObject<HTMLDivElement | null>,
 };
 
 // ----- Tests -----
@@ -183,6 +186,72 @@ describe('BaseChart', () => {
     expect(mockGetShape).toHaveBeenCalledTimes(2);
     expect(mockGetShape).toHaveBeenNthCalledWith(1, 0);
     expect(mockGetShape).toHaveBeenNthCalledWith(2, 1);
+  });
+
+  it('renders custom legend entries from the legends prop', async () => {
+    await render(
+      <BaseChart
+        {...defaultProps}
+        legends={[{ id: 'Legend Condition', type: 'circle', value: 'Legend Condition', color: '#ff0000' }]}
+      />,
+    );
+
+    await expect.poll(() => document.querySelector('.recharts-legend-item')?.textContent).toBe('Legend Condition');
+  });
+
+  it('shows the tooltip on hover without throwing (Scatter entries must have a name)', async () => {
+    const data = [
+      { session: 1, Condition: 'Baseline', SessionTime: 1.5, Kicking: 50 },
+      { session: 2, Condition: 'Baseline', SessionTime: 2.5, Kicking: 60 },
+    ];
+
+    await render(<BaseChart {...defaultProps} preparedData={data} customTooltip={ProportionTooltip} />);
+
+    const wrapper = document.querySelector('.recharts-wrapper') as HTMLElement;
+    const rect = wrapper.getBoundingClientRect();
+    wrapper.dispatchEvent(
+      new MouseEvent('mousemove', {
+        bubbles: true,
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+      }),
+    );
+
+    await expect.poll(() => document.body.textContent).toContain('Session #');
+  });
+
+  it('shows the same visible items whether hovering a dot or between dots', async () => {
+    const data = [
+      { session: 1, Condition: 'Baseline', SessionTime: 1.5, Kicking: 50, 'Kicking-Bouts': 2, 'Kicking-Bout-Ave': 1 },
+      { session: 2, Condition: 'Baseline', SessionTime: 2.5, Kicking: 60, 'Kicking-Bouts': 3, 'Kicking-Bout-Ave': 2 },
+      { session: 3, Condition: 'Baseline', SessionTime: 3.5, Kicking: 40, 'Kicking-Bouts': 1, 'Kicking-Bout-Ave': 4 },
+    ];
+
+    await render(<BaseChart {...defaultProps} preparedData={data} customTooltip={ProportionTooltip} />);
+
+    const wrapper = document.querySelector('.recharts-wrapper') as HTMLElement;
+    const rect = wrapper.getBoundingClientRect();
+    const tooltipTexts: string[] = [];
+
+    for (let step = 1; step < 20; step++) {
+      wrapper.dispatchEvent(
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          clientX: rect.left + (rect.width * step) / 20,
+          clientY: rect.top + rect.height / 2,
+        }),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      const text = document.body.textContent ?? '';
+      if (text.includes('Session #')) tooltipTexts.push(text);
+    }
+
+    expect(tooltipTexts.length).toBeGreaterThan(0);
+    for (const text of tooltipTexts) {
+      expect(text).toContain('Kicking Total');
+      expect(text).not.toContain('session Total');
+    }
   });
 
   it('filters preparedData by each condition before line/scatter construction', async () => {

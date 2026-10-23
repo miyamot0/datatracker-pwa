@@ -1,22 +1,24 @@
-﻿import { render } from 'vitest-browser-react';
+import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 import { describe, it, expect } from 'vitest';
 import { ProportionTooltip } from '../proportion-elements';
 
 // ----- Helpers -----
 
-const makePayloadEntry = (desc: string, value: number, condition: string, sessionTime = 10, session = 1) => ({
-  dataKey: desc,
-  name: desc,
-  value,
-  payload: {
-    Condition: condition,
-    session,
-    SessionTime: sessionTime,
-    [`${desc}-Bouts`]: 3,
-    [`${desc}-Bout-Ave`]: 4.5,
-  },
+const makeRow = (overrides: Record<string, string | number> = {}): Record<string, string | number> => ({
+  Condition: 'Baseline',
+  session: 1,
+  SessionTime: 10,
+  Kicking: 50,
+  'Kicking-Bouts': 3,
+  'Kicking-Bout-Ave': 4.5,
+  ...overrides,
 });
+
+// Recharts reports the hovered row through whichever entry it chooses first; the tooltip only reads the row.
+const makePayload = (row: Record<string, string | number>, dataKey = 'Kicking') => [
+  { dataKey, name: `${dataKey}-Points_`, value: row[dataKey], payload: row },
+];
 
 // ----- Tests -----
 
@@ -25,26 +27,34 @@ describe('ProportionTooltip', () => {
     await render(
       <ProportionTooltip
         active={false}
-        payload={[makePayloadEntry('Kicking', 50, 'Baseline')]}
+        payload={makePayload(makeRow())}
         figureTextSize="base"
+        visibleKeys={['Kicking']}
       />,
     );
     await expect.element(page.getByText(/Session #/)).not.toBeInTheDocument();
   });
 
   it('renders nothing when payload is empty', async () => {
-    await render(<ProportionTooltip active={true} payload={[]} figureTextSize="base" />);
+    await render(<ProportionTooltip active={true} payload={[]} figureTextSize="base" visibleKeys={['Kicking']} />);
     await expect.element(page.getByText(/Session #/)).not.toBeInTheDocument();
   });
 
   it('renders nothing when payload is undefined', async () => {
-    await render(<ProportionTooltip active={true} payload={undefined} figureTextSize="base" />);
+    await render(
+      <ProportionTooltip active={true} payload={undefined} figureTextSize="base" visibleKeys={['Kicking']} />,
+    );
     await expect.element(page.getByText(/Session #/)).not.toBeInTheDocument();
   });
 
   it('renders session number and condition when active', async () => {
     await render(
-      <ProportionTooltip active={true} payload={[makePayloadEntry('Kicking', 50, 'Baseline')]} figureTextSize="base" />,
+      <ProportionTooltip
+        active={true}
+        payload={makePayload(makeRow())}
+        figureTextSize="base"
+        visibleKeys={['Kicking']}
+      />,
     );
     await expect.element(page.getByText(/Session #1 \(Baseline\)/)).toBeInTheDocument();
   });
@@ -53,8 +63,9 @@ describe('ProportionTooltip', () => {
     await render(
       <ProportionTooltip
         active={true}
-        payload={[makePayloadEntry('Kicking', 50, 'Baseline', 10)]}
+        payload={makePayload(makeRow({ SessionTime: 10 }))}
         figureTextSize="base"
+        visibleKeys={['Kicking']}
       />,
     );
     await expect.element(page.getByText(/Session Time: 10 min/)).toBeInTheDocument();
@@ -64,104 +75,153 @@ describe('ProportionTooltip', () => {
     await render(
       <ProportionTooltip
         active={true}
-        payload={[makePayloadEntry('Kicking', 50, 'Baseline', 10)]}
+        payload={makePayload(makeRow())}
         figureTextSize="base"
+        visibleKeys={['Kicking']}
       />,
     );
     await expect.element(page.getByText(/Kicking Total/)).toBeInTheDocument();
+    await expect.element(page.getByText('300.00s')).toBeInTheDocument();
     await expect.element(page.getByText(/Kicking %/)).toBeInTheDocument();
+    await expect.element(page.getByText('50.00%')).toBeInTheDocument();
   });
 
-  it('renders Bouts count row when payload has bout data', async () => {
+  it('renders Bouts count row when the row has bout data', async () => {
     await render(
-      <ProportionTooltip active={true} payload={[makePayloadEntry('Kicking', 50, 'Baseline')]} figureTextSize="base" />,
+      <ProportionTooltip
+        active={true}
+        payload={makePayload(makeRow())}
+        figureTextSize="base"
+        visibleKeys={['Kicking']}
+      />,
     );
     await expect.element(page.getByText(/Kicking Bouts/)).toBeInTheDocument();
-    await expect.element(page.getByText('3', { exact: true }).first()).toBeInTheDocument();
+    await expect.element(page.getByText('3', { exact: true })).toBeInTheDocument();
   });
 
   it('renders Ave row with formatted value', async () => {
     await render(
-      <ProportionTooltip active={true} payload={[makePayloadEntry('Kicking', 50, 'Baseline')]} figureTextSize="base" />,
+      <ProportionTooltip
+        active={true}
+        payload={makePayload(makeRow())}
+        figureTextSize="base"
+        visibleKeys={['Kicking']}
+      />,
     );
     await expect.element(page.getByText(/Kicking Ave/)).toBeInTheDocument();
     await expect.element(page.getByText('4.50s')).toBeInTheDocument();
   });
 
-  it('filters out -Points_ entries from the payload', async () => {
-    const entries = [
-      makePayloadEntry('Kicking', 50, 'Baseline'),
-      { ...makePayloadEntry('Kicking-Points_', 50, 'Baseline'), name: 'Kicking-Points_' },
-    ];
-    await render(<ProportionTooltip active={true} payload={entries} figureTextSize="base" />);
-    await expect.element(page.getByText(/Kicking Total/).first()).toBeInTheDocument();
-    expect(page.getByText(/Kicking Total/).elements().length).toBe(1);
-  });
-
-  it('filters entries from a different condition than the first payload', async () => {
-    const entries = [makePayloadEntry('Kicking', 50, 'Baseline'), makePayloadEntry('Biting', 20, 'Intervention')];
-
-    await render(<ProportionTooltip active={true} payload={entries} figureTextSize="base" />);
-
-    await expect.element(page.getByText(/Kicking Total/)).toBeInTheDocument();
-    await expect.element(page.getByText(/Biting Total/)).not.toBeInTheDocument();
-  });
-
-  it('keeps only the first entry when duplicate dataKey values exist', async () => {
-    const entries = [makePayloadEntry('Kicking', 50, 'Baseline'), makePayloadEntry('Kicking', 75, 'Baseline')];
-
-    await render(<ProportionTooltip active={true} payload={entries} figureTextSize="base" />);
-
-    expect(page.getByText(/Kicking Total/).elements().length).toBe(1);
-    await expect.element(page.getByText('300.00s')).toBeInTheDocument();
-    await expect.element(page.getByText('450.00s')).not.toBeInTheDocument();
-  });
-
-  it('filters out entries with NaN values', async () => {
-    const entries = [makePayloadEntry('Kicking', Number.NaN, 'Baseline'), makePayloadEntry('Biting', 25, 'Baseline')];
-
-    await render(<ProportionTooltip active={true} payload={entries} figureTextSize="base" />);
-
-    await expect.element(page.getByText(/Biting Total/)).toBeInTheDocument();
-    await expect.element(page.getByText(/Kicking Total/)).not.toBeInTheDocument();
-  });
-
   it('renders N/A for bouts and average when bout values are undefined', async () => {
-    const entry = makePayloadEntry('Kicking', 50, 'Baseline');
-    delete entry.payload['Kicking-Bouts'];
-    delete entry.payload['Kicking-Bout-Ave'];
+    const row = makeRow();
+    delete row['Kicking-Bouts'];
+    delete row['Kicking-Bout-Ave'];
 
-    await render(<ProportionTooltip active={true} payload={[entry]} figureTextSize="base" />);
+    await render(
+      <ProportionTooltip active={true} payload={makePayload(row)} figureTextSize="base" visibleKeys={['Kicking']} />,
+    );
 
-    const naElements = page.getByText('N/A', { exact: true }).elements();
-    expect(naElements.length).toBe(2);
+    expect(page.getByText('N/A', { exact: true }).elements().length).toBe(2);
   });
 
   it('renders N/A for average when bout average is zero', async () => {
-    const entry = makePayloadEntry('Kicking', 50, 'Baseline');
-    entry.payload['Kicking-Bout-Ave'] = 0;
+    const row = makeRow({ 'Kicking-Bout-Ave': 0 });
 
-    await render(<ProportionTooltip active={true} payload={[entry]} figureTextSize="base" />);
+    await render(
+      <ProportionTooltip active={true} payload={makePayload(row)} figureTextSize="base" visibleKeys={['Kicking']} />,
+    );
 
     await expect.element(page.getByText(/Kicking Ave/)).toBeInTheDocument();
     expect(page.getByText('N/A', { exact: true }).elements().length).toBe(1);
   });
 
   it('cleans condition and hyphen from data key labels', async () => {
-    const entry = makePayloadEntry('Baseline-Kicking', 25, 'Baseline');
+    const row = makeRow({ 'Baseline-Kicking': 25, 'Baseline-Kicking-Bouts': 1, 'Baseline-Kicking-Bout-Ave': 2 });
 
-    await render(<ProportionTooltip active={true} payload={[entry]} figureTextSize="base" />);
+    await render(
+      <ProportionTooltip
+        active={true}
+        payload={makePayload(row, 'Baseline-Kicking')}
+        figureTextSize="base"
+        visibleKeys={['Baseline-Kicking']}
+      />,
+    );
+
+    await expect.element(page.getByText(/^Kicking Total$/)).toBeInTheDocument();
+    await expect.element(page.getByText(/Baseline-Kicking Total/)).not.toBeInTheDocument();
+  });
+
+  it('shows only the visible keys, in order', async () => {
+    const row = makeRow({ Biting: 20, 'Biting-Bouts': 2, 'Biting-Bout-Ave': 1 });
+
+    await render(
+      <ProportionTooltip active={true} payload={makePayload(row)} figureTextSize="base" visibleKeys={['Kicking']} />,
+    );
 
     await expect.element(page.getByText(/Kicking Total/)).toBeInTheDocument();
-    await expect.element(page.getByText(/Baseline-Kicking Total/)).not.toBeInTheDocument();
+    await expect.element(page.getByText(/Biting Total/)).not.toBeInTheDocument();
+  });
+
+  it('does not show a session axis entry as a row', async () => {
+    const row = makeRow();
+    const payload = [{ dataKey: 'session', name: 'session', value: 1, payload: row }, ...makePayload(row)];
+
+    await render(<ProportionTooltip active={true} payload={payload} figureTextSize="base" visibleKeys={['Kicking']} />);
+
+    await expect.element(page.getByText(/Kicking Total/)).toBeInTheDocument();
+    await expect.element(page.getByText(/session Total/)).not.toBeInTheDocument();
+  });
+
+  it('renders the same rows whichever entry the hover reports first', async () => {
+    const row = makeRow();
+    const axisPayload = [{ dataKey: 'Kicking', name: 'Kicking-Points_', value: 50, payload: row }];
+    const dotPayload = [{ dataKey: 'session', name: 'session', value: 1, payload: row }];
+
+    await render(
+      <ProportionTooltip active={true} payload={axisPayload} figureTextSize="base" visibleKeys={['Kicking']} />,
+    );
+    await expect.element(page.getByText(/Kicking Total/)).toBeInTheDocument();
+    await expect.element(page.getByText(/session Total/)).not.toBeInTheDocument();
+
+    await render(
+      <ProportionTooltip active={true} payload={dotPayload} figureTextSize="base" visibleKeys={['Kicking']} />,
+    );
+    await expect.element(page.getByText(/Kicking Total/).last()).toBeInTheDocument();
+    await expect.element(page.getByText(/session Total/)).not.toBeInTheDocument();
+  });
+
+  it('skips keys whose value is not a finite number', async () => {
+    const row = makeRow({ Kicking: Number.NaN, Biting: 25, 'Biting-Bouts': 1, 'Biting-Bout-Ave': 2 });
+
+    await render(
+      <ProportionTooltip
+        active={true}
+        payload={makePayload(row)}
+        figureTextSize="base"
+        visibleKeys={['Kicking', 'Biting']}
+      />,
+    );
+
+    await expect.element(page.getByText(/Biting Total/)).toBeInTheDocument();
+    await expect.element(page.getByText(/Kicking Total/)).not.toBeInTheDocument();
+  });
+
+  it('renders the header without key rows when no keys are visible', async () => {
+    await render(
+      <ProportionTooltip active={true} payload={makePayload(makeRow())} figureTextSize="base" visibleKeys={[]} />,
+    );
+
+    await expect.element(page.getByText(/Session #1 \(Baseline\)/)).toBeInTheDocument();
+    await expect.element(page.getByText(/Kicking Total/)).not.toBeInTheDocument();
   });
 
   it('applies large text size class when figureTextSize is large', async () => {
     await render(
       <ProportionTooltip
         active={true}
-        payload={[makePayloadEntry('Kicking', 50, 'Baseline')]}
+        payload={makePayload(makeRow())}
         figureTextSize="large"
+        visibleKeys={['Kicking']}
       />,
     );
     await expect.element(page.getByText(/Kicking Total/)).toBeInTheDocument();
@@ -172,8 +232,9 @@ describe('ProportionTooltip', () => {
     await render(
       <ProportionTooltip
         active={true}
-        payload={[makePayloadEntry('Kicking', 50, 'Baseline')]}
+        payload={makePayload(makeRow())}
         figureTextSize="extraLarge"
+        visibleKeys={['Kicking']}
       />,
     );
     await expect.element(page.getByText(/Kicking Total/)).toBeInTheDocument();

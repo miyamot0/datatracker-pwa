@@ -1,37 +1,45 @@
 import { cn } from '@/lib/utils';
 import { FIGURE_TEXT_OPTIONS } from '@/types/accessibility';
 
+type TooltipRow = Record<string, any>;
+
+type ProportionTooltipProps = {
+  active?: boolean;
+  payload?: { payload: TooltipRow }[];
+  figureTextSize?: string;
+  visibleKeys: string[];
+};
+
 /**
  * Helper component for displaying proportion tooltip data
  */
-function OutputDisplay({ payloads }: { payloads: any[] }) {
-  const main_payload = payloads[0].payload;
-
+function OutputDisplay({ row, keys }: { row: TooltipRow; keys: string[] }) {
   const pct_session = (data: any) => {
     return `${data.toFixed(2)}%`;
   };
 
   const get_seconds = (data: any) => {
-    return `${((data * main_payload.SessionTime) / 100).toFixed(2)}s`;
+    return `${((data * row.SessionTime) / 100).toFixed(2)}s`;
   };
 
   return (
     <div className="flex flex-col text-sm">
-      {payloads.map((entry, index) => {
-        const cleaned_up_tag = entry.dataKey.toString().replace(payloads[0].payload.Condition, '').replace('-', '');
+      {keys.map((key) => {
+        const cleaned_up_tag = key.replace(row.Condition, '').replace('-', '');
 
-        const bout_n = entry.payload[`${entry.name}-Bouts`];
-        const bout_ave = entry.payload[`${entry.name}-Bout-Ave`];
+        const value = row[key];
+        const bout_n = row[`${key}-Bouts`];
+        const bout_ave = row[`${key}-Bout-Ave`];
 
         return (
-          <div key={index} className="flex flex-col mb-1">
+          <div key={key} className="flex flex-col mb-1">
             <div className="flex flex-row justify-between text-sm">
               <span className="font-semibold mr-2">{`${cleaned_up_tag} Total`}</span>
-              <p className="text-sm">{get_seconds(entry.value * 60)}</p>
+              <p className="text-sm">{get_seconds(value * 60)}</p>
             </div>
             <div className="flex flex-row justify-between text-sm">
               <span className="font-semibold mr-2">{`${cleaned_up_tag} %`}</span>
-              <p className="text-sm">{pct_session(entry.value)}</p>
+              <p className="text-sm">{pct_session(value)}</p>
             </div>
             <div className="flex flex-row justify-between text-sm">
               <span className="font-semibold mr-2">{`${cleaned_up_tag} Bouts`}</span>
@@ -39,9 +47,7 @@ function OutputDisplay({ payloads }: { payloads: any[] }) {
             </div>
             <div className="flex flex-row justify-between text-sm">
               <span className="font-semibold mr-2">{`${cleaned_up_tag} Ave`}</span>
-              <p key={`item-${index}`} className="text-sm">
-                {bout_ave !== undefined && bout_ave !== 0 ? `${bout_ave.toFixed(2)}s` : 'N/A'}
-              </p>
+              <p className="text-sm">{bout_ave !== undefined && bout_ave !== 0 ? `${bout_ave.toFixed(2)}s` : 'N/A'}</p>
             </div>
           </div>
         );
@@ -52,21 +58,16 @@ function OutputDisplay({ payloads }: { payloads: any[] }) {
 
 /**
  * Proportion-specific tooltip component
+ *
+ * Values are read from the hovered session row, because the raw recharts payload varies with the hover target
+ * (line, scatter, or x-axis entries).
  */
-export function ProportionTooltip({ active, payload, figureTextSize }: any) {
+export function ProportionTooltip({ active, payload, figureTextSize, visibleKeys }: ProportionTooltipProps) {
   if (active && payload && payload.length) {
     const main_payload = payload[0].payload;
     const { Condition } = main_payload;
 
-    const relevant_payloads = payload.filter(
-      (entry: any) => entry.payload.Condition === Condition && !entry.name.includes('-Points_'),
-    );
-
-    const relevant_payloads_unique = relevant_payloads
-      .filter((entry: any, index: number, self: any[]) => {
-        return index === self.findIndex((t) => t.dataKey === entry.dataKey);
-      })
-      .filter((entry: any) => !Number.isNaN(entry.value));
+    const plotted_keys = visibleKeys.filter((key) => Number.isFinite(main_payload[key]));
 
     return (
       <div
@@ -78,7 +79,7 @@ export function ProportionTooltip({ active, payload, figureTextSize }: any) {
         <p className="font-bold">{`Session #${main_payload.session} (${Condition})`}</p>
         <p className="font-semibold mb-2">{`Session Time: ${main_payload.SessionTime.toPrecision(2)} min`}</p>
 
-        <OutputDisplay payloads={relevant_payloads_unique} />
+        <OutputDisplay row={main_payload} keys={plotted_keys} />
       </div>
     );
   }

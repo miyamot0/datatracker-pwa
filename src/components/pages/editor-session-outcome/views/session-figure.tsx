@@ -11,6 +11,7 @@ import {
   YAxis,
   Tooltip,
   Legend,
+  DefaultLegendContent,
   ResponsiveContainer,
 } from 'recharts';
 import { ExpandedKeySetInstance, KeySetInstance } from '@/types/keyset';
@@ -33,37 +34,26 @@ const noAnimationProps = {
 export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) {
   if (!Session || !PlotData) return <></>;
 
+  const keys_to_skip = KeysHidden.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+
   const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       const main_payload = payload[0].payload;
 
-      const { Condition } = main_payload;
-      const relevant_payloads = payload.filter(
-        (entry) => entry.payload.Condition === Condition && !entry.name.includes('-Points_'),
+      const plotted_keys = Object.keys(main_payload).filter(
+        (key) => key !== 'second' && !keys_to_skip.includes(key) && Number.isFinite(main_payload[key]),
       );
-      const relevant_payloads_unique = relevant_payloads
-        .filter((entry, index, self) => {
-          return index === self.findIndex((t) => t.dataKey === entry.dataKey);
-        })
-        .filter((entry) => !Number.isNaN(entry.value));
 
       return (
         <div className="bg-primary-foreground p-4 border rounded">
           <p className="font-bold">{`Time into Session: ${main_payload.second}s`}</p>
 
           <div className="flex flex-col text-sm">
-            {relevant_payloads_unique.map((entry, index) => {
-              const cleaned_up_tag = entry.dataKey
-                .toString()
-                .replace(payload[0].payload.Condition, '')
-                .replace('-', '');
-
+            {plotted_keys.map((key) => {
               return (
-                <div key={index} className="flex flex-row justify-between text-sm">
-                  <span className="font-semibold mr-2">{cleaned_up_tag}</span>
-                  <p key={`item-${index}`} className="text-sm">
-                    {`${entry.value} Instances`}
-                  </p>
+                <div key={key} className="flex flex-row justify-between text-sm">
+                  <span className="font-semibold mr-2">{key.replace('-', '')}</span>
+                  <p className="text-sm">{`${main_payload[key]} Instances`}</p>
                 </div>
               );
             })}
@@ -74,8 +64,6 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
 
     return null;
   };
-
-  const keys_to_skip = KeysHidden.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
 
   const yValues = PlotData.map((point) => {
     const keys = Object.keys(point).filter((k) => k !== 'second');
@@ -165,12 +153,12 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
                     name={`${key.KeyDescription}-Points_`}
                     data={PlotData}
                     type="linear"
-                    points={undefined}
                     legendType="none"
                     dataKey={`${key.KeyDescription}`}
                     stroke={FIGURE_PATH_COLORS[index]}
                   />
                   <Scatter
+                    name={key.KeyDescription}
                     {...noAnimationProps}
                     data={PlotData}
                     animationDuration={100}
@@ -241,16 +229,21 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
           <Tooltip {...noAnimationProps} content={<CustomTooltip />} />
           <Legend
             {...noAnimationProps}
-            payload={Session.Keyset.FrequencyKeys.filter((k) => keys_to_skip.includes(k.KeyDescription) === false).map(
-              (item: KeySetInstance, index: number) => ({
-                id: item.KeyDescription,
-                type: getShape(index),
-                value: item.KeyDescription,
-
-                color: FIGURE_PATH_COLORS[index % FIGURE_PATH_COLORS.length],
-              }),
-            )}
             align="center"
+            content={(props) => (
+              <DefaultLegendContent
+                {...props}
+                payload={Session.Keyset.FrequencyKeys.filter(
+                  (k) => keys_to_skip.includes(k.KeyDescription) === false,
+                ).map((item: KeySetInstance, index: number) => ({
+                  id: item.KeyDescription,
+                  type: getShape(index),
+                  value: item.KeyDescription,
+
+                  color: FIGURE_PATH_COLORS[index % FIGURE_PATH_COLORS.length],
+                }))}
+              />
+            )}
           />
         </ComposedChart>
       </ResponsiveContainer>

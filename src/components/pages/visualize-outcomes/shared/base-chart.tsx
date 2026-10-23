@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
   ZAxis,
+  DefaultLegendContent,
 } from 'recharts';
 import { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
@@ -44,7 +45,7 @@ type BaseChartProps = {
   };
   customTooltip: React.ComponentType<any>;
   onNavigate: (props: any) => void;
-  divRef: React.RefObject<HTMLDivElement>;
+  divRef: React.RefObject<HTMLDivElement | null>;
 };
 
 export function BaseChart({
@@ -69,6 +70,8 @@ export function BaseChart({
     name: condition,
     data: preparedData.filter((data) => data.Condition === condition),
   }));
+
+  const visibleKeys = keySetFull.filter((key) => key.Visible === true).map((key) => key.KeyDescription);
 
   let markerSize = 100;
   if (figureTextSize == 'large') {
@@ -118,12 +121,12 @@ export function BaseChart({
                       name={`${key.KeyDescription}-Points_`}
                       data={condition.data}
                       type="linear"
-                      points={undefined}
                       legendType="none"
                       dataKey={`${key.KeyDescription}`}
                       stroke={FIGURE_PATH_COLORS[index_dynamic]}
                     />
                     <Scatter
+                      name={key.KeyDescription}
                       data={condition.data}
                       {...noAnimationProps}
                       onDoubleClick={onNavigate}
@@ -148,12 +151,12 @@ export function BaseChart({
                         name={`${key.KeyDescription}-Points_`}
                         data={segment}
                         type="linear"
-                        points={undefined}
                         legendType="none"
                         dataKey={`${key.KeyDescription}`}
                         stroke={FIGURE_PATH_COLORS[index_dynamic]}
                       />
                       <Scatter
+                        name={key.KeyDescription}
                         data={segment}
                         {...noAnimationProps}
                         onDoubleClick={onNavigate}
@@ -171,7 +174,7 @@ export function BaseChart({
           return lines;
         })}
 
-        <ZAxis {...noAnimationProps} type="number" range={[markerSize]} />
+        <ZAxis {...noAnimationProps} type="number" range={[markerSize, markerSize]} />
 
         <XAxis
           {...noAnimationProps}
@@ -191,10 +194,14 @@ export function BaseChart({
         <Tooltip
           {...noAnimationProps}
           animationDuration={100}
-          content={<CustomTooltip figureTextSize={figureTextSize} />}
+          content={<CustomTooltip figureTextSize={figureTextSize} visibleKeys={visibleKeys} />}
         />
 
-        <Legend {...noAnimationProps} payload={legends} align="center" />
+        <Legend
+          {...noAnimationProps}
+          align="center"
+          content={(props) => <DefaultLegendContent {...props} payload={legends} />}
+        />
       </ComposedChart>
     </ResponsiveContainer>
   );
