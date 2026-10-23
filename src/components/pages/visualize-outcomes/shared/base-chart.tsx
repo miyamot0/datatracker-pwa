@@ -85,10 +85,13 @@ export function BaseChart({
       {...noAnimationProps}
       width="100%"
       height={500}
-      className={cn('text-base text-primary bg-white nuke-view-transition', {
-        'text-xl': figureTextSize == FIGURE_TEXT_OPTIONS[1].value,
-        'text-2xl': figureTextSize == FIGURE_TEXT_OPTIONS[2].value,
-      })}
+      className={cn(
+        'text-base text-primary bg-white nuke-view-transition [&_.recharts-legend-item]:!inline-flex [&_.recharts-legend-item]:items-center',
+        {
+          'text-xl': figureTextSize == FIGURE_TEXT_OPTIONS[1].value,
+          'text-2xl': figureTextSize == FIGURE_TEXT_OPTIONS[2].value,
+        },
+      )}
       ref={divRef}
     >
       <ComposedChart
@@ -198,6 +201,7 @@ export function BaseChart({
         <Tooltip
           {...noAnimationProps}
           animationDuration={100}
+          wrapperStyle={{ zIndex: 10 }}
           content={<CustomTooltip figureTextSize={figureTextSize} visibleKeys={visibleKeys} />}
         />
 

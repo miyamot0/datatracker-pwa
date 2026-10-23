@@ -47,8 +47,14 @@ vi.mock('@/lib/shapes', () => ({
 
 // ----- Imports under test -----
 
+import '@/styles/globals.css';
 import { BaseChart } from '../base-chart';
 import { ProportionTooltip } from '../../proportion/proportion-elements';
+
+const legendItems = [
+  { id: 'Baseline', type: 'circle' as const, value: 'Baseline', color: '#ff0000' },
+  { id: 'Kicking', type: 'diamond' as const, value: 'Kicking', color: 'black' },
+];
 
 // ----- Helpers -----
 
@@ -295,5 +301,29 @@ describe('BaseChart', () => {
     await vi.waitFor(() => expect(document.querySelectorAll('.recharts-symbols').length).toBeGreaterThan(0));
     expect(document.querySelectorAll('.recharts-line-dot').length).toBe(0);
     expect(document.querySelectorAll('.recharts-active-dot').length).toBe(0);
+  });
+
+  it('places the tooltip above the legend', async () => {
+    await render(<BaseChart {...defaultProps} legends={legendItems} />);
+    await vi.waitFor(() => expect(document.querySelector('.recharts-legend-wrapper')).not.toBeNull());
+
+    const tooltip = document.querySelector('.recharts-tooltip-wrapper') as HTMLElement;
+    const legend = document.querySelector('.recharts-legend-wrapper') as HTMLElement;
+    const tooltipZ = Number(getComputedStyle(tooltip).zIndex);
+    const legendZ = Number(getComputedStyle(legend).zIndex) || 0;
+    expect(tooltipZ).toBeGreaterThan(legendZ);
+  });
+
+  it('vertically centres each legend marker on its label', async () => {
+    await render(<BaseChart {...defaultProps} legends={legendItems} />);
+    await vi.waitFor(() => expect(document.querySelectorAll('.recharts-legend-item').length).toBe(2));
+
+    for (const item of Array.from(document.querySelectorAll('.recharts-legend-item'))) {
+      const marker = item.querySelector('svg')!.getBoundingClientRect();
+      const label = item.querySelector('.recharts-legend-item-text')!.getBoundingClientRect();
+      const markerCentre = marker.top + marker.height / 2;
+      const labelCentre = label.top + label.height / 2;
+      expect(Math.abs(markerCentre - labelCentre)).toBeLessThan(1);
+    }
   });
 });
