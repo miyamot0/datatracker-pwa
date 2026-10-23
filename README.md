@@ -136,8 +136,6 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
  
 @tanstack/react-table (8.21.3). Copyright Tanner Linsley -- MIT Licensed: [Repo](https://github.com/TanStack/table.git) 
  
-@typescript/native-preview (7.0.0-dev.20260707.2). Copyright Microsoft Corp. -- Apache-2.0 Licensed: [Repo](https://github.com/microsoft/typescript-go.git) 
- 
 class-variance-authority (0.7.1). Copyright Joe Bell (https://joebell.co.uk) -- Apache-2.0 Licensed: [Repo](https://github.com/joe-bell/cva.git) 
  
 clsx (2.1.1). Copyright Luke Edwards luke.edwards05@gmail.com https://lukeed.com -- MIT Licensed: [Repo](https://github.com/lukeed/clsx.git) 
@@ -175,6 +173,8 @@ sonner (2.0.8). Copyright Emil Kowalski <e@emilkowal.ski> -- MIT Licensed: [Repo
 tailwind-merge (2.6.1). Copyright Dany Castillo -- MIT Licensed: [Repo](https://github.com/dcastil/tailwind-merge.git) 
  
 tailwindcss-animate (1.0.7). Copyright Jamie Kyle <me@thejameskyle.com> -- MIT Licensed: [Repo](https://registry.npmjs.org/tailwindcss-animate/-/tailwindcss-animate-1.0.7.tgz) 
+ 
+typescript (7.0.2). Copyright Microsoft Corp. -- Apache-2.0 Licensed: [Repo](https://github.com/microsoft/TypeScript.git) 
  
 uuid (14.0.3). Copyright n/a -- MIT Licensed: [Repo](https://github.com/uuidjs/uuid.git) 
  
