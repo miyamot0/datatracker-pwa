@@ -261,7 +261,7 @@ describe('DocumentationEntryPage', () => {
 
   it('renders markdown viewer with entry content', async () => {
     await renderEntryPage();
-    await expect.element(page.getByTestId('md-viewer-lite')).toHaveTextContent('# Test Content');
+    await expect.element(page.getByTestId('md-viewer-lite')).toMatchTextContent('# Test Content');
   });
 
   it('disables previous button when PreviousEntry is undefined', async () => {

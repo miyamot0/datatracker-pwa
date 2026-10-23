@@ -5,6 +5,7 @@ import { CoverageV8Options } from 'vitest/node';
 import { loadEnv } from 'vite';
 
 const componentProj: TestProjectConfiguration = {
+  extends: false,
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
@@ -19,7 +20,11 @@ const componentProj: TestProjectConfiguration = {
       screenshotFailures: false,
       screenshotDirectory: './public/screenshots',
       instances: [{ browser: 'chromium' }],
+      locators: {
+        exact: false,
+      },
     },
+    clearMocks: false,
     maxConcurrency: 20,
     //maxWorkers: 1,
     include: ['./**/*.spec.tsx'],
@@ -30,12 +35,14 @@ const componentProj: TestProjectConfiguration = {
 };
 
 const logicProj: TestProjectConfiguration = {
+  extends: false,
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
   test: {
+    clearMocks: false,
     include: ['./**/*.test.{ts,tsx}'],
     exclude: [
       ...configDefaults.exclude,

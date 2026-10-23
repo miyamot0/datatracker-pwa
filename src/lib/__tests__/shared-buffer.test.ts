@@ -40,8 +40,8 @@ describe('shared-buffer.ts', () => {
     (global as any).SharedArrayBuffer = undefined;
     (global as any).Atomics = undefined;
     (global as any).self = { crossOriginIsolated: false };
-    (global as any).navigator = { userAgent: 'Test Browser' };
-    (global as any).window = { isSecureContext: true, location: { protocol: 'https:' } };
+    vi.stubGlobal('navigator', { userAgent: 'Test Browser' });
+    vi.stubGlobal('window', { isSecureContext: true, location: { protocol: 'https:' } });
 
     // Mock import.meta.env
     vi.stubGlobal('import.meta', { env: { DEV: false } });
