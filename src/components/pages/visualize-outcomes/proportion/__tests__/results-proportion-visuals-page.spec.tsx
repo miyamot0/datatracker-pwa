@@ -207,6 +207,26 @@ describe('ResultsProportionVisualsPage', () => {
     expect(await page.getByTestId('proportion-figure').query()).toBeNull();
   });
 
+  it('renders the figure with empty keyset, keys, and sessions', async () => {
+    await renderPage({
+      DynamicKeySet: {
+        Name: '',
+        FrequencyKeys: [],
+        DurationKeys: [],
+        DerivedKeys: [],
+        SpecialDurationKeys: [],
+        ScorableDurationKeys: [],
+      },
+      ShowKeys: [],
+      ResultsFiltered: [],
+      Conditions: [],
+    });
+
+    await expect.element(page.getByTestId('proportion-figure')).toBeInTheDocument();
+    await expect.element(page.getByTestId('figure-visible-keys')).toHaveTextContent('0');
+    await expect.element(page.getByTestId('figure-session-count')).toHaveTextContent('0');
+  });
+
   it('renders condition names in the Edit Conditions Displayed dropdown', async () => {
     await renderPage();
 

@@ -2,6 +2,7 @@ import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ComponentProps } from 'react';
+import { createNewKeySet } from '@/lib/keyset';
 
 const mockFilteredSessionScoringOptions = vi.hoisted(() => vi.fn());
 
@@ -166,6 +167,19 @@ describe('ResultsViewerContent', () => {
       } as any,
     });
 
+    expect(await page.getByTestId('freq-view').query()).toBeNull();
+    expect(await page.getByTestId('dur-view').query()).toBeNull();
+  });
+
+  it('renders controls and no views when a session has a blank keyset', async () => {
+    await renderPage({
+      Keyset: createNewKeySet(''),
+      ShowKeysFreq: [],
+      ShowKeysDuration: [],
+    });
+
+    await expect.element(page.getByText('Filter by Data Collector:')).toBeInTheDocument();
+    await expect.element(page.getByText('Score By Schedule:')).toBeInTheDocument();
     expect(await page.getByTestId('freq-view').query()).toBeNull();
     expect(await page.getByTestId('dur-view').query()).toBeNull();
   });

@@ -5,7 +5,7 @@ import { getLocalCachedPrefs } from '@/lib/local_storage';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { extractAndDeduplicateKeysets, mapKeysWithStoragePreference } from '@/lib/graphing/keyset-utils';
 import { filterSessionsByPrimaryRole } from '@/lib/graphing/session-filters';
-import { pullMostRecentSession } from '@/lib/keyset';
+import { createNewKeySet, pullMostRecentSession } from '@/lib/keyset';
 import { ToggleDisplayKey } from '@/types/visuals';
 import ResultsRateVisualsPage from '@/components/pages/visualize-outcomes/rate/results-rate-visuals-page';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { ModifiedSessionResult } from '@/types/storage';
-import { ErrorDisplay } from '@/components/elements/suspense/error-display';
 import { filteredSessionScoringOptions } from '@/types/schedules';
 import { conditionQueryOptions } from '@/queries/conditions/query-conditions';
 
@@ -100,13 +99,10 @@ function RouteComponent() {
             const conditions: string[] = results[2];
 
             const resultsFiltered = filterSessionsByPrimaryRole(sessionOutcomes);
-            const recentKeysetName = pullMostRecentSession(sessionOutcomes);
-            const sessionKeySet = recentKeysetName.Keyset;
-            const designerKeySet = keyboards.find((k: KeySet) => k.Name == recentKeysetName.SessionSettings.KeySet);
-
-            if (!sessionKeySet) {
-              return <ErrorDisplay Text={'KeySet not found.'} />;
-            }
+            // Note: no sessions, or no attached keyset, falls back to a blank keyset so the charts render empty
+            const recentSession = pullMostRecentSession(sessionOutcomes);
+            const sessionKeySet = recentSession?.Keyset ?? createNewKeySet(recentSession?.SessionSettings.KeySet ?? '');
+            const designerKeySet = keyboards.find((k: KeySet) => k.Name == recentSession?.SessionSettings.KeySet);
 
             const {
               frequencyKeys: targetedFKeys,

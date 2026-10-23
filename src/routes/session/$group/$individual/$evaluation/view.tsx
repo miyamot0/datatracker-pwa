@@ -15,8 +15,8 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { ModifiedSessionResult } from '@/types/storage';
-import { ErrorDisplay } from '@/components/elements/suspense/error-display';
 import ResultsViewerContent from '@/components/pages/summary-outcomes/results-viewer-content';
+import ResultsViewerBlank from '@/components/pages/summary-outcomes/views/results-viewer-blank';
 import { filteredSessionScoringOptions } from '@/types/schedules';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/view')({
@@ -91,14 +91,15 @@ function RouteComponent() {
           (results: any[]) => {
             const keyboards: KeySet[] = results[0];
             const sessionOutcomes: ModifiedSessionResult[] = results[1];
-            const recentKeysetName = pullMostRecentSession(sessionOutcomes);
-
-            const sessionKeySet = recentKeysetName.Keyset;
-            const designerKeySet = keyboards.find((k: KeySet) => k.Name == recentKeysetName.SessionSettings.KeySet);
-
-            if (!sessionKeySet) {
-              return <ErrorDisplay Text={'Relevant keyset not found.'} />;
+            // No sessions yet: show the blank card, matching reli
+            if (sessionOutcomes.length < 1) {
+              return <ResultsViewerBlank />;
             }
+
+            const recentSession = pullMostRecentSession(sessionOutcomes);
+
+            const sessionKeySet = recentSession.Keyset;
+            const designerKeySet = keyboards.find((k: KeySet) => k.Name == recentSession.SessionSettings.KeySet);
 
             const {
               frequencyKeys: targetedFKeys,

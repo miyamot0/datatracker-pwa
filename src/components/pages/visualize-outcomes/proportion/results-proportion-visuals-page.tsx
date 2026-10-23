@@ -67,7 +67,7 @@ export default function ResultsProportionVisualsPage({
     <Card className="w-full">
       <CardHeader className="flex flex-row justify-between">
         <div className="flex flex-col gap-1.5 grow">
-          <CardTitle>Visualization of Behavioral Rates</CardTitle>
+          <CardTitle>Visualization of Behavioral Proportions</CardTitle>
           <CardDescription>Options for Visualizing Data Provided Below</CardDescription>
         </div>
         <div className="flex gap-2">
