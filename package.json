@@ -2,7 +2,7 @@
   "name": "data-tracker",
   "type": "module",
   "engines": {
-    "node": "24.x"
+    "node": "24.22.1"
   },
   "description": "DataTracker is a web application that helps you to track various forms of behavioral phenomena",
   "homepage": "https://www.smallnstats.com",
@@ -33,7 +33,7 @@
     "research software"
   ],
   "license": "Apache-2.0",
-  "version": "0.5.12",
+  "version": "0.5.13",
   "scripts": {
     "dev-island": "vite --mode island",
     "dev": "vite",

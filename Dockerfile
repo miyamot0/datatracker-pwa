@@ -1,4 +1,4 @@
-FROM node:24.15.0-alpine AS builder
+FROM node:24.22.1-alpine3.24 AS builder
 WORKDIR /app
 
 # Build core UI
@@ -8,7 +8,7 @@ COPY . .
 RUN yarn build-docker
 
 # Set up hosting
-FROM nginx:alpine
+FROM nginx:1.31.8-alpine3.24
 
 # Nuke/swap default html content
 RUN rm -rf /usr/share/nginx/html/*

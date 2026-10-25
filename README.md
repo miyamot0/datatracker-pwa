@@ -172,8 +172,6 @@ sonner (2.0.8). Copyright Emil Kowalski <e@emilkowal.ski> -- MIT Licensed: [Repo
  
 tailwind-merge (2.6.1). Copyright Dany Castillo -- MIT Licensed: [Repo](https://github.com/dcastil/tailwind-merge.git) 
  
-tailwindcss-animate (1.0.7). Copyright Jamie Kyle <me@thejameskyle.com> -- MIT Licensed: [Repo](https://registry.npmjs.org/tailwindcss-animate/-/tailwindcss-animate-1.0.7.tgz) 
- 
 typescript (7.0.2). Copyright Microsoft Corp. -- Apache-2.0 Licensed: [Repo](https://github.com/microsoft/TypeScript.git) 
  
 uuid (14.0.3). Copyright n/a -- MIT Licensed: [Repo](https://github.com/uuidjs/uuid.git) 
