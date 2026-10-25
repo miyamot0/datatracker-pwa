@@ -35,4 +35,4 @@ coverage/.tmp
 .env
 .env.development
 .env.production
-.env
+.env.island
