@@ -21,7 +21,6 @@ export default defineConfig(
     'eslint.config.{js,json}',
     'prettier.rc',
     'components.json',
-    'tailwind.config.{js,json}',
     'tsconfig.{json,ts}',
     'tsconfig.app.{json,ts}',
     'tsconfig.node.{json,ts}',

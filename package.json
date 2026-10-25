@@ -94,7 +94,6 @@
     "scheduler": "^0.23.2",
     "sonner": "^2.0.7",
     "tailwind-merge": "^2.5.2",
-    "tailwindcss-animate": "^1.0.7",
     "typescript-native": "npm:typescript@^7.0.2",
     "uuid": "^14.0.3",
     "zod": "^4.3.6"
@@ -102,7 +101,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.58.2",
-    "@tailwindcss/typography": "^0.5.15",
+    "@tailwindcss/vite": "^4.3.3",
     "@tanstack/router-plugin": "^1.168.48",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
@@ -119,7 +118,6 @@
     "@vitest/browser-playwright": "5.0.5",
     "@vitest/coverage-v8": "5.0.5",
     "@vitest/web-worker": "5.0.5",
-    "autoprefixer": "^10.4.20",
     "eslint": "^10.0.3",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.0.1",
@@ -128,12 +126,12 @@
     "jsdom": "^30.1.3",
     "knip": "^6.7.0",
     "license-report": "^6.8.0",
-    "postcss": "^8.5.31",
     "react-refresh": "^0.18.0",
     "sharp": "^0.35.5",
-    "tailwindcss": "^3.4.11",
+    "tailwindcss": "^4.3.3",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.0",
+    "tw-animate-css": "^1.4.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.57.0",
     "vfile-matter": "^5.0.0",
@@ -143,10 +141,6 @@
     "vite-plugin-singlefile": "^2.3.0",
     "vitest": "^5.0.5",
     "vitest-browser-react": "^2.3.0"
-  },
-  "resolutions": {
-    "mdast-util-to-hast": "^13.2.1",
-    "postcss-selector-parser": "^7.1.6"
   },
   "findUnusedExports": {
     "include": [

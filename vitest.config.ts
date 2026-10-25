@@ -1,11 +1,13 @@
 import { defineConfig, configDefaults, TestProjectConfiguration } from 'vitest/config';
 import path from 'path';
 import { playwright } from '@vitest/browser-playwright';
+import tailwindcss from '@tailwindcss/vite';
 import { CoverageV8Options } from 'vitest/node';
 import { loadEnv } from 'vite';
 
 const componentProj: TestProjectConfiguration = {
   extends: false,
+  plugins: [tailwindcss()],
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
