@@ -157,7 +157,7 @@ describe('PageWrapper', () => {
       const { container } = renderWithContext(
         <PageWrapper Settings={{ ...DEFAULT_APPLICATION_SETTINGS, DisplaySize: 'wide' }}>content</PageWrapper>,
       );
-      expect(container.querySelector('main')?.className).toContain('max-w-[90rem]');
+      expect(container.querySelector('main')?.className).toContain('max-w-360');
     });
 
     it('applies extra-wide max-width class when DisplaySize is "extra-wide"', () => {

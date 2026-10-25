@@ -34,7 +34,7 @@ export default function PageWrapper({
   return (
     <main
       className={cn('flex min-h-screen flex-col items-center w-full py-4 mx-2 max-w-7xl self-center', className, {
-        'max-w-[90rem]': settings.DisplaySize === 'wide',
+        'max-w-360': settings.DisplaySize === 'wide',
         'max-w-[106rem]': settings.DisplaySize === 'extra-wide',
         'max-w-full w-full': settings.SessionDisplay === 'FullScreen',
       })}
