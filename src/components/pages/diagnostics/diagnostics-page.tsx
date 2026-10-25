@@ -12,7 +12,7 @@ export function DiagnosticsPage() {
 
   return (
     <PageWrapper label="Diagnostics" className="flex flex-col gap-6 select-none" Settings={Settings}>
-      <Card className="w-full max-w-screen-lg">
+      <Card className="w-full max-w-(--breakpoint-lg)">
         <CardHeader className="flex flex-row justify-between align-top">
           <div className="flex flex-col gap-1.5">
             <CardTitle>Diagnostic and Performance Information</CardTitle>

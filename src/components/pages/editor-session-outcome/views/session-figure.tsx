@@ -85,7 +85,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
         width="100%"
         height={500}
         className={
-          'text-base text-primary bg-white nuke-view-transition [&_.recharts-legend-item]:!inline-flex [&_.recharts-legend-item]:items-center'
+          'text-base text-primary bg-white nuke-view-transition [&_.recharts-legend-item]:inline-flex! [&_.recharts-legend-item]:items-center'
         }
       >
         <ComposedChart

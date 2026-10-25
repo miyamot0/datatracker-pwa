@@ -150,7 +150,7 @@ export default function KeySetsPage({
   ];
 
   return (
-    <Card className="w-full max-w-screen-2xl">
+    <Card className="w-full max-w-(--breakpoint-2xl)">
       <CardHeader className="flex flex-col md:flex-row w-full justify-between">
         <div className="flex flex-col gap-1.5">
           <CardTitle>Keyset Directory: {Individual}</CardTitle>

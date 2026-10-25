@@ -13,7 +13,7 @@ export default function DocumentationListingPage() {
 
   return (
     <PageWrapper label={'Documentation'} className="select-none" Settings={Settings}>
-      <Card className="w-full max-w-screen-2xl">
+      <Card className="w-full max-w-(--breakpoint-2xl)">
         <CardHeader className="flex flex-row justify-between">
           <div className="flex flex-col gap-1.5 grow">
             <CardTitle>Program Documentation</CardTitle>

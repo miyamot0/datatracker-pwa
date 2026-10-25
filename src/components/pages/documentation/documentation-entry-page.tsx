@@ -26,7 +26,7 @@ export default function DocumentationEntryPage() {
       className="select-none"
       Settings={Settings}
     >
-      <Card className="w-full max-w-screen-2xl">
+      <Card className="w-full max-w-(--breakpoint-2xl)">
         <CardHeader className="flex flex-col md:flex-row md:justify-between">
           <div className="flex flex-col gap-1.5">
             <CardTitle>{Entry.matter.title}</CardTitle>
@@ -49,7 +49,7 @@ export default function DocumentationEntryPage() {
           </div>
           <BackButton />
         </CardHeader>
-        <CardContent className="prose dark:prose-invert !max-w-none">
+        <CardContent className="doc-content">
           <MdViewerLite source={Entry.value} />
         </CardContent>
         <CardFooter className="flex flex-row justify-between">

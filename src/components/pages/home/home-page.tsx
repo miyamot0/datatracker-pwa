@@ -83,7 +83,7 @@ export default function HomePage() {
               Software Licenses
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-screen-md select-none">
+          <DialogContent className="max-w-(--breakpoint-md) select-none">
             <DialogHeader>
               <DialogTitle>Open Source Software</DialogTitle>
               <DialogDescription>Licensing information for relevant software is provided below</DialogDescription>

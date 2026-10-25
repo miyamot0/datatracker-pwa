@@ -17,7 +17,7 @@ export default function UnauthorizedDisplay() {
   const { settings, setHandle } = useContext(FolderHandleContext);
 
   return (
-    <Card className="w-full max-w-screen-lg">
+    <Card className="w-full max-w-(--breakpoint-lg)">
       <CardHeader className="flex flex-row w-full justify-between">
         <div className="flex flex-col gap-1.5">
           <CardTitle>Program Access and Authorization</CardTitle>

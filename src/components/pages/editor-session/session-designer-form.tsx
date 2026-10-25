@@ -120,7 +120,7 @@ export default function SessionDesigner({
   }
 
   return (
-    <div className="w-full grid grid-cols-3 gap-2 max-w-screen-2xl">
+    <div className="w-full grid grid-cols-3 gap-2 max-w-(--breakpoint-2xl)">
       <Card className="w-full col-span-2 h-fit">
         <CardHeader className="flex flex-row w-full justify-between">
           <div className="flex flex-col gap-1.5">

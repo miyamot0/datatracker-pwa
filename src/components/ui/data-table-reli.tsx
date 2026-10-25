@@ -122,7 +122,7 @@ export function ReliabilityDataTable<TData, TValue>({
             <Button
               size={'sm'}
               variant={'outline'}
-              className="shadow-sm"
+              className="shadow-xs"
               onClick={() => {
                 const selectedRows = table
                   .getFilteredSelectedRowModel()

@@ -88,7 +88,7 @@ export function BaseChart({
       width="100%"
       height={500}
       className={cn(
-        'text-base text-primary bg-white nuke-view-transition [&_.recharts-legend-item]:!inline-flex [&_.recharts-legend-item]:items-center',
+        'text-base text-primary bg-white nuke-view-transition [&_.recharts-legend-item]:inline-flex! [&_.recharts-legend-item]:items-center',
         {
           'text-xl': figureTextSize == FIGURE_TEXT_OPTIONS[1].value,
           'text-2xl': figureTextSize == FIGURE_TEXT_OPTIONS[2].value,
