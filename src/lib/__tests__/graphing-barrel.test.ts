@@ -51,7 +51,7 @@ import { getShape } from '@/lib/shapes';
 import { evaluateLogic, LogicState } from '@/lib/logic';
 import { ProcessedSessionData } from '@/types/calculation';
 
-describe('graphing utility functions', () => {
+describe('graphing barrel (deprecated src/lib/graphing.ts)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -188,38 +188,6 @@ describe('graphing utility functions', () => {
       const result = getUniqueSessionConditions(sessions);
 
       expect(result).toEqual(['', 'Treatment']);
-    });
-  });
-
-  describe('generateTicks', () => {
-    it('should generate an inclusive tick array from minTick to maxTick', () => {
-      const result = generateTicks(5, 1);
-      expect(result).toEqual([1, 2, 3, 4, 5]);
-    });
-
-    it('should generate correct tick array starting from 0', () => {
-      const result = generateTicks(3, 0);
-      expect(result).toEqual([0, 1, 2, 3]);
-    });
-
-    it('should handle single tick', () => {
-      const result = generateTicks(5, 5);
-      expect(result).toEqual([5]);
-    });
-
-    it('should handle negative starting values', () => {
-      const result = generateTicks(2, -2);
-      expect(result).toEqual([-2, -1, 0, 1, 2]);
-    });
-
-    it('should return an empty array when maxTick is below minTick', () => {
-      const result = generateTicks(2, 98);
-      expect(result).toEqual([]);
-    });
-
-    it('should handle large ranges', () => {
-      const result = generateTicks(100, 98);
-      expect(result).toEqual([98, 99, 100]);
     });
   });
 
@@ -857,230 +825,13 @@ describe('graphing utility functions', () => {
     });
   });
 
-  describe('createChartLegends', () => {
-    beforeEach(() => {
-      vi.clearAllMocks();
-    });
-
-    it('should create legends for conditions and visible keys', () => {
-      const filteredSessions = [
-        createMockSession(1, 'Primary', 'Baseline'),
-        createMockSession(2, 'Primary', 'Treatment'),
-        createMockSession(3, 'Primary', 'Baseline'),
-        createMockSession(4, 'Primary', 'Maintenance'),
-      ];
-
-      const keySetFull: ExpandedKeySetInstance[] = [
-        { KeyDescription: 'Key1', Visible: true },
-        { KeyDescription: 'Key2', Visible: false },
-        { KeyDescription: 'Key3', Visible: true },
-      ];
-
-      const result = createChartLegends(filteredSessions, keySetFull);
-
-      // Should have 3 condition legends + 2 visible key legends
-      expect(result).toHaveLength(5);
-
-      // Check condition legends
-      expect(result[0]).toEqual({
-        id: 'Baseline',
-        type: 'circle',
-        value: 'Baseline',
-        color: '#9061C2', // First color from FIGURE_PATH_COLORS
-      });
-
-      expect(result[1]).toEqual({
-        id: 'Treatment',
-        type: 'circle',
-        value: 'Treatment',
-        color: '#4E9CB5', // Second color from FIGURE_PATH_COLORS
-      });
-
-      expect(result[2]).toEqual({
-        id: 'Maintenance',
-        type: 'circle',
-        value: 'Maintenance',
-        color: '#4BC599', // Third color from FIGURE_PATH_COLORS
-      });
-
-      // Check key legends (only visible ones)
-      expect(result[3]).toEqual({
-        id: 'Key1',
-        type: 'circle', // getShape(0) returns 'circle'
-        value: 'Key1',
-        color: 'black',
-      });
-
-      expect(result[4]).toEqual({
-        id: 'Key3',
-        type: 'cross', // getShape(1) returns 'cross'
-        value: 'Key3',
-        color: 'black',
-      });
-
-      // Verify getShape was called correctly
-      expect(getShape).toHaveBeenCalledWith(0);
-      expect(getShape).toHaveBeenCalledWith(1);
-      expect(getShape).toHaveBeenCalledTimes(2);
-    });
-
-    it('should handle empty filtered sessions', () => {
-      const filteredSessions: SavedSessionResult[] = [];
-      const keySetFull: ExpandedKeySetInstance[] = [{ KeyDescription: 'Key1', Visible: true }];
-
-      const result = createChartLegends(filteredSessions, keySetFull);
-
-      expect(result).toHaveLength(1);
-      expect(result[0]).toEqual({
-        id: 'Key1',
-        type: 'circle',
-        value: 'Key1',
-        color: 'black',
-      });
-    });
-
-    it('should handle empty keyset', () => {
-      const filteredSessions = [createMockSession(1, 'Primary', 'Baseline')];
-      const keySetFull: ExpandedKeySetInstance[] = [];
-
-      const result = createChartLegends(filteredSessions, keySetFull);
-
-      expect(result).toHaveLength(1);
-      expect(result[0]).toEqual({
-        id: 'Baseline',
-        type: 'circle',
-        value: 'Baseline',
-        color: '#9061C2',
-      });
-    });
-
-    it('should filter out invisible keys', () => {
-      const filteredSessions = [createMockSession(1, 'Primary', 'Baseline')];
-      const keySetFull: ExpandedKeySetInstance[] = [
-        { KeyDescription: 'Key1', Visible: false },
-        { KeyDescription: 'Key2', Visible: false },
-      ];
-
-      const result = createChartLegends(filteredSessions, keySetFull);
-
-      expect(result).toHaveLength(1); // Only condition legend
-      expect(result[0]).toEqual({
-        id: 'Baseline',
-        type: 'circle',
-        value: 'Baseline',
-        color: '#9061C2',
-      });
-    });
-  });
-
-  describe('getChartConfiguration', () => {
-    it('should return consistent chart configuration object', () => {
-      const config = getChartConfiguration();
-
-      expect(config).toEqual({
-        noAnimationProps: {
-          isAnimationActive: false,
-          animationDuration: 0,
-        },
-        chartMargins: {
-          top: 50,
-          right: 10,
-          left: 10,
-          bottom: 10,
-        },
-        xAxisConfig: {
-          height: 50,
-          interval: 'preserveStartEnd',
-          minTickGap: 25,
-          type: 'number',
-          dy: 5,
-          padding: {
-            left: 25,
-            right: 25,
-          },
-          style: {
-            stroke: 'black',
-            strokeWidth: 1,
-          },
-        },
-        yAxisConfig: {
-          width: 50,
-          padding: {
-            left: 50,
-            right: 50,
-          },
-          style: {
-            stroke: 'black',
-            strokeWidth: 1,
-          },
-        },
-        yAxisStyle: {
-          stroke: 'black',
-          strokeWidth: 1,
-        },
-        labelStyle: {
-          textAnchor: 'middle',
-          fill: 'black',
-          fontWeight: 'bold',
-        },
-      });
-    });
-
-    it('should return same configuration on multiple calls', () => {
-      const config1 = getChartConfiguration();
-      const config2 = getChartConfiguration();
-
-      expect(config1).toEqual(config2);
-    });
-  });
-
-  describe('createNavigationHandler', () => {
-    it('should create navigation handler that calls navigate with correct parameters', () => {
-      const mockNavigate = vi.fn();
-      const group = 'testGroup';
-      const individual = 'testIndividual';
-      const evaluation = 'testEvaluation';
-
-      const handler = createNavigationHandler(mockNavigate, group, individual, evaluation);
-
-      const props = {
-        session: 5,
-        Condition: 'Baseline',
-      };
-
-      handler(props);
-
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: '/session/$group/$individual/$evaluation/history/view/$file',
-        params: {
-          group: 'testGroup',
-          individual: 'testIndividual',
-          evaluation: 'testEvaluation',
-          file: '5_Baseline_Primary',
-        },
-      });
-    });
-
-    it('should handle different session numbers and conditions', () => {
-      const mockNavigate = vi.fn();
-      const handler = createNavigationHandler(mockNavigate, 'group1', 'individual1', 'eval1');
-
-      const props = {
-        session: 10,
-        Condition: 'Treatment',
-      };
-
-      handler(props);
-
-      expect(mockNavigate).toHaveBeenCalledWith({
-        to: '/session/$group/$individual/$evaluation/history/view/$file',
-        params: {
-          group: 'group1',
-          individual: 'individual1',
-          evaluation: 'eval1',
-          file: '10_Treatment_Primary',
-        },
-      });
+  describe('barrel re-exports chart-setup helpers', () => {
+    it('exposes the same functions as chart-setup', async () => {
+      const chartSetup = await import('@/lib/graphing/chart-setup');
+      expect(generateTicks).toBe(chartSetup.generateTicks);
+      expect(createChartLegends).toBe(chartSetup.createChartLegends);
+      expect(getChartConfiguration).toBe(chartSetup.getChartConfiguration);
+      expect(createNavigationHandler).toBe(chartSetup.createNavigationHandler);
     });
   });
 
