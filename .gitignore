@@ -37,3 +37,6 @@ coverage/.tmp
 .env.development
 .env.production
 .env.island
+
+# Misc
+TODO.md
