@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
-import { Edit3Icon, LineChartIcon, ScatterChartIcon } from 'lucide-react';
+import { KeyboardIcon, LineChartIcon, ScatterChartIcon } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -91,11 +91,11 @@ export default function ResultsProportionVisualsPage({
       <CardContent className="flex flex-col gap-4">
         <div className="w-full flex flex-row justify-between">
           <div className="flex flex-row gap-2">
-            <div className="flex flex-row gap-4">
+            <div className="flex flex-row gap-2">
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="w-fit">
-                    <Edit3Icon className="mr-2 w-4 h-4" />
+                    <KeyboardIcon className="mr-2 w-4 h-4" />
                     Edit Keys Displayed
                   </Button>
                 </DropdownMenuTrigger>
@@ -173,7 +173,7 @@ export default function ResultsProportionVisualsPage({
           </div>
 
           <div className="flex flex-row items-center gap-2 w-fit">
-            <p>Select Timer to Reference:</p>
+            <p>Timer to Reference:</p>
             <Select
               value={schedule.value}
               onValueChange={(value: SessionTerminationOptionsType) => {
