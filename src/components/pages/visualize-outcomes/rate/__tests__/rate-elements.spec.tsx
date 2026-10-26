@@ -65,6 +65,34 @@ describe('RateTooltip', () => {
     await expect.element(page.getByText(/Kicking Rate/)).toBeInTheDocument();
   });
 
+  it('omits keys hidden within the hovered condition', async () => {
+    const row = makeRow({ Walking: 4 });
+    await render(
+      <RateTooltip
+        active={true}
+        payload={makePayload(row)}
+        figureTextSize="base"
+        visibleKeys={['Kicking', 'Walking']}
+        hiddenKeysByCondition={{ Baseline: ['Kicking'] }}
+      />,
+    );
+    await expect.element(page.getByText(/Walking Count/)).toBeInTheDocument();
+    await expect.element(page.getByText(/Kicking Count/)).not.toBeInTheDocument();
+  });
+
+  it('keeps keys hidden only in a different condition', async () => {
+    await render(
+      <RateTooltip
+        active={true}
+        payload={makePayload(makeRow())}
+        figureTextSize="base"
+        visibleKeys={['Kicking']}
+        hiddenKeysByCondition={{ Treatment: ['Kicking'] }}
+      />,
+    );
+    await expect.element(page.getByText(/Kicking Count/)).toBeInTheDocument();
+  });
+
   it('renders formatted rate per min', async () => {
     await render(
       <RateTooltip active={true} payload={makePayload(makeRow())} figureTextSize="base" visibleKeys={['Kicking']} />,

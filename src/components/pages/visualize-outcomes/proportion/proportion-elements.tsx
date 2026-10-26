@@ -8,6 +8,7 @@ type ProportionTooltipProps = {
   payload?: { payload: TooltipRow }[];
   figureTextSize?: string;
   visibleKeys: string[];
+  hiddenKeysByCondition?: Record<string, string[]>;
 };
 
 /**
@@ -62,12 +63,19 @@ function OutputDisplay({ row, keys }: { row: TooltipRow; keys: string[] }) {
  * Values are read from the hovered session row, because the raw recharts payload varies with the hover target
  * (line, scatter, or x-axis entries).
  */
-export function ProportionTooltip({ active, payload, figureTextSize, visibleKeys }: ProportionTooltipProps) {
+export function ProportionTooltip({
+  active,
+  payload,
+  figureTextSize,
+  visibleKeys,
+  hiddenKeysByCondition = {},
+}: ProportionTooltipProps) {
   if (active && payload && payload.length) {
     const main_payload = payload[0].payload;
     const { Condition } = main_payload;
 
-    const plotted_keys = visibleKeys.filter((key) => Number.isFinite(main_payload[key]));
+    const hidden_keys = hiddenKeysByCondition[Condition] ?? [];
+    const plotted_keys = visibleKeys.filter((key) => !hidden_keys.includes(key) && Number.isFinite(main_payload[key]));
 
     return (
       <div

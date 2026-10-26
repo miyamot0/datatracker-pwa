@@ -9,6 +9,7 @@ import {
   resolveKeyShape,
   resolveLineColor,
   resolveMarkerStroke,
+  isSeriesHidden,
   SERIES_COLOR_PALETTE,
   type SeriesStyles,
 } from '@/lib/graphing/series-style';
@@ -94,5 +95,44 @@ describe('series style storage', () => {
 
     expect(getLocalSeriesStyles('G', 'I', 'E')).toEqual(styled);
     expect(getLocalSeriesStyles('G', 'I', 'Other')).toEqual(EMPTY_SERIES_STYLES);
+  });
+});
+
+describe('isSeriesHidden', () => {
+  it('is false with no saved styles', () => {
+    expect(isSeriesHidden(EMPTY_SERIES_STYLES, 'Key1', 'Baseline')).toBe(false);
+  });
+
+  it('is true when both the line and the marker fill are transparent for the condition', () => {
+    const styles = {
+      KeyStyles: {
+        Key1: {
+          fillColors: { Baseline: TRANSPARENT_COLOR },
+          lineColors: { Baseline: TRANSPARENT_COLOR },
+        },
+      },
+      ConditionStyles: {},
+    };
+
+    expect(isSeriesHidden(styles, 'Key1', 'Baseline')).toBe(true);
+    expect(isSeriesHidden(styles, 'Key1', 'Treatment')).toBe(false);
+  });
+
+  it('is false when only the fill is transparent, since the line still draws', () => {
+    const styles = {
+      KeyStyles: { Key1: { fillColors: { Baseline: TRANSPARENT_COLOR } } },
+      ConditionStyles: {},
+    };
+
+    expect(isSeriesHidden(styles, 'Key1', 'Baseline')).toBe(false);
+  });
+
+  it('is true when a transparent condition fill and a transparent line both apply', () => {
+    const styles = {
+      KeyStyles: { Key1: { lineColors: { Baseline: TRANSPARENT_COLOR } } },
+      ConditionStyles: { Baseline: { color: TRANSPARENT_COLOR } },
+    };
+
+    expect(isSeriesHidden(styles, 'Key1', 'Baseline')).toBe(true);
   });
 });

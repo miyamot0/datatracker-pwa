@@ -78,3 +78,14 @@ export function resolveLineColor(
 ) {
   return styles.KeyStyles[keyDescription]?.lineColors?.[condition] ?? defaultColor;
 }
+
+/**
+ * A key is hidden within a condition when both its marker fill and line are transparent. Hidden series are
+ * not drawn, so they should also be omitted from tooltips.
+ */
+export function isSeriesHidden(styles: SeriesStyles, keyDescription: string, condition: string) {
+  const fill = resolveKeyFillColor(styles, keyDescription, condition, MARKER_BORDER_COLOR);
+  const line = resolveLineColor(styles, keyDescription, condition, DEFAULT_LINE_COLOR);
+
+  return fill === TRANSPARENT_COLOR && line === TRANSPARENT_COLOR;
+}

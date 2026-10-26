@@ -19,6 +19,7 @@ import { ChartLegendContent } from '@/components/pages/visualize-outcomes/shared
 import {
   EMPTY_SERIES_STYLES,
   DEFAULT_LINE_COLOR,
+  isSeriesHidden,
   resolveKeyFillColor,
   resolveKeyShape,
   resolveLineColor,
@@ -83,6 +84,12 @@ export function BaseChart({
   }));
 
   const visibleKeys = keySetFull.filter((key) => key.Visible === true).map((key) => key.KeyDescription);
+  const hiddenKeysByCondition = Object.fromEntries(
+    getUniqueSessionConditions(filteredSessions).map((condition) => [
+      condition,
+      visibleKeys.filter((key) => isSeriesHidden(seriesStyles, key, condition)),
+    ]),
+  );
   const hasPlottedData = visibleKeys.length > 0 && preparedData.length > 0 && data_set_parsed_by_condition.length > 0;
 
   let markerSize = 100;
@@ -241,7 +248,13 @@ export function BaseChart({
           {...noAnimationProps}
           animationDuration={100}
           wrapperStyle={{ zIndex: 10 }}
-          content={<CustomTooltip figureTextSize={figureTextSize} visibleKeys={visibleKeys} />}
+          content={
+            <CustomTooltip
+              figureTextSize={figureTextSize}
+              visibleKeys={visibleKeys}
+              hiddenKeysByCondition={hiddenKeysByCondition}
+            />
+          }
         />
 
         <Legend {...noAnimationProps} align="center" content={() => <ChartLegendContent payload={legends} />} />

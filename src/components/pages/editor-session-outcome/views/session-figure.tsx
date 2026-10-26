@@ -24,6 +24,7 @@ import { ChartLegendContent } from '@/components/pages/visualize-outcomes/shared
 import {
   EMPTY_SERIES_STYLES,
   DEFAULT_LINE_COLOR,
+  isSeriesHidden,
   resolveKeyFillColor,
   resolveKeyShape,
   resolveLineColor,
@@ -65,7 +66,11 @@ export default function SessionFigure({ Session, PlotData, KeysHidden, SeriesSty
       const main_payload = payload[0].payload;
 
       const plotted_keys = Object.keys(main_payload).filter(
-        (key) => key !== 'second' && !keys_to_skip.includes(key) && Number.isFinite(main_payload[key]),
+        (key) =>
+          key !== 'second' &&
+          !keys_to_skip.includes(key) &&
+          !isSeriesHidden(SeriesStyles, key, sessionCondition) &&
+          Number.isFinite(main_payload[key]),
       );
 
       return (

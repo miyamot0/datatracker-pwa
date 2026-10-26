@@ -23,6 +23,34 @@ const makePayload = (row: Record<string, string | number>, dataKey = 'Kicking') 
 // ----- Tests -----
 
 describe('ProportionTooltip', () => {
+  it('omits keys hidden within the hovered condition', async () => {
+    const row = makeRow({ Walking: 20 });
+    await render(
+      <ProportionTooltip
+        active={true}
+        payload={makePayload(row)}
+        figureTextSize="base"
+        visibleKeys={['Kicking', 'Walking']}
+        hiddenKeysByCondition={{ Baseline: ['Kicking'] }}
+      />,
+    );
+    await expect.element(page.getByText(/Walking %/)).toBeInTheDocument();
+    await expect.element(page.getByText(/Kicking %/)).not.toBeInTheDocument();
+  });
+
+  it('keeps keys hidden only in a different condition', async () => {
+    await render(
+      <ProportionTooltip
+        active={true}
+        payload={makePayload(makeRow())}
+        figureTextSize="base"
+        visibleKeys={['Kicking']}
+        hiddenKeysByCondition={{ Treatment: ['Kicking'] }}
+      />,
+    );
+    await expect.element(page.getByText(/Kicking %/)).toBeInTheDocument();
+  });
+
   it('renders nothing when active is false', async () => {
     await render(
       <ProportionTooltip

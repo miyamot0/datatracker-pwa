@@ -6,6 +6,7 @@ type RateTooltipProps = {
   payload?: { payload: Record<string, any> }[];
   figureTextSize?: string;
   visibleKeys: string[];
+  hiddenKeysByCondition?: Record<string, string[]>;
 };
 
 /**
@@ -18,14 +19,22 @@ type RateTooltipProps = {
  * @param payload - The data payload provided by the chart for the hovered point
  * @param figureTextSize - The current text size setting for the figure, used to adjust tooltip text size
  * @param visibleKeys - Descriptions of the currently visible keys, in display order
+ * @param hiddenKeysByCondition - Keys hidden within each condition, which are omitted from the tooltip
  * @returns A JSX element representing the tooltip content, or null if not active
  */
-export function RateTooltip({ active, payload, figureTextSize, visibleKeys }: RateTooltipProps) {
+export function RateTooltip({
+  active,
+  payload,
+  figureTextSize,
+  visibleKeys,
+  hiddenKeysByCondition = {},
+}: RateTooltipProps) {
   if (active && payload && payload.length) {
     const main_payload = payload[0].payload;
     const { Condition } = main_payload;
 
-    const plotted_keys = visibleKeys.filter((key) => Number.isFinite(main_payload[key]));
+    const hidden_keys = hiddenKeysByCondition[Condition] ?? [];
+    const plotted_keys = visibleKeys.filter((key) => !hidden_keys.includes(key) && Number.isFinite(main_payload[key]));
 
     return (
       <div
