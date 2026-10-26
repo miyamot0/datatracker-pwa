@@ -209,7 +209,7 @@ export function SeriesStylesDialog({ keys, conditions, visibleConditions, styles
           Edit Series Styles
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto data-[state=open]:slide-in-from-left-0! data-[state=open]:slide-in-from-top-0! data-[state=closed]:slide-out-to-left-0! data-[state=closed]:slide-out-to-top-0! data-[state=open]:zoom-in-100! data-[state=closed]:zoom-out-100!">
         <DialogHeader>
           <DialogTitle>Series Styles</DialogTitle>
           <DialogDescription>
