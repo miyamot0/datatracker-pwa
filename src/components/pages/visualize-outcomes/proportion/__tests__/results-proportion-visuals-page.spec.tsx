@@ -144,7 +144,7 @@ describe('ResultsProportionVisualsPage', () => {
     await expect.element(page.getByRole('link', { name: 'See Rate' })).toBeInTheDocument();
     await expect.element(page.getByText('Edit Keys Displayed')).toBeInTheDocument();
     await expect.element(page.getByText('Edit Conditions Displayed')).toBeInTheDocument();
-    await expect.element(page.getByText('Select Timer to Reference:')).toBeInTheDocument();
+    await expect.element(page.getByText('Timer to Reference:')).toBeInTheDocument();
     await expect.element(page.getByText('Element Magnification:')).toBeInTheDocument();
     await expect.element(page.getByText('Connect All Spans:')).toBeInTheDocument();
     await expect.element(page.getByTestId('figure-schedule')).toHaveTextContent('End on Primary Timer');
