@@ -3,6 +3,13 @@ import { FIGURE_PATH_COLORS } from '../colors';
 import { getShape } from '../shapes';
 import { getUniqueSessionConditions } from './session-filters';
 import { ExpandedKeySetInstance } from '@/types/keyset/display';
+import {
+  EMPTY_SERIES_STYLES,
+  MARKER_BORDER_COLOR,
+  resolveFillColor,
+  resolveKeyShape,
+  type SeriesStyles,
+} from './series-style';
 
 /**
  * Generates an array of tick values for chart axes
@@ -28,21 +35,26 @@ export function generateTicks(maxTick: number, minTick: number) {
 /**
  * Creates legend items for chart visualization
  */
-export function createChartLegends(filteredSessions: SavedSessionResult[], keySetFull: ExpandedKeySetInstance[]) {
+export function createChartLegends(
+  filteredSessions: SavedSessionResult[],
+  keySetFull: ExpandedKeySetInstance[],
+  seriesStyles: SeriesStyles = EMPTY_SERIES_STYLES,
+) {
   const conditionLegends = getUniqueSessionConditions(filteredSessions).map((condition, index) => ({
     id: condition,
+    kind: 'condition' as const,
     type: 'circle' as const,
     value: condition,
-    color: FIGURE_PATH_COLORS[index % FIGURE_PATH_COLORS.length],
+    color: resolveFillColor(seriesStyles, condition, FIGURE_PATH_COLORS[index % FIGURE_PATH_COLORS.length]),
   }));
 
   const keyLegends = keySetFull
     .filter((key) => key.Visible === true)
     .map((item, index) => ({
       id: item.KeyDescription,
-      type: getShape(index),
+      type: resolveKeyShape(seriesStyles, item.KeyDescription, getShape(index)),
       value: item.KeyDescription,
-      color: 'black',
+      color: MARKER_BORDER_COLOR,
     }));
 
   return [...conditionLegends, ...keyLegends];
