@@ -39,6 +39,8 @@ vi.mock('../session-key-list', () => ({
 const mockSetLocalCachedPrefs = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/local_storage', () => ({
   setLocalCachedPrefs: mockSetLocalCachedPrefs,
+  getLocalSeriesStyles: vi.fn(() => ({ KeyStyles: {}, ConditionStyles: {} })),
+  setLocalSeriesStyles: vi.fn(),
 }));
 
 // ----- Import under test -----

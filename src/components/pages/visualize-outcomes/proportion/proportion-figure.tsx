@@ -11,6 +11,7 @@ import { BaseChart } from '@/components/pages/visualize-outcomes/shared/base-cha
 import { ProportionTooltip } from './proportion-elements';
 import { processMultipleSessionDataWithKeys } from '@/lib/calculations';
 import { convertLegacyTimerType } from '@/lib/calculations/calculation-helpers';
+import { EMPTY_SERIES_STYLES, type SeriesStyles } from '@/lib/graphing/series-style';
 
 type Props = {
   Group: string;
@@ -24,6 +25,7 @@ type Props = {
   ConnectSpans: boolean;
   MinX: number;
   MaxX: number;
+  SeriesStyles?: SeriesStyles;
 };
 
 export default function ProportionFigureVisualization({
@@ -38,6 +40,7 @@ export default function ProportionFigureVisualization({
   ConnectSpans,
   MinX,
   MaxX,
+  SeriesStyles = EMPTY_SERIES_STYLES,
 }: Props) {
   const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
   const navigate = useNavigate({
@@ -47,7 +50,7 @@ export default function ProportionFigureVisualization({
   //const { preparedData } = prepareProportionData(FilteredSessions, ScheduleOption);
 
   const x_ticks = generateTicks(MaxX, MinX);
-  const legends = createChartLegends(FilteredSessions, KeySetFull);
+  const legends = createChartLegends(FilteredSessions, KeySetFull, SeriesStyles);
   const onNavigate = createNavigationHandler(navigate, Group, Individual, Evaluation);
 
   const yAxisConfig = {
@@ -79,6 +82,7 @@ export default function ProportionFigureVisualization({
         preparedData={preparedData}
         filteredSessions={FilteredSessions}
         keySetFull={KeySetFull}
+        seriesStyles={SeriesStyles}
         figureTextSize={FigureTextSize}
         connectSpans={ConnectSpans}
         minX={MinX}

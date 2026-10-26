@@ -7,6 +7,8 @@ const mockFilteredSessionScoringOptions = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/local_storage', () => ({
   setLocalCachedPrefs: mockSetLocalCachedPrefs,
+  getLocalSeriesStyles: vi.fn(() => ({ KeyStyles: {}, ConditionStyles: {} })),
+  setLocalSeriesStyles: vi.fn(),
 }));
 
 vi.mock('@/types/schedules', () => ({

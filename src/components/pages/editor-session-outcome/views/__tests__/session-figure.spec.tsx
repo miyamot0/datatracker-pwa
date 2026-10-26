@@ -56,7 +56,11 @@ vi.mock('recharts', () => ({
     );
   },
   Legend: ({ content }: any) => (typeof content === 'function' ? content({}) : null),
-  DefaultLegendContent: ({ payload }: any) => (
+  Symbols: () => null,
+}));
+
+vi.mock('@/components/pages/visualize-outcomes/shared/chart-legend-content', () => ({
+  ChartLegendContent: ({ payload }: any) => (
     <div data-testid="legend">
       {payload?.map((item: any, i: number) => (
         <span key={i}>{item.value}</span>

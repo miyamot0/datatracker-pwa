@@ -63,6 +63,7 @@ vi.mock('@/lib/calculations/calculation-helpers', () => ({
 // ----- Imports under test -----
 
 import ProportionFigureVisualization from '../proportion-figure';
+import { EMPTY_SERIES_STYLES } from '@/lib/graphing/series-style';
 
 // ----- Helpers -----
 
@@ -140,7 +141,11 @@ describe('ProportionFigureVisualization', () => {
       from: '/session/$group/$individual/$evaluation/proportion',
     });
     expect(mockGenerateTicks).toHaveBeenCalledWith(defaultProps.MaxX, defaultProps.MinX);
-    expect(mockCreateChartLegends).toHaveBeenCalledWith(defaultProps.FilteredSessions, defaultProps.KeySetFull);
+    expect(mockCreateChartLegends).toHaveBeenCalledWith(
+      defaultProps.FilteredSessions,
+      defaultProps.KeySetFull,
+      EMPTY_SERIES_STYLES,
+    );
     expect(mockCreateNavigationHandler).toHaveBeenCalledWith(
       mockNavigate,
       defaultProps.Group,

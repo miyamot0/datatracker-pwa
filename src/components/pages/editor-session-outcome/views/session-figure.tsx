@@ -1,3 +1,4 @@
+import { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { getShape } from '@/lib/shapes';
 import React from 'react';
@@ -11,20 +12,30 @@ import {
   YAxis,
   Tooltip,
   Legend,
-  DefaultLegendContent,
   ResponsiveContainer,
 } from 'recharts';
 import { ExpandedKeySetInstance, KeySetInstance } from '@/types/keyset';
 import { ExpandedSavedSessionResult } from '@/lib/dtos/session-results';
 import { CustomTooltipProps, PlotPoint } from '@/types/visuals';
 import { KeyManageType } from '@/types/timing';
-import { generateTicks } from '@/lib/graphing/chart-setup';
+import { createChartLegends, generateTicks } from '@/lib/graphing/chart-setup';
 import { AxisSpanLines } from '@/components/pages/visualize-outcomes/shared/axis-span-lines';
+import { ChartLegendContent } from '@/components/pages/visualize-outcomes/shared/chart-legend-content';
+import {
+  EMPTY_SERIES_STYLES,
+  DEFAULT_LINE_COLOR,
+  resolveKeyFillColor,
+  resolveKeyShape,
+  resolveLineColor,
+  resolveMarkerStroke,
+  type SeriesStyles,
+} from '@/lib/graphing/series-style';
 
 type Props = {
   Session?: ExpandedSavedSessionResult;
   PlotData?: PlotPoint[];
   KeysHidden: ExpandedKeySetInstance[];
+  SeriesStyles?: SeriesStyles;
 };
 
 const noAnimationProps = {
@@ -32,10 +43,22 @@ const noAnimationProps = {
   animationDuration: 0,
 };
 
-export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) {
+export default function SessionFigure({ Session, PlotData, KeysHidden, SeriesStyles = EMPTY_SERIES_STYLES }: Props) {
   if (!Session || !PlotData) return <></>;
 
   const keys_to_skip = KeysHidden.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+  const sessionCondition = Session.SessionSettings.Condition;
+
+  // Same visible-key order and default styling as the proportion and rate figures
+  const visibleKeys = Session.Keyset.FrequencyKeys.filter((k) => keys_to_skip.includes(k.KeyDescription) === false);
+  const legends = createChartLegends(
+    [Session],
+    Session.Keyset.FrequencyKeys.map((k) => ({
+      KeyDescription: k.KeyDescription,
+      Visible: keys_to_skip.includes(k.KeyDescription) === false,
+    })) as ExpandedKeySetInstance[],
+    SeriesStyles,
+  );
 
   const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
@@ -152,36 +175,43 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
             },
           )}
 
-          {Session.Keyset.FrequencyKeys.filter((k) => keys_to_skip.includes(k.KeyDescription) === false).map(
-            (key: KeySetInstance, index: number) => {
-              return (
-                <React.Fragment key={index}>
-                  <Line
-                    {...noAnimationProps}
-                    animationDuration={100}
-                    connectNulls={true}
-                    name={`${key.KeyDescription}-Points_`}
-                    data={PlotData}
-                    type="linear"
-                    legendType="none"
-                    dot={false}
-                    activeDot={false}
-                    dataKey={`${key.KeyDescription}`}
-                    stroke={FIGURE_PATH_COLORS[index]}
-                  />
-                  <Scatter
-                    name={key.KeyDescription}
-                    {...noAnimationProps}
-                    data={PlotData}
-                    animationDuration={100}
-                    dataKey={`${key.KeyDescription}`}
-                    fill={FIGURE_PATH_COLORS[index]}
-                    shape={getShape(index)}
-                  />
-                </React.Fragment>
-              );
-            },
-          )}
+          {visibleKeys.map((key: KeySetInstance, index: number) => {
+            // Matches BaseChart: markers default to the condition's palette colour, one condition per session
+            const sessionMarkerFill = resolveKeyFillColor(
+              SeriesStyles,
+              key.KeyDescription,
+              sessionCondition,
+              FIGURE_PATH_COLORS[0],
+            );
+
+            return (
+              <React.Fragment key={index}>
+                <Line
+                  {...noAnimationProps}
+                  animationDuration={100}
+                  connectNulls={true}
+                  name={`${key.KeyDescription}-Points_`}
+                  data={PlotData}
+                  type="linear"
+                  legendType="none"
+                  dot={false}
+                  activeDot={false}
+                  dataKey={`${key.KeyDescription}`}
+                  stroke={resolveLineColor(SeriesStyles, key.KeyDescription, sessionCondition, DEFAULT_LINE_COLOR)}
+                />
+                <Scatter
+                  name={key.KeyDescription}
+                  {...noAnimationProps}
+                  data={PlotData}
+                  animationDuration={100}
+                  dataKey={`${key.KeyDescription}`}
+                  fill={sessionMarkerFill}
+                  shape={resolveKeyShape(SeriesStyles, key.KeyDescription, getShape(index))}
+                  stroke={resolveMarkerStroke(sessionMarkerFill)}
+                />
+              </React.Fragment>
+            );
+          })}
 
           <XAxis
             {...noAnimationProps}
@@ -244,24 +274,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden }: Props) 
           <AxisSpanLines />
           <Tooltip {...noAnimationProps} wrapperStyle={{ zIndex: 10 }} content={<CustomTooltip />} />
 
-          <Legend
-            {...noAnimationProps}
-            align="center"
-            content={(props) => (
-              <DefaultLegendContent
-                {...props}
-                payload={Session.Keyset.FrequencyKeys.filter(
-                  (k) => keys_to_skip.includes(k.KeyDescription) === false,
-                ).map((item: KeySetInstance, index: number) => ({
-                  id: item.KeyDescription,
-                  type: getShape(index),
-                  value: item.KeyDescription,
-
-                  color: FIGURE_PATH_COLORS[index % FIGURE_PATH_COLORS.length],
-                }))}
-              />
-            )}
-          />
+          <Legend {...noAnimationProps} align="center" content={() => <ChartLegendContent payload={legends} />} />
         </ComposedChart>
       </ResponsiveContainer>
     </div>

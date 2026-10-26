@@ -12,7 +12,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { KeyboardIcon, LineChartIcon, ScatterChartIcon } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { setLocalCachedPrefs } from '@/lib/local_storage';
+import { getLocalSeriesStyles, setLocalCachedPrefs, setLocalSeriesStyles } from '@/lib/local_storage';
+import { SeriesStylesDialog } from '@/components/pages/visualize-outcomes/shared/series-styles-dialog';
+import { type SeriesStyles } from '@/lib/graphing/series-style';
+import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
 import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
@@ -60,8 +63,19 @@ export default function ResultsProportionVisualsPage({
     Conditions.map((condition) => ({ Condition: condition, Visible: true })),
   );
   const [connectAllPoints, setConnectAllPoints] = useState(false);
+  // Matches the legend order (first appearance in results), so dialog rows and default colours line up with the chart
+  const legendConditionOrder = getUniqueSessionConditions(ResultsFiltered);
+  const styleConditions = [...legendConditionOrder, ...Conditions.filter((c) => !legendConditionOrder.includes(c))];
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
   const [schedule, setSchedule] = useState<ScheduleMappingOptionsType | { value: string; label: string }>(TimerMapping);
+  const [seriesStyles, setSeriesStyles] = useState<SeriesStyles>(() =>
+    getLocalSeriesStyles(Group, Individual, Evaluation),
+  );
+
+  const updateSeriesStyles = (next: SeriesStyles) => {
+    setSeriesStyles(next);
+    setLocalSeriesStyles(Group, Individual, Evaluation, next);
+  };
 
   return (
     <Card className="w-full">
@@ -169,6 +183,16 @@ export default function ResultsProportionVisualsPage({
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              <SeriesStylesDialog
+                keys={filteredKeys}
+                conditions={styleConditions}
+                visibleConditions={styleConditions.filter((c) =>
+                  filteredConditions.some((f) => f.Condition === c && f.Visible),
+                )}
+                styles={seriesStyles}
+                onChange={updateSeriesStyles}
+              />
             </div>
           </div>
 
@@ -265,6 +289,7 @@ export default function ResultsProportionVisualsPage({
             KeySetFull={filteredKeys}
             FigureTextSize={figureTextSize}
             ConnectSpans={connectAllPoints}
+            SeriesStyles={seriesStyles}
           />
         )}
       </CardContent>

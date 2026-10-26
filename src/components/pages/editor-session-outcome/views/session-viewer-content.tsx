@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { KeyboardIcon } from 'lucide-react';
-import { setLocalCachedPrefs } from '@/lib/local_storage';
+import { getLocalSeriesStyles, setLocalCachedPrefs } from '@/lib/local_storage';
 import BackButton from '@/components/ui/back-button';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
@@ -159,7 +159,12 @@ export default function SessionViewerContent({
           </div>
         )}
 
-        <SessionFigure Session={ExpandedSession} PlotData={PlotObject} KeysHidden={filteredKeys} />
+        <SessionFigure
+          Session={ExpandedSession}
+          PlotData={PlotObject}
+          KeysHidden={filteredKeys}
+          SeriesStyles={getLocalSeriesStyles(Group, Individual, Evaluation)}
+        />
 
         <Separator className="my-4" />
 
