@@ -46,10 +46,16 @@ type Props = {
   onChange: (styles: SeriesStyles) => void;
 };
 
+/**
+ * Small filled circle showing a colour in dropdown options
+ */
 function Swatch({ color }: { color: string }) {
   return <span className="inline-block h-3 w-3 rounded-full border border-border" style={{ backgroundColor: color }} />;
 }
 
+/**
+ * Filled glyph of a marker shape, used to label shape options
+ */
 function ShapeGlyph({ shape }: { shape: SymbolType }) {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" className="shrink-0 text-foreground">
@@ -58,6 +64,13 @@ function ShapeGlyph({ shape }: { shape: SymbolType }) {
   );
 }
 
+/**
+ * Shows the marker as it will render for the selected shape and fill, with the standard black border
+ * A hidden fill is drawn as a dashed outline so the preview still shows where the marker sits.
+ * 
+ * @param shape - Marker shape to draw
+ * @param fill - Resolved fill colour, or the transparent sentinel for a hidden marker
+ */
 function MarkerPreview({ shape, fill }: { shape: SymbolType; fill: string }) {
   const hidden = fill === TRANSPARENT_COLOR;
 
@@ -78,6 +91,9 @@ function MarkerPreview({ shape, fill }: { shape: SymbolType; fill: string }) {
   );
 }
 
+/**
+ * Label on the left and a control on the right, shared by every row in the dialog
+ */
 function StyleRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-row items-center justify-between gap-4">
@@ -87,6 +103,18 @@ function StyleRow({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
+/**
+ * Dropdown for choosing a colour, where Default clears the override
+ *
+ * The palette is always offered. Hidden is offered only when allowTransparent is set, because it applies to
+ * per-condition fills and lines and not to condition-level fills.
+ * 
+ * @param value - Stored colour, or undefined when using the default
+ * @param defaultColor - Colour shown next to the Default option
+ * @param onChange - Receives the chosen colour, or undefined for Default
+ * @param label - Accessible label for the trigger
+ * @param allowTransparent - Whether to offer the Hidden option
+ */
 function ColorSelect({
   value,
   defaultColor,
@@ -138,6 +166,14 @@ function ColorSelect({
   );
 }
 
+/**
+ * Returns a copy of a record with one entry set, or removed when the value is undefined
+ * 
+ * @param record - Source record, which is not mutated
+ * @param key - Entry to set or remove
+ * @param value - New value, or undefined to remove the entry
+ * @returns The updated copy
+ */
 function setOrDelete<T>(record: Record<string, T>, key: string, value: T | undefined): Record<string, T> {
   const next = { ...record };
 
@@ -150,6 +186,19 @@ function setOrDelete<T>(record: Record<string, T>, key: string, value: T | undef
   return next;
 }
 
+/**
+ * Dialog for overriding series styles in a chart
+ *
+ * Condition fills are edited at the top. Key-specific settings (shape, per-condition fill, and per-condition line)
+ * are edited one key at a time. Anything left at Default falls back to the standard figure style. Only visible
+ * keys can be selected. Changes are reported through onChange as a complete SeriesStyles object.
+ * 
+ * @param props.keys - Keys in the chart, with their visibility
+ * @param props.conditions - All conditions, used for the per-condition rows
+ * @param props.visibleConditions - Conditions currently shown, used to derive default colours
+ * @param props.styles - Current saved styles
+ * @param props.onChange - Receives the updated styles after each edit
+ */
 export function SeriesStylesDialog({ keys, conditions, visibleConditions, styles, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | undefined>(undefined);
