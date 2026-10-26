@@ -68,7 +68,7 @@ export function resolveKeyFillColor(
 
 /**
  * Resolves the line colour for a key within a condition. Precedence: key × condition override,
- * then the condition colour, then the caller's default.
+ * then the caller's default. Line colours never fall back to the condition marker fill.
  */
 export function resolveLineColor(
   styles: SeriesStyles,
