@@ -37,6 +37,12 @@ Features include the following:
 
 ### Changelog
 
+#### 0.5.14 (2026-06-26):
+
+- Updates to series styling and figure customization options
+- Changes to persistence of series styling settings across sessions
+- Updates for dependencies
+
 #### 0.5.10 (2026-04-28):
 
 - Sync widget expanded to include for targeted filtering
