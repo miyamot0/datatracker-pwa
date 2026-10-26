@@ -10,6 +10,10 @@ RUN yarn build-docker
 # Set up hosting
 FROM nginx:1.31.8-alpine3.24
 
+# Patch for CVE/security updates
+RUN apk update && \
+    apk upgrade --no-cache brotli curl libxml2
+
 # Nuke/swap default html content
 RUN rm -rf /usr/share/nginx/html/*
 COPY --from=builder /app/dist /usr/share/nginx/html
