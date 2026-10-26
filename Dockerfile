@@ -26,10 +26,6 @@ RUN addgroup -S appgroup && \
     chown -R appuser:appgroup /var/run && \
     chown -R appuser:appgroup /etc/nginx/conf.d
 
-# Give the non-root user a writable temp directory for nginx to use
-RUN mkdir -p /tmp/nginx && \
-    chown -R appuser:appgroup /tmp/nginx
-
 # Run as non-root user
 USER appuser
 
