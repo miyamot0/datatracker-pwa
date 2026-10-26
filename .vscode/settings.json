@@ -16,5 +16,6 @@
     "subpanels",
     "wakelock",
     "wakelocks"
-  ]
+  ],
+  "js/ts.experimental.useTsgo": true
 }
