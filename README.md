@@ -1,6 +1,6 @@
 ![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-95.44_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-91.26_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-95.08_Percent-green>)
 
-![Static Badge Version](https://img.shields.io/badge/Version-0.5.14-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge Version](https://img.shields.io/badge/Version-0.5.15-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 [![GitHub Bug Tracker](https://img.shields.io/badge/GitHub-Issues-181717?logo=github&logoColor=fff)](https://github.com/miyamot0/datatracker-pwa/issues) [![Slack Support Channel](https://img.shields.io/badge/Slack-4A154B?logo=slack&logoColor=fff)](https://datatrackerworkspace.slack.com/)
 
@@ -36,6 +36,11 @@ Features include the following:
 - [x] Manual export of data in multiple formats (i.e., JSON, CSV)
 
 ### Changelog
+
+#### 0.5.15 (2026-06-27):
+
+- Round out visual package (i.e., annotations)
+- Improvements to error reporting
 
 #### 0.5.14 (2026-06-26):
 
@@ -211,4 +216,4 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Current Version
 
-0.5.14
+0.5.15
