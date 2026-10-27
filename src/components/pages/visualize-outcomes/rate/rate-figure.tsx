@@ -79,6 +79,7 @@ export default function RateFigureVisualization({
         filteredSessions={FilteredSessions}
         keySetFull={KeySetFull}
         seriesStyles={SeriesStyles}
+        textPage="rate"
         figureTextSize={FigureTextSize}
         connectSpans={ConnectSpans}
         minX={MinX}

@@ -11,6 +11,7 @@ import {
   resolveMarkerStroke,
   isSeriesHidden,
   isValidTextAnnotation,
+  getPageTextAnnotations,
   splitTextAnnotationLines,
   SERIES_COLOR_PALETTE,
   type SeriesStyles,
@@ -155,6 +156,19 @@ describe('text annotation helpers', () => {
     expect(isValidTextAnnotation({ ...valid, weight: 'normal' })).toBe(true);
     expect(isValidTextAnnotation({ ...valid, weight: 'bold' })).toBe(true);
     expect(isValidTextAnnotation({ ...valid, weight: 'heavy' })).toBe(false);
+    expect(isValidTextAnnotation({ ...valid, page: 'rate' })).toBe(true);
+    expect(isValidTextAnnotation({ ...valid, page: 'proportion' })).toBe(true);
+    expect(isValidTextAnnotation({ ...valid, page: 'phase' })).toBe(false);
+  });
+
+  it('returns only the text annotations for a page, including ones saved before pages existed', () => {
+    const legacy = { label: 'Legacy', x: 1, y: 1, anchor: 'top-left', justify: 'left' } as const;
+    const rate = { ...legacy, label: 'Rate', page: 'rate' } as const;
+    const proportion = { ...legacy, label: 'Proportion', page: 'proportion' } as const;
+    const all = [rate, proportion, legacy];
+
+    expect(getPageTextAnnotations(all, 'rate')).toEqual([rate, legacy]);
+    expect(getPageTextAnnotations(all, 'proportion')).toEqual([proportion, legacy]);
   });
 
   it('splits a label on the literal \\n sequence', () => {

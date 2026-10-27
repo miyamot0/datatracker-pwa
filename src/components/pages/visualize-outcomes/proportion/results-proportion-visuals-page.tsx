@@ -198,7 +198,7 @@ export default function ResultsProportionVisualsPage({
 
               <PhaseChangesDialog styles={seriesStyles} onChange={updateSeriesStyles} />
 
-              <TextAnnotationsDialog styles={seriesStyles} onChange={updateSeriesStyles} />
+              <TextAnnotationsDialog page="proportion" styles={seriesStyles} onChange={updateSeriesStyles} />
             </div>
           </div>
 

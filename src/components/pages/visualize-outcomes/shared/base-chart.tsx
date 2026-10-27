@@ -28,6 +28,8 @@ import {
   resolveLineColor,
   resolveMarkerStroke,
   type SeriesStyles,
+  type TextPage,
+  getPageTextAnnotations,
 } from '@/lib/graphing/series-style';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { cn } from '@/lib/utils';
@@ -64,6 +66,7 @@ type BaseChartProps = {
   onNavigate: (props: any) => void;
   divRef: React.RefObject<HTMLDivElement | null>;
   seriesStyles?: SeriesStyles;
+  textPage: TextPage;
 };
 
 export function BaseChart({
@@ -82,6 +85,7 @@ export function BaseChart({
   onNavigate,
   divRef,
   seriesStyles = EMPTY_SERIES_STYLES,
+  textPage,
 }: BaseChartProps) {
   const { noAnimationProps, chartMargins, xAxisConfig, yAxisStyle, labelStyle } = getChartConfiguration();
   const spacing = getChartVerticalSpacing(figureTextSize);
@@ -264,7 +268,7 @@ export function BaseChart({
           />
         ))}
 
-        <TextAnnotationsLayer annotations={seriesStyles.text_annotations} />
+        <TextAnnotationsLayer annotations={getPageTextAnnotations(seriesStyles.text_annotations, textPage)} />
 
         <Tooltip
           {...noAnimationProps}

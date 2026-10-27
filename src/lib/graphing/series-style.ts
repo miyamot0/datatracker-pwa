@@ -56,6 +56,11 @@ export const TEXT_WEIGHTS = ['normal', 'bold'] as const;
 
 export type TextWeight = (typeof TEXT_WEIGHTS)[number];
 
+/** The figure page a text annotation belongs to. Rate and proportion scale their y-axes differently. */
+export const TEXT_PAGES = ['rate', 'proportion'] as const;
+
+export type TextPage = (typeof TEXT_PAGES)[number];
+
 /** Literal two-character sequence that separates lines within a text annotation label */
 export const TEXT_LINE_BREAK = '\\n';
 
@@ -68,6 +73,8 @@ export type TextAnnotation = {
   justify: TextJustify;
   /** Font weight of the label. Treated as normal when absent, so annotations saved before this option still render. */
   weight?: TextWeight;
+  /** Page the text was added on. Annotations saved before this option have no page and appear on both pages. */
+  page?: TextPage;
 };
 
 export type SeriesStyles = {
@@ -131,7 +138,7 @@ export function isValidTextAnnotation(value: unknown): value is TextAnnotation {
     return false;
   }
 
-  const { label, x, y, anchor, justify, weight } = value as Partial<TextAnnotation>;
+  const { label, x, y, anchor, justify, weight, page } = value as Partial<TextAnnotation>;
 
   return (
     typeof label === 'string' &&
@@ -142,8 +149,16 @@ export function isValidTextAnnotation(value: unknown): value is TextAnnotation {
     Number.isFinite(y) &&
     TEXT_ANCHORS.includes(anchor as TextAnchor) &&
     TEXT_JUSTIFIES.includes(justify as TextJustify) &&
-    (weight === undefined || TEXT_WEIGHTS.includes(weight as TextWeight))
+    (weight === undefined || TEXT_WEIGHTS.includes(weight as TextWeight)) &&
+    (page === undefined || TEXT_PAGES.includes(page as TextPage))
   );
+}
+
+/**
+ * Returns the text annotations that belong on a page. Annotations saved before pages existed have no page and show on every page.
+ */
+export function getPageTextAnnotations(annotations: TextAnnotation[], page: TextPage): TextAnnotation[] {
+  return annotations.filter((annotation) => annotation.page === undefined || annotation.page === page);
 }
 
 export const SERIES_COLOR_PALETTE: string[] = [...FIGURE_PATH_COLORS, '#000000', '#FFFFFF'];

@@ -106,7 +106,7 @@ export function PhaseChangesDialog({ styles, onChange }: Props) {
           <span className="hidden md:inline">Phase Changes</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto data-[state=open]:slide-in-from-left-0! data-[state=open]:slide-in-from-top-0! data-[state=closed]:slide-out-to-left-0! data-[state=closed]:slide-out-to-top-0! data-[state=open]:zoom-in-100! data-[state=closed]:zoom-out-100!">
         <DialogHeader>
           <DialogTitle>Phase Changes</DialogTitle>
           <DialogDescription>

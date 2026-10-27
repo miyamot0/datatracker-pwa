@@ -19,6 +19,8 @@ import {
   TEXT_JUSTIFIES,
   TEXT_LINE_BREAK,
   TEXT_WEIGHTS,
+  getPageTextAnnotations,
+  type TextPage,
   type SeriesStyles,
   type TextAnchor,
   type TextAnnotation,
@@ -64,6 +66,8 @@ type DraftRow = {
 
 type Props = {
   styles: SeriesStyles;
+  /** Page this dialog edits. Only text added on this page is listed, and new text is tagged with it. */
+  page: TextPage;
   onChange: (styles: SeriesStyles) => void;
 };
 
@@ -97,15 +101,16 @@ function toAnnotation(row: DraftRow): TextAnnotation | undefined {
 /**
  * Dialog for adding, editing, and deleting text annotations drawn on a chart
  *
- * Each annotation has a label, an x and y coordinate, an anchor point, and a justification. Use the literal text \n in
- * a label to start a new line. Rows missing a label or coordinate are shown with an error and are not saved until they
- * are corrected. Changes are reported through onChange as a complete SeriesStyles object, leaving the other styles
- * unchanged.
+ * Each annotation has a label, a weight, an x and y coordinate, an anchor point, and a justification. Use the literal text
+ * \n in a label to start a new line. Rows missing a label or coordinate are shown with an error and are not saved until
+ * they are corrected. Changes are reported through onChange as a complete SeriesStyles object. Text saved for the other
+ * page is left unchanged.
  *
  * @param props.styles - Current saved styles, including the text annotations
+ * @param props.page - Page the text is edited for
  * @param props.onChange - Receives the updated styles after each edit
  */
-export function TextAnnotationsDialog({ styles, onChange }: Props) {
+export function TextAnnotationsDialog({ styles, page, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<DraftRow[]>([]);
   const nextRowId = useRef(0);
@@ -114,19 +119,22 @@ export function TextAnnotationsDialog({ styles, onChange }: Props) {
   const commit = (nextRows: DraftRow[]) => {
     setRows(nextRows);
 
-    const text_annotations: TextAnnotation[] = nextRows.flatMap((row) => {
+    const pageAnnotations: TextAnnotation[] = nextRows.flatMap((row) => {
       const annotation = toAnnotation(row);
 
-      return annotation === undefined ? [] : [annotation];
+      return annotation === undefined ? [] : [{ ...annotation, page }];
     });
+    const otherPageAnnotations = styles.text_annotations.filter(
+      (annotation) => annotation.page !== undefined && annotation.page !== page,
+    );
 
-    onChange({ ...styles, text_annotations });
+    onChange({ ...styles, text_annotations: [...otherPageAnnotations, ...pageAnnotations] });
   };
 
   const handleOpenChange = (next: boolean) => {
     if (next) {
       setRows(
-        styles.text_annotations.map((annotation) => ({
+        getPageTextAnnotations(styles.text_annotations, page).map((annotation) => ({
           id: nextRowId.current++,
           label: annotation.label,
           x: String(annotation.x),
@@ -160,7 +168,7 @@ export function TextAnnotationsDialog({ styles, onChange }: Props) {
           <span className="hidden md:inline">Text</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto data-[state=open]:slide-in-from-left-0! data-[state=open]:slide-in-from-top-0! data-[state=closed]:slide-out-to-left-0! data-[state=closed]:slide-out-to-top-0! data-[state=open]:zoom-in-100! data-[state=closed]:zoom-out-100!">
         <DialogHeader>
           <DialogTitle>Text Annotations</DialogTitle>
           <DialogDescription>

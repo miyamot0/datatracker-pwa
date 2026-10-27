@@ -83,6 +83,7 @@ export default function ProportionFigureVisualization({
         filteredSessions={FilteredSessions}
         keySetFull={KeySetFull}
         seriesStyles={SeriesStyles}
+        textPage="proportion"
         figureTextSize={FigureTextSize}
         connectSpans={ConnectSpans}
         minX={MinX}

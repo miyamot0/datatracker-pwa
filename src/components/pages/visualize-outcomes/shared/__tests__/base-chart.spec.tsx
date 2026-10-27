@@ -66,6 +66,7 @@ const mockTooltip = () => <div data-testid="custom-tooltip" />;
 
 const defaultProps = {
   title: 'Test Chart Title',
+  textPage: 'rate' as const,
   preparedData: [{ session: 1, Condition: 'Baseline', Kicking: 50 }],
   filteredSessions: [{ Condition: 'Baseline' } as any],
   keySetFull: [{ KeyDescription: 'Kicking', Visible: true }],

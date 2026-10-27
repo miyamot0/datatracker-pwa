@@ -206,7 +206,7 @@ export default function ResultsRateVisualsPage({
 
               <PhaseChangesDialog styles={seriesStyles} onChange={updateSeriesStyles} />
 
-              <TextAnnotationsDialog styles={seriesStyles} onChange={updateSeriesStyles} />
+              <TextAnnotationsDialog page="rate" styles={seriesStyles} onChange={updateSeriesStyles} />
             </div>
           </div>
 
