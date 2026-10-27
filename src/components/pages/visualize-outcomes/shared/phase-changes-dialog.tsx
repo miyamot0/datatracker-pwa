@@ -103,9 +103,9 @@ export function PhaseChangesDialog({ styles, onChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-fit">
-          <RulerIcon className="mr-2 w-4 h-4" />
-          Edit Phase Changes
+        <Button variant="outline" className="w-fit" aria-label="Edit Phase Changes">
+          <RulerIcon className="md:mr-2 w-4 h-4" />
+          <span className="hidden md:inline">Phase Changes</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">

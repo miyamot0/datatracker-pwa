@@ -145,8 +145,8 @@ describe('ResultsRateVisualsPage', () => {
 
     await expect.element(page.getByText('Visualization of Behavioral Rates')).toBeInTheDocument();
     await expect.element(page.getByRole('link', { name: 'See Proportion' })).toBeInTheDocument();
-    await expect.element(page.getByText('Edit Keys Displayed')).toBeInTheDocument();
-    await expect.element(page.getByText('Edit Conditions Displayed')).toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Edit Keys Displayed' })).toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Edit Conditions Displayed' })).toBeInTheDocument();
     await expect.element(page.getByText('Timer to Reference:')).toBeInTheDocument();
     await expect.element(page.getByText('Element Magnification:')).toBeInTheDocument();
     await expect.element(page.getByText('Connect All Spans:')).toBeInTheDocument();

@@ -113,9 +113,9 @@ export default function ResultsRateVisualsPage({
             <div className="flex flex-row gap-4">
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-fit">
-                    <KeyboardIcon className="mr-2 w-4 h-4" />
-                    Edit Keys Displayed
+                  <Button variant="outline" className="w-fit" aria-label="Edit Keys Displayed">
+                    <KeyboardIcon className="md:mr-2 w-4 h-4" />
+                    <span className="hidden md:inline">Keys</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
@@ -159,9 +159,9 @@ export default function ResultsRateVisualsPage({
             <div className="flex flex-row gap-2">
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-fit">
-                    <LineChartIcon className="mr-2 w-4 h-4" />
-                    Edit Conditions Displayed
+                  <Button variant="outline" className="w-fit" aria-label="Edit Conditions Displayed">
+                    <LineChartIcon className="md:mr-2 w-4 h-4" />
+                    <span className="hidden md:inline">Conditions</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">

@@ -13,15 +13,15 @@ Figures provided in the proportion/rate visuals automatically assign default mar
 
 ### Style Controls in Rate/Proportion Visuals
 
-The Rate and Proportion sections of an evaluation provide access to three distinct ways to adjust a visualization. Each of these are available through the toolbar at the top of the figure. The **Edit Keys Displayed** control shows or hides individual keys, the **Edit Conditions Displayed** control shows or hides whole conditions, and the **Edit Series Styles** control opens the styling dialog.
+The Rate and Proportion sections of an evaluation provide access to three distinct ways to adjust a visualization. Each of these are available through the toolbar at the top of the figure. The **Keys** control shows or hides individual keys, the **Conditions** control shows or hides whole conditions, and the **Styles** control opens the styling dialog. On narrow screens these controls show only their icons, so hover over one to see its full name.
 
 Regardless of the control you use, changes only affect the visual representation of the figure and **do not alter the underlying session data**. Additional information on each control is provided in the sections below.
 
 #### Showing and Hiding Keys
 
-The **Edit Keys Displayed** control allows you to choose which keys appear in the figure. Each key has a checkbox. You can uncheck a key to remove it from the chart and check it again to bring it back. As a reminder, keys labeled **(Derived)** are "keys" that are calculated from other keys rather than logged manually. The logic builder provided in the KeySet portion of the app can be used to create event types based on other manually logged keys, which then appears in this list like any other key.
+The **Keys** control allows you to choose which keys appear in the figure. Each key has a checkbox. You can uncheck a key to remove it from the chart and check it again to bring it back. As a reminder, keys labeled **(Derived)** are "keys" that are calculated from other keys rather than logged manually. The logic builder provided in the KeySet portion of the app can be used to create event types based on other manually logged keys, which then appears in this list like any other key.
 
-**Example:** You are reviewing changes in rates from Baseline to Intervention using a "Combined Target Behavior" class to reflect several related behaviors and wish to inspect when individual sub-targets of the classes change in similar ways. You can do this by opening **Edit Keys Displayed** and selectively checking or unchecking the sub-targets you want to focus on or explore.
+**Example:** You are reviewing changes in rates from Baseline to Intervention using a "Combined Target Behavior" class to reflect several related behaviors and wish to inspect when individual sub-targets of the classes change in similar ways. You can do this by opening **Keys** and selectively checking or unchecking the sub-targets you want to focus on or explore.
 
 As a reminder, keys that are flagged as 'hidden' will not appear in the figure nor in the styling dialog for individual series.
 
@@ -29,13 +29,13 @@ As a reminder, keys that are flagged as 'hidden' will not appear in the figure n
 
 It is often the case that you want all series within a condition to share a common visual style, such as a common marker fill color (e.g., all markers in Baseline have black fill, all markers in Intervention have white fill). This helps quickly distinguish one condition from another in the figure. The program provides some simple defaults, but you may wish to override them to match your preferred color scheme or to emphasize certain conditions.
 
-Clicking the **Edit Series Styles** control presents a dialog with various options for customizing the appearance of series in the figure. The top-most portion, labeled with a heading named **Conditions**, contains settings that apply to *all series within* each condition. This section will include a **Marker Fill (__condition__)** for *each* of the conditions included in the data set. Selecting the dropdown for a condition allows you to choose a color for all series within that condition.
+Clicking the **Styles** control presents a dialog with various options for customizing the appearance of series in the figure. The top-most portion, labeled with a heading named **Conditions**, contains settings that apply to *all series within* each condition. This section will include a **Marker Fill (__condition__)** for *each* of the conditions included in the data set. Selecting the dropdown for a condition allows you to choose a color for all series within that condition.
 
 **Example:** Should you wish to have every marker in _Baseline_ to have a black fill, you would select **Marker Fill (Baseline)** and set it to black. Every key's marker in _Baseline_ is now black, unless you override a specific key (see the next section). Line colors do not change at the condition level, because lines stay black by default, unless these are changed at the individual series level. This is described in the sections below.
 
 #### Styling: Series-specific Settings
 
-It is most likely that users will desire to customize the appearance of individual series beyond the condition-wide settings. This allows for highlighting specific keys or making certain series stand out in the figure (e.g., alternative target with bright/contrasting colors). In these cases, settings provided by clicking the **Edit Series Styles** can be used to override the key-specific settings in the figure as well.
+It is most likely that users will desire to customize the appearance of individual series beyond the condition-wide settings. This allows for highlighting specific keys or making certain series stand out in the figure (e.g., alternative target with bright/contrasting colors). In these cases, settings provided by clicking the **Styles** can be used to override the key-specific settings in the figure as well.
 
 Key-specific settings in the dialog are provided in the "Keys" section, where each key listed can be selected to reveal its individual styling options. Note: only a single key is presented at a single time and selecting a key brings up settings specific to that key. The series editor allows users to edit the **Shape** of the marker for that key, as well as its fill (**Marker Fill**) and **Line** colors per key and condition. A preview is provided beside the dropdown, showing the marker as it will look in that condition.
 
@@ -47,7 +47,7 @@ There are various combinations of styles available to users, and in conditions w
 
 #### Phase Change Lines
 
-Phase change lines are vertical reference lines that mark a point in the figure, such as where a new phase or condition begins. Clicking the **Edit Phase Changes** control opens a dialog where you can add, edit, and delete lines. Each line is shown on its own row with:
+Phase change lines are vertical reference lines that mark a point in the figure, such as where a new phase or condition begins. Clicking the **Phase Changes** control opens a dialog where you can add, edit, and delete lines. Each line is shown on its own row with:
 
 - **Position:** the x-axis value where the line is drawn. This must be a number greater than 0.
 - **Line type:** solid, dashed, or dotted. Lines are always black.

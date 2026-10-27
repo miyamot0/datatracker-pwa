@@ -253,9 +253,9 @@ export function SeriesStylesDialog({ keys, conditions, visibleConditions, styles
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-fit">
-          <PaintbrushIcon className="mr-2 w-4 h-4" />
-          Edit Series Styles
+        <Button variant="outline" className="w-fit" aria-label="Edit Series Styles">
+          <PaintbrushIcon className="md:mr-2 w-4 h-4" />
+          <span className="hidden md:inline">Styles</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto data-[state=open]:slide-in-from-left-0! data-[state=open]:slide-in-from-top-0! data-[state=closed]:slide-out-to-left-0! data-[state=closed]:slide-out-to-top-0! data-[state=open]:zoom-in-100! data-[state=closed]:zoom-out-100!">
