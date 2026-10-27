@@ -16,6 +16,7 @@ import RateFigureVisualization from './rate-figure';
 import { getLocalSeriesStyles, setLocalCachedPrefs, setLocalSeriesStyles } from '@/lib/local_storage';
 import { SeriesStylesDialog } from '@/components/pages/visualize-outcomes/shared/series-styles-dialog';
 import { PhaseChangesDialog } from '@/components/pages/visualize-outcomes/shared/phase-changes-dialog';
+import { TextAnnotationsDialog } from '@/components/pages/visualize-outcomes/shared/text-annotations-dialog';
 import { type SeriesStyles } from '@/lib/graphing/series-style';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -204,6 +205,8 @@ export default function ResultsRateVisualsPage({
               />
 
               <PhaseChangesDialog styles={seriesStyles} onChange={updateSeriesStyles} />
+
+              <TextAnnotationsDialog styles={seriesStyles} onChange={updateSeriesStyles} />
             </div>
           </div>
 

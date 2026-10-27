@@ -377,7 +377,11 @@ export function SeriesStylesDialog({ keys, conditions, visibleConditions, styles
         <DialogFooter className="flex flex-row justify-between sm:justify-between">
           <Button
             variant="outline"
-            onClick={() => onChange({ ...EMPTY_SERIES_STYLES, phase_changes: styles.phase_changes })}
+            onClick={() => onChange({
+                    ...EMPTY_SERIES_STYLES,
+                    phase_changes: styles.phase_changes,
+                    text_annotations: styles.text_annotations,
+                })}
           >
             Reset All to Defaults
           </Button>

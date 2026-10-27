@@ -13,7 +13,7 @@ Figures provided in the proportion/rate visuals automatically assign default mar
 
 ### Style Controls in Rate/Proportion Visuals
 
-The Rate and Proportion sections of an evaluation provide access to three distinct ways to adjust a visualization. Each of these are available through the toolbar at the top of the figure. The **Keys** control shows or hides individual keys, the **Conditions** control shows or hides whole conditions, and the **Styles** control opens the styling dialog. On narrow screens these controls show only their icons, so hover over one to see its full name.
+The Rate and Proportion sections of an evaluation provide access to several ways to adjust a visualization. Each of these are available through the toolbar at the top of the figure. The **Keys** control shows or hides individual keys, the **Conditions** control shows or hides whole conditions, the **Styles** control opens the styling dialog, and the **Phase Changes** and **Text** controls add vertical lines and text labels. On narrow screens these controls show only their icons, so hover over one to see its full name.
 
 Regardless of the control you use, changes only affect the visual representation of the figure and **do not alter the underlying session data**. Additional information on each control is provided in the sections below.
 
@@ -54,6 +54,19 @@ Phase change lines are vertical reference lines that mark a point in the figure,
 - **Delete:** removes that line only.
 
 Click **Add Line** to create a new row. A row with an invalid position is shown with a message and is not saved until its position is corrected. Lines extend from the top of the plotting area down to the x-axis. Lines are saved with the other series styles for the evaluation and persist in the same way.
+
+#### Text Annotations
+
+Text annotations place a label at a specific point in the figure, such as a note describing a phase or an event. Clicking the **Text** control opens a dialog where you can add, edit, and delete text entries. Each entry is shown on its own row with:
+
+- **Label:** the text to draw. To break the text across lines, type the literal sequence `\n` where the new line should begin (for example, `Baseline\nWeek 1` is drawn on two lines). The text is drawn in black at the figure's text size.
+- **X:** the x-axis position in session units, the same units used by the figure.
+- **Y:** the y-axis position in the units of the figure's data (for proportion figures, 0 to 100).
+- **Anchor:** the point of the text box that sits at the X and Y position. Options are the nine positions from top-left to bottom-right, including center. For example, top-left places the top-left corner of the text at the point.
+- **Justify:** how lines are aligned inside the text box: left, center, or right. This matters only when the label has more than one line.
+- **Delete:** removes that entry only.
+
+Click **Add Text** to create a new row. A row missing a label or a numeric X or Y is shown with a message and is not saved until it is corrected. An entry whose position falls outside the plotted area is not drawn. Text annotations are saved with the other series styles for the evaluation, do not change when you use **Reset All to Defaults**, and persist in the same way as phase change lines. Text annotations do not change the underlying session data.
 
 ### Closing Notes and Tips
 

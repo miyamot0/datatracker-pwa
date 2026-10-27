@@ -34,13 +34,59 @@ export type PhaseChange = {
   lineType: PhaseLineType;
 };
 
+export const TEXT_ANCHORS = [
+  'top-left',
+  'top-center',
+  'top-right',
+  'middle-left',
+  'middle-center',
+  'middle-right',
+  'bottom-left',
+  'bottom-center',
+  'bottom-right',
+] as const;
+
+export type TextAnchor = (typeof TEXT_ANCHORS)[number];
+
+export const TEXT_JUSTIFIES = ['left', 'center', 'right'] as const;
+
+export type TextJustify = (typeof TEXT_JUSTIFIES)[number];
+
+/** Literal two-character sequence that separates lines within a text annotation label */
+export const TEXT_LINE_BREAK = '\\n';
+
+/** A text label drawn on the figure at a data coordinate */
+export type TextAnnotation = {
+  label: string;
+  x: number;
+  y: number;
+  anchor: TextAnchor;
+  justify: TextJustify;
+};
+
 export type SeriesStyles = {
   KeyStyles: Record<string, KeySeriesStyle>;
   ConditionStyles: Record<string, ConditionSeriesStyle>;
   phase_changes: PhaseChange[];
+  text_annotations: TextAnnotation[];
 };
 
-export const EMPTY_SERIES_STYLES: SeriesStyles = { KeyStyles: {}, ConditionStyles: {}, phase_changes: [] };
+export const EMPTY_SERIES_STYLES: SeriesStyles = {
+  KeyStyles: {},
+  ConditionStyles: {},
+  phase_changes: [],
+  text_annotations: [],
+};
+
+/** Text annotations are always drawn black */
+export const TEXT_ANNOTATION_COLOR = 'black';
+
+/**
+ * Splits a text annotation label into its lines at each literal \n
+ */
+export function splitTextAnnotationLines(label: string): string[] {
+  return label.split(TEXT_LINE_BREAK);
+}
 
 /** Phase change lines are always drawn black */
 export const PHASE_LINE_COLOR = 'black';
@@ -70,6 +116,28 @@ export function isValidPhaseChange(value: unknown): value is PhaseChange {
 }
 
 export const SERIES_SHAPES: SymbolType[] = ['circle', 'cross', 'diamond', 'square', 'star', 'triangle', 'wye'];
+
+/**
+ * Checks a saved text annotation for a non-empty label, finite coordinates, and known anchor and justify values
+ */
+export function isValidTextAnnotation(value: unknown): value is TextAnnotation {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const { label, x, y, anchor, justify } = value as Partial<TextAnnotation>;
+
+  return (
+    typeof label === 'string' &&
+    splitTextAnnotationLines(label).some((line) => line.trim() !== '') &&
+    typeof x === 'number' &&
+    Number.isFinite(x) &&
+    typeof y === 'number' &&
+    Number.isFinite(y) &&
+    TEXT_ANCHORS.includes(anchor as TextAnchor) &&
+    TEXT_JUSTIFIES.includes(justify as TextJustify)
+  );
+}
 
 export const SERIES_COLOR_PALETTE: string[] = [...FIGURE_PATH_COLORS, '#000000', '#FFFFFF'];
 

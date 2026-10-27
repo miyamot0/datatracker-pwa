@@ -78,6 +78,7 @@ describe('LocalStorage Prefs', () => {
         KeyStyles: {},
         ConditionStyles: {},
         phase_changes: [],
+        text_annotations: [],
       });
     });
 
@@ -86,6 +87,7 @@ describe('LocalStorage Prefs', () => {
         KeyStyles: { Hitting: { shape: 'star' as const } },
         ConditionStyles: {},
         phase_changes: [],
+        text_annotations: [],
       };
 
       setLocalSeriesStyles(' group1 ', ' individual1 ', ' evaluation1 ', styles);
@@ -95,7 +97,12 @@ describe('LocalStorage Prefs', () => {
     });
 
     it('does not share styles across a different individual or evaluation', () => {
-      const styles = { KeyStyles: {}, ConditionStyles: { Baseline: { color: '#FF0000' } }, phase_changes: [] };
+      const styles = {
+        KeyStyles: {},
+        ConditionStyles: { Baseline: { color: '#FF0000' } },
+        phase_changes: [],
+        text_annotations: [],
+      };
 
       setLocalSeriesStyles('group1', 'individual1', 'evaluation1', styles);
 
@@ -103,15 +110,17 @@ describe('LocalStorage Prefs', () => {
         KeyStyles: {},
         ConditionStyles: {},
         phase_changes: [],
+        text_annotations: [],
       });
       expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation2')).toEqual({
         KeyStyles: {},
         ConditionStyles: {},
         phase_changes: [],
+        text_annotations: [],
       });
     });
 
-    it('fills in a missing KeyStyles, ConditionStyles, or phase_changes section when a saved object is partial', () => {
+    it('fills in a missing section when a saved object is partial', () => {
       localStorage.setItem(
         'group1_individual1_evaluation1_SeriesStyles',
         JSON.stringify({ KeyStyles: { Hitting: { shape: 'star' } } }),
@@ -121,7 +130,30 @@ describe('LocalStorage Prefs', () => {
         KeyStyles: { Hitting: { shape: 'star' } },
         ConditionStyles: {},
         phase_changes: [],
+        text_annotations: [],
       });
+    });
+
+    it('keeps only valid text annotations when reading saved styles', () => {
+      localStorage.setItem(
+        'group1_individual1_evaluation1_SeriesStyles',
+        JSON.stringify({
+          KeyStyles: {},
+          ConditionStyles: {},
+          phase_changes: [],
+          text_annotations: [
+            { label: 'Baseline\\nStart', x: 2, y: 50, anchor: 'top-left', justify: 'left' },
+            { label: '   ', x: 2, y: 50, anchor: 'top-left', justify: 'left' },
+            { label: 'Bad anchor', x: 2, y: 50, anchor: 'middle', justify: 'left' },
+            { label: 'Bad x', x: '2', y: 50, anchor: 'top-left', justify: 'left' },
+            { label: 'Bad justify', x: 2, y: 50, anchor: 'top-left', justify: 'justify' },
+          ],
+        }),
+      );
+
+      expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation1').text_annotations).toEqual([
+        { label: 'Baseline\\nStart', x: 2, y: 50, anchor: 'top-left', justify: 'left' },
+      ]);
     });
 
     it('keeps only valid phase changes when reading saved styles', () => {

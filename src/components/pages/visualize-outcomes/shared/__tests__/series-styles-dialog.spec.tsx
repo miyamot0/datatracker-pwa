@@ -8,6 +8,7 @@ const styled: SeriesStyles = {
   KeyStyles: { Hitting: { shape: 'star' } },
   ConditionStyles: { Baseline: { color: '#FF0000' } },
   phase_changes: [],
+  text_annotations: [],
 };
 
 describe('SeriesStylesDialog', () => {
@@ -65,7 +66,11 @@ describe('SeriesStylesDialog', () => {
         keys={[{ KeyDescription: 'Hitting', Visible: true }]}
         conditions={['Baseline']}
         visibleConditions={['Baseline']}
-        styles={{ ...styled, phase_changes: [{ position: 4, lineType: 'dotted' }] }}
+        styles={{
+          ...styled,
+          phase_changes: [{ position: 4, lineType: 'dotted' }],
+          text_annotations: [{ label: 'Note', x: 2, y: 50, anchor: 'top-left', justify: 'left' }],
+        }}
         onChange={onChange}
       />,
     );
@@ -76,6 +81,7 @@ describe('SeriesStylesDialog', () => {
     expect(onChange).toHaveBeenCalledWith({
       ...EMPTY_SERIES_STYLES,
       phase_changes: [{ position: 4, lineType: 'dotted' }],
+      text_annotations: [{ label: 'Note', x: 2, y: 50, anchor: 'top-left', justify: 'left' }],
     });
   });
 });

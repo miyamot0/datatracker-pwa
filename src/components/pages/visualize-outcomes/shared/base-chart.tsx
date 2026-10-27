@@ -38,6 +38,7 @@ import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { calculateSplitPoints } from '@/lib/graphing/data-preparation';
 import { getChartConfiguration } from '@/lib/graphing/chart-setup';
 import { AxisSpanLines } from './axis-span-lines';
+import { TextAnnotationsLayer } from './text-annotations-layer';
 
 type BaseChartProps = {
   title: string;
@@ -256,6 +257,8 @@ export function BaseChart({
             strokeDasharray={PHASE_LINE_DASH_ARRAY[phaseChange.lineType]}
           />
         ))}
+
+        <TextAnnotationsLayer annotations={seriesStyles.text_annotations} />
 
         <Tooltip
           {...noAnimationProps}
