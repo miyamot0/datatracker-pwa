@@ -36,9 +36,11 @@ import { ExpandedKeySetInstance } from '@/types/keyset';
 import { splitAtPoints } from '@/lib/arrays';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { calculateSplitPoints } from '@/lib/graphing/data-preparation';
-import { getChartConfiguration } from '@/lib/graphing/chart-setup';
+import { getChartConfiguration, getChartVerticalSpacing } from '@/lib/graphing/chart-setup';
 import { AxisSpanLines } from './annotations/axis-span-lines';
 import { TextAnnotationsLayer } from './annotations/text-annotations-layer';
+import { ChartTitle } from './chart-title';
+import { XAxisLabel } from './x-axis-label';
 
 type BaseChartProps = {
   title: string;
@@ -63,6 +65,7 @@ type BaseChartProps = {
   divRef: React.RefObject<HTMLDivElement | null>;
   seriesStyles?: SeriesStyles;
 };
+
 export function BaseChart({
   title,
   preparedData,
@@ -81,6 +84,7 @@ export function BaseChart({
   seriesStyles = EMPTY_SERIES_STYLES,
 }: BaseChartProps) {
   const { noAnimationProps, chartMargins, xAxisConfig, yAxisStyle, labelStyle } = getChartConfiguration();
+  const spacing = getChartVerticalSpacing(figureTextSize);
 
   const data_set_parsed_by_condition = getUniqueSessionConditions(filteredSessions).map((condition) => ({
     name: condition,
@@ -107,7 +111,7 @@ export function BaseChart({
     <ResponsiveContainer
       {...noAnimationProps}
       width="100%"
-      height={500}
+      height={spacing.chartHeight}
       className={cn(
         'text-base text-primary bg-white nuke-view-transition [&_.recharts-legend-item]:inline-flex! [&_.recharts-legend-item]:items-center',
         {
@@ -123,11 +127,9 @@ export function BaseChart({
         width={600}
         height={300}
         title=""
-        margin={chartMargins}
+        margin={{ ...chartMargins, top: spacing.chartMarginTop }}
       >
-        <text x={'50%'} y={25} textAnchor="middle" dominantBaseline="central">
-          <tspan className="text-2xl font-bold">{title}</tspan>
-        </text>
+        <ChartTitle title={title} fontPx={spacing.titleFontPx} y={spacing.titleY} />
 
         {data_set_parsed_by_condition.map((condition, index_main) => {
           const index_dynamic = index_main % FIGURE_PATH_COLORS.length;
@@ -236,10 +238,14 @@ export function BaseChart({
           domain={[minX, maxX]}
           ticks={xTicks}
           {...xAxisConfig}
+          height={spacing.xAxisHeight}
           axisLine={false}
           label={undefined}
         >
-          <Label {...noAnimationProps} style={labelStyle} offset={0} position={'insideBottom'} value={'Session'} />
+          <Label
+            {...noAnimationProps}
+            content={<XAxisLabel value="Session" offset={spacing.xAxisLabelOffset} style={labelStyle} />}
+          />
         </XAxis>
 
         <YAxis {...noAnimationProps} {...yAxisConfig} axisLine={false} style={yAxisStyle} label={undefined}>

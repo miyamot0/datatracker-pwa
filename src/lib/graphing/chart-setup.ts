@@ -3,6 +3,7 @@ import { FIGURE_PATH_COLORS } from '../colors';
 import { getShape } from '../shapes';
 import { getUniqueSessionConditions } from './session-filters';
 import { ExpandedKeySetInstance } from '@/types/keyset/display';
+import type { FigureVisualSizing } from '@/types/accessibility';
 import {
   EMPTY_SERIES_STYLES,
   MARKER_BORDER_COLOR,
@@ -58,6 +59,59 @@ export function createChartLegends(
     }));
 
   return [...conditionLegends, ...keyLegends];
+}
+
+export type ChartVerticalSpacing = {
+  /** Title font size in px */
+  titleFontPx: number;
+  /** Vertical center of the title, measured from the top of the chart */
+  titleY: number;
+  /** Space reserved above the plot for the title */
+  chartMarginTop: number;
+  /** Total height of the chart container in px */
+  chartHeight: number;
+  /** Height of the x-axis band (tick labels + axis title) in px */
+  xAxisHeight: number;
+  /** Gap between the bottom of the x-axis band and the x-axis title baseline in px */
+  xAxisLabelOffset: number;
+};
+
+/**
+ * Vertical spacing per figure text size. Larger rows add room for the larger title and axis text.
+ * chartHeight grows by the same amount as the x-axis band, so the plot area stays roughly constant.
+ */
+const VERTICAL_SPACING_BY_TEXT_SIZE: Record<FigureVisualSizing, ChartVerticalSpacing> = {
+  base: {
+    titleFontPx: 24,
+    titleY: 25,
+    chartMarginTop: 62,
+    chartHeight: 522,
+    xAxisHeight: 60,
+    xAxisLabelOffset: 0,
+  },
+  large: {
+    titleFontPx: 30,
+    titleY: 30,
+    chartMarginTop: 76,
+    chartHeight: 556,
+    xAxisHeight: 70,
+    xAxisLabelOffset: 4,
+  },
+  extraLarge: {
+    titleFontPx: 36,
+    titleY: 36,
+    chartMarginTop: 92,
+    chartHeight: 592,
+    xAxisHeight: 82,
+    xAxisLabelOffset: 8,
+  },
+};
+
+/**
+ * Returns the vertical spacing (title, top margin, x-axis band, chart height) for a figure text size
+ */
+export function getChartVerticalSpacing(figureTextSize: FigureVisualSizing): ChartVerticalSpacing {
+  return { ...VERTICAL_SPACING_BY_TEXT_SIZE[figureTextSize] };
 }
 
 /**

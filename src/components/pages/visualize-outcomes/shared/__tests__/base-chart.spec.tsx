@@ -21,9 +21,13 @@ const mockCalculateSplitPoints = vi.hoisted(() =>
 const mockSplitAtPoints = vi.hoisted(() => vi.fn((data: any) => [data]));
 const mockGetShape = vi.hoisted(() => vi.fn(() => 'circle'));
 
-vi.mock('@/lib/graphing/chart-setup', () => ({
-  getChartConfiguration: mockGetChartConfiguration,
-}));
+vi.mock('@/lib/graphing/chart-setup', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/graphing/chart-setup')>();
+  return {
+    getChartConfiguration: mockGetChartConfiguration,
+    getChartVerticalSpacing: actual.getChartVerticalSpacing,
+  };
+});
 
 vi.mock('@/lib/graphing/session-filters', () => ({
   getUniqueSessionConditions: mockGetUniqueSessionConditions,
