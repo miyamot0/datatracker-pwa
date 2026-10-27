@@ -10,19 +10,52 @@ describe('LegendDialog', () => {
       <LegendDialog
         settings={{ position: 'upper-left', layout: 'vertical' }}
         onChange={vi.fn()}
+        showConditionLegend
+        onShowConditionLegendChange={vi.fn()}
         open
         onOpenChange={vi.fn()}
       />,
     );
 
     await expect.element(page.getByRole('dialog', { name: 'Legend Position and Layout' })).toBeInTheDocument();
-    await expect.element(page.getByRole('combobox', { name: 'Legend position', exact: true })).toHaveTextContent('Upper Left');
-    await expect.element(page.getByRole('combobox', { name: 'Legend layout', exact: true })).toHaveTextContent('Vertical');
+    await expect
+      .element(page.getByRole('combobox', { name: 'Legend position', exact: true }))
+      .toHaveTextContent('Upper Left');
+    await expect
+      .element(page.getByRole('combobox', { name: 'Legend layout', exact: true }))
+      .toHaveTextContent('Vertical');
+  });
+
+  it('reports the condition legend toggle from the dialog', async () => {
+    const onShowConditionLegendChange = vi.fn();
+    await render(
+      <LegendDialog
+        settings={DEFAULT_LEGEND_SETTINGS}
+        onChange={vi.fn()}
+        showConditionLegend
+        onShowConditionLegendChange={onShowConditionLegendChange}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    await page.getByRole('checkbox', { name: 'Show Condition Legend' }).click();
+
+    expect(onShowConditionLegendChange).toHaveBeenLastCalledWith(false);
   });
 
   it('reports a newly selected position while keeping the layout', async () => {
     const onChange = vi.fn();
-    await render(<LegendDialog settings={DEFAULT_LEGEND_SETTINGS} onChange={onChange} open onOpenChange={vi.fn()} />);
+    await render(
+      <LegendDialog
+        settings={DEFAULT_LEGEND_SETTINGS}
+        onChange={onChange}
+        showConditionLegend
+        onShowConditionLegendChange={vi.fn()}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
 
     await page.getByRole('combobox', { name: 'Legend position', exact: true }).click();
     await page.getByRole('option', { name: 'Middle Right' }).click();
@@ -36,6 +69,8 @@ describe('LegendDialog', () => {
       <LegendDialog
         settings={{ position: 'lower-right', layout: 'horizontal' }}
         onChange={onChange}
+        showConditionLegend
+        onShowConditionLegendChange={vi.fn()}
         open
         onOpenChange={vi.fn()}
       />,
@@ -53,6 +88,8 @@ describe('LegendDialog', () => {
       <LegendDialog
         settings={{ position: 'upper-right', layout: 'vertical' }}
         onChange={onChange}
+        showConditionLegend
+        onShowConditionLegendChange={vi.fn()}
         open
         onOpenChange={vi.fn()}
       />,
@@ -66,7 +103,14 @@ describe('LegendDialog', () => {
   it('closes the dialog from Done', async () => {
     const onOpenChange = vi.fn();
     await render(
-      <LegendDialog settings={DEFAULT_LEGEND_SETTINGS} onChange={vi.fn()} open onOpenChange={onOpenChange} />,
+      <LegendDialog
+        settings={DEFAULT_LEGEND_SETTINGS}
+        onChange={vi.fn()}
+        showConditionLegend
+        onShowConditionLegendChange={vi.fn()}
+        open
+        onOpenChange={onOpenChange}
+      />,
     );
 
     await page.getByRole('button', { name: 'Done' }).click();

@@ -53,12 +53,13 @@ function renderMenubar(overrides: Partial<React.ComponentProps<typeof VisualsMen
 }
 
 describe('VisualsMenubar', () => {
-  it('renders File, Data, and Design menus', async () => {
+  it('renders File, Data Display, Design, and Settings menus', async () => {
     renderMenubar();
 
     await expect.element(page.getByRole('menuitem', { name: 'File' })).toBeInTheDocument();
-    await expect.element(page.getByRole('menuitem', { name: 'Data' })).toBeInTheDocument();
-    await expect.element(page.getByRole('menuitem', { name: 'Design' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Data Display' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Aesthetics' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Settings' })).toBeInTheDocument();
   });
 
   it('calls onSaveImage with svg from File > Figure Output > Save to SVG', async () => {
@@ -112,40 +113,51 @@ describe('VisualsMenubar', () => {
     expect(onConditionVisibilityChange).toHaveBeenCalledWith('Treatment', true);
   });
 
-  it('opens the Aim Lines dialog from Design > Annotations submenu', async () => {
+  it('opens the Aim Lines dialog from Aesthetics > Annotations submenu', async () => {
     renderMenubar();
 
-    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
     await page.getByRole('menuitem', { name: 'Annotations' }).hover();
     await page.getByRole('menuitem', { name: 'Aim Lines' }).click();
 
     await expect.element(page.getByRole('dialog', { name: 'Aim Lines' })).toBeInTheDocument();
   });
 
-  it('opens the Series Styles dialog from Design', async () => {
+  it('opens the Series Styles dialog from Aesthetics', async () => {
     renderMenubar();
 
-    await page.getByRole('menuitem', { name: 'Design' }).click();
-    await page.getByRole('menuitem', { name: 'Series Styles' }).click();
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Style Series' }).click();
 
     await expect.element(page.getByRole('dialog', { name: 'Series Styles' })).toBeInTheDocument();
   });
 
-  it('opens the Legend Position and Layout dialog from Design', async () => {
+  it('opens the Legend Position and Layout dialog from Aesthetics', async () => {
     renderMenubar();
 
-    await page.getByRole('menuitem', { name: 'Design' }).click();
-    await page.getByRole('menuitem', { name: 'Legend Position and Layout' }).click();
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Legend Settings' }).click();
 
     await expect.element(page.getByRole('dialog', { name: 'Legend Position and Layout' })).toBeInTheDocument();
   });
 
-  it('selects an element magnification size from Design', async () => {
+  it('wires the condition legend checkbox in the legend dialog to the page callback', async () => {
+    const onShowConditionLegendChange = vi.fn();
+    renderMenubar({ onShowConditionLegendChange });
+
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Legend Settings' }).click();
+    await page.getByRole('checkbox', { name: 'Show Condition Legend' }).click();
+
+    expect(onShowConditionLegendChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it('selects an element magnification size from Aesthetics', async () => {
     const onFigureTextSizeChange = vi.fn();
     renderMenubar({ onFigureTextSizeChange });
 
-    await page.getByRole('menuitem', { name: 'Design' }).click();
-    await page.getByRole('menuitem', { name: 'Element Magnification' }).hover();
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Element Sizing' }).hover();
     await page.getByRole('menuitemradio', { name: 'Large', exact: true }).click();
 
     expect(onFigureTextSizeChange).toHaveBeenCalledWith('large');
@@ -161,44 +173,22 @@ describe('VisualsMenubar', () => {
     expect(onConnectSpansChange).toHaveBeenCalledWith(true);
   });
 
-  it('reports Show Title toggled off from Design and keeps the menu open', async () => {
-    const onShowTitleChange = vi.fn();
-    renderMenubar({ onShowTitleChange, showTitle: true });
-
-    await page.getByRole('menuitem', { name: 'Design' }).click();
-    await page.getByRole('menuitemcheckbox', { name: 'Show Title' }).click();
-
-    expect(onShowTitleChange).toHaveBeenCalledWith(false);
-    await expect.element(page.getByRole('menuitemcheckbox', { name: 'Show Title' })).toBeInTheDocument();
-  });
-
-  it('reports Enable Tooltip toggled off from Design and keeps the menu open', async () => {
+  it('reports Enable Tooltip toggled off from Settings and keeps the menu open', async () => {
     const onShowTooltipChange = vi.fn();
     renderMenubar({ onShowTooltipChange, showTooltip: true });
 
-    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitem', { name: 'Settings' }).click();
     await page.getByRole('menuitemcheckbox', { name: 'Enable Tooltip' }).click();
 
     expect(onShowTooltipChange).toHaveBeenCalledWith(false);
     await expect.element(page.getByRole('menuitemcheckbox', { name: 'Enable Tooltip' })).toBeInTheDocument();
   });
 
-  it('reports Show Condition Legend toggled off from Design and keeps the menu open', async () => {
-    const onShowConditionLegendChange = vi.fn();
-    renderMenubar({ onShowConditionLegendChange, showConditionLegend: true });
-
-    await page.getByRole('menuitem', { name: 'Design' }).click();
-    await page.getByRole('menuitemcheckbox', { name: 'Show Condition Legend' }).click();
-
-    expect(onShowConditionLegendChange).toHaveBeenCalledWith(false);
-    await expect.element(page.getByRole('menuitemcheckbox', { name: 'Show Condition Legend' })).toBeInTheDocument();
-  });
-
-  it('reports Show Description toggled off from Design and keeps the menu open', async () => {
+  it('reports Show Description toggled off from Settings and keeps the menu open', async () => {
     const onShowDescriptionChange = vi.fn();
     renderMenubar({ onShowDescriptionChange, showDescription: true });
 
-    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitem', { name: 'Settings' }).click();
     await page.getByRole('menuitemcheckbox', { name: 'Show Description' }).click();
 
     expect(onShowDescriptionChange).toHaveBeenCalledWith(false);
@@ -227,9 +217,9 @@ describe('VisualsMenubar', () => {
     renderMenubar();
 
     await page.getByRole('menuitem', { name: 'Data' }).click();
-    await page.getByRole('menuitem', { name: 'Design' }).hover();
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).hover();
 
-    await expect.element(page.getByRole('menuitem', { name: 'Series Styles' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Style Series' })).toBeInTheDocument();
   });
 
   it('closes the open menu when its own trigger is clicked again', async () => {

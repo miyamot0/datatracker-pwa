@@ -139,7 +139,7 @@ export function VisualsMenubar({
       </MenubarMenu>
 
       <MenubarMenu>
-        <MenubarTrigger>Data</MenubarTrigger>
+        <MenubarTrigger>Data Display</MenubarTrigger>
         <MenubarContent onCloseAutoFocus={(event) => event.preventDefault()}>
           <MenubarSub>
             <MenubarSubTrigger>
@@ -190,12 +190,48 @@ export function VisualsMenubar({
       </MenubarMenu>
 
       <MenubarMenu>
-        <MenubarTrigger>Design</MenubarTrigger>
+        <MenubarTrigger>Aesthetics</MenubarTrigger>
         <MenubarContent onCloseAutoFocus={(event) => event.preventDefault()}>
+          <MenubarItem onSelect={() => setActiveDialog('titles')}>
+            <CaseSensitiveIcon className="mr-2 h-4 w-4" />
+            Titles and Labels
+          </MenubarItem>
+
+          <MenubarItem onSelect={() => setActiveDialog('legend')}>
+            <PanelBottomIcon className="mr-2 h-4 w-4" />
+            Legend Settings
+          </MenubarItem>
+
+          <MenubarItem onSelect={() => setActiveDialog('series-styles')}>
+            <PaintbrushIcon className="mr-2 h-4 w-4" />
+            Style Series
+          </MenubarItem>
+
+          <MenubarSub>
+            <MenubarSubTrigger>
+              <MessageSquareIcon className="mr-2 h-4 w-4" />
+              Annotations
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              <MenubarItem onSelect={() => setActiveDialog('aim-lines')}>
+                <MinusIcon className="mr-2 h-4 w-4" />
+                Aim Lines
+              </MenubarItem>
+              <MenubarItem onSelect={() => setActiveDialog('text-annotations')}>
+                <TypeIcon className="mr-2 h-4 w-4" />
+                Text Labels
+              </MenubarItem>
+              <MenubarItem onSelect={() => setActiveDialog('phase-changes')}>
+                <RulerIcon className="mr-2 h-4 w-4" />
+                Phase Change Lines
+              </MenubarItem>
+            </MenubarSubContent>
+          </MenubarSub>
+
           <MenubarSub>
             <MenubarSubTrigger>
               <ZoomInIcon className="mr-2 h-4 w-4" />
-              Element Magnification
+              Element Sizing
             </MenubarSubTrigger>
             <MenubarSubContent>
               <MenubarRadioGroup
@@ -210,53 +246,12 @@ export function VisualsMenubar({
               </MenubarRadioGroup>
             </MenubarSubContent>
           </MenubarSub>
-          <MenubarSub>
-            <MenubarSubTrigger>
-              <MessageSquareIcon className="mr-2 h-4 w-4" />
-              Annotations
-            </MenubarSubTrigger>
-            <MenubarSubContent>
-              <MenubarItem onSelect={() => setActiveDialog('aim-lines')}>
-                <MinusIcon className="mr-2 h-4 w-4" />
-                Aim Lines
-              </MenubarItem>
-              <MenubarItem onSelect={() => setActiveDialog('text-annotations')}>
-                <TypeIcon className="mr-2 h-4 w-4" />
-                Text Annotations
-              </MenubarItem>
-              <MenubarItem onSelect={() => setActiveDialog('phase-changes')}>
-                <RulerIcon className="mr-2 h-4 w-4" />
-                Phase Changes
-              </MenubarItem>
-            </MenubarSubContent>
-          </MenubarSub>
-          <MenubarItem onSelect={() => setActiveDialog('series-styles')}>
-            <PaintbrushIcon className="mr-2 h-4 w-4" />
-            Series Styles
-          </MenubarItem>
-          <MenubarItem onSelect={() => setActiveDialog('titles')}>
-            <CaseSensitiveIcon className="mr-2 h-4 w-4" />
-            Titles and Labels
-          </MenubarItem>
-          <MenubarSeparator />
-          <MenubarCheckboxItem
-            checked={showTitle}
-            onSelect={(event) => event.preventDefault()}
-            onCheckedChange={(checked) => onShowTitleChange(checked === true)}
-          >
-            Show Title
-          </MenubarCheckboxItem>
-          <MenubarCheckboxItem
-            checked={showConditionLegend}
-            onSelect={(event) => event.preventDefault()}
-            onCheckedChange={(checked) => onShowConditionLegendChange(checked === true)}
-          >
-            Show Condition Legend
-          </MenubarCheckboxItem>
-          <MenubarItem onSelect={() => setActiveDialog('legend')}>
-            <PanelBottomIcon className="mr-2 h-4 w-4" />
-            Legend Position and Layout
-          </MenubarItem>
+        </MenubarContent>
+      </MenubarMenu>
+
+      <MenubarMenu>
+        <MenubarTrigger>Settings</MenubarTrigger>
+        <MenubarContent onCloseAutoFocus={(event) => event.preventDefault()}>
           <MenubarCheckboxItem
             checked={showTooltip}
             onSelect={(event) => event.preventDefault()}
@@ -307,12 +302,16 @@ export function VisualsMenubar({
         page={page}
         labels={figureLabels}
         onChange={onFigureLabelsChange}
+        showTitle={showTitle}
+        onShowTitleChange={onShowTitleChange}
         open={activeDialog === 'titles'}
         onOpenChange={dialogOpenChange('titles')}
       />
       <LegendDialog
         settings={legendSettings}
         onChange={onLegendSettingsChange}
+        showConditionLegend={showConditionLegend}
+        onShowConditionLegendChange={onShowConditionLegendChange}
         open={activeDialog === 'legend'}
         onOpenChange={dialogOpenChange('legend')}
       />

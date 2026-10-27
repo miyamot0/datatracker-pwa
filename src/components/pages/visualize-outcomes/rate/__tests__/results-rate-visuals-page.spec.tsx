@@ -162,7 +162,7 @@ describe('ResultsRateVisualsPage', () => {
     await expect.element(page.getByText('Visualization of Behavioral Rates')).toBeInTheDocument();
     await expect.element(page.getByRole('link', { name: 'See Proportion' })).toBeInTheDocument();
     await expect.element(page.getByRole('menuitem', { name: 'Data' })).toBeInTheDocument();
-    await expect.element(page.getByRole('menuitem', { name: 'Design' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Aesthetics' })).toBeInTheDocument();
     await expect.element(page.getByText('Timer to Reference:')).toBeInTheDocument();
     await expect.element(page.getByTestId('figure-schedule')).toHaveTextContent('End on Primary Timer');
     await expect.element(page.getByTestId('figure-visible-keys')).toHaveTextContent('2');
@@ -214,8 +214,8 @@ describe('ResultsRateVisualsPage', () => {
   it('updates figure text size and connect spans state', async () => {
     await renderPage();
 
-    await page.getByRole('menuitem', { name: 'Design' }).click();
-    await page.getByRole('menuitem', { name: 'Element Magnification' }).hover();
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Element Sizing' }).hover();
     await page.getByRole('menuitemradio', { name: 'Large', exact: true }).click();
     await page.getByRole('menuitem', { name: 'Data' }).click();
     await page.getByRole('menuitemcheckbox', { name: 'Connect All Spans' }).click();
@@ -227,8 +227,9 @@ describe('ResultsRateVisualsPage', () => {
   it('saves a hidden title for the Rate plot and passes it to the figure', async () => {
     await renderPage();
 
-    await page.getByRole('menuitem', { name: 'Design' }).click();
-    await page.getByRole('menuitemcheckbox', { name: 'Show Title' }).click();
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Titles and Labels' }).click();
+    await page.getByRole('checkbox', { name: 'Hide Title' }).click();
 
     expect(mockSetLocalShowTitle).toHaveBeenCalledWith('GroupA', 'ClientB', 'Eval1', 'Rate', false);
   });

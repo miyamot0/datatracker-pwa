@@ -159,7 +159,7 @@ describe('ResultsProportionVisualsPage', () => {
     await expect.element(page.getByText('Visualization of Behavioral Proportions')).toBeInTheDocument();
     await expect.element(page.getByRole('link', { name: 'See Rate' })).toBeInTheDocument();
     await expect.element(page.getByRole('menuitem', { name: 'Data' })).toBeInTheDocument();
-    await expect.element(page.getByRole('menuitem', { name: 'Design' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Aesthetics' })).toBeInTheDocument();
     await expect.element(page.getByText('Timer to Reference:')).toBeInTheDocument();
     await expect.element(page.getByTestId('figure-schedule')).toHaveTextContent('End on Primary Timer');
     await expect.element(page.getByTestId('figure-visible-keys')).toHaveTextContent('2');
@@ -209,8 +209,8 @@ describe('ResultsProportionVisualsPage', () => {
   it('updates figure text sizing and connect spans state', async () => {
     await renderPage();
 
-    await page.getByRole('menuitem', { name: 'Design' }).click();
-    await page.getByRole('menuitem', { name: 'Element Magnification' }).hover();
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Element Sizing' }).hover();
     await page.getByRole('menuitemradio', { name: 'Large', exact: true }).click();
     await page.getByRole('menuitem', { name: 'Data' }).click();
     await page.getByRole('menuitemcheckbox', { name: 'Connect All Spans' }).click();

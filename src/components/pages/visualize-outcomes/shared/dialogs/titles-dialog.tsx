@@ -23,6 +23,8 @@ type Props = {
   page: TextPage;
   labels: FigureLabelSettings;
   onChange: (labels: FigureLabelSettings) => void;
+  showTitle: boolean;
+  onShowTitleChange: (show: boolean) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
@@ -36,16 +38,17 @@ type LabelField = {
 
 const FIELDS: LabelField[] = [
   { name: 'Title', defaultKey: 'title', overrideKey: 'overrideTitle', textKey: 'titleText' },
-  { name: 'X-axis', defaultKey: 'xAxis', overrideKey: 'overrideXAxis', textKey: 'xAxisText' },
-  { name: 'Y-axis', defaultKey: 'yAxis', overrideKey: 'overrideYAxis', textKey: 'yAxisText' },
+  { name: 'X-Axis', defaultKey: 'xAxis', overrideKey: 'overrideXAxis', textKey: 'xAxisText' },
+  { name: 'Y-Axis', defaultKey: 'yAxis', overrideKey: 'overrideYAxis', textKey: 'yAxisText' },
 ];
 
 /**
  * Lets the user replace a figure's title and axis labels. Each label falls back to its default unless overridden.
  */
-export function TitlesDialog({ page, labels, onChange, open, onOpenChange }: Props) {
+export function TitlesDialog({ page, labels, onChange, showTitle, onShowTitleChange, open, onOpenChange }: Props) {
   const id = useId();
   const defaults = FIGURE_LABEL_DEFAULTS[page];
+  const hideTitleId = `${id}-hide-title`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -67,17 +70,29 @@ export function TitlesDialog({ page, labels, onChange, open, onOpenChange }: Pro
 
             return (
               <div key={field.overrideKey} className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id={checkboxId}
-                    checked={enabled}
-                    onCheckedChange={(checked) => onChange({ ...labels, [field.overrideKey]: checked === true })}
-                  />
-                  <Label htmlFor={checkboxId}>{`Override ${field.name.toLowerCase()}`}</Label>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id={checkboxId}
+                      checked={enabled}
+                      onCheckedChange={(checked) => onChange({ ...labels, [field.overrideKey]: checked === true })}
+                    />
+                    <Label htmlFor={checkboxId}>{`Override ${field.name}`}</Label>
+                  </div>
+                  {field.overrideKey === 'overrideTitle' && (
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id={hideTitleId}
+                        checked={!showTitle}
+                        onCheckedChange={(checked) => onShowTitleChange(checked !== true)}
+                      />
+                      <Label htmlFor={hideTitleId}>Hide Title</Label>
+                    </div>
+                  )}
                 </div>
                 <Input
                   id={inputId}
-                  aria-label={`${field.name} text`}
+                  aria-label={`${field.name} Text`}
                   disabled={!enabled}
                   placeholder={defaultText}
                   value={labels[field.textKey] as string}
