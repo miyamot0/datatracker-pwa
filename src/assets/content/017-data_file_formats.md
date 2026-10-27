@@ -1,5 +1,5 @@
 ---
-title: (Advanced) Data File Fields and Types
+title: Data File Fields and Types
 description: This documentation entry provides an overview of the fields and types of data contained in DataTracker output files, including the purpose, structure, and how to interpret the data from other software.
 date: 04/15/2026
 keywords: 'Data Organization, Data Export, Data Parsing'
