@@ -4,29 +4,17 @@ import { useState } from 'react';
 import { useGenerateImage } from 'recharts-to-png';
 import { savePngFile } from '@/components/pages/visualize-outcomes/shared/save-png';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuCheckboxItem,
-} from '@/components/ui/dropdown-menu';
-import { KeyboardIcon, LineChartIcon, ScatterChartIcon } from 'lucide-react';
+import { ScatterChartIcon } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getLocalSeriesStyles, setLocalCachedPrefs, setLocalSeriesStyles } from '@/lib/local_storage';
-import { SeriesStylesDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/series-styles-dialog';
-import { PhaseChangesDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/phase-changes-dialog';
-import { TextAnnotationsDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/text-annotations-dialog';
-import { AimLinesDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/aim-lines-dialog';
+import { VisualsMenubar } from '@/components/pages/visualize-outcomes/shared/visuals-menubar';
 import { type SeriesStyles } from '@/lib/graphing/series-style';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
-import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
+import { type FigureVisualSizing } from '@/types/accessibility';
 import ProportionFigureVisualization from '@/components/pages/visualize-outcomes/proportion/proportion-figure';
 import { Link } from '@tanstack/react-router';
-import { Switch } from '@/components/ui/switch';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayCondition, ToggleDisplayKey } from '@/types/visuals';
 import {
@@ -36,7 +24,6 @@ import {
   ScoringOptionsMapType,
 } from '@/types/schedules';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
-import { VisualsMenubar } from '@/components/pages/visualize-outcomes/shared/visuals-menubar';
 
 export default function ResultsProportionVisualsPage({
   Group,
@@ -128,70 +115,24 @@ export default function ResultsProportionVisualsPage({
 
       <CardContent className="flex flex-col gap-4">
         <div className="w-full flex flex-row justify-between">
-          <div className="flex flex-row gap-2">
-            <div className="flex flex-row gap-2">
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-fit" aria-label="Edit Keys Displayed">
-                    <KeyboardIcon className="lg:mr-2 w-4 h-4" />
-                    <span className="hidden lg:inline">Keys</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {filteredKeys.map((key, index) => (
-                    <DropdownMenuCheckboxItem
-                      key={`key-${index}`}
-                      checked={key.Visible}
-                      onCheckedChange={(checked) => toggleKeyVisibility(key.KeyDescription, checked)}
-                    >
-                      {key.KeyDescription}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-fit" aria-label="Edit Conditions Displayed">
-                    <LineChartIcon className="lg:mr-2 w-4 h-4" />
-                    <span className="hidden lg:inline">Conditions</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {filteredConditions.map((condition, index) => (
-                    <DropdownMenuCheckboxItem
-                      className="flex flex-row justify-between"
-                      key={`condition-${index}`}
-                      checked={condition.Visible}
-                      onCheckedChange={(checked) => toggleConditionVisibility(condition.Condition, checked)}
-                    >
-                      <p>{condition.Condition}</p>
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <SeriesStylesDialog
-                keys={filteredKeys}
-                conditions={styleConditions}
-                visibleConditions={styleConditions.filter((c) =>
-                  filteredConditions.some((f) => f.Condition === c && f.Visible),
-                )}
-                styles={seriesStyles}
-                onChange={updateSeriesStyles}
-              />
-
-              <PhaseChangesDialog styles={seriesStyles} onChange={updateSeriesStyles} />
-
-              <TextAnnotationsDialog page="proportion" styles={seriesStyles} onChange={updateSeriesStyles} />
-
-              <AimLinesDialog page="proportion" styles={seriesStyles} onChange={updateSeriesStyles} />
-            </div>
-          </div>
+          <VisualsMenubar
+            page="proportion"
+            keys={filteredKeys}
+            onKeyVisibilityChange={toggleKeyVisibility}
+            conditions={filteredConditions}
+            onConditionVisibilityChange={toggleConditionVisibility}
+            styleConditions={styleConditions}
+            visibleStyleConditions={styleConditions.filter((c) =>
+              filteredConditions.some((f) => f.Condition === c && f.Visible),
+            )}
+            styles={seriesStyles}
+            onStylesChange={updateSeriesStyles}
+            onSavePng={() => savePngFile(getDivPng, 'proportion.png')}
+            figureTextSize={figureTextSize}
+            onFigureTextSizeChange={setFigureTextSize}
+            connectSpans={connectAllPoints}
+            onConnectSpansChange={setConnectAllPoints}
+          />
 
           <div className="flex flex-row items-center gap-2 w-fit">
             <p>Timer to Reference:</p>
@@ -233,55 +174,6 @@ export default function ResultsProportionVisualsPage({
             </Select>
           </div>
         </div>
-
-        <div className="flex flex-row items-center gap-2 justify-between">
-          <div className="flex flex-row items-center gap-2 w-fit my-0 py-0">
-            <p className="whitespace-nowrap">Element Magnification:</p>
-            <Select
-              value={figureTextSize}
-              onValueChange={(value: FigureVisualSizing) => {
-                setFigureTextSize(value);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Text Size" className="" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {FIGURE_TEXT_OPTIONS.map((opt) => (
-                    <SelectItem value={opt.value} key={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex flex-row items-center gap-2 w-fit my-0 py-0">
-            <p className="whitespace-nowrap">Connect All Spans:</p>
-            <Switch checked={connectAllPoints} onCheckedChange={(checked) => setConnectAllPoints(checked)} />
-          </div>
-        </div>
-
-        <VisualsMenubar
-          page="proportion"
-          keys={filteredKeys}
-          onKeyVisibilityChange={toggleKeyVisibility}
-          conditions={filteredConditions}
-          onConditionVisibilityChange={toggleConditionVisibility}
-          styleConditions={styleConditions}
-          visibleStyleConditions={styleConditions.filter((c) =>
-            filteredConditions.some((f) => f.Condition === c && f.Visible),
-          )}
-          styles={seriesStyles}
-          onStylesChange={updateSeriesStyles}
-          onSavePng={() => savePngFile(getDivPng, 'proportion.png')}
-          figureTextSize={figureTextSize}
-          onFigureTextSizeChange={setFigureTextSize}
-          connectSpans={connectAllPoints}
-          onConnectSpansChange={setConnectAllPoints}
-        />
 
         <p>
           This page provides a visual of the available data regarding <i>proportion of session time</i>. For

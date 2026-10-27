@@ -139,7 +139,6 @@ export function VisualsMenubar({
       <MenubarMenu>
         <MenubarTrigger>Design</MenubarTrigger>
         <MenubarContent onCloseAutoFocus={(event) => event.preventDefault()}>
-
           <MenubarSub>
             <MenubarSubTrigger>
               <ZoomInIcon className="mr-2 h-4 w-4" />
