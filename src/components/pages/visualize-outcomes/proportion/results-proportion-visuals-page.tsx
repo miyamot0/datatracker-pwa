@@ -6,7 +6,15 @@ import { savePngFile } from '@/components/pages/visualize-outcomes/shared/save-p
 import { Button } from '@/components/ui/button';
 import { ScatterChartIcon } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getLocalSeriesStyles, setLocalCachedPrefs, setLocalSeriesStyles } from '@/lib/local_storage';
+import {
+  getLocalConnectSpans,
+  getLocalSeriesStyles,
+  getLocalShowTitle,
+  setLocalCachedPrefs,
+  setLocalConnectSpans,
+  setLocalSeriesStyles,
+  setLocalShowTitle,
+} from '@/lib/local_storage';
 import { VisualsMenubar } from '@/components/pages/visualize-outcomes/shared/visuals-menubar';
 import { type SeriesStyles } from '@/lib/graphing/series-style';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
@@ -55,11 +63,22 @@ export default function ResultsProportionVisualsPage({
   const [filteredConditions, setFilteredConditions] = useState<ToggleDisplayCondition[]>(
     Conditions.map((condition) => ({ Condition: condition, Visible: true })),
   );
-  const [connectAllPoints, setConnectAllPoints] = useState(false);
+  const [connectAllPoints, setConnectAllPointsState] = useState(() =>
+    getLocalConnectSpans(Group, Individual, Evaluation, 'Proportion'),
+  );
+  const setConnectAllPoints = (connect: boolean) => {
+    setConnectAllPointsState(connect);
+    setLocalConnectSpans(Group, Individual, Evaluation, 'Proportion', connect);
+  };
   // Matches the legend order (first appearance in results), so dialog rows and default colours line up with the chart
   const legendConditionOrder = getUniqueSessionConditions(ResultsFiltered);
   const styleConditions = [...legendConditionOrder, ...Conditions.filter((c) => !legendConditionOrder.includes(c))];
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
+  const [showTitle, setShowTitleState] = useState(() => getLocalShowTitle(Group, Individual, Evaluation, 'Proportion'));
+  const setShowTitle = (show: boolean) => {
+    setShowTitleState(show);
+    setLocalShowTitle(Group, Individual, Evaluation, 'Proportion', show);
+  };
   const [getDivPng, { ref: figureRef }] = useGenerateImage<HTMLDivElement>();
   const [schedule, setSchedule] = useState<ScheduleMappingOptionsType | { value: string; label: string }>(TimerMapping);
   const [seriesStyles, setSeriesStyles] = useState<SeriesStyles>(() =>
@@ -132,6 +151,8 @@ export default function ResultsProportionVisualsPage({
             onFigureTextSizeChange={setFigureTextSize}
             connectSpans={connectAllPoints}
             onConnectSpansChange={setConnectAllPoints}
+            showTitle={showTitle}
+            onShowTitleChange={setShowTitle}
           />
 
           <div className="flex flex-row items-center gap-2 w-fit">
@@ -197,6 +218,7 @@ export default function ResultsProportionVisualsPage({
             KeySetFull={filteredKeys}
             FigureTextSize={figureTextSize}
             ConnectSpans={connectAllPoints}
+            ShowTitle={showTitle}
             SeriesStyles={seriesStyles}
             getDivPng={getDivPng}
             divRef={figureRef}

@@ -9,6 +9,10 @@ vi.mock('@/lib/local_storage', () => ({
   setLocalCachedPrefs: mockSetLocalCachedPrefs,
   getLocalSeriesStyles: vi.fn(() => ({ KeyStyles: {}, ConditionStyles: {} })),
   setLocalSeriesStyles: vi.fn(),
+  getLocalShowTitle: vi.fn(() => true),
+  setLocalShowTitle: vi.fn(),
+  getLocalConnectSpans: vi.fn(() => false),
+  setLocalConnectSpans: vi.fn(),
 }));
 
 vi.mock('@/types/schedules', () => ({
@@ -24,17 +28,6 @@ vi.mock('@tanstack/react-router', () => ({
     <a href={to} data-params={params ? JSON.stringify(params) : undefined}>
       {children}
     </a>
-  ),
-}));
-
-vi.mock('@/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuTrigger: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuContent: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuLabel: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuSeparator: () => <hr />,
-  DropdownMenuCheckboxItem: ({ children, checked, onCheckedChange }: any) => (
-    <button onClick={() => onCheckedChange(!checked)}>{children}</button>
   ),
 }));
 
@@ -67,12 +60,6 @@ vi.mock('@/components/ui/select', async (importOriginal) => {
     SelectItem: ({ children, value }: any) => <div data-value={value}>{children}</div>,
   };
 });
-
-vi.mock('@/components/ui/switch', () => ({
-  Switch: ({ checked, onCheckedChange }: any) => (
-    <button onClick={() => onCheckedChange(!checked)}>Switch:{String(checked)}</button>
-  ),
-}));
 
 vi.mock('@/components/ui/back-button', () => ({
   default: () => <div>Back</div>,
@@ -123,6 +110,16 @@ const makeProps = () =>
 const renderPage = (override?: Record<string, unknown>) =>
   render(<ResultsProportionVisualsPage {...makeProps()} {...override} />);
 
+const openDisplayKeys = async () => {
+  await page.getByRole('menuitem', { name: 'Visibility' }).click();
+  await page.getByRole('menuitem', { name: 'Display Keys' }).hover();
+};
+
+const openDisplayConditions = async () => {
+  await page.getByRole('menuitem', { name: 'Visibility' }).click();
+  await page.getByRole('menuitem', { name: 'Display Conditions' }).hover();
+};
+
 describe('ResultsProportionVisualsPage', () => {
   beforeEach(() => {
     mockSetLocalCachedPrefs.mockReset();
@@ -144,11 +141,9 @@ describe('ResultsProportionVisualsPage', () => {
 
     await expect.element(page.getByText('Visualization of Behavioral Proportions')).toBeInTheDocument();
     await expect.element(page.getByRole('link', { name: 'See Rate' })).toBeInTheDocument();
-    await expect.element(page.getByRole('button', { name: 'Edit Keys Displayed' })).toBeInTheDocument();
-    await expect.element(page.getByRole('button', { name: 'Edit Conditions Displayed' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Visibility' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Design' })).toBeInTheDocument();
     await expect.element(page.getByText('Timer to Reference:')).toBeInTheDocument();
-    await expect.element(page.getByText('Element Magnification:')).toBeInTheDocument();
-    await expect.element(page.getByText('Connect All Spans:')).toBeInTheDocument();
     await expect.element(page.getByTestId('figure-schedule')).toHaveTextContent('End on Primary Timer');
     await expect.element(page.getByTestId('figure-visible-keys')).toHaveTextContent('2');
     await expect.element(page.getByTestId('figure-text-size')).toHaveTextContent('base');
@@ -184,7 +179,8 @@ describe('ResultsProportionVisualsPage', () => {
   it('toggles a key visibility and stores local preferences with Duration scope', async () => {
     await renderPage();
 
-    await page.getByRole('button', { name: 'Aggression' }).click();
+    await openDisplayKeys();
+    await page.getByRole('menuitemcheckbox', { name: 'Aggression' }).click();
 
     expect(mockSetLocalCachedPrefs).toHaveBeenCalledWith('GroupA', 'ClientB', 'Eval1', 'Duration', {
       KeyDescription: ['Aggression'],
@@ -196,10 +192,12 @@ describe('ResultsProportionVisualsPage', () => {
   it('updates figure text sizing and connect spans state', async () => {
     await renderPage();
 
-    await page.getByRole('button', { name: 'Set Figure Extra Large' }).click();
-    await page.getByRole('button', { name: 'Switch:false' }).click();
+    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitem', { name: 'Element Magnification' }).hover();
+    await page.getByRole('menuitemradio', { name: 'Large', exact: true }).click();
+    await page.getByRole('menuitemcheckbox', { name: 'Connect All Spans' }).click();
 
-    await expect.element(page.getByTestId('figure-text-size')).toHaveTextContent('extraLarge');
+    await expect.element(page.getByTestId('figure-text-size')).toHaveTextContent('large');
     await expect.element(page.getByTestId('figure-connect')).toHaveTextContent('true');
   });
 
@@ -229,11 +227,12 @@ describe('ResultsProportionVisualsPage', () => {
     await expect.element(page.getByTestId('figure-session-count')).toHaveTextContent('0');
   });
 
-  it('renders condition names in the Edit Conditions Displayed dropdown', async () => {
+  it('renders condition names in the Display Conditions submenu', async () => {
     await renderPage();
 
-    await expect.element(page.getByRole('button', { name: 'Baseline' })).toBeInTheDocument();
-    await expect.element(page.getByRole('button', { name: 'Treatment' })).toBeInTheDocument();
+    await openDisplayConditions();
+    await expect.element(page.getByRole('menuitemcheckbox', { name: 'Baseline' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitemcheckbox', { name: 'Treatment' })).toBeInTheDocument();
   });
 
   it('toggles a condition off and reduces sessions passed to the figure', async () => {
@@ -241,7 +240,8 @@ describe('ResultsProportionVisualsPage', () => {
 
     await expect.element(page.getByTestId('figure-session-count')).toHaveTextContent('2');
 
-    await page.getByRole('button', { name: 'Baseline' }).click();
+    await openDisplayConditions();
+    await page.getByRole('menuitemcheckbox', { name: 'Baseline' }).click();
 
     await expect.element(page.getByTestId('figure-session-count')).toHaveTextContent('1');
   });
@@ -249,11 +249,12 @@ describe('ResultsProportionVisualsPage', () => {
   it('toggles multiple conditions off and then back on', async () => {
     await renderPage();
 
-    await page.getByRole('button', { name: 'Baseline' }).click();
-    await page.getByRole('button', { name: 'Treatment' }).click();
+    await openDisplayConditions();
+    await page.getByRole('menuitemcheckbox', { name: 'Baseline' }).click();
+    await page.getByRole('menuitemcheckbox', { name: 'Treatment' }).click();
     await expect.element(page.getByTestId('figure-session-count')).toHaveTextContent('0');
 
-    await page.getByRole('button', { name: 'Baseline' }).click();
+    await page.getByRole('menuitemcheckbox', { name: 'Baseline' }).click();
     await expect.element(page.getByTestId('figure-session-count')).toHaveTextContent('1');
   });
 });

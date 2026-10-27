@@ -69,6 +69,7 @@ type BaseChartProps = {
   divRef: React.RefObject<HTMLDivElement | null>;
   seriesStyles?: SeriesStyles;
   textPage: TextPage;
+  showTitle?: boolean;
 };
 
 export function BaseChart({
@@ -88,9 +89,10 @@ export function BaseChart({
   divRef,
   seriesStyles = EMPTY_SERIES_STYLES,
   textPage,
+  showTitle = true,
 }: BaseChartProps) {
   const { noAnimationProps, chartMargins, xAxisConfig, yAxisStyle, labelStyle } = getChartConfiguration();
-  const spacing = getChartVerticalSpacing(figureTextSize);
+  const spacing = getChartVerticalSpacing(figureTextSize, showTitle);
 
   const data_set_parsed_by_condition = getUniqueSessionConditions(filteredSessions).map((condition) => ({
     name: condition,
@@ -135,7 +137,7 @@ export function BaseChart({
         title=""
         margin={{ ...chartMargins, top: spacing.chartMarginTop }}
       >
-        <ChartTitle title={title} fontPx={spacing.titleFontPx} y={spacing.titleY} />
+        {showTitle && <ChartTitle title={title} fontPx={spacing.titleFontPx} y={spacing.titleY} />}
 
         {data_set_parsed_by_condition.map((condition, index_main) => {
           const index_dynamic = index_main % FIGURE_PATH_COLORS.length;

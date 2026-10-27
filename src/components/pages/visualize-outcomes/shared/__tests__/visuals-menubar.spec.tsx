@@ -32,6 +32,8 @@ function renderMenubar(overrides: Partial<React.ComponentProps<typeof VisualsMen
     onFigureTextSizeChange: vi.fn(),
     connectSpans: false,
     onConnectSpansChange: vi.fn(),
+    showTitle: true,
+    onShowTitleChange: vi.fn(),
     ...overrides,
   };
 
@@ -124,6 +126,17 @@ describe('VisualsMenubar', () => {
     await page.getByRole('menuitemcheckbox', { name: 'Connect All Spans' }).click();
 
     expect(onConnectSpansChange).toHaveBeenCalledWith(true);
+  });
+
+  it('reports Show Title toggled off from Design and keeps the menu open', async () => {
+    const onShowTitleChange = vi.fn();
+    renderMenubar({ onShowTitleChange, showTitle: true });
+
+    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitemcheckbox', { name: 'Show Title' }).click();
+
+    expect(onShowTitleChange).toHaveBeenCalledWith(false);
+    await expect.element(page.getByRole('menuitemcheckbox', { name: 'Show Title' })).toBeInTheDocument();
   });
 
   it('keeps the Design menu open after toggling Connect All Spans', async () => {

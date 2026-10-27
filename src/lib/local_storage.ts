@@ -101,3 +101,64 @@ export function setLocalSeriesStyles(Group: string, Individual: string, Evaluati
 
   localStorage.setItem(dynamic_key, JSON.stringify(Styles));
 }
+
+/**
+ * Retrieve whether a plot's title is shown for a Group/Individual/Evaluation. Defaults to shown when nothing valid is saved.
+ */
+export function getLocalShowTitle(Group: string, Individual: string, Evaluation: string, Plot: 'Rate' | 'Proportion') {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ShowTitle', Plot].join('_');
+
+  const cached_information = localStorage.getItem(dynamic_key);
+
+  if (cached_information === 'false') {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Store whether a plot's title is shown for a Group/Individual/Evaluation.
+ */
+export function setLocalShowTitle(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  Plot: 'Rate' | 'Proportion',
+  ShowTitle: boolean,
+) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ShowTitle', Plot].join('_');
+
+  localStorage.setItem(dynamic_key, String(ShowTitle));
+}
+
+/**
+ * Retrieve whether a plot's spans are connected for a Group/Individual/Evaluation. Defaults to not connected when nothing valid is saved.
+ */
+export function getLocalConnectSpans(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  Plot: 'Rate' | 'Proportion',
+) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ConnectSpans', Plot].join('_');
+
+  const cached_information = localStorage.getItem(dynamic_key);
+
+  return cached_information === 'true';
+}
+
+/**
+ * Store whether a plot's spans are connected for a Group/Individual/Evaluation.
+ */
+export function setLocalConnectSpans(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  Plot: 'Rate' | 'Proportion',
+  ConnectSpans: boolean,
+) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ConnectSpans', Plot].join('_');
+
+  localStorage.setItem(dynamic_key, String(ConnectSpans));
+}

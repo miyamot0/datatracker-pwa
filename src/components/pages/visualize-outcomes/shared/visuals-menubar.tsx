@@ -50,6 +50,8 @@ type Props = {
   onFigureTextSizeChange: (size: FigureVisualSizing) => void;
   connectSpans: boolean;
   onConnectSpansChange: (connect: boolean) => void;
+  showTitle: boolean;
+  onShowTitleChange: (show: boolean) => void;
 };
 
 /**
@@ -73,6 +75,8 @@ export function VisualsMenubar({
   onFigureTextSizeChange,
   connectSpans,
   onConnectSpansChange,
+  showTitle,
+  onShowTitleChange,
 }: Props) {
   const [activeDialog, setActiveDialog] = useState<AnnotationDialog | null>(null);
 
@@ -111,6 +115,7 @@ export function VisualsMenubar({
                   onCheckedChange={(checked) => onKeyVisibilityChange(key.KeyDescription, checked === true)}
                 >
                   {key.KeyDescription}
+                  {key.KeyType === 'Derived' && <span className="ml-2 text-xs text-muted-foreground">(Derived)</span>}
                 </MenubarCheckboxItem>
               ))}
             </MenubarSubContent>
@@ -182,6 +187,13 @@ export function VisualsMenubar({
             Series Styles
           </MenubarItem>
           <MenubarSeparator />
+          <MenubarCheckboxItem
+            checked={showTitle}
+            onSelect={(event) => event.preventDefault()}
+            onCheckedChange={(checked) => onShowTitleChange(checked === true)}
+          >
+            Show Title
+          </MenubarCheckboxItem>
           <MenubarCheckboxItem
             checked={connectSpans}
             onSelect={(event) => event.preventDefault()}

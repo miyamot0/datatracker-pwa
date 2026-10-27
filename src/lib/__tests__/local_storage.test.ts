@@ -1,9 +1,13 @@
 import {
   getLocalCachedPrefs,
+  getLocalConnectSpans,
   getLocalSeriesStyles,
+  getLocalShowTitle,
   ReturnLocalStorageCache,
   setLocalCachedPrefs,
+  setLocalConnectSpans,
   setLocalSeriesStyles,
+  setLocalShowTitle,
 } from '../local_storage'; // Adjust the import path
 
 describe('LocalStorage Prefs', () => {
@@ -206,6 +210,46 @@ describe('LocalStorage Prefs', () => {
         { position: 3.5, lineType: 'dashed' },
         { position: 6, lineType: 'dotted' },
       ]);
+    });
+  });
+
+  describe('show title', () => {
+    it('defaults to shown when nothing is saved', () => {
+      expect(getLocalShowTitle(group, individual, evaluation, 'Rate')).toBe(true);
+    });
+
+    it('round-trips a hidden title per plot type', () => {
+      setLocalShowTitle(group, individual, evaluation, 'Rate', false);
+
+      expect(getLocalShowTitle(group, individual, evaluation, 'Rate')).toBe(false);
+      expect(getLocalShowTitle(group, individual, evaluation, 'Proportion')).toBe(true);
+    });
+
+    it('restores a shown title after it was hidden', () => {
+      setLocalShowTitle(group, individual, evaluation, 'Proportion', false);
+      setLocalShowTitle(group, individual, evaluation, 'Proportion', true);
+
+      expect(getLocalShowTitle(group, individual, evaluation, 'Proportion')).toBe(true);
+    });
+  });
+
+  describe('connect spans', () => {
+    it('defaults to not connected when nothing is saved', () => {
+      expect(getLocalConnectSpans(group, individual, evaluation, 'Rate')).toBe(false);
+    });
+
+    it('round-trips a connected state per plot type', () => {
+      setLocalConnectSpans(group, individual, evaluation, 'Rate', true);
+
+      expect(getLocalConnectSpans(group, individual, evaluation, 'Rate')).toBe(true);
+      expect(getLocalConnectSpans(group, individual, evaluation, 'Proportion')).toBe(false);
+    });
+
+    it('restores a disconnected state after it was connected', () => {
+      setLocalConnectSpans(group, individual, evaluation, 'Proportion', true);
+      setLocalConnectSpans(group, individual, evaluation, 'Proportion', false);
+
+      expect(getLocalConnectSpans(group, individual, evaluation, 'Proportion')).toBe(false);
     });
   });
 });

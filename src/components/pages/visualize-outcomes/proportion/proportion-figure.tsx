@@ -27,6 +27,7 @@ type Props = {
   MinX: number;
   MaxX: number;
   SeriesStyles?: SeriesStyles;
+  ShowTitle?: boolean;
   getDivPng: UseGenerateImage<HTMLDivElement>[0];
   divRef: UseGenerateImage<HTMLDivElement>[1]['ref'];
 };
@@ -44,6 +45,7 @@ export default function ProportionFigureVisualization({
   MinX,
   MaxX,
   SeriesStyles = EMPTY_SERIES_STYLES,
+  ShowTitle = true,
   getDivPng,
   divRef,
 }: Props) {
@@ -88,6 +90,7 @@ export default function ProportionFigureVisualization({
         keySetFull={KeySetFull}
         seriesStyles={SeriesStyles}
         textPage="proportion"
+        showTitle={ShowTitle}
         figureTextSize={FigureTextSize}
         connectSpans={ConnectSpans}
         minX={MinX}

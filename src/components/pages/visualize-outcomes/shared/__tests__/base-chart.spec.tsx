@@ -103,6 +103,11 @@ describe('BaseChart', () => {
     await expect.element(page.getByText('Test Chart Title')).toBeInTheDocument();
   });
 
+  it('omits the chart title when showTitle is false', async () => {
+    await render(<BaseChart {...defaultProps} showTitle={false} />);
+    expect(await page.getByText('Test Chart Title').query()).toBeNull();
+  });
+
   it('applies text-xl class on the chart container for large figureTextSize', async () => {
     await render(<BaseChart {...defaultProps} figureTextSize="large" />);
     const container = document.querySelector('.recharts-responsive-container');

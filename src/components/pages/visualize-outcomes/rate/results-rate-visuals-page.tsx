@@ -7,7 +7,15 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Button } from '@/components/ui/button';
 import { ScatterChartIcon } from 'lucide-react';
 import RateFigureVisualization from './rate-figure';
-import { getLocalSeriesStyles, setLocalCachedPrefs, setLocalSeriesStyles } from '@/lib/local_storage';
+import {
+  getLocalConnectSpans,
+  getLocalSeriesStyles,
+  getLocalShowTitle,
+  setLocalCachedPrefs,
+  setLocalConnectSpans,
+  setLocalSeriesStyles,
+  setLocalShowTitle,
+} from '@/lib/local_storage';
 import { VisualsMenubar } from '@/components/pages/visualize-outcomes/shared/visuals-menubar';
 import { type SeriesStyles } from '@/lib/graphing/series-style';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
@@ -57,7 +65,13 @@ export default function ResultsRateVisualsPage({
     Conditions.map((condition) => ({ Condition: condition, Visible: true })),
   );
 
-  const [connectAllPoints, setConnectAllPoints] = useState(false);
+  const [connectAllPoints, setConnectAllPointsState] = useState(() =>
+    getLocalConnectSpans(Group, Individual, Evaluation, 'Rate'),
+  );
+  const setConnectAllPoints = (connect: boolean) => {
+    setConnectAllPointsState(connect);
+    setLocalConnectSpans(Group, Individual, Evaluation, 'Rate', connect);
+  };
   // Matches the legend order (first appearance in results), so dialog rows and default colours line up with the chart
   const legendConditionOrder = getUniqueSessionConditions(ResultsFiltered);
   const styleConditions = [...legendConditionOrder, ...Conditions.filter((c) => !legendConditionOrder.includes(c))];
@@ -88,6 +102,11 @@ export default function ResultsRateVisualsPage({
     setFilteredConditions(filteredConditions.map((c) => (c.Condition === condition ? { ...c, Visible: visible } : c)));
   };
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
+  const [showTitle, setShowTitleState] = useState(() => getLocalShowTitle(Group, Individual, Evaluation, 'Rate'));
+  const setShowTitle = (show: boolean) => {
+    setShowTitleState(show);
+    setLocalShowTitle(Group, Individual, Evaluation, 'Rate', show);
+  };
   const [getDivPng, { ref: figureRef }] = useGenerateImage<HTMLDivElement>();
 
   return (
@@ -136,6 +155,8 @@ export default function ResultsRateVisualsPage({
             onFigureTextSizeChange={setFigureTextSize}
             connectSpans={connectAllPoints}
             onConnectSpansChange={setConnectAllPoints}
+            showTitle={showTitle}
+            onShowTitleChange={setShowTitle}
           />
 
           <div className="flex flex-row gap-2">
@@ -202,6 +223,7 @@ export default function ResultsRateVisualsPage({
             Evaluation={Evaluation}
             FigureTextSize={figureTextSize}
             ConnectSpans={connectAllPoints}
+            ShowTitle={showTitle}
             MinX={MinX}
             MaxX={MaxX}
             SeriesStyles={seriesStyles}

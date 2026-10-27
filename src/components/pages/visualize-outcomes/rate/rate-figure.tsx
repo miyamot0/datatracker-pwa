@@ -27,6 +27,7 @@ type Props = {
   MinX: number;
   MaxX: number;
   SeriesStyles?: SeriesStyles;
+  ShowTitle?: boolean;
   getDivPng: UseGenerateImage<HTMLDivElement>[0];
   divRef: UseGenerateImage<HTMLDivElement>[1]['ref'];
 };
@@ -44,6 +45,7 @@ export default function RateFigureVisualization({
   MinX,
   MaxX,
   SeriesStyles = EMPTY_SERIES_STYLES,
+  ShowTitle = true,
   getDivPng,
   divRef,
 }: Props) {
@@ -84,6 +86,7 @@ export default function RateFigureVisualization({
         keySetFull={KeySetFull}
         seriesStyles={SeriesStyles}
         textPage="rate"
+        showTitle={ShowTitle}
         figureTextSize={FigureTextSize}
         connectSpans={ConnectSpans}
         minX={MinX}

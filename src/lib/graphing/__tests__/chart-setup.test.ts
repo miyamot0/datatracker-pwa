@@ -310,6 +310,16 @@ describe('chart-setup', () => {
       }
     });
 
+    it('shrinks the top margin when the title is hidden and keeps the chart height', () => {
+      for (const size of ['base', 'large', 'extraLarge'] as const) {
+        const shown = getChartVerticalSpacing(size);
+        const hidden = getChartVerticalSpacing(size, false);
+        expect(hidden.chartMarginTop).toBeLessThan(shown.chartMarginTop);
+        expect(hidden.chartHeight).toBe(shown.chartHeight);
+        expect(hidden.xAxisHeight).toBe(shown.xAxisHeight);
+      }
+    });
+
     it('returns a copy so callers cannot mutate the table', () => {
       const first = getChartVerticalSpacing('base');
       first.chartHeight = 1;
