@@ -52,6 +52,10 @@ export const TEXT_JUSTIFIES = ['left', 'center', 'right'] as const;
 
 export type TextJustify = (typeof TEXT_JUSTIFIES)[number];
 
+export const TEXT_WEIGHTS = ['normal', 'bold'] as const;
+
+export type TextWeight = (typeof TEXT_WEIGHTS)[number];
+
 /** Literal two-character sequence that separates lines within a text annotation label */
 export const TEXT_LINE_BREAK = '\\n';
 
@@ -62,6 +66,8 @@ export type TextAnnotation = {
   y: number;
   anchor: TextAnchor;
   justify: TextJustify;
+  /** Font weight of the label. Treated as normal when absent, so annotations saved before this option still render. */
+  weight?: TextWeight;
 };
 
 export type SeriesStyles = {
@@ -118,14 +124,14 @@ export function isValidPhaseChange(value: unknown): value is PhaseChange {
 export const SERIES_SHAPES: SymbolType[] = ['circle', 'cross', 'diamond', 'square', 'star', 'triangle', 'wye'];
 
 /**
- * Checks a saved text annotation for a non-empty label, finite coordinates, and known anchor and justify values
+ * Checks a saved text annotation for a non-empty label, finite coordinates, and known anchor, justify, and weight values
  */
 export function isValidTextAnnotation(value: unknown): value is TextAnnotation {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
 
-  const { label, x, y, anchor, justify } = value as Partial<TextAnnotation>;
+  const { label, x, y, anchor, justify, weight } = value as Partial<TextAnnotation>;
 
   return (
     typeof label === 'string' &&
@@ -135,7 +141,8 @@ export function isValidTextAnnotation(value: unknown): value is TextAnnotation {
     typeof y === 'number' &&
     Number.isFinite(y) &&
     TEXT_ANCHORS.includes(anchor as TextAnchor) &&
-    TEXT_JUSTIFIES.includes(justify as TextJustify)
+    TEXT_JUSTIFIES.includes(justify as TextJustify) &&
+    (weight === undefined || TEXT_WEIGHTS.includes(weight as TextWeight))
   );
 }
 

@@ -38,6 +38,7 @@ function isSameMeasurement(a: Measurement, b: Measurement) {
  */
 export function TextAnnotationLabel({ annotation, viewBox }: Props) {
   const lines = splitTextAnnotationLines(annotation.label);
+  const fontWeight = annotation.weight === 'bold' ? 'bold' : 'normal';
   const textRefs = useRef<(SVGTextElement | null)[]>([]);
   const [measurement, setMeasurement] = useState<Measurement>({ widths: [], lineHeight: 0 });
 
@@ -50,9 +51,12 @@ export function TextAnnotationLabel({ annotation, viewBox }: Props) {
     };
 
     setMeasurement((previous) => (isSameMeasurement(previous, next) ? previous : next));
-  }, [annotation.label]);
+  }, [annotation.label, fontWeight]);
 
-  const [vertical, horizontal] = annotation.anchor.split('-') as [keyof typeof VERTICAL_OFFSET, keyof typeof HORIZONTAL_OFFSET];
+  const [vertical, horizontal] = annotation.anchor.split('-') as [
+    keyof typeof VERTICAL_OFFSET,
+    keyof typeof HORIZONTAL_OFFSET,
+  ];
 
   const anchorX = viewBox?.x ?? 0;
   const anchorY = viewBox?.y ?? 0;
@@ -76,6 +80,7 @@ export function TextAnnotationLabel({ annotation, viewBox }: Props) {
             y={blockTop + index * measurement.lineHeight}
             fill={TEXT_ANNOTATION_COLOR}
             dominantBaseline="hanging"
+            fontWeight={fontWeight}
             style={{ whiteSpace: 'pre' }}
           >
             {line}

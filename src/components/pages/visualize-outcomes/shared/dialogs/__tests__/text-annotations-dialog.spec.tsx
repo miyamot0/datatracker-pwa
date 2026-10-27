@@ -42,7 +42,7 @@ describe('TextAnnotationsDialog', () => {
 
     expect(onChange).toHaveBeenLastCalledWith({
       ...withTexts,
-      text_annotations: [withTexts.text_annotations[1]],
+      text_annotations: [{ ...withTexts.text_annotations[1], weight: 'normal' }],
     });
   });
 
@@ -54,7 +54,9 @@ describe('TextAnnotationsDialog', () => {
     await page.getByRole('button', { name: 'Add Text' }).click();
 
     expect(onChange).toHaveBeenLastCalledWith({ ...EMPTY_SERIES_STYLES, text_annotations: [] });
-    await expect.element(page.getByText('Enter a label, and numbers for X and Y, to save this text.')).toBeInTheDocument();
+    await expect
+      .element(page.getByText('Enter a label, and numbers for X and Y, to save this text.'))
+      .toBeInTheDocument();
 
     await page.getByLabelText('Label for text 1').fill('Note');
     await page.getByLabelText('X position for text 1').fill('2');
@@ -62,7 +64,26 @@ describe('TextAnnotationsDialog', () => {
 
     expect(onChange).toHaveBeenLastCalledWith({
       ...EMPTY_SERIES_STYLES,
-      text_annotations: [{ label: 'Note', x: 2, y: 50, anchor: 'bottom-left', justify: 'left' }],
+      text_annotations: [{ label: 'Note', x: 2, y: 50, anchor: 'middle-left', justify: 'left', weight: 'normal' }],
+    });
+  });
+
+  it('saves a bold weight when the user picks Bold for a text', async () => {
+    const onChange = vi.fn();
+    await render(<TextAnnotationsDialog styles={withTexts} onChange={onChange} />);
+
+    await page.getByRole('button', { name: 'Edit Text Annotations' }).click();
+    await expect.element(page.getByLabelText('Weight for text 1')).toHaveTextContent('Normal');
+
+    await page.getByLabelText('Weight for text 1').click();
+    await page.getByRole('option', { name: 'Bold' }).click();
+
+    expect(onChange).toHaveBeenLastCalledWith({
+      ...withTexts,
+      text_annotations: [
+        { ...withTexts.text_annotations[0], weight: 'bold' },
+        { ...withTexts.text_annotations[1], weight: 'normal' },
+      ],
     });
   });
 

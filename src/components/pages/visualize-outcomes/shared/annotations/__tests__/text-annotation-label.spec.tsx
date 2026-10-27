@@ -32,4 +32,23 @@ describe('TextAnnotationLabel', () => {
 
     await expect.element(page.getByText('Short')).toBeInTheDocument();
   });
+
+  it('renders normal weight by default and bold when the annotation asks for it', async () => {
+    await render(
+      <svg width={400} height={300}>
+        <TextAnnotationLabel annotation={base} viewBox={{ x: 100, y: 100 }} />
+      </svg>,
+    );
+
+    const text = page.getByText('Baseline').element();
+    expect(text.getAttribute('font-weight')).toBe('normal');
+
+    await render(
+      <svg width={400} height={300}>
+        <TextAnnotationLabel annotation={{ ...base, label: 'Heavy', weight: 'bold' }} viewBox={{ x: 100, y: 100 }} />
+      </svg>,
+    );
+
+    expect(page.getByText('Heavy').element().getAttribute('font-weight')).toBe('bold');
+  });
 });

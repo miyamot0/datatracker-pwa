@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { PlusIcon, RulerIcon, Trash2Icon } from 'lucide-react';
+import { Fragment, useId, useRef, useState } from 'react';
+import { PlusIcon, RulerIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -12,12 +12,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  PHASE_LINE_TYPES,
-  type PhaseChange,
-  type PhaseLineType,
-  type SeriesStyles,
-} from '@/lib/graphing/series-style';
+import { Separator } from '@/components/ui/separator';
+import { AnnotationRow } from './annotation-row';
+import { PHASE_LINE_TYPES, type PhaseChange, type PhaseLineType, type SeriesStyles } from '@/lib/graphing/series-style';
 
 const LINE_TYPE_LABELS: Record<PhaseLineType, string> = {
   solid: 'Solid',
@@ -66,6 +63,7 @@ export function PhaseChangesDialog({ styles, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<DraftRow[]>([]);
   const nextRowId = useRef(0);
+  const idPrefix = useId();
 
   const commit = (nextRows: DraftRow[]) => {
     setRows(nextRows);
@@ -116,58 +114,70 @@ export function PhaseChangesDialog({ styles, onChange }: Props) {
           </DialogDescription>
         </DialogHeader>
 
-        <section className="flex flex-col gap-3">
-          {rows.length === 0 && <p className="text-sm text-muted-foreground">No phase change lines.</p>}
+        <section className="flex max-h-[50vh] flex-col overflow-y-auto pr-1">
+          {rows.length === 0 && <p className="py-3 text-sm text-muted-foreground">No phase change lines.</p>}
 
           {rows.map((row, index) => {
             const invalid = parsePosition(row.position) === undefined;
             const lineNumber = index + 1;
+            const positionId = `${idPrefix}-position-${row.id}`;
+            const lineTypeId = `${idPrefix}-line-type-${row.id}`;
 
             return (
-              <div key={row.id} className="flex flex-col gap-1">
-                <div className="flex flex-row items-center gap-2">
-                  <Input
-                    type="number"
-                    step="any"
-                    min="0"
-                    className="w-40"
-                    value={row.position}
-                    aria-label={`Position for line ${lineNumber}`}
-                    aria-invalid={invalid}
-                    placeholder="Position"
-                    onChange={(event) => updateRow(row.id, { position: event.target.value })}
-                  />
-
-                  <Select
-                    value={row.lineType}
-                    onValueChange={(next) => updateRow(row.id, { lineType: next as PhaseLineType })}
-                  >
-                    <SelectTrigger className="w-40" aria-label={`Line type for line ${lineNumber}`}>
-                      <SelectValue>{LINE_TYPE_LABELS[row.lineType]}</SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {PHASE_LINE_TYPES.map((lineType) => (
-                          <SelectItem key={lineType} value={lineType}>
-                            {LINE_TYPE_LABELS[lineType]}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Delete line ${lineNumber}`}
-                    onClick={() => deleteRow(row.id)}
-                  >
-                    <Trash2Icon className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {invalid && <p className="text-sm text-destructive">Enter a number greater than 0 to save this line.</p>}
-              </div>
+              <Fragment key={row.id}>
+                {index > 0 && <Separator />}
+                <AnnotationRow
+                  deleteLabel={`Delete line ${lineNumber}`}
+                  onDelete={() => deleteRow(row.id)}
+                  error={invalid ? 'Enter a number greater than 0 to save this line.' : undefined}
+                  fields={[
+                    {
+                      controlId: positionId,
+                      label: 'Position',
+                      control: (
+                        <Input
+                          id={positionId}
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={row.position}
+                          aria-label={`Position for line ${lineNumber}`}
+                          aria-invalid={invalid}
+                          placeholder="Position"
+                          onChange={(event) => updateRow(row.id, { position: event.target.value })}
+                        />
+                      ),
+                    },
+                    {
+                      controlId: lineTypeId,
+                      label: 'Line type',
+                      control: (
+                        <Select
+                          value={row.lineType}
+                          onValueChange={(next) => updateRow(row.id, { lineType: next as PhaseLineType })}
+                        >
+                          <SelectTrigger
+                            id={lineTypeId}
+                            className="w-full"
+                            aria-label={`Line type for line ${lineNumber}`}
+                          >
+                            <SelectValue>{LINE_TYPE_LABELS[row.lineType]}</SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              {PHASE_LINE_TYPES.map((lineType) => (
+                                <SelectItem key={lineType} value={lineType}>
+                                  {LINE_TYPE_LABELS[lineType]}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      ),
+                    },
+                  ]}
+                />
+              </Fragment>
             );
           })}
         </section>

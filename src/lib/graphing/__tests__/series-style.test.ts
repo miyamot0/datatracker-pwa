@@ -152,6 +152,9 @@ describe('text annotation helpers', () => {
     expect(isValidTextAnnotation({ ...valid, x: Number.NaN })).toBe(false);
     expect(isValidTextAnnotation({ ...valid, anchor: 'middle' })).toBe(false);
     expect(isValidTextAnnotation({ ...valid, justify: 'justify' })).toBe(false);
+    expect(isValidTextAnnotation({ ...valid, weight: 'normal' })).toBe(true);
+    expect(isValidTextAnnotation({ ...valid, weight: 'bold' })).toBe(true);
+    expect(isValidTextAnnotation({ ...valid, weight: 'heavy' })).toBe(false);
   });
 
   it('splits a label on the literal \\n sequence', () => {
