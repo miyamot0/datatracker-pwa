@@ -10,6 +10,10 @@ RUN yarn build-docker
 # Set up hosting
 FROM nginx:1.31.8-alpine3.24
 
+# Patch for CVE/security updates
+RUN apk update && \
+    apk upgrade --no-cache brotli libbrotli curl libxml2
+
 # Nuke/swap default html content
 RUN rm -rf /usr/share/nginx/html/*
 COPY --from=builder /app/dist /usr/share/nginx/html
@@ -25,10 +29,6 @@ RUN addgroup -S appgroup && \
     chown -R appuser:appgroup /var/cache/nginx && \
     chown -R appuser:appgroup /var/run && \
     chown -R appuser:appgroup /etc/nginx/conf.d
-
-# Give the non-root user a writable temp directory for nginx to use
-RUN mkdir -p /tmp/nginx && \
-    chown -R appuser:appgroup /tmp/nginx
 
 # Run as non-root user
 USER appuser

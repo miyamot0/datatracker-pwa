@@ -319,6 +319,23 @@ describe('BaseChart', () => {
     expect(tooltipZ).toBeGreaterThan(legendZ);
   });
 
+  it('outlines condition legend markers in black and keeps their labels black', async () => {
+    await render(
+      <BaseChart
+        {...defaultProps}
+        legends={[{ id: 'Baseline', kind: 'condition', type: 'circle', value: 'Baseline', color: '#ffffff' }]}
+      />,
+    );
+    await vi.waitFor(() => expect(document.querySelectorAll('.recharts-legend-item').length).toBe(1));
+
+    const item = document.querySelector('.recharts-legend-item')!;
+    const marker = item.querySelector('svg path')!;
+    expect(marker.getAttribute('stroke')).toBe('black');
+    expect(marker.getAttribute('stroke-width')).toBe('3');
+    expect(getComputedStyle(marker).fill).toBe('rgb(255, 255, 255)');
+    expect(getComputedStyle(item.querySelector('.recharts-legend-item-text')!).color).toBe('rgb(0, 0, 0)');
+  });
+
   it('vertically centres each legend marker on its label', async () => {
     await render(<BaseChart {...defaultProps} legends={legendItems} />);
     await vi.waitFor(() => expect(document.querySelectorAll('.recharts-legend-item').length).toBe(2));

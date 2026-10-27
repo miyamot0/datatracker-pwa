@@ -1,4 +1,5 @@
 import { SessionTerminationOptionsType } from '@/types/terminations';
+import type { SeriesStyles } from '@/lib/graphing/series-style';
 
 /**
  * This is the type definition for the ReturnLocalStorageCache type
@@ -60,4 +61,33 @@ export function setLocalCachedPrefs(
   const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), Type].join('_');
 
   localStorage.setItem(dynamic_key, JSON.stringify(Cache));
+}
+
+/**
+ * Retrieve saved series styles for a Group/Individual/Evaluation. Shared across figures. Returns empty styles when none are saved.
+ */
+export function getLocalSeriesStyles(Group: string, Individual: string, Evaluation: string): SeriesStyles {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'SeriesStyles'].join('_');
+
+  const cached_information = localStorage.getItem(dynamic_key);
+
+  if (!cached_information) {
+    return { KeyStyles: {}, ConditionStyles: {} };
+  }
+
+  const parsed = JSON.parse(cached_information) as Partial<SeriesStyles>;
+
+  return {
+    KeyStyles: parsed.KeyStyles ?? {},
+    ConditionStyles: parsed.ConditionStyles ?? {},
+  };
+}
+
+/**
+ * Store series styles for a Group/Individual/Evaluation. Shared across figures.
+ */
+export function setLocalSeriesStyles(Group: string, Individual: string, Evaluation: string, Styles: SeriesStyles) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'SeriesStyles'].join('_');
+
+  localStorage.setItem(dynamic_key, JSON.stringify(Styles));
 }

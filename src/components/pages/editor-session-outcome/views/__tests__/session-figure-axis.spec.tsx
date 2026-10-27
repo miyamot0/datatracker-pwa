@@ -9,6 +9,7 @@ const makeSession = (timerMain: number) =>
     FrequencyKeyPresses: [],
     DurationKeyPresses: [],
     TimerMain: timerMain,
+    SessionSettings: { Condition: 'Test' },
     Keyset: {
       id: 'ks1',
       Name: 'TestSet',

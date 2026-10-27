@@ -11,11 +11,21 @@ import {
   Tooltip,
   Legend,
   ZAxis,
-  DefaultLegendContent,
 } from 'recharts';
 import { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { getShape } from '@/lib/shapes';
+import { ChartLegendContent } from '@/components/pages/visualize-outcomes/shared/chart-legend-content';
+import {
+  EMPTY_SERIES_STYLES,
+  DEFAULT_LINE_COLOR,
+  isSeriesHidden,
+  resolveKeyFillColor,
+  resolveKeyShape,
+  resolveLineColor,
+  resolveMarkerStroke,
+  type SeriesStyles,
+} from '@/lib/graphing/series-style';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { cn } from '@/lib/utils';
 import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
@@ -47,8 +57,8 @@ type BaseChartProps = {
   customTooltip: React.ComponentType<any>;
   onNavigate: (props: any) => void;
   divRef: React.RefObject<HTMLDivElement | null>;
+  seriesStyles?: SeriesStyles;
 };
-
 export function BaseChart({
   title,
   preparedData,
@@ -64,6 +74,7 @@ export function BaseChart({
   customTooltip: CustomTooltip,
   onNavigate,
   divRef,
+  seriesStyles = EMPTY_SERIES_STYLES,
 }: BaseChartProps) {
   const { noAnimationProps, chartMargins, xAxisConfig, yAxisStyle, labelStyle } = getChartConfiguration();
 
@@ -73,6 +84,12 @@ export function BaseChart({
   }));
 
   const visibleKeys = keySetFull.filter((key) => key.Visible === true).map((key) => key.KeyDescription);
+  const hiddenKeysByCondition = Object.fromEntries(
+    getUniqueSessionConditions(filteredSessions).map((condition) => [
+      condition,
+      visibleKeys.filter((key) => isSeriesHidden(seriesStyles, key, condition)),
+    ]),
+  );
   const hasPlottedData = visibleKeys.length > 0 && preparedData.length > 0 && data_set_parsed_by_condition.length > 0;
 
   let markerSize = 100;
@@ -114,7 +131,15 @@ export function BaseChart({
           const lines = keySetFull
             .filter((key) => key.Visible === true)
             .map((key, index) => {
-              const shape: SymbolType = getShape(index);
+              const shape: SymbolType = resolveKeyShape(seriesStyles, key.KeyDescription, getShape(index));
+              const line_color = resolveLineColor(seriesStyles, key.KeyDescription, condition.name, DEFAULT_LINE_COLOR);
+              const marker_fill = resolveKeyFillColor(
+                seriesStyles,
+                key.KeyDescription,
+                condition.name,
+                FIGURE_PATH_COLORS[index_dynamic],
+              );
+              const marker_stroke = resolveMarkerStroke(marker_fill);
               const splitPoints = calculateSplitPoints(condition.data, filteredSessions, condition.name);
 
               if (splitPoints.length === 0 || connectSpans === true) {
@@ -130,7 +155,7 @@ export function BaseChart({
                       dot={false}
                       activeDot={false}
                       dataKey={`${key.KeyDescription}`}
-                      stroke={FIGURE_PATH_COLORS[index_dynamic]}
+                      stroke={line_color}
                     />
                     <Scatter
                       name={key.KeyDescription}
@@ -138,9 +163,9 @@ export function BaseChart({
                       {...noAnimationProps}
                       onDoubleClick={onNavigate}
                       dataKey={`${key.KeyDescription}`}
-                      fill={FIGURE_PATH_COLORS[index_dynamic]}
+                      fill={marker_fill}
                       shape={shape}
-                      stroke="black"
+                      stroke={marker_stroke}
                     />
                   </React.Fragment>
                 );
@@ -162,7 +187,7 @@ export function BaseChart({
                         dot={false}
                         activeDot={false}
                         dataKey={`${key.KeyDescription}`}
-                        stroke={FIGURE_PATH_COLORS[index_dynamic]}
+                        stroke={line_color}
                       />
                       <Scatter
                         name={key.KeyDescription}
@@ -170,9 +195,9 @@ export function BaseChart({
                         {...noAnimationProps}
                         onDoubleClick={onNavigate}
                         dataKey={`${key.KeyDescription}`}
-                        fill={FIGURE_PATH_COLORS[index_dynamic]}
+                        fill={marker_fill}
                         shape={shape}
-                        stroke="black"
+                        stroke={marker_stroke}
                       />
                     </React.Fragment>
                   ))}
@@ -223,14 +248,16 @@ export function BaseChart({
           {...noAnimationProps}
           animationDuration={100}
           wrapperStyle={{ zIndex: 10 }}
-          content={<CustomTooltip figureTextSize={figureTextSize} visibleKeys={visibleKeys} />}
+          content={
+            <CustomTooltip
+              figureTextSize={figureTextSize}
+              visibleKeys={visibleKeys}
+              hiddenKeysByCondition={hiddenKeysByCondition}
+            />
+          }
         />
 
-        <Legend
-          {...noAnimationProps}
-          align="center"
-          content={(props) => <DefaultLegendContent {...props} payload={legends} />}
-        />
+        <Legend {...noAnimationProps} align="center" content={() => <ChartLegendContent payload={legends} />} />
       </ComposedChart>
     </ResponsiveContainer>
   );

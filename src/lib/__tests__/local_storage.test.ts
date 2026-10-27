@@ -1,4 +1,10 @@
-import { getLocalCachedPrefs, ReturnLocalStorageCache, setLocalCachedPrefs } from '../local_storage'; // Adjust the import path
+import {
+  getLocalCachedPrefs,
+  getLocalSeriesStyles,
+  ReturnLocalStorageCache,
+  setLocalCachedPrefs,
+  setLocalSeriesStyles,
+} from '../local_storage'; // Adjust the import path
 
 describe('LocalStorage Prefs', () => {
   const group = 'group1';
@@ -63,6 +69,51 @@ describe('LocalStorage Prefs', () => {
 
       const storedValue = localStorage.getItem(trimmedKey);
       expect(storedValue).toEqual(JSON.stringify(mockCache));
+    });
+  });
+
+  describe('series styles', () => {
+    it('returns empty styles when nothing has been saved', () => {
+      expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation1')).toEqual({
+        KeyStyles: {},
+        ConditionStyles: {},
+      });
+    });
+
+    it('stores under the trimmed group, individual, and evaluation key', () => {
+      const styles = { KeyStyles: { Hitting: { shape: 'star' as const } }, ConditionStyles: {} };
+
+      setLocalSeriesStyles(' group1 ', ' individual1 ', ' evaluation1 ', styles);
+
+      expect(localStorage.getItem('group1_individual1_evaluation1_SeriesStyles')).toBe(JSON.stringify(styles));
+      expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation1')).toEqual(styles);
+    });
+
+    it('does not share styles across a different individual or evaluation', () => {
+      const styles = { KeyStyles: {}, ConditionStyles: { Baseline: { color: '#FF0000' } } };
+
+      setLocalSeriesStyles('group1', 'individual1', 'evaluation1', styles);
+
+      expect(getLocalSeriesStyles('group1', 'individual2', 'evaluation1')).toEqual({
+        KeyStyles: {},
+        ConditionStyles: {},
+      });
+      expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation2')).toEqual({
+        KeyStyles: {},
+        ConditionStyles: {},
+      });
+    });
+
+    it('fills in a missing KeyStyles or ConditionStyles section when a saved object is partial', () => {
+      localStorage.setItem(
+        'group1_individual1_evaluation1_SeriesStyles',
+        JSON.stringify({ KeyStyles: { Hitting: { shape: 'star' } } }),
+      );
+
+      expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation1')).toEqual({
+        KeyStyles: { Hitting: { shape: 'star' } },
+        ConditionStyles: {},
+      });
     });
   });
 });
