@@ -37,6 +37,11 @@ Features include the following:
 
 ### Changelog
 
+#### 0.5.15 (2026-06-27):
+
+- Round out visual package (i.e., annotations)
+- Improvements to error reporting
+
 #### 0.5.14 (2026-06-26):
 
 - Updates to series styling and figure customization options
