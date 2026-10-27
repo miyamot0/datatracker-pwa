@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/menubar';
 import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import { type SeriesStyles, type TextPage } from '@/lib/graphing/series-style';
+import type { ChartImageFormat } from '@/components/pages/visualize-outcomes/shared/chart-export';
 import { type ToggleDisplayCondition, type ToggleDisplayKey } from '@/types/visuals';
 import { AimLinesDialog } from './dialogs/aim-lines-dialog';
 import { PhaseChangesDialog } from './dialogs/phase-changes-dialog';
@@ -48,7 +49,7 @@ type Props = {
   visibleStyleConditions: string[];
   styles: SeriesStyles;
   onStylesChange: (styles: SeriesStyles) => void;
-  onSavePng: () => void;
+  onSaveImage: (format: ChartImageFormat) => void;
   figureTextSize: FigureVisualSizing;
   onFigureTextSizeChange: (size: FigureVisualSizing) => void;
   connectSpans: boolean;
@@ -81,7 +82,7 @@ export function VisualsMenubar({
   visibleStyleConditions,
   styles,
   onStylesChange,
-  onSavePng,
+  onSaveImage,
   figureTextSize,
   onFigureTextSizeChange,
   connectSpans,
@@ -106,10 +107,23 @@ export function VisualsMenubar({
       <MenubarMenu>
         <MenubarTrigger>File</MenubarTrigger>
         <MenubarContent onCloseAutoFocus={(event) => event.preventDefault()}>
-          <MenubarItem onSelect={onSavePng}>
-            <DownloadIcon className="mr-2 h-4 w-4" />
-            Save to PNG
-          </MenubarItem>
+          <MenubarSub>
+            <MenubarSubTrigger>
+              <DownloadIcon className="mr-2 h-4 w-4" />
+              Figure Output
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              <MenubarItem onSelect={() => onSaveImage('svg')}>
+                <DownloadIcon className="mr-2 h-4 w-4" />
+                Save to SVG
+              </MenubarItem>
+              <MenubarItem onSelect={() => onSaveImage('png')}>
+                <DownloadIcon className="mr-2 h-4 w-4" />
+                Save to PNG
+              </MenubarItem>
+            </MenubarSubContent>
+          </MenubarSub>
+          <MenubarSeparator />
           <MenubarItem onSelect={() => console.log('Export Style: not implemented yet')}>
             <FileJsonIcon className="mr-2 h-4 w-4" />
             Export Style

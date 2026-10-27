@@ -28,7 +28,7 @@ function renderMenubar(overrides: Partial<React.ComponentProps<typeof VisualsMen
     visibleStyleConditions: ['Baseline', 'Treatment'],
     styles: EMPTY_SERIES_STYLES,
     onStylesChange: vi.fn(),
-    onSavePng: vi.fn(),
+    onSaveImage: vi.fn(),
     figureTextSize: 'base' as const,
     onFigureTextSizeChange: vi.fn(),
     connectSpans: false,
@@ -58,14 +58,26 @@ describe('VisualsMenubar', () => {
     await expect.element(page.getByRole('menuitem', { name: 'Design' })).toBeInTheDocument();
   });
 
-  it('calls onSavePng from File > Save to PNG', async () => {
-    const onSavePng = vi.fn();
-    renderMenubar({ onSavePng });
+  it('calls onSaveImage with svg from File > Figure Output > Save to SVG', async () => {
+    const onSaveImage = vi.fn();
+    renderMenubar({ onSaveImage });
 
     await page.getByRole('menuitem', { name: 'File' }).click();
+    await page.getByRole('menuitem', { name: 'Figure Output' }).click();
+    await page.getByRole('menuitem', { name: 'Save to SVG' }).click();
+
+    expect(onSaveImage).toHaveBeenCalledWith('svg');
+  });
+
+  it('calls onSaveImage with png from File > Figure Output > Save to PNG', async () => {
+    const onSaveImage = vi.fn();
+    renderMenubar({ onSaveImage });
+
+    await page.getByRole('menuitem', { name: 'File' }).click();
+    await page.getByRole('menuitem', { name: 'Figure Output' }).click();
     await page.getByRole('menuitem', { name: 'Save to PNG' }).click();
 
-    expect(onSavePng).toHaveBeenCalledTimes(1);
+    expect(onSaveImage).toHaveBeenCalledWith('png');
   });
 
   it('reports a key toggled off from Data > Keys and keeps the menu open', async () => {

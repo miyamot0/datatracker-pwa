@@ -1,8 +1,7 @@
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { KeySet } from '@/types/keyset';
-import { useState } from 'react';
-import { useGenerateImage } from 'recharts-to-png';
-import { savePngFile } from '@/components/pages/visualize-outcomes/shared/save-png';
+import { useRef, useState } from 'react';
+import { saveChartImage } from '@/components/pages/visualize-outcomes/shared/chart-export';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { ScatterChartIcon } from 'lucide-react';
@@ -143,7 +142,7 @@ export default function ResultsRateVisualsPage({
     setFigureLabelsState(labels);
     setLocalFigureLabels(Group, Individual, Evaluation, 'Rate', labels);
   };
-  const [getDivPng, { ref: figureRef }] = useGenerateImage<HTMLDivElement>();
+  const figureRef = useRef<HTMLDivElement>(null);
 
   return (
     <Card className="w-full">
@@ -186,7 +185,7 @@ export default function ResultsRateVisualsPage({
             )}
             styles={seriesStyles}
             onStylesChange={updateSeriesStyles}
-            onSavePng={() => savePngFile(getDivPng, 'rate.png')}
+            onSaveImage={(format) => saveChartImage(figureRef.current, format, `rate.${format}`)}
             figureTextSize={figureTextSize}
             onFigureTextSizeChange={setFigureTextSize}
             connectSpans={connectAllPoints}

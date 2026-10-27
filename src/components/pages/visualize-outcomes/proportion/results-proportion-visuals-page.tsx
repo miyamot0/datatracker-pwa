@@ -1,8 +1,7 @@
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { KeySet } from '@/types/keyset';
-import { useState } from 'react';
-import { useGenerateImage } from 'recharts-to-png';
-import { savePngFile } from '@/components/pages/visualize-outcomes/shared/save-png';
+import { useRef, useState } from 'react';
+import { saveChartImage } from '@/components/pages/visualize-outcomes/shared/chart-export';
 import { Button } from '@/components/ui/button';
 import { ScatterChartIcon } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -115,7 +114,7 @@ export default function ResultsProportionVisualsPage({
     setFigureLabelsState(labels);
     setLocalFigureLabels(Group, Individual, Evaluation, 'Proportion', labels);
   };
-  const [getDivPng, { ref: figureRef }] = useGenerateImage<HTMLDivElement>();
+  const figureRef = useRef<HTMLDivElement>(null);
   const [schedule, setSchedule] = useState<ScheduleMappingOptionsType | { value: string; label: string }>(TimerMapping);
   const [seriesStyles, setSeriesStyles] = useState<SeriesStyles>(() =>
     getLocalSeriesStyles(Group, Individual, Evaluation),
@@ -182,7 +181,7 @@ export default function ResultsProportionVisualsPage({
             )}
             styles={seriesStyles}
             onStylesChange={updateSeriesStyles}
-            onSavePng={() => savePngFile(getDivPng, 'proportion.png')}
+            onSaveImage={(format) => saveChartImage(figureRef.current, format, `proportion.${format}`)}
             figureTextSize={figureTextSize}
             onFigureTextSizeChange={setFigureTextSize}
             connectSpans={connectAllPoints}

@@ -1,5 +1,5 @@
 import { SavedSessionResult } from '@/lib/dtos/session-results';
-import type { UseGenerateImage } from 'recharts-to-png';
+import type { RefObject } from 'react';
 import { type FigureVisualSizing } from '@/types/accessibility';
 import { useNavigate } from '@tanstack/react-router';
 import { ExpandedKeySetInstance, KeySet } from '@/types/keyset';
@@ -35,7 +35,7 @@ type Props = {
   ShowTooltip?: boolean;
   ShowConditionLegend?: boolean;
   FigureLabels?: FigureLabelSettings;
-  divRef: UseGenerateImage<HTMLDivElement>[1]['ref'];
+  divRef: RefObject<HTMLDivElement | null>;
 };
 
 export default function RateFigureVisualization({
