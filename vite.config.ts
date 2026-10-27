@@ -91,6 +91,7 @@ const basePlugins: PluginOption[] = [
       globPatterns: ['**/*.{js,css,html,ico,png,svg,md,woff2}'],
       globIgnores: ['**/*.map', 'sw.js', 'workbox-*.js', '/docs/*.png'],
       cleanupOutdatedCaches: true,
+      inlineWorkboxRuntime: true,
       sourcemap: false,
       maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
       runtimeCaching: [
