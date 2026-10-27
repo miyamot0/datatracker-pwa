@@ -16,7 +16,7 @@ import { ModifiedSessionResult } from '@/types/storage';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { KeySet } from '@/types/keyset';
-import { ErrorDisplay } from '@/components/elements/suspense/error-display';
+import { RouteErrorRedirect } from '@/components/pages/error/route-error-view';
 import { extractAndDeduplicateKeysets } from '@/lib/graphing';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/reli')({
@@ -101,7 +101,7 @@ function RouteComponent() {
           const sessionKeySet = recentKeysetName.Keyset;
 
           if (!sessionKeySet) {
-            return <ErrorDisplay Text={'KeySet not found.'} />;
+            return <RouteErrorRedirect message={'KeySet not found.'} />;
           }
 
           const {

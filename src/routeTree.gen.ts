@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ErrorRouteImport } from './routes/error'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardSyncRouteImport } from './routes/dashboard/sync'
 import { Route as DiagnosticsIndexRouteImport } from './routes/diagnostics/index'
@@ -35,6 +36,11 @@ import { Route as SessionGroupIndividualEvaluationHistoryViewFileIndexRouteImpor
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ErrorRoute = ErrorRouteImport.update({
+  id: '/error',
+  path: '/error',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
@@ -159,6 +165,7 @@ const SessionGroupIndividualEvaluationHistoryViewFileIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/error': typeof ErrorRoute
   '/dashboard/sync': typeof DashboardSyncRoute
   '/documentation/$slug': typeof DocumentationSlugRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/error': typeof ErrorRoute
   '/dashboard/sync': typeof DashboardSyncRoute
   '/documentation/$slug': typeof DocumentationSlugRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -208,6 +216,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/error': typeof ErrorRoute
   '/dashboard/sync': typeof DashboardSyncRoute
   '/documentation/$slug': typeof DocumentationSlugRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -234,6 +243,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/error'
     | '/dashboard/sync'
     | '/documentation/$slug'
     | '/dashboard/'
@@ -258,6 +268,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/error'
     | '/dashboard/sync'
     | '/documentation/$slug'
     | '/dashboard'
@@ -282,6 +293,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/error'
     | '/dashboard/sync'
     | '/documentation/$slug'
     | '/dashboard/'
@@ -307,6 +319,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ErrorRoute: typeof ErrorRoute
   DashboardSyncRoute: typeof DashboardSyncRoute
   DocumentationSlugRoute: typeof DocumentationSlugRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
@@ -337,6 +350,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/error': {
+      id: '/error'
+      path: '/error'
+      fullPath: '/error'
+      preLoaderRoute: typeof ErrorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/': {
@@ -491,6 +511,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ErrorRoute: ErrorRoute,
   DashboardSyncRoute: DashboardSyncRoute,
   DocumentationSlugRoute: DocumentationSlugRoute,
   DashboardIndexRoute: DashboardIndexRoute,

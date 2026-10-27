@@ -11,7 +11,7 @@ import {
 import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { ModifiedSessionResult } from '@/types/storage';
 import SessionManagerContent from '@/components/pages/editor-session-outcome/session-manager-content';
-import { ErrorDisplay } from '@/components/elements/suspense/error-display';
+import { RouteErrorRedirect } from '@/components/pages/error/route-error-view';
 import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/edit/$file/')({
@@ -85,7 +85,7 @@ function RouteComponent() {
           const relevantSession = sessions.find((s) => s.Filename.startsWith(FileString));
 
           if (!relevantSession) {
-            return <ErrorDisplay Text={'Session not found.'} />;
+            return <RouteErrorRedirect message={'Session not found.'} />;
           }
 
           const savedKeys = combineAndSortKeyPresses(relevantSession);
