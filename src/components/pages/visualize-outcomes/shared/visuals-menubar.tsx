@@ -61,6 +61,8 @@ type Props = {
   onShowTooltipChange: (show: boolean) => void;
   showConditionLegend: boolean;
   onShowConditionLegendChange: (show: boolean) => void;
+  showDescription: boolean;
+  onShowDescriptionChange: (show: boolean) => void;
 };
 
 /**
@@ -92,6 +94,8 @@ export function VisualsMenubar({
   onShowTooltipChange,
   showConditionLegend,
   onShowConditionLegendChange,
+  showDescription,
+  onShowDescriptionChange,
 }: Props) {
   const [activeDialog, setActiveDialog] = useState<AnnotationDialog | null>(null);
 
@@ -234,6 +238,13 @@ export function VisualsMenubar({
             onCheckedChange={(checked) => onShowTooltipChange(checked === true)}
           >
             Enable Tooltip
+          </MenubarCheckboxItem>
+          <MenubarCheckboxItem
+            checked={showDescription}
+            onSelect={(event) => event.preventDefault()}
+            onCheckedChange={(checked) => onShowDescriptionChange(checked === true)}
+          >
+            Show Description
           </MenubarCheckboxItem>
         </MenubarContent>
       </MenubarMenu>

@@ -6,9 +6,11 @@ import {
   getLocalShowTitle,
   getLocalShowTooltip,
   getLocalShowConditionLegend,
+  getLocalShowDescription,
   ReturnLocalStorageCache,
   setLocalCachedPrefs,
   setLocalShowConditionLegend,
+  setLocalShowDescription,
   setLocalShowTooltip,
   setLocalConnectSpans,
   setLocalFigureLabels,
@@ -258,6 +260,18 @@ describe('LocalStorage Prefs', () => {
 
       expect(getLocalShowTooltip(group, individual, evaluation)).toBe(true);
       expect(getLocalShowConditionLegend(group, individual, evaluation)).toBe(true);
+    });
+  });
+
+  describe('show description', () => {
+    it('defaults to shown and round-trips hidden and shown values', () => {
+      expect(getLocalShowDescription(group, individual, evaluation)).toBe(true);
+
+      setLocalShowDescription(group, individual, evaluation, false);
+      expect(getLocalShowDescription(group, individual, evaluation)).toBe(false);
+
+      setLocalShowDescription(group, individual, evaluation, true);
+      expect(getLocalShowDescription(group, individual, evaluation)).toBe(true);
     });
   });
 

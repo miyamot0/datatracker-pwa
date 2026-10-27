@@ -14,8 +14,10 @@ import {
   getLocalShowTitle,
   getLocalShowTooltip,
   getLocalShowConditionLegend,
+  getLocalShowDescription,
   setLocalShowTooltip,
   setLocalShowConditionLegend,
+  setLocalShowDescription,
   setLocalCachedPrefs,
   setLocalConnectSpans,
   setLocalFigureLabels,
@@ -126,6 +128,13 @@ export default function ResultsRateVisualsPage({
     setShowConditionLegendState(show);
     setLocalShowConditionLegend(Group, Individual, Evaluation, show);
   };
+  const [showDescription, setShowDescriptionState] = useState(() =>
+    getLocalShowDescription(Group, Individual, Evaluation),
+  );
+  const setShowDescription = (show: boolean) => {
+    setShowDescriptionState(show);
+    setLocalShowDescription(Group, Individual, Evaluation, show);
+  };
 
   const [figureLabels, setFigureLabelsState] = useState<FigureLabelSettings>(() =>
     getLocalFigureLabels(Group, Individual, Evaluation, 'Rate'),
@@ -188,6 +197,8 @@ export default function ResultsRateVisualsPage({
             onShowTooltipChange={setShowTooltip}
             showConditionLegend={showConditionLegend}
             onShowConditionLegendChange={setShowConditionLegend}
+            showDescription={showDescription}
+            onShowDescriptionChange={setShowDescription}
             figureLabels={figureLabels}
             onFigureLabelsChange={setFigureLabels}
           />
@@ -235,12 +246,16 @@ export default function ResultsRateVisualsPage({
           </div>
         </div>
 
-        <p>
-          This page provides a visual of the available data regarding <i>rate</i>. For convenience, series of data can
-          be enabled or disabled for viewing. Similarly, an omnibus measure of behavior can be calculated by selecting
-          which types of events to combine together using the optional logic builder. Options set here will persist for
-          future visits.
-        </p>
+        {showDescription ? (
+          <p>
+            This page provides a visual of the available data regarding <i>rate</i>. For convenience, series of data can
+            be enabled or disabled for viewing. Similarly, an omnibus measure of behavior can be calculated by selecting
+            which types of events to combine together using the optional logic builder. Options set here will persist
+            for future visits.
+          </p>
+        ) : (
+          <div className="h-[25px]" />
+        )}
 
         {DynamicKeySet && (
           <RateFigureVisualization
@@ -263,7 +278,6 @@ export default function ResultsRateVisualsPage({
             MinX={MinX}
             MaxX={MaxX}
             SeriesStyles={seriesStyles}
-            getDivPng={getDivPng}
             divRef={figureRef}
           />
         )}

@@ -12,6 +12,8 @@ vi.mock('@/lib/local_storage', () => ({
   getLocalShowTitle: vi.fn(() => true),
   getLocalShowTooltip: vi.fn(() => true),
   getLocalShowConditionLegend: vi.fn(() => true),
+  getLocalShowDescription: vi.fn(() => true),
+  setLocalShowDescription: vi.fn(),
   setLocalShowTooltip: vi.fn(),
   setLocalShowConditionLegend: vi.fn(),
   setLocalShowTitle: vi.fn(),

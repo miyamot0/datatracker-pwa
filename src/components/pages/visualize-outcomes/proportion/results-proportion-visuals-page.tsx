@@ -13,8 +13,10 @@ import {
   getLocalShowTitle,
   getLocalShowTooltip,
   getLocalShowConditionLegend,
-  setLocalShowTooltip,
+  getLocalShowDescription,
   setLocalShowConditionLegend,
+  setLocalShowDescription,
+  setLocalShowTooltip,
   setLocalCachedPrefs,
   setLocalConnectSpans,
   setLocalFigureLabels,
@@ -97,6 +99,13 @@ export default function ResultsProportionVisualsPage({
   const setShowConditionLegend = (show: boolean) => {
     setShowConditionLegendState(show);
     setLocalShowConditionLegend(Group, Individual, Evaluation, show);
+  };
+  const [showDescription, setShowDescriptionState] = useState(() =>
+    getLocalShowDescription(Group, Individual, Evaluation),
+  );
+  const setShowDescription = (show: boolean) => {
+    setShowDescriptionState(show);
+    setLocalShowDescription(Group, Individual, Evaluation, show);
   };
 
   const [figureLabels, setFigureLabelsState] = useState<FigureLabelSettings>(() =>
@@ -184,6 +193,8 @@ export default function ResultsProportionVisualsPage({
             onShowTooltipChange={setShowTooltip}
             showConditionLegend={showConditionLegend}
             onShowConditionLegendChange={setShowConditionLegend}
+            showDescription={showDescription}
+            onShowDescriptionChange={setShowDescription}
             figureLabels={figureLabels}
             onFigureLabelsChange={setFigureLabels}
           />
@@ -229,11 +240,15 @@ export default function ResultsProportionVisualsPage({
           </div>
         </div>
 
-        <p>
-          This page provides a visual of the available data regarding <i>proportion of session time</i>. For
-          convenience, series of data can be enabled or disabled for viewing. Options set here will persist for future
-          visits.
-        </p>
+        {showDescription ? (
+          <p>
+            This page provides a visual of the available data regarding <i>proportion of session time</i>. For
+            convenience, series of data can be enabled or disabled for viewing. Options set here will persist for future
+            visits.
+          </p>
+        ) : (
+          <div className="h-[25px]" />
+        )}
 
         {DynamicKeySet && (
           <ProportionFigureVisualization
@@ -256,7 +271,6 @@ export default function ResultsProportionVisualsPage({
             ShowConditionLegend={showConditionLegend}
             FigureLabels={figureLabels}
             SeriesStyles={seriesStyles}
-            getDivPng={getDivPng}
             divRef={figureRef}
           />
         )}

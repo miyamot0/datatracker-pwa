@@ -1,7 +1,5 @@
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import type { UseGenerateImage } from 'recharts-to-png';
-import { Button } from '@/components/ui/button';
-import { savePngFile } from '@/components/pages/visualize-outcomes/shared/save-png';
 import { type FigureVisualSizing } from '@/types/accessibility';
 import { useNavigate } from '@tanstack/react-router';
 import { ExpandedKeySetInstance, KeySet } from '@/types/keyset';
@@ -37,7 +35,6 @@ type Props = {
   ShowTooltip?: boolean;
   ShowConditionLegend?: boolean;
   FigureLabels?: FigureLabelSettings;
-  getDivPng: UseGenerateImage<HTMLDivElement>[0];
   divRef: UseGenerateImage<HTMLDivElement>[1]['ref'];
 };
 
@@ -58,7 +55,6 @@ export default function RateFigureVisualization({
   ShowTooltip = true,
   ShowConditionLegend = true,
   FigureLabels = EMPTY_FIGURE_LABEL_SETTINGS,
-  getDivPng,
   divRef,
 }: Props) {
   const navigate = useNavigate({
@@ -114,7 +110,6 @@ export default function RateFigureVisualization({
         onNavigate={onNavigate}
         divRef={divRef}
       />
-      <Button onClick={() => savePngFile(getDivPng)}>{'Download Figure as PNG'}</Button>
     </div>
   );
 }

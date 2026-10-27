@@ -4,7 +4,6 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // ----- Hoisted mocks -----
 
-const mockGetDivPng = vi.hoisted(() => vi.fn());
 const mockDivRef = vi.hoisted(() => ({ current: null }));
 const mockNavigate = vi.hoisted(() => vi.fn());
 const mockUseNavigate = vi.hoisted(() => vi.fn(() => mockNavigate));
@@ -84,7 +83,6 @@ const defaultProps = {
   ConnectSpans: false,
   MinX: 1,
   MaxX: 10,
-  getDivPng: mockGetDivPng,
   divRef: mockDivRef,
 };
 
@@ -124,11 +122,6 @@ describe('RateFigureVisualization', () => {
   it('passes ConnectSpans=false to BaseChart', async () => {
     await render(<RateFigureVisualization {...defaultProps} ConnectSpans={false} />);
     await expect.element(page.getByTestId('chart-connect')).toHaveTextContent('false');
-  });
-
-  it('renders the Download button', async () => {
-    await render(<RateFigureVisualization {...defaultProps} />);
-    await expect.element(page.getByText('Download Figure as PNG')).toBeInTheDocument();
   });
 
   it('wires graphing and calculation utilities with expected arguments', async () => {
@@ -174,42 +167,5 @@ describe('RateFigureVisualization', () => {
       padding: { bottom: 10 },
     });
     expect(passedProps.divRef).toBe(mockDivRef);
-  });
-
-  it('downloads a PNG when image generation succeeds', async () => {
-    const anchorMock = {
-      href: '',
-      download: '',
-      click: vi.fn(),
-    };
-    const realCreateElement = document.createElement.bind(document);
-    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation(((tagName: string) => {
-      if (tagName.toLowerCase() === 'a') {
-        return anchorMock as any;
-      }
-
-      return realCreateElement(tagName);
-    }) as any);
-    mockGetDivPng.mockResolvedValueOnce('data:image/png;base64,abc');
-
-    await render(<RateFigureVisualization {...defaultProps} />);
-    await page.getByText('Download Figure as PNG').click();
-
-    await expect.poll(() => mockGetDivPng.mock.calls.length).toBe(1);
-    expect(createElementSpy).toHaveBeenCalledWith('a');
-    expect(anchorMock.href).toBe('data:image/png;base64,abc');
-    expect(anchorMock.download).toBe('figure.png');
-    expect(anchorMock.click).toHaveBeenCalledTimes(1);
-  });
-
-  it('does not trigger a download when image generation returns nothing', async () => {
-    const createElementSpy = vi.spyOn(document, 'createElement');
-    mockGetDivPng.mockResolvedValueOnce(undefined);
-
-    await render(<RateFigureVisualization {...defaultProps} />);
-    await page.getByText('Download Figure as PNG').click();
-
-    await expect.poll(() => mockGetDivPng.mock.calls.length).toBe(1);
-    expect(createElementSpy.mock.calls.some(([tagName]) => tagName === 'a')).toBe(false);
   });
 });

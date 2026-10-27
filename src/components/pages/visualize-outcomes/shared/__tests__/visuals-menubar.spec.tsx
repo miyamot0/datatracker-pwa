@@ -41,6 +41,8 @@ function renderMenubar(overrides: Partial<React.ComponentProps<typeof VisualsMen
     onShowTooltipChange: vi.fn(),
     showConditionLegend: true,
     onShowConditionLegendChange: vi.fn(),
+    showDescription: true,
+    onShowDescriptionChange: vi.fn(),
     ...overrides,
   };
 
@@ -166,6 +168,17 @@ describe('VisualsMenubar', () => {
 
     expect(onShowConditionLegendChange).toHaveBeenCalledWith(false);
     await expect.element(page.getByRole('menuitemcheckbox', { name: 'Show Condition Legend' })).toBeInTheDocument();
+  });
+
+  it('reports Show Description toggled off from Design and keeps the menu open', async () => {
+    const onShowDescriptionChange = vi.fn();
+    renderMenubar({ onShowDescriptionChange, showDescription: true });
+
+    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitemcheckbox', { name: 'Show Description' }).click();
+
+    expect(onShowDescriptionChange).toHaveBeenCalledWith(false);
+    await expect.element(page.getByRole('menuitemcheckbox', { name: 'Show Description' })).toBeInTheDocument();
   });
 
   it('keeps the Data menu open after toggling Connect All Spans', async () => {

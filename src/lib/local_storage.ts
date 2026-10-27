@@ -179,6 +179,29 @@ export function setLocalShowConditionLegend(
 }
 
 /**
+ * Retrieve whether the explanation text above the figure is shown for a Group/Individual/Evaluation. Defaults to shown.
+ */
+export function getLocalShowDescription(Group: string, Individual: string, Evaluation: string) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ShowDescription'].join('_');
+
+  return localStorage.getItem(dynamic_key) !== 'false';
+}
+
+/**
+ * Store whether the explanation text above the figure is shown for a Group/Individual/Evaluation.
+ */
+export function setLocalShowDescription(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  ShowDescription: boolean,
+) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ShowDescription'].join('_');
+
+  localStorage.setItem(dynamic_key, String(ShowDescription));
+}
+
+/**
  * Retrieve whether a plot's spans are connected for a Group/Individual/Evaluation. Defaults to not connected when nothing valid is saved.
  */
 export function getLocalConnectSpans(

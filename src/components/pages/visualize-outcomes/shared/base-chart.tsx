@@ -130,7 +130,7 @@ export function BaseChart({
       width="100%"
       height={spacing.chartHeight}
       className={cn(
-        'text-base text-primary bg-white nuke-view-transition [&_.recharts-legend-item]:inline-flex! [&_.recharts-legend-item]:items-center',
+        'text-base text-primary bg-white nuke-view-transition [&_.recharts-legend-item]:inline-flex! [&_.recharts-legend-item]:items-center [&_.recharts-scatter-symbol]:cursor-pointer [&_*]:outline-none',
         {
           'text-xl': figureTextSize == FIGURE_TEXT_OPTIONS[1].value,
           'text-2xl': figureTextSize == FIGURE_TEXT_OPTIONS[2].value,
