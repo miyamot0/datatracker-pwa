@@ -1,6 +1,8 @@
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { KeySet } from '@/types/keyset';
 import { useState } from 'react';
+import { useGenerateImage } from 'recharts-to-png';
+import { savePngFile } from '@/components/pages/visualize-outcomes/shared/save-png';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   DropdownMenu,
@@ -99,6 +101,7 @@ export default function ResultsRateVisualsPage({
     setFilteredConditions(filteredConditions.map((c) => (c.Condition === condition ? { ...c, Visible: visible } : c)));
   };
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
+  const [getDivPng, { ref: figureRef }] = useGenerateImage<HTMLDivElement>();
 
   return (
     <Card className="w-full">
@@ -283,6 +286,11 @@ export default function ResultsRateVisualsPage({
           )}
           styles={seriesStyles}
           onStylesChange={updateSeriesStyles}
+          onSavePng={() => savePngFile(getDivPng, 'rate.png')}
+          figureTextSize={figureTextSize}
+          onFigureTextSizeChange={setFigureTextSize}
+          connectSpans={connectAllPoints}
+          onConnectSpansChange={setConnectAllPoints}
         />
 
         <p>
@@ -309,6 +317,8 @@ export default function ResultsRateVisualsPage({
             MinX={MinX}
             MaxX={MaxX}
             SeriesStyles={seriesStyles}
+            getDivPng={getDivPng}
+            divRef={figureRef}
           />
         )}
       </CardContent>

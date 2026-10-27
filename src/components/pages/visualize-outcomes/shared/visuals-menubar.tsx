@@ -1,15 +1,31 @@
 import { useState } from 'react';
-import { MinusIcon, PaintbrushIcon, RulerIcon, TypeIcon } from 'lucide-react';
+import {
+  DownloadIcon,
+  FileJsonIcon,
+  FlaskConicalIcon,
+  KeyRoundIcon,
+  MessageSquareIcon,
+  MinusIcon,
+  PaintbrushIcon,
+  RulerIcon,
+  TypeIcon,
+  ZoomInIcon,
+} from 'lucide-react';
 import {
   Menubar,
   MenubarCheckboxItem,
   MenubarContent,
   MenubarItem,
-  MenubarLabel,
   MenubarMenu,
+  MenubarRadioGroup,
+  MenubarRadioItem,
   MenubarSeparator,
+  MenubarSub,
+  MenubarSubContent,
+  MenubarSubTrigger,
   MenubarTrigger,
 } from '@/components/ui/menubar';
+import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import { type SeriesStyles, type TextPage } from '@/lib/graphing/series-style';
 import { type ToggleDisplayCondition, type ToggleDisplayKey } from '@/types/visuals';
 import { AimLinesDialog } from './dialogs/aim-lines-dialog';
@@ -29,6 +45,11 @@ type Props = {
   visibleStyleConditions: string[];
   styles: SeriesStyles;
   onStylesChange: (styles: SeriesStyles) => void;
+  onSavePng: () => void;
+  figureTextSize: FigureVisualSizing;
+  onFigureTextSizeChange: (size: FigureVisualSizing) => void;
+  connectSpans: boolean;
+  onConnectSpansChange: (connect: boolean) => void;
 };
 
 /**
@@ -47,6 +68,11 @@ export function VisualsMenubar({
   visibleStyleConditions,
   styles,
   onStylesChange,
+  onSavePng,
+  figureTextSize,
+  onFigureTextSizeChange,
+  connectSpans,
+  onConnectSpansChange,
 }: Props) {
   const [activeDialog, setActiveDialog] = useState<AnnotationDialog | null>(null);
 
@@ -55,60 +81,115 @@ export function VisualsMenubar({
   return (
     <Menubar className="h-auto w-fit flex-wrap">
       <MenubarMenu>
-        <MenubarTrigger>Keys</MenubarTrigger>
+        <MenubarTrigger>File</MenubarTrigger>
         <MenubarContent onCloseAutoFocus={(event) => event.preventDefault()}>
-          <MenubarLabel>Toggle Visibility</MenubarLabel>
-          <MenubarSeparator />
-          {keys.map((key) => (
-            <MenubarCheckboxItem
-              key={key.KeyDescription}
-              checked={key.Visible}
-              onSelect={(event) => event.preventDefault()}
-              onCheckedChange={(checked) => onKeyVisibilityChange(key.KeyDescription, checked === true)}
-            >
-              {key.KeyDescription}
-            </MenubarCheckboxItem>
-          ))}
+          <MenubarItem onSelect={onSavePng}>
+            <DownloadIcon className="mr-2 h-4 w-4" />
+            Save to PNG
+          </MenubarItem>
+          <MenubarItem onSelect={() => console.log('Export Style: not implemented yet')}>
+            <FileJsonIcon className="mr-2 h-4 w-4" />
+            Export Style
+          </MenubarItem>
         </MenubarContent>
       </MenubarMenu>
 
       <MenubarMenu>
-        <MenubarTrigger>Conditions</MenubarTrigger>
+        <MenubarTrigger>Visibility</MenubarTrigger>
         <MenubarContent onCloseAutoFocus={(event) => event.preventDefault()}>
-          <MenubarLabel>Toggle Visibility</MenubarLabel>
-          <MenubarSeparator />
-          {conditions.map((condition) => (
-            <MenubarCheckboxItem
-              key={condition.Condition}
-              checked={condition.Visible}
-              onSelect={(event) => event.preventDefault()}
-              onCheckedChange={(checked) => onConditionVisibilityChange(condition.Condition, checked === true)}
-            >
-              {condition.Condition}
-            </MenubarCheckboxItem>
-          ))}
+          <MenubarSub>
+            <MenubarSubTrigger>
+              <KeyRoundIcon className="mr-2 h-4 w-4" />
+              Display Keys
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              {keys.map((key) => (
+                <MenubarCheckboxItem
+                  key={key.KeyDescription}
+                  checked={key.Visible}
+                  onSelect={(event) => event.preventDefault()}
+                  onCheckedChange={(checked) => onKeyVisibilityChange(key.KeyDescription, checked === true)}
+                >
+                  {key.KeyDescription}
+                </MenubarCheckboxItem>
+              ))}
+            </MenubarSubContent>
+          </MenubarSub>
+          <MenubarSub>
+            <MenubarSubTrigger>
+              <FlaskConicalIcon className="mr-2 h-4 w-4" />
+              Display Conditions
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              {conditions.map((condition) => (
+                <MenubarCheckboxItem
+                  key={condition.Condition}
+                  checked={condition.Visible}
+                  onSelect={(event) => event.preventDefault()}
+                  onCheckedChange={(checked) => onConditionVisibilityChange(condition.Condition, checked === true)}
+                >
+                  {condition.Condition}
+                </MenubarCheckboxItem>
+              ))}
+            </MenubarSubContent>
+          </MenubarSub>
         </MenubarContent>
       </MenubarMenu>
 
       <MenubarMenu>
-        <MenubarTrigger>Annotations</MenubarTrigger>
+        <MenubarTrigger>Design</MenubarTrigger>
         <MenubarContent onCloseAutoFocus={(event) => event.preventDefault()}>
+
+          <MenubarSub>
+            <MenubarSubTrigger>
+              <ZoomInIcon className="mr-2 h-4 w-4" />
+              Element Magnification
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              <MenubarRadioGroup
+                value={figureTextSize}
+                onValueChange={(value) => onFigureTextSizeChange(value as FigureVisualSizing)}
+              >
+                {FIGURE_TEXT_OPTIONS.map((opt) => (
+                  <MenubarRadioItem key={opt.value} value={opt.value} onSelect={(event) => event.preventDefault()}>
+                    {opt.label}
+                  </MenubarRadioItem>
+                ))}
+              </MenubarRadioGroup>
+            </MenubarSubContent>
+          </MenubarSub>
+          <MenubarSub>
+            <MenubarSubTrigger>
+              <MessageSquareIcon className="mr-2 h-4 w-4" />
+              Annotations
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              <MenubarItem onSelect={() => setActiveDialog('aim-lines')}>
+                <MinusIcon className="mr-2 h-4 w-4" />
+                Aim Lines
+              </MenubarItem>
+              <MenubarItem onSelect={() => setActiveDialog('text-annotations')}>
+                <TypeIcon className="mr-2 h-4 w-4" />
+                Text Annotations
+              </MenubarItem>
+              <MenubarItem onSelect={() => setActiveDialog('phase-changes')}>
+                <RulerIcon className="mr-2 h-4 w-4" />
+                Phase Changes
+              </MenubarItem>
+            </MenubarSubContent>
+          </MenubarSub>
           <MenubarItem onSelect={() => setActiveDialog('series-styles')}>
             <PaintbrushIcon className="mr-2 h-4 w-4" />
             Series Styles
           </MenubarItem>
-          <MenubarItem onSelect={() => setActiveDialog('phase-changes')}>
-            <RulerIcon className="mr-2 h-4 w-4" />
-            Phase Changes
-          </MenubarItem>
-          <MenubarItem onSelect={() => setActiveDialog('text-annotations')}>
-            <TypeIcon className="mr-2 h-4 w-4" />
-            Text Annotations
-          </MenubarItem>
-          <MenubarItem onSelect={() => setActiveDialog('aim-lines')}>
-            <MinusIcon className="mr-2 h-4 w-4" />
-            Aim Lines
-          </MenubarItem>
+          <MenubarSeparator />
+          <MenubarCheckboxItem
+            checked={connectSpans}
+            onSelect={(event) => event.preventDefault()}
+            onCheckedChange={(checked) => onConnectSpansChange(checked === true)}
+          >
+            Connect All Spans
+          </MenubarCheckboxItem>
         </MenubarContent>
       </MenubarMenu>
 

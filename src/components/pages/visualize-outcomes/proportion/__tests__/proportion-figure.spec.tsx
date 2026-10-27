@@ -34,10 +34,6 @@ vi.mock('@/components/pages/visualize-outcomes/shared/base-chart', () => ({
   },
 }));
 
-vi.mock('recharts-to-png', () => ({
-  useGenerateImage: () => [mockGetDivPng, { ref: mockDivRef }],
-}));
-
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: mockUseNavigate,
 }));
@@ -88,6 +84,8 @@ const defaultProps = {
   ConnectSpans: false,
   MinX: 1,
   MaxX: 10,
+  getDivPng: mockGetDivPng,
+  divRef: mockDivRef,
 };
 
 // ----- Tests -----

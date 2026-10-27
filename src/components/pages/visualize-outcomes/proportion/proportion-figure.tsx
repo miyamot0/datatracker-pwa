@@ -1,6 +1,7 @@
 import { SavedSessionResult } from '@/lib/dtos/session-results';
-import { useGenerateImage } from 'recharts-to-png';
+import type { UseGenerateImage } from 'recharts-to-png';
 import { Button } from '@/components/ui/button';
+import { savePngFile } from '@/components/pages/visualize-outcomes/shared/save-png';
 import { FigureVisualSizing } from '@/types/accessibility';
 import { useNavigate } from '@tanstack/react-router';
 import { ExpandedKeySetInstance, KeySet } from '@/types/keyset';
@@ -26,6 +27,8 @@ type Props = {
   MinX: number;
   MaxX: number;
   SeriesStyles?: SeriesStyles;
+  getDivPng: UseGenerateImage<HTMLDivElement>[0];
+  divRef: UseGenerateImage<HTMLDivElement>[1]['ref'];
 };
 
 export default function ProportionFigureVisualization({
@@ -41,8 +44,9 @@ export default function ProportionFigureVisualization({
   MinX,
   MaxX,
   SeriesStyles = EMPTY_SERIES_STYLES,
+  getDivPng,
+  divRef,
 }: Props) {
-  const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
   const navigate = useNavigate({
     from: `/session/$group/$individual/$evaluation/proportion`,
   });
@@ -95,19 +99,7 @@ export default function ProportionFigureVisualization({
         onNavigate={onNavigate}
         divRef={divRef}
       />
-      <Button
-        onClick={async () => {
-          const png = await getDivPng();
-          if (png) {
-            const link = document.createElement('a');
-            link.href = png;
-            link.download = 'figure.png';
-            link.click();
-          }
-        }}
-      >
-        {'Download Figure as PNG'}
-      </Button>
+      <Button onClick={() => savePngFile(getDivPng)}>{'Download Figure as PNG'}</Button>
     </div>
   );
 }

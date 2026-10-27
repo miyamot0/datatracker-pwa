@@ -27,6 +27,11 @@ function renderMenubar(overrides: Partial<React.ComponentProps<typeof VisualsMen
     visibleStyleConditions: ['Baseline', 'Treatment'],
     styles: EMPTY_SERIES_STYLES,
     onStylesChange: vi.fn(),
+    onSavePng: vi.fn(),
+    figureTextSize: 'base' as const,
+    onFigureTextSizeChange: vi.fn(),
+    connectSpans: false,
+    onConnectSpansChange: vi.fn(),
     ...overrides,
   };
 
@@ -34,26 +39,37 @@ function renderMenubar(overrides: Partial<React.ComponentProps<typeof VisualsMen
 }
 
 describe('VisualsMenubar', () => {
-  it('renders Keys, Conditions, and Annotations menus', async () => {
+  it('renders File, Visibility, and Design menus', async () => {
     renderMenubar();
 
-    await expect.element(page.getByRole('menuitem', { name: 'Keys' })).toBeInTheDocument();
-    await expect.element(page.getByRole('menuitem', { name: 'Conditions' })).toBeInTheDocument();
-    await expect.element(page.getByRole('menuitem', { name: 'Annotations' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'File' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Visibility' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Design' })).toBeInTheDocument();
   });
 
-  it('reports a key toggled off from the Keys menu and keeps the menu open', async () => {
+  it('calls onSavePng from File > Save to PNG', async () => {
+    const onSavePng = vi.fn();
+    renderMenubar({ onSavePng });
+
+    await page.getByRole('menuitem', { name: 'File' }).click();
+    await page.getByRole('menuitem', { name: 'Save to PNG' }).click();
+
+    expect(onSavePng).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports a key toggled off from Visibility > Keys and keeps the menu open', async () => {
     const onKeyVisibilityChange = vi.fn();
     renderMenubar({ onKeyVisibilityChange });
 
-    await page.getByRole('menuitem', { name: 'Keys' }).click();
+    await page.getByRole('menuitem', { name: 'Visibility' }).click();
+    await page.getByRole('menuitem', { name: 'Keys' }).hover();
     await page.getByRole('menuitemcheckbox', { name: 'Key A' }).click();
 
     expect(onKeyVisibilityChange).toHaveBeenCalledWith('Key A', false);
     await expect.element(page.getByRole('menuitemcheckbox', { name: 'Key B' })).toBeInTheDocument();
   });
 
-  it('reports a condition toggled on from the Conditions menu', async () => {
+  it('reports a condition toggled on from Visibility > Conditions', async () => {
     const onConditionVisibilityChange = vi.fn();
     renderMenubar({
       onConditionVisibilityChange,
@@ -63,47 +79,88 @@ describe('VisualsMenubar', () => {
       ],
     });
 
-    await page.getByRole('menuitem', { name: 'Conditions' }).click();
+    await page.getByRole('menuitem', { name: 'Visibility' }).click();
+    await page.getByRole('menuitem', { name: 'Conditions' }).hover();
     await page.getByRole('menuitemcheckbox', { name: 'Treatment' }).click();
 
     expect(onConditionVisibilityChange).toHaveBeenCalledWith('Treatment', true);
   });
 
-  it('opens the Aim Lines dialog from the Annotations menu', async () => {
+  it('opens the Aim Lines dialog from Design > Annotations submenu', async () => {
     renderMenubar();
 
-    await page.getByRole('menuitem', { name: 'Annotations' }).click();
+    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitem', { name: 'Annotations' }).hover();
     await page.getByRole('menuitem', { name: 'Aim Lines' }).click();
 
     await expect.element(page.getByRole('dialog', { name: 'Aim Lines' })).toBeInTheDocument();
   });
 
+  it('opens the Series Styles dialog from Design', async () => {
+    renderMenubar();
+
+    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitem', { name: 'Series Styles' }).click();
+
+    await expect.element(page.getByRole('dialog', { name: 'Series Styles' })).toBeInTheDocument();
+  });
+
+  it('selects an element magnification size from Design', async () => {
+    const onFigureTextSizeChange = vi.fn();
+    renderMenubar({ onFigureTextSizeChange });
+
+    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitem', { name: 'Element Magnification' }).hover();
+    await page.getByRole('menuitemradio', { name: 'Large', exact: true }).click();
+
+    expect(onFigureTextSizeChange).toHaveBeenCalledWith('large');
+  });
+
+  it('reports Connect All Spans toggled on from Design', async () => {
+    const onConnectSpansChange = vi.fn();
+    renderMenubar({ onConnectSpansChange });
+
+    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitemcheckbox', { name: 'Connect All Spans' }).click();
+
+    expect(onConnectSpansChange).toHaveBeenCalledWith(true);
+  });
+
+  it('keeps the Design menu open after toggling Connect All Spans', async () => {
+    renderMenubar();
+
+    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitemcheckbox', { name: 'Connect All Spans' }).click();
+
+    await expect.element(page.getByRole('menuitemcheckbox', { name: 'Connect All Spans' })).toBeInTheDocument();
+  });
+
   it('switches from an open menu to another menu on click', async () => {
     renderMenubar();
 
-    await page.getByRole('menuitem', { name: 'Keys' }).click();
-    await page.getByRole('menuitem', { name: 'Conditions' }).click();
+    await page.getByRole('menuitem', { name: 'File' }).click();
+    await page.getByRole('menuitem', { name: 'Visibility' }).click();
 
-    await expect.element(page.getByRole('menuitemcheckbox', { name: 'Treatment' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Keys' })).toBeInTheDocument();
   });
 
   it('switches to another menu on hover while a menu is open', async () => {
     renderMenubar();
 
-    await page.getByRole('menuitem', { name: 'Keys' }).click();
-    await page.getByRole('menuitem', { name: 'Conditions' }).hover();
+    await page.getByRole('menuitem', { name: 'Visibility' }).click();
+    await page.getByRole('menuitem', { name: 'Design' }).hover();
 
-    await expect.element(page.getByRole('menuitemcheckbox', { name: 'Treatment' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Series Styles' })).toBeInTheDocument();
   });
 
   it('closes the open menu when its own trigger is clicked again', async () => {
     renderMenubar();
 
-    await page.getByRole('menuitem', { name: 'Keys' }).click();
-    await expect.element(page.getByRole('menuitemcheckbox', { name: 'Key A' })).toBeInTheDocument();
-    await page.getByRole('menuitem', { name: 'Keys' }).click();
+    await page.getByRole('menuitem', { name: 'Visibility' }).click();
+    await expect.element(page.getByRole('menuitem', { name: 'Keys' })).toBeInTheDocument();
+    await page.getByRole('menuitem', { name: 'Visibility' }).click();
 
-    await expect.element(page.getByRole('menuitemcheckbox', { name: 'Key A' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Keys' })).not.toBeInTheDocument();
   });
 });
 
@@ -111,7 +168,7 @@ describe('VisualsMenubar item hover', () => {
   it('highlights a menubar trigger on hover before any menu is open', async () => {
     renderMenubar();
 
-    const trigger = page.getByRole('menuitem', { name: 'Keys' });
+    const trigger = page.getByRole('menuitem', { name: 'Visibility' });
     await expect.element(trigger).toBeInTheDocument();
     const before = getComputedStyle(trigger.element()).backgroundColor;
     await trigger.hover();
@@ -122,8 +179,10 @@ describe('VisualsMenubar item hover', () => {
   it('highlights a menu item on hover', async () => {
     renderMenubar();
 
-    await page.getByRole('menuitem', { name: 'Keys' }).click();
-    const item = page.getByRole('menuitemcheckbox', { name: 'Key A' });
+    await page.getByRole('menuitem', { name: 'Visibility' }).click();
+    await page.getByRole('menuitem', { name: 'Keys' }).hover();
+    const item = page.getByRole('menuitemcheckbox', { name: 'Key B' });
+    await expect.element(item).toBeInTheDocument();
     const before = getComputedStyle(item.element()).backgroundColor;
     await item.hover();
 

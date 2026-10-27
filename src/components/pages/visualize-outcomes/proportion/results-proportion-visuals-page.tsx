@@ -1,6 +1,8 @@
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { KeySet } from '@/types/keyset';
 import { useState } from 'react';
+import { useGenerateImage } from 'recharts-to-png';
+import { savePngFile } from '@/components/pages/visualize-outcomes/shared/save-png';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -71,6 +73,7 @@ export default function ResultsProportionVisualsPage({
   const legendConditionOrder = getUniqueSessionConditions(ResultsFiltered);
   const styleConditions = [...legendConditionOrder, ...Conditions.filter((c) => !legendConditionOrder.includes(c))];
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
+  const [getDivPng, { ref: figureRef }] = useGenerateImage<HTMLDivElement>();
   const [schedule, setSchedule] = useState<ScheduleMappingOptionsType | { value: string; label: string }>(TimerMapping);
   const [seriesStyles, setSeriesStyles] = useState<SeriesStyles>(() =>
     getLocalSeriesStyles(Group, Individual, Evaluation),
@@ -273,6 +276,11 @@ export default function ResultsProportionVisualsPage({
           )}
           styles={seriesStyles}
           onStylesChange={updateSeriesStyles}
+          onSavePng={() => savePngFile(getDivPng, 'proportion.png')}
+          figureTextSize={figureTextSize}
+          onFigureTextSizeChange={setFigureTextSize}
+          connectSpans={connectAllPoints}
+          onConnectSpansChange={setConnectAllPoints}
         />
 
         <p>
@@ -298,6 +306,8 @@ export default function ResultsProportionVisualsPage({
             FigureTextSize={figureTextSize}
             ConnectSpans={connectAllPoints}
             SeriesStyles={seriesStyles}
+            getDivPng={getDivPng}
+            divRef={figureRef}
           />
         )}
       </CardContent>
