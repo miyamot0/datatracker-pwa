@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { AnnotationRow } from './annotation-row';
+import { useDialogOpenState } from './use-dialog-open-state';
 import {
   TEXT_ANCHORS,
   TEXT_JUSTIFIES,
@@ -69,6 +70,9 @@ type Props = {
   /** Page this dialog edits. Only text added on this page is listed, and new text is tagged with it. */
   page: TextPage;
   onChange: (styles: SeriesStyles) => void;
+  /** Controlled open state, for opening the dialog from elsewhere (e.g. a menu) */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 /**
@@ -110,11 +114,31 @@ function toAnnotation(row: DraftRow): TextAnnotation | undefined {
  * @param props.page - Page the text is edited for
  * @param props.onChange - Receives the updated styles after each edit
  */
-export function TextAnnotationsDialog({ styles, page, onChange }: Props) {
-  const [open, setOpen] = useState(false);
+export function TextAnnotationsDialog({ styles, page, onChange, open: openProp, onOpenChange }: Props) {
+  const [open, setOpen] = useDialogOpenState(openProp, onOpenChange);
   const [rows, setRows] = useState<DraftRow[]>([]);
+  const [wasOpen, setWasOpen] = useState(false);
   const nextRowId = useRef(0);
   const idPrefix = useId();
+
+  // Reloads draft rows whenever the dialog opens, whether from its trigger or a controlling parent
+  if (open !== wasOpen) {
+    setWasOpen(open);
+
+    if (open) {
+      setRows(
+        getPageTextAnnotations(styles.text_annotations, page).map((annotation) => ({
+          id: nextRowId.current++,
+          label: annotation.label,
+          x: String(annotation.x),
+          y: String(annotation.y),
+          anchor: annotation.anchor,
+          justify: annotation.justify,
+          weight: annotation.weight ?? 'normal',
+        })),
+      );
+    }
+  }
 
   const commit = (nextRows: DraftRow[]) => {
     setRows(nextRows);
@@ -131,24 +155,6 @@ export function TextAnnotationsDialog({ styles, page, onChange }: Props) {
     onChange({ ...styles, text_annotations: [...otherPageAnnotations, ...pageAnnotations] });
   };
 
-  const handleOpenChange = (next: boolean) => {
-    if (next) {
-      setRows(
-        getPageTextAnnotations(styles.text_annotations, page).map((annotation) => ({
-          id: nextRowId.current++,
-          label: annotation.label,
-          x: String(annotation.x),
-          y: String(annotation.y),
-          anchor: annotation.anchor,
-          justify: annotation.justify,
-          weight: annotation.weight ?? 'normal',
-        })),
-      );
-    }
-
-    setOpen(next);
-  };
-
   const updateRow = (id: number, patch: Partial<Omit<DraftRow, 'id'>>) =>
     commit(rows.map((row) => (row.id === id ? { ...row, ...patch } : row)));
 
@@ -161,13 +167,15 @@ export function TextAnnotationsDialog({ styles, page, onChange }: Props) {
   const deleteRow = (id: number) => commit(rows.filter((row) => row.id !== id));
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="w-fit" aria-label="Edit Text Annotations">
-          <TypeIcon className="md:mr-2 w-4 h-4" />
-          <span className="hidden md:inline">Text</span>
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
+      {openProp === undefined && (
+        <DialogTrigger asChild>
+          <Button variant="outline" className="w-fit" aria-label="Edit Text Annotations">
+            <TypeIcon className="md:mr-2 w-4 h-4" />
+            <span className="hidden md:inline">Text</span>
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto data-[state=open]:slide-in-from-left-0! data-[state=open]:slide-in-from-top-0! data-[state=closed]:slide-out-to-left-0! data-[state=closed]:slide-out-to-top-0! data-[state=open]:zoom-in-100! data-[state=closed]:zoom-out-100!">
         <DialogHeader>
           <DialogTitle>Text Annotations</DialogTitle>

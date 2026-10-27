@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { AnnotationRow } from './annotation-row';
+import { useDialogOpenState } from './use-dialog-open-state';
 import { PHASE_LINE_TYPES, type PhaseChange, type PhaseLineType, type SeriesStyles } from '@/lib/graphing/series-style';
 
 const LINE_TYPE_LABELS: Record<PhaseLineType, string> = {
@@ -34,6 +35,9 @@ type DraftRow = {
 type Props = {
   styles: SeriesStyles;
   onChange: (styles: SeriesStyles) => void;
+  /** Controlled open state, for opening the dialog from elsewhere (e.g. a menu) */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 /**
@@ -59,11 +63,27 @@ function parsePosition(text: string): number | undefined {
  * @param props.styles - Current saved styles, including the phase change lines
  * @param props.onChange - Receives the updated styles after each edit
  */
-export function PhaseChangesDialog({ styles, onChange }: Props) {
-  const [open, setOpen] = useState(false);
+export function PhaseChangesDialog({ styles, onChange, open: openProp, onOpenChange }: Props) {
+  const [open, setOpen] = useDialogOpenState(openProp, onOpenChange);
   const [rows, setRows] = useState<DraftRow[]>([]);
+  const [wasOpen, setWasOpen] = useState(false);
   const nextRowId = useRef(0);
   const idPrefix = useId();
+
+  // Reloads draft rows whenever the dialog opens, whether from its trigger or a controlling parent
+  if (open !== wasOpen) {
+    setWasOpen(open);
+
+    if (open) {
+      setRows(
+        styles.phase_changes.map((line) => ({
+          id: nextRowId.current++,
+          position: String(line.position),
+          lineType: line.lineType,
+        })),
+      );
+    }
+  }
 
   const commit = (nextRows: DraftRow[]) => {
     setRows(nextRows);
@@ -77,20 +97,6 @@ export function PhaseChangesDialog({ styles, onChange }: Props) {
     onChange({ ...styles, phase_changes });
   };
 
-  const handleOpenChange = (next: boolean) => {
-    if (next) {
-      setRows(
-        styles.phase_changes.map((line) => ({
-          id: nextRowId.current++,
-          position: String(line.position),
-          lineType: line.lineType,
-        })),
-      );
-    }
-
-    setOpen(next);
-  };
-
   const updateRow = (id: number, patch: Partial<Omit<DraftRow, 'id'>>) =>
     commit(rows.map((row) => (row.id === id ? { ...row, ...patch } : row)));
 
@@ -99,13 +105,15 @@ export function PhaseChangesDialog({ styles, onChange }: Props) {
   const deleteRow = (id: number) => commit(rows.filter((row) => row.id !== id));
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="w-fit" aria-label="Edit Phase Changes">
-          <RulerIcon className="lg:mr-2 w-4 h-4" />
-          <span className="hidden lg:inline">Phase Changes</span>
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
+      {openProp === undefined && (
+        <DialogTrigger asChild>
+          <Button variant="outline" className="w-fit" aria-label="Edit Phase Changes">
+            <RulerIcon className="lg:mr-2 w-4 h-4" />
+            <span className="hidden lg:inline">Phase Changes</span>
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto data-[state=open]:slide-in-from-left-0! data-[state=open]:slide-in-from-top-0! data-[state=closed]:slide-out-to-left-0! data-[state=closed]:slide-out-to-top-0! data-[state=open]:zoom-in-100! data-[state=closed]:zoom-out-100!">
         <DialogHeader>
           <DialogTitle>Phase Changes</DialogTitle>

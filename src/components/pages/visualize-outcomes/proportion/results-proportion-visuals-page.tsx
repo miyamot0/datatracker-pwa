@@ -34,6 +34,7 @@ import {
   ScoringOptionsMapType,
 } from '@/types/schedules';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
+import { VisualsMenubar } from '@/components/pages/visualize-outcomes/shared/visuals-menubar';
 
 export default function ResultsProportionVisualsPage({
   Group,
@@ -80,6 +81,23 @@ export default function ResultsProportionVisualsPage({
     setLocalSeriesStyles(Group, Individual, Evaluation, next);
   };
 
+  const toggleKeyVisibility = (keyDescription: string, visible: boolean) => {
+    const updatedKeys = filteredKeys.map((k) => (k.KeyDescription === keyDescription ? { ...k, Visible: visible } : k));
+
+    setFilteredKeys(updatedKeys);
+
+    const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+
+    setLocalCachedPrefs(Group, Individual, Evaluation, 'Duration', {
+      KeyDescription: hidden_keys,
+      Schedule: schedule.value,
+    });
+  };
+
+  const toggleConditionVisibility = (condition: string, visible: boolean) => {
+    setFilteredConditions(filteredConditions.map((c) => (c.Condition === condition ? { ...c, Visible: visible } : c)));
+  };
+
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-row justify-between">
@@ -123,27 +141,7 @@ export default function ResultsProportionVisualsPage({
                     <DropdownMenuCheckboxItem
                       key={`key-${index}`}
                       checked={key.Visible}
-                      onCheckedChange={(checked) => {
-                        const updatedKeys = filteredKeys.map((k) => {
-                          if (k.KeyDescription === key.KeyDescription) {
-                            return {
-                              ...k,
-                              Visible: checked,
-                            };
-                          }
-
-                          return k;
-                        });
-
-                        setFilteredKeys(updatedKeys);
-
-                        const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
-
-                        setLocalCachedPrefs(Group, Individual, Evaluation, 'Duration', {
-                          KeyDescription: hidden_keys,
-                          Schedule: schedule.value,
-                        });
-                      }}
+                      onCheckedChange={(checked) => toggleKeyVisibility(key.KeyDescription, checked)}
                     >
                       {key.KeyDescription}
                     </DropdownMenuCheckboxItem>
@@ -166,20 +164,7 @@ export default function ResultsProportionVisualsPage({
                       className="flex flex-row justify-between"
                       key={`condition-${index}`}
                       checked={condition.Visible}
-                      onCheckedChange={(checked) => {
-                        const updatedConditions = filteredConditions.map((c) => {
-                          if (c.Condition === condition.Condition) {
-                            return {
-                              ...c,
-                              Visible: checked,
-                            };
-                          }
-
-                          return c;
-                        });
-
-                        setFilteredConditions(updatedConditions);
-                      }}
+                      onCheckedChange={(checked) => toggleConditionVisibility(condition.Condition, checked)}
                     >
                       <p>{condition.Condition}</p>
                     </DropdownMenuCheckboxItem>
@@ -275,6 +260,20 @@ export default function ResultsProportionVisualsPage({
             <Switch checked={connectAllPoints} onCheckedChange={(checked) => setConnectAllPoints(checked)} />
           </div>
         </div>
+
+        <VisualsMenubar
+          page="proportion"
+          keys={filteredKeys}
+          onKeyVisibilityChange={toggleKeyVisibility}
+          conditions={filteredConditions}
+          onConditionVisibilityChange={toggleConditionVisibility}
+          styleConditions={styleConditions}
+          visibleStyleConditions={styleConditions.filter((c) =>
+            filteredConditions.some((f) => f.Condition === c && f.Visible),
+          )}
+          styles={seriesStyles}
+          onStylesChange={updateSeriesStyles}
+        />
 
         <p>
           This page provides a visual of the available data regarding <i>proportion of session time</i>. For

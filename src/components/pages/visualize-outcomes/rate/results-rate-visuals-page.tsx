@@ -18,6 +18,7 @@ import { SeriesStylesDialog } from '@/components/pages/visualize-outcomes/shared
 import { PhaseChangesDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/phase-changes-dialog';
 import { TextAnnotationsDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/text-annotations-dialog';
 import { AimLinesDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/aim-lines-dialog';
+import { VisualsMenubar } from '@/components/pages/visualize-outcomes/shared/visuals-menubar';
 import { type SeriesStyles } from '@/lib/graphing/series-style';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -80,6 +81,23 @@ export default function ResultsRateVisualsPage({
     setSeriesStyles(next);
     setLocalSeriesStyles(Group, Individual, Evaluation, next);
   };
+
+  const toggleKeyVisibility = (keyDescription: string, visible: boolean) => {
+    const updatedKeys = filteredKeys.map((k) => (k.KeyDescription === keyDescription ? { ...k, Visible: visible } : k));
+
+    setFilteredKeys(updatedKeys);
+
+    const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
+
+    setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
+      KeyDescription: hidden_keys,
+      Schedule: schedule.value,
+    });
+  };
+
+  const toggleConditionVisibility = (condition: string, visible: boolean) => {
+    setFilteredConditions(filteredConditions.map((c) => (c.Condition === condition ? { ...c, Visible: visible } : c)));
+  };
   const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
 
   return (
@@ -128,27 +146,7 @@ export default function ResultsRateVisualsPage({
                       className="flex flex-row justify-between"
                       key={`key-${index}`}
                       checked={key.Visible}
-                      onCheckedChange={(checked) => {
-                        const updatedKeys = filteredKeys.map((k) => {
-                          if (k.KeyDescription === key.KeyDescription) {
-                            return {
-                              ...k,
-                              Visible: checked,
-                            };
-                          }
-
-                          return k;
-                        });
-
-                        setFilteredKeys(updatedKeys);
-
-                        const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
-
-                        setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
-                          KeyDescription: hidden_keys,
-                          Schedule: schedule.value,
-                        });
-                      }}
+                      onCheckedChange={(checked) => toggleKeyVisibility(key.KeyDescription, checked)}
                     >
                       <p>{key.KeyDescription}</p>
                       {key.KeyType === 'Derived' && <p className="text-xs text-muted-foreground">({key.KeyType})</p>}
@@ -174,20 +172,7 @@ export default function ResultsRateVisualsPage({
                       className="flex flex-row justify-between"
                       key={`condition-${index}`}
                       checked={condition.Visible}
-                      onCheckedChange={(checked) => {
-                        const updatedConditions = filteredConditions.map((c) => {
-                          if (c.Condition === condition.Condition) {
-                            return {
-                              ...c,
-                              Visible: checked,
-                            };
-                          }
-
-                          return c;
-                        });
-
-                        setFilteredConditions(updatedConditions);
-                      }}
+                      onCheckedChange={(checked) => toggleConditionVisibility(condition.Condition, checked)}
                     >
                       <p>{condition.Condition}</p>
                     </DropdownMenuCheckboxItem>
@@ -285,6 +270,20 @@ export default function ResultsRateVisualsPage({
             <Switch checked={connectAllPoints} onCheckedChange={(checked) => setConnectAllPoints(checked)} />
           </div>
         </div>
+
+        <VisualsMenubar
+          page="rate"
+          keys={filteredKeys}
+          onKeyVisibilityChange={toggleKeyVisibility}
+          conditions={filteredConditions}
+          onConditionVisibilityChange={toggleConditionVisibility}
+          styleConditions={styleConditions}
+          visibleStyleConditions={styleConditions.filter((c) =>
+            filteredConditions.some((f) => f.Condition === c && f.Visible),
+          )}
+          styles={seriesStyles}
+          onStylesChange={updateSeriesStyles}
+        />
 
         <p>
           This page provides a visual of the available data regarding <i>rate</i>. For convenience, series of data can
