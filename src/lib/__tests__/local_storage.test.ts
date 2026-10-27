@@ -77,11 +77,16 @@ describe('LocalStorage Prefs', () => {
       expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation1')).toEqual({
         KeyStyles: {},
         ConditionStyles: {},
+        phase_changes: [],
       });
     });
 
     it('stores under the trimmed group, individual, and evaluation key', () => {
-      const styles = { KeyStyles: { Hitting: { shape: 'star' as const } }, ConditionStyles: {} };
+      const styles = {
+        KeyStyles: { Hitting: { shape: 'star' as const } },
+        ConditionStyles: {},
+        phase_changes: [],
+      };
 
       setLocalSeriesStyles(' group1 ', ' individual1 ', ' evaluation1 ', styles);
 
@@ -90,21 +95,23 @@ describe('LocalStorage Prefs', () => {
     });
 
     it('does not share styles across a different individual or evaluation', () => {
-      const styles = { KeyStyles: {}, ConditionStyles: { Baseline: { color: '#FF0000' } } };
+      const styles = { KeyStyles: {}, ConditionStyles: { Baseline: { color: '#FF0000' } }, phase_changes: [] };
 
       setLocalSeriesStyles('group1', 'individual1', 'evaluation1', styles);
 
       expect(getLocalSeriesStyles('group1', 'individual2', 'evaluation1')).toEqual({
         KeyStyles: {},
         ConditionStyles: {},
+        phase_changes: [],
       });
       expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation2')).toEqual({
         KeyStyles: {},
         ConditionStyles: {},
+        phase_changes: [],
       });
     });
 
-    it('fills in a missing KeyStyles or ConditionStyles section when a saved object is partial', () => {
+    it('fills in a missing KeyStyles, ConditionStyles, or phase_changes section when a saved object is partial', () => {
       localStorage.setItem(
         'group1_individual1_evaluation1_SeriesStyles',
         JSON.stringify({ KeyStyles: { Hitting: { shape: 'star' } } }),
@@ -113,7 +120,31 @@ describe('LocalStorage Prefs', () => {
       expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation1')).toEqual({
         KeyStyles: { Hitting: { shape: 'star' } },
         ConditionStyles: {},
+        phase_changes: [],
       });
+    });
+
+    it('keeps only valid phase changes when reading saved styles', () => {
+      localStorage.setItem(
+        'group1_individual1_evaluation1_SeriesStyles',
+        JSON.stringify({
+          KeyStyles: {},
+          ConditionStyles: {},
+          phase_changes: [
+            { position: 3.5, lineType: 'dashed' },
+            { position: 0, lineType: 'solid' },
+            { position: -1, lineType: 'solid' },
+            { position: 4, lineType: 'wavy' },
+            { position: '5', lineType: 'dotted' },
+            { position: 6, lineType: 'dotted' },
+          ],
+        }),
+      );
+
+      expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation1').phase_changes).toEqual([
+        { position: 3.5, lineType: 'dashed' },
+        { position: 6, lineType: 'dotted' },
+      ]);
     });
   });
 });

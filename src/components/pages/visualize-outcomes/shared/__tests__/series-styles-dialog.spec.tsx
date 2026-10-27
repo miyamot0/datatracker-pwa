@@ -7,6 +7,7 @@ import { EMPTY_SERIES_STYLES, type SeriesStyles } from '@/lib/graphing/series-st
 const styled: SeriesStyles = {
   KeyStyles: { Hitting: { shape: 'star' } },
   ConditionStyles: { Baseline: { color: '#FF0000' } },
+  phase_changes: [],
 };
 
 describe('SeriesStylesDialog', () => {
@@ -64,7 +65,7 @@ describe('SeriesStylesDialog', () => {
         keys={[{ KeyDescription: 'Hitting', Visible: true }]}
         conditions={['Baseline']}
         visibleConditions={['Baseline']}
-        styles={styled}
+        styles={{ ...styled, phase_changes: [{ position: 4, lineType: 'dotted' }] }}
         onChange={onChange}
       />,
     );
@@ -72,6 +73,9 @@ describe('SeriesStylesDialog', () => {
     await page.getByRole('button', { name: 'Edit Series Styles' }).click();
     await page.getByRole('button', { name: 'Reset All to Defaults' }).click();
 
-    expect(onChange).toHaveBeenCalledWith(EMPTY_SERIES_STYLES);
+    expect(onChange).toHaveBeenCalledWith({
+      ...EMPTY_SERIES_STYLES,
+      phase_changes: [{ position: 4, lineType: 'dotted' }],
+    });
   });
 });

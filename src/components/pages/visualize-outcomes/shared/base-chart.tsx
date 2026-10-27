@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
   ZAxis,
+  ReferenceLine,
 } from 'recharts';
 import { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
@@ -19,6 +20,8 @@ import { ChartLegendContent } from '@/components/pages/visualize-outcomes/shared
 import {
   EMPTY_SERIES_STYLES,
   DEFAULT_LINE_COLOR,
+  PHASE_LINE_COLOR,
+  PHASE_LINE_DASH_ARRAY,
   isSeriesHidden,
   resolveKeyFillColor,
   resolveKeyShape,
@@ -243,6 +246,16 @@ export function BaseChart({
         </YAxis>
 
         <AxisSpanLines />
+
+        {seriesStyles.phase_changes.map((phaseChange, index) => (
+          <ReferenceLine
+            key={`phase-change-${index}`}
+            x={phaseChange.position}
+            stroke={PHASE_LINE_COLOR}
+            strokeWidth={1}
+            strokeDasharray={PHASE_LINE_DASH_ARRAY[phaseChange.lineType]}
+          />
+        ))}
 
         <Tooltip
           {...noAnimationProps}

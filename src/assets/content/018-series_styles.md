@@ -43,7 +43,17 @@ Key-specific settings in the dialog are provided in the "Keys" section, where ea
 
 #### Resetting Styles
 
-There are various combinations of styles available to users, and in conditions where styles have become problematic or confusing, it may be helpful to reset them to the default values. Users can click the **Reset All to Defaults** button to revert all series and condition styles back to their automatic defaults.
+There are various combinations of styles available to users, and in conditions where styles have become problematic or confusing, it may be helpful to reset them to the default values. Users can click the **Reset All to Defaults** button to revert all series and condition styles back to their automatic defaults. Phase change lines are not affected by this button.
+
+#### Phase Change Lines
+
+Phase change lines are vertical reference lines that mark a point in the figure, such as where a new phase or condition begins. Clicking the **Edit Phase Changes** control opens a dialog where you can add, edit, and delete lines. Each line is shown on its own row with:
+
+- **Position:** the x-axis value where the line is drawn. This must be a number greater than 0.
+- **Line type:** solid, dashed, or dotted. Lines are always black.
+- **Delete:** removes that line only.
+
+Click **Add Line** to create a new row. A row with an invalid position is shown with a message and is not saved until its position is corrected. Lines extend from the top of the plotting area down to the x-axis. Lines are saved with the other series styles for the evaluation and persist in the same way.
 
 ### Closing Notes and Tips
 

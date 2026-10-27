@@ -21,6 +21,7 @@ const styled: SeriesStyles = {
     Hitting: { shape: 'star', lineColors: { Baseline: '#000000' } },
   },
   ConditionStyles: { Treatment: { color: '#FF0000' } },
+  phase_changes: [{ position: 4, lineType: 'dashed' }],
 };
 
 describe('series style resolvers fall back to defaults', () => {

@@ -24,12 +24,50 @@ export type ConditionSeriesStyle = {
   color?: string;
 };
 
+export const PHASE_LINE_TYPES = ['solid', 'dashed', 'dotted'] as const;
+
+export type PhaseLineType = (typeof PHASE_LINE_TYPES)[number];
+
+/** A vertical line drawn at an x position on the figure, such as a phase change between sessions */
+export type PhaseChange = {
+  position: number;
+  lineType: PhaseLineType;
+};
+
 export type SeriesStyles = {
   KeyStyles: Record<string, KeySeriesStyle>;
   ConditionStyles: Record<string, ConditionSeriesStyle>;
+  phase_changes: PhaseChange[];
 };
 
-export const EMPTY_SERIES_STYLES: SeriesStyles = { KeyStyles: {}, ConditionStyles: {} };
+export const EMPTY_SERIES_STYLES: SeriesStyles = { KeyStyles: {}, ConditionStyles: {}, phase_changes: [] };
+
+/** Phase change lines are always drawn black */
+export const PHASE_LINE_COLOR = 'black';
+
+export const PHASE_LINE_DASH_ARRAY: Record<PhaseLineType, string | undefined> = {
+  solid: undefined,
+  dashed: '8 4',
+  dotted: '2 3',
+};
+
+/**
+ * Checks a saved phase change for a finite position above zero and a known line type
+ */
+export function isValidPhaseChange(value: unknown): value is PhaseChange {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const { position, lineType } = value as Partial<PhaseChange>;
+
+  return (
+    typeof position === 'number' &&
+    Number.isFinite(position) &&
+    position > 0 &&
+    PHASE_LINE_TYPES.includes(lineType as PhaseLineType)
+  );
+}
 
 export const SERIES_SHAPES: SymbolType[] = ['circle', 'cross', 'diamond', 'square', 'star', 'triangle', 'wye'];
 
