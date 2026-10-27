@@ -12,6 +12,10 @@ import {
   getLocalFigureLabels,
   getLocalSeriesStyles,
   getLocalShowTitle,
+  getLocalShowTooltip,
+  getLocalShowConditionLegend,
+  setLocalShowTooltip,
+  setLocalShowConditionLegend,
   setLocalCachedPrefs,
   setLocalConnectSpans,
   setLocalFigureLabels,
@@ -110,6 +114,18 @@ export default function ResultsRateVisualsPage({
     setShowTitleState(show);
     setLocalShowTitle(Group, Individual, Evaluation, 'Rate', show);
   };
+  const [showTooltip, setShowTooltipState] = useState(() => getLocalShowTooltip(Group, Individual, Evaluation));
+  const setShowTooltip = (show: boolean) => {
+    setShowTooltipState(show);
+    setLocalShowTooltip(Group, Individual, Evaluation, show);
+  };
+  const [showConditionLegend, setShowConditionLegendState] = useState(() =>
+    getLocalShowConditionLegend(Group, Individual, Evaluation),
+  );
+  const setShowConditionLegend = (show: boolean) => {
+    setShowConditionLegendState(show);
+    setLocalShowConditionLegend(Group, Individual, Evaluation, show);
+  };
 
   const [figureLabels, setFigureLabelsState] = useState<FigureLabelSettings>(() =>
     getLocalFigureLabels(Group, Individual, Evaluation, 'Rate'),
@@ -168,6 +184,10 @@ export default function ResultsRateVisualsPage({
             onConnectSpansChange={setConnectAllPoints}
             showTitle={showTitle}
             onShowTitleChange={setShowTitle}
+            showTooltip={showTooltip}
+            onShowTooltipChange={setShowTooltip}
+            showConditionLegend={showConditionLegend}
+            onShowConditionLegendChange={setShowConditionLegend}
             figureLabels={figureLabels}
             onFigureLabelsChange={setFigureLabels}
           />
@@ -237,6 +257,8 @@ export default function ResultsRateVisualsPage({
             FigureTextSize={figureTextSize}
             ConnectSpans={connectAllPoints}
             ShowTitle={showTitle}
+            ShowTooltip={showTooltip}
+            ShowConditionLegend={showConditionLegend}
             FigureLabels={figureLabels}
             MinX={MinX}
             MaxX={MaxX}

@@ -11,6 +11,10 @@ import {
   getLocalFigureLabels,
   getLocalSeriesStyles,
   getLocalShowTitle,
+  getLocalShowTooltip,
+  getLocalShowConditionLegend,
+  setLocalShowTooltip,
+  setLocalShowConditionLegend,
   setLocalCachedPrefs,
   setLocalConnectSpans,
   setLocalFigureLabels,
@@ -81,6 +85,18 @@ export default function ResultsProportionVisualsPage({
   const setShowTitle = (show: boolean) => {
     setShowTitleState(show);
     setLocalShowTitle(Group, Individual, Evaluation, 'Proportion', show);
+  };
+  const [showTooltip, setShowTooltipState] = useState(() => getLocalShowTooltip(Group, Individual, Evaluation));
+  const setShowTooltip = (show: boolean) => {
+    setShowTooltipState(show);
+    setLocalShowTooltip(Group, Individual, Evaluation, show);
+  };
+  const [showConditionLegend, setShowConditionLegendState] = useState(() =>
+    getLocalShowConditionLegend(Group, Individual, Evaluation),
+  );
+  const setShowConditionLegend = (show: boolean) => {
+    setShowConditionLegendState(show);
+    setLocalShowConditionLegend(Group, Individual, Evaluation, show);
   };
 
   const [figureLabels, setFigureLabelsState] = useState<FigureLabelSettings>(() =>
@@ -164,6 +180,10 @@ export default function ResultsProportionVisualsPage({
             onConnectSpansChange={setConnectAllPoints}
             showTitle={showTitle}
             onShowTitleChange={setShowTitle}
+            showTooltip={showTooltip}
+            onShowTooltipChange={setShowTooltip}
+            showConditionLegend={showConditionLegend}
+            onShowConditionLegendChange={setShowConditionLegend}
             figureLabels={figureLabels}
             onFigureLabelsChange={setFigureLabels}
           />
@@ -232,6 +252,8 @@ export default function ResultsProportionVisualsPage({
             FigureTextSize={figureTextSize}
             ConnectSpans={connectAllPoints}
             ShowTitle={showTitle}
+            ShowTooltip={showTooltip}
+            ShowConditionLegend={showConditionLegend}
             FigureLabels={figureLabels}
             SeriesStyles={seriesStyles}
             getDivPng={getDivPng}

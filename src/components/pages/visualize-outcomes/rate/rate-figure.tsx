@@ -34,6 +34,8 @@ type Props = {
   MaxX: number;
   SeriesStyles?: SeriesStyles;
   ShowTitle?: boolean;
+  ShowTooltip?: boolean;
+  ShowConditionLegend?: boolean;
   FigureLabels?: FigureLabelSettings;
   getDivPng: UseGenerateImage<HTMLDivElement>[0];
   divRef: UseGenerateImage<HTMLDivElement>[1]['ref'];
@@ -53,6 +55,8 @@ export default function RateFigureVisualization({
   MaxX,
   SeriesStyles = EMPTY_SERIES_STYLES,
   ShowTitle = true,
+  ShowTooltip = true,
+  ShowConditionLegend = true,
   FigureLabels = EMPTY_FIGURE_LABEL_SETTINGS,
   getDivPng,
   divRef,
@@ -96,6 +100,8 @@ export default function RateFigureVisualization({
         seriesStyles={SeriesStyles}
         textPage="rate"
         showTitle={ShowTitle}
+        showTooltip={ShowTooltip}
+        showConditionLegend={ShowConditionLegend}
         xAxisLabel={labels.xAxis}
         figureTextSize={FigureTextSize}
         connectSpans={ConnectSpans}

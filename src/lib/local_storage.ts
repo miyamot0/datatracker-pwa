@@ -138,6 +138,47 @@ export function setLocalShowTitle(
 }
 
 /**
+ * Retrieve whether chart tooltips are enabled for a Group/Individual/Evaluation. Defaults to enabled.
+ */
+export function getLocalShowTooltip(Group: string, Individual: string, Evaluation: string) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ShowTooltip'].join('_');
+
+  return localStorage.getItem(dynamic_key) !== 'false';
+}
+
+/**
+ * Store whether chart tooltips are enabled for a Group/Individual/Evaluation.
+ */
+export function setLocalShowTooltip(Group: string, Individual: string, Evaluation: string, ShowTooltip: boolean) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ShowTooltip'].join('_');
+
+  localStorage.setItem(dynamic_key, String(ShowTooltip));
+}
+
+/**
+ * Retrieve whether the condition entries of the legend are shown for a Group/Individual/Evaluation. Defaults to shown.
+ */
+export function getLocalShowConditionLegend(Group: string, Individual: string, Evaluation: string) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ShowConditionLegend'].join('_');
+
+  return localStorage.getItem(dynamic_key) !== 'false';
+}
+
+/**
+ * Store whether the condition entries of the legend are shown for a Group/Individual/Evaluation.
+ */
+export function setLocalShowConditionLegend(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  ShowConditionLegend: boolean,
+) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ShowConditionLegend'].join('_');
+
+  localStorage.setItem(dynamic_key, String(ShowConditionLegend));
+}
+
+/**
  * Retrieve whether a plot's spans are connected for a Group/Individual/Evaluation. Defaults to not connected when nothing valid is saved.
  */
 export function getLocalConnectSpans(

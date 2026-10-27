@@ -4,8 +4,12 @@ import {
   getLocalFigureLabels,
   getLocalSeriesStyles,
   getLocalShowTitle,
+  getLocalShowTooltip,
+  getLocalShowConditionLegend,
   ReturnLocalStorageCache,
   setLocalCachedPrefs,
+  setLocalShowConditionLegend,
+  setLocalShowTooltip,
   setLocalConnectSpans,
   setLocalFigureLabels,
   setLocalSeriesStyles,
@@ -233,6 +237,27 @@ describe('LocalStorage Prefs', () => {
       setLocalShowTitle(group, individual, evaluation, 'Proportion', true);
 
       expect(getLocalShowTitle(group, individual, evaluation, 'Proportion')).toBe(true);
+    });
+  });
+
+  describe('tooltip and condition legend', () => {
+    it('defaults both to shown when nothing is saved', () => {
+      expect(getLocalShowTooltip(group, individual, evaluation)).toBe(true);
+      expect(getLocalShowConditionLegend(group, individual, evaluation)).toBe(true);
+    });
+
+    it('round-trips hidden values and restores them when turned back on', () => {
+      setLocalShowTooltip(group, individual, evaluation, false);
+      setLocalShowConditionLegend(group, individual, evaluation, false);
+
+      expect(getLocalShowTooltip(group, individual, evaluation)).toBe(false);
+      expect(getLocalShowConditionLegend(group, individual, evaluation)).toBe(false);
+
+      setLocalShowTooltip(group, individual, evaluation, true);
+      setLocalShowConditionLegend(group, individual, evaluation, true);
+
+      expect(getLocalShowTooltip(group, individual, evaluation)).toBe(true);
+      expect(getLocalShowConditionLegend(group, individual, evaluation)).toBe(true);
     });
   });
 

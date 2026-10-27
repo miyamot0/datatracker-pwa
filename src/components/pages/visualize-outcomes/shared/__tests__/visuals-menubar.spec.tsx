@@ -37,6 +37,10 @@ function renderMenubar(overrides: Partial<React.ComponentProps<typeof VisualsMen
     onShowTitleChange: vi.fn(),
     figureLabels: EMPTY_FIGURE_LABEL_SETTINGS,
     onFigureLabelsChange: vi.fn(),
+    showTooltip: true,
+    onShowTooltipChange: vi.fn(),
+    showConditionLegend: true,
+    onShowConditionLegendChange: vi.fn(),
     ...overrides,
   };
 
@@ -140,6 +144,28 @@ describe('VisualsMenubar', () => {
 
     expect(onShowTitleChange).toHaveBeenCalledWith(false);
     await expect.element(page.getByRole('menuitemcheckbox', { name: 'Show Title' })).toBeInTheDocument();
+  });
+
+  it('reports Enable Tooltip toggled off from Design and keeps the menu open', async () => {
+    const onShowTooltipChange = vi.fn();
+    renderMenubar({ onShowTooltipChange, showTooltip: true });
+
+    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitemcheckbox', { name: 'Enable Tooltip' }).click();
+
+    expect(onShowTooltipChange).toHaveBeenCalledWith(false);
+    await expect.element(page.getByRole('menuitemcheckbox', { name: 'Enable Tooltip' })).toBeInTheDocument();
+  });
+
+  it('reports Show Condition Legend toggled off from Design and keeps the menu open', async () => {
+    const onShowConditionLegendChange = vi.fn();
+    renderMenubar({ onShowConditionLegendChange, showConditionLegend: true });
+
+    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitemcheckbox', { name: 'Show Condition Legend' }).click();
+
+    expect(onShowConditionLegendChange).toHaveBeenCalledWith(false);
+    await expect.element(page.getByRole('menuitemcheckbox', { name: 'Show Condition Legend' })).toBeInTheDocument();
   });
 
   it('keeps the Data menu open after toggling Connect All Spans', async () => {

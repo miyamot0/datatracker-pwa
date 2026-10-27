@@ -46,6 +46,9 @@ import { AimLinesLayer } from './annotations/aim-lines-layer';
 import { ChartTitle } from './chart-title';
 import { XAxisLabel } from './x-axis-label';
 
+/** Width reserved for the Y axis, which sets where the plot area's left edge sits */
+const Y_AXIS_WIDTH = 60;
+
 type BaseChartProps = {
   title: string;
   preparedData: any[];
@@ -70,6 +73,8 @@ type BaseChartProps = {
   seriesStyles?: SeriesStyles;
   textPage: TextPage;
   showTitle?: boolean;
+  showTooltip?: boolean;
+  showConditionLegend?: boolean;
   xAxisLabel?: string;
 };
 
@@ -91,6 +96,8 @@ export function BaseChart({
   seriesStyles = EMPTY_SERIES_STYLES,
   textPage,
   showTitle = true,
+  showTooltip = true,
+  showConditionLegend = true,
   xAxisLabel = 'Session',
 }: BaseChartProps) {
   const { noAnimationProps, chartMargins, xAxisConfig, yAxisStyle, labelStyle } = getChartConfiguration();
@@ -258,7 +265,14 @@ export function BaseChart({
           />
         </XAxis>
 
-        <YAxis {...noAnimationProps} {...yAxisConfig} axisLine={false} style={yAxisStyle} label={undefined}>
+        <YAxis
+          {...noAnimationProps}
+          {...yAxisConfig}
+          width={Y_AXIS_WIDTH}
+          axisLine={false}
+          style={yAxisStyle}
+          label={undefined}
+        >
           <Label {...noAnimationProps} style={labelStyle} position="insideLeft" angle={270} value={yAxisConfig.label} />
         </YAxis>
 
@@ -278,20 +292,35 @@ export function BaseChart({
 
         <AimLinesLayer aimLines={getPageAimLines(seriesStyles.aim_lines, textPage)} />
 
-        <Tooltip
-          {...noAnimationProps}
-          animationDuration={100}
-          wrapperStyle={{ zIndex: 10 }}
-          content={
-            <CustomTooltip
-              figureTextSize={figureTextSize}
-              visibleKeys={visibleKeys}
-              hiddenKeysByCondition={hiddenKeysByCondition}
-            />
-          }
-        />
+        {showTooltip && (
+          <Tooltip
+            {...noAnimationProps}
+            animationDuration={100}
+            wrapperStyle={{ zIndex: 10 }}
+            content={
+              <CustomTooltip
+                figureTextSize={figureTextSize}
+                visibleKeys={visibleKeys}
+                hiddenKeysByCondition={hiddenKeysByCondition}
+              />
+            }
+          />
+        )}
 
-        <Legend {...noAnimationProps} align="center" content={() => <ChartLegendContent payload={legends} />} />
+        <Legend
+          {...noAnimationProps}
+          align="center"
+          wrapperStyle={{
+            left: chartMargins.left + Y_AXIS_WIDTH,
+            right: chartMargins.right,
+            width: 'auto',
+          }}
+          content={() => (
+            <ChartLegendContent
+              payload={showConditionLegend ? legends : legends.filter((entry) => entry.kind !== 'condition')}
+            />
+          )}
+        />
       </ComposedChart>
     </ResponsiveContainer>
   );

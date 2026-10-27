@@ -57,6 +57,10 @@ type Props = {
   onShowTitleChange: (show: boolean) => void;
   figureLabels: FigureLabelSettings;
   onFigureLabelsChange: (labels: FigureLabelSettings) => void;
+  showTooltip: boolean;
+  onShowTooltipChange: (show: boolean) => void;
+  showConditionLegend: boolean;
+  onShowConditionLegendChange: (show: boolean) => void;
 };
 
 /**
@@ -84,6 +88,10 @@ export function VisualsMenubar({
   onShowTitleChange,
   figureLabels,
   onFigureLabelsChange,
+  showTooltip,
+  onShowTooltipChange,
+  showConditionLegend,
+  onShowConditionLegendChange,
 }: Props) {
   const [activeDialog, setActiveDialog] = useState<AnnotationDialog | null>(null);
 
@@ -212,6 +220,20 @@ export function VisualsMenubar({
             onCheckedChange={(checked) => onShowTitleChange(checked === true)}
           >
             Show Title
+          </MenubarCheckboxItem>
+          <MenubarCheckboxItem
+            checked={showConditionLegend}
+            onSelect={(event) => event.preventDefault()}
+            onCheckedChange={(checked) => onShowConditionLegendChange(checked === true)}
+          >
+            Show Condition Legend
+          </MenubarCheckboxItem>
+          <MenubarCheckboxItem
+            checked={showTooltip}
+            onSelect={(event) => event.preventDefault()}
+            onCheckedChange={(checked) => onShowTooltipChange(checked === true)}
+          >
+            Enable Tooltip
           </MenubarCheckboxItem>
         </MenubarContent>
       </MenubarMenu>
