@@ -3,7 +3,7 @@ import { vi, describe, it, expect } from 'vitest';
 
 import SessionFigure from '../session-figure';
 
-vi.mock('@/components/pages/visualize-outcomes/shared/axis-span-lines', () => ({
+vi.mock('@/components/pages/visualize-outcomes/shared/annotations/axis-span-lines', () => ({
   AxisSpanLines: () => null,
 }));
 

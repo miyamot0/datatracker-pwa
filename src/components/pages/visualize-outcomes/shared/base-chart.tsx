@@ -11,20 +11,25 @@ import {
   Tooltip,
   Legend,
   ZAxis,
+  ReferenceLine,
 } from 'recharts';
 import { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { getShape } from '@/lib/shapes';
-import { ChartLegendContent } from '@/components/pages/visualize-outcomes/shared/chart-legend-content';
+import { ChartLegendContent } from '@/components/pages/visualize-outcomes/shared/legends/chart-legend-content';
 import {
   EMPTY_SERIES_STYLES,
   DEFAULT_LINE_COLOR,
+  PHASE_LINE_COLOR,
+  PHASE_LINE_DASH_ARRAY,
   isSeriesHidden,
   resolveKeyFillColor,
   resolveKeyShape,
   resolveLineColor,
   resolveMarkerStroke,
   type SeriesStyles,
+  type TextPage,
+  getPageTextAnnotations,
 } from '@/lib/graphing/series-style';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { cn } from '@/lib/utils';
@@ -33,8 +38,11 @@ import { ExpandedKeySetInstance } from '@/types/keyset';
 import { splitAtPoints } from '@/lib/arrays';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { calculateSplitPoints } from '@/lib/graphing/data-preparation';
-import { getChartConfiguration } from '@/lib/graphing/chart-setup';
-import { AxisSpanLines } from './axis-span-lines';
+import { getChartConfiguration, getChartVerticalSpacing } from '@/lib/graphing/chart-setup';
+import { AxisSpanLines } from './annotations/axis-span-lines';
+import { TextAnnotationsLayer } from './annotations/text-annotations-layer';
+import { ChartTitle } from './chart-title';
+import { XAxisLabel } from './x-axis-label';
 
 type BaseChartProps = {
   title: string;
@@ -58,7 +66,9 @@ type BaseChartProps = {
   onNavigate: (props: any) => void;
   divRef: React.RefObject<HTMLDivElement | null>;
   seriesStyles?: SeriesStyles;
+  textPage: TextPage;
 };
+
 export function BaseChart({
   title,
   preparedData,
@@ -75,8 +85,10 @@ export function BaseChart({
   onNavigate,
   divRef,
   seriesStyles = EMPTY_SERIES_STYLES,
+  textPage,
 }: BaseChartProps) {
   const { noAnimationProps, chartMargins, xAxisConfig, yAxisStyle, labelStyle } = getChartConfiguration();
+  const spacing = getChartVerticalSpacing(figureTextSize);
 
   const data_set_parsed_by_condition = getUniqueSessionConditions(filteredSessions).map((condition) => ({
     name: condition,
@@ -103,7 +115,7 @@ export function BaseChart({
     <ResponsiveContainer
       {...noAnimationProps}
       width="100%"
-      height={500}
+      height={spacing.chartHeight}
       className={cn(
         'text-base text-primary bg-white nuke-view-transition [&_.recharts-legend-item]:inline-flex! [&_.recharts-legend-item]:items-center',
         {
@@ -119,11 +131,9 @@ export function BaseChart({
         width={600}
         height={300}
         title=""
-        margin={chartMargins}
+        margin={{ ...chartMargins, top: spacing.chartMarginTop }}
       >
-        <text x={'50%'} y={25} textAnchor="middle" dominantBaseline="central">
-          <tspan className="text-2xl font-bold">{title}</tspan>
-        </text>
+        <ChartTitle title={title} fontPx={spacing.titleFontPx} y={spacing.titleY} />
 
         {data_set_parsed_by_condition.map((condition, index_main) => {
           const index_dynamic = index_main % FIGURE_PATH_COLORS.length;
@@ -232,10 +242,14 @@ export function BaseChart({
           domain={[minX, maxX]}
           ticks={xTicks}
           {...xAxisConfig}
+          height={spacing.xAxisHeight}
           axisLine={false}
           label={undefined}
         >
-          <Label {...noAnimationProps} style={labelStyle} offset={0} position={'insideBottom'} value={'Session'} />
+          <Label
+            {...noAnimationProps}
+            content={<XAxisLabel value="Session" offset={spacing.xAxisLabelOffset} style={labelStyle} />}
+          />
         </XAxis>
 
         <YAxis {...noAnimationProps} {...yAxisConfig} axisLine={false} style={yAxisStyle} label={undefined}>
@@ -243,6 +257,18 @@ export function BaseChart({
         </YAxis>
 
         <AxisSpanLines />
+
+        {seriesStyles.phase_changes.map((phaseChange, index) => (
+          <ReferenceLine
+            key={`phase-change-${index}`}
+            x={phaseChange.position}
+            stroke={PHASE_LINE_COLOR}
+            strokeWidth={1}
+            strokeDasharray={PHASE_LINE_DASH_ARRAY[phaseChange.lineType]}
+          />
+        ))}
+
+        <TextAnnotationsLayer annotations={getPageTextAnnotations(seriesStyles.text_annotations, textPage)} />
 
         <Tooltip
           {...noAnimationProps}

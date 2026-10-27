@@ -10,6 +10,9 @@ import {
   resolveLineColor,
   resolveMarkerStroke,
   isSeriesHidden,
+  isValidTextAnnotation,
+  getPageTextAnnotations,
+  splitTextAnnotationLines,
   SERIES_COLOR_PALETTE,
   type SeriesStyles,
 } from '@/lib/graphing/series-style';
@@ -21,6 +24,8 @@ const styled: SeriesStyles = {
     Hitting: { shape: 'star', lineColors: { Baseline: '#000000' } },
   },
   ConditionStyles: { Treatment: { color: '#FF0000' } },
+  phase_changes: [{ position: 4, lineType: 'dashed' }],
+  text_annotations: [],
 };
 
 describe('series style resolvers fall back to defaults', () => {
@@ -134,5 +139,40 @@ describe('isSeriesHidden', () => {
     };
 
     expect(isSeriesHidden(styles, 'Key1', 'Baseline')).toBe(true);
+  });
+});
+
+describe('text annotation helpers', () => {
+  it('accepts a complete annotation and rejects incomplete or unknown values', () => {
+    const valid = { label: 'Note', x: 2, y: 50, anchor: 'top-left', justify: 'center' };
+
+    expect(isValidTextAnnotation(valid)).toBe(true);
+    expect(isValidTextAnnotation({ ...valid, label: '   ' })).toBe(false);
+    expect(isValidTextAnnotation({ ...valid, label: '\\n' })).toBe(false);
+    expect(isValidTextAnnotation({ ...valid, label: 'Top\\n' })).toBe(true);
+    expect(isValidTextAnnotation({ ...valid, x: Number.NaN })).toBe(false);
+    expect(isValidTextAnnotation({ ...valid, anchor: 'middle' })).toBe(false);
+    expect(isValidTextAnnotation({ ...valid, justify: 'justify' })).toBe(false);
+    expect(isValidTextAnnotation({ ...valid, weight: 'normal' })).toBe(true);
+    expect(isValidTextAnnotation({ ...valid, weight: 'bold' })).toBe(true);
+    expect(isValidTextAnnotation({ ...valid, weight: 'heavy' })).toBe(false);
+    expect(isValidTextAnnotation({ ...valid, page: 'rate' })).toBe(true);
+    expect(isValidTextAnnotation({ ...valid, page: 'proportion' })).toBe(true);
+    expect(isValidTextAnnotation({ ...valid, page: 'phase' })).toBe(false);
+  });
+
+  it('returns only the text annotations for a page, including ones saved before pages existed', () => {
+    const legacy = { label: 'Legacy', x: 1, y: 1, anchor: 'top-left', justify: 'left' } as const;
+    const rate = { ...legacy, label: 'Rate', page: 'rate' } as const;
+    const proportion = { ...legacy, label: 'Proportion', page: 'proportion' } as const;
+    const all = [rate, proportion, legacy];
+
+    expect(getPageTextAnnotations(all, 'rate')).toEqual([rate, legacy]);
+    expect(getPageTextAnnotations(all, 'proportion')).toEqual([proportion, legacy]);
+  });
+
+  it('splits a label on the literal \\n sequence', () => {
+    expect(splitTextAnnotationLines('One\\nTwo\\nThree')).toEqual(['One', 'Two', 'Three']);
+    expect(splitTextAnnotationLines('Single')).toEqual(['Single']);
   });
 });

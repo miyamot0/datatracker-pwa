@@ -4,8 +4,18 @@ import { CustomizedRouterContext } from '@/App';
 import { useContext, useEffect } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
 import { viewTransitionCall } from '@/types/transitions';
+import { RouteErrorView } from '@/components/pages/error/route-error-view';
+import { buildRouteErrorPayload } from '@/lib/route-error';
 
 export const Route = createRootRouteWithContext<CustomizedRouterContext>()({
+  errorComponent: ({ error }) => (
+    <RouteErrorView payload={buildRouteErrorPayload({ cause: error })} />
+  ),
+  notFoundComponent: () => (
+    <RouteErrorView
+      payload={buildRouteErrorPayload({ message: 'This page could not be found.' })}
+    />
+  ),
   component: () => {
     const router = useRouter();
     const { isInitialized, setIsInitialized, settings } = useContext(FolderHandleContext);

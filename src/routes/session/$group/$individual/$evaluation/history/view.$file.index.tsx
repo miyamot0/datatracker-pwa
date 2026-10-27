@@ -10,7 +10,7 @@ import {
 import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { ModifiedSessionResult } from '@/types/storage';
-import { ErrorDisplay } from '@/components/elements/suspense/error-display';
+import { RouteErrorRedirect } from '@/components/pages/error/route-error-view';
 import { ExpandedSavedSessionResult } from '@/lib/dtos/session-results';
 import { SavedSettings } from '@/lib/dtos/session-settings';
 import { extractAndDeduplicateKeysets, mapKeysWithStoragePreference } from '@/lib/graphing/keyset-utils';
@@ -103,18 +103,18 @@ function RouteComponent() {
           const relevantSession = sessions.find((s) => s.Filename.startsWith(FileString));
 
           if (!relevantSession) {
-            return <ErrorDisplay Text={'Session not found.'} />;
+            return <RouteErrorRedirect message={'Session not found.'} />;
           }
 
           if (!sessionParams) {
-            return <ErrorDisplay Text={'Session parameters not found.'} />;
+            return <RouteErrorRedirect message={'Session parameters not found.'} />;
           }
 
           const sessionKeySet = keysets.find((k: KeySet) => k.Name == relevantSession.Keyset.Name);
           const designerKeySet = keysets.find((k: KeySet) => k.Name == sessionParams.KeySet);
 
           if (!sessionKeySet) {
-            return <ErrorDisplay Text={'Relevant keyset not found.'} />;
+            return <RouteErrorRedirect message={'Relevant keyset not found.'} />;
           }
 
           const {

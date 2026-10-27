@@ -20,6 +20,7 @@ import {
   generateTicks,
   createChartLegends,
   getChartConfiguration,
+  getChartVerticalSpacing,
   createNavigationHandler,
 } from '@/lib/graphing/chart-setup';
 
@@ -277,6 +278,42 @@ describe('chart-setup', () => {
         const keys = result.filter((entry) => entry.kind !== 'condition');
         expect(keys.every((entry) => entry.color === 'black')).toBe(true);
       });
+    });
+  });
+
+  describe('getChartVerticalSpacing', () => {
+    it('pins the base row values', () => {
+      expect(getChartVerticalSpacing('base')).toEqual({
+        titleFontPx: 24,
+        titleY: 25,
+        chartMarginTop: 62,
+        chartHeight: 522,
+        xAxisHeight: 60,
+        xAxisLabelOffset: 0,
+      });
+    });
+
+    it('grows title, top margin, and x-axis band as text size increases', () => {
+      const sizes = ['base', 'large', 'extraLarge'] as const;
+      const rows = sizes.map((size) => getChartVerticalSpacing(size));
+      for (const key of ['titleFontPx', 'titleY', 'chartMarginTop', 'chartHeight', 'xAxisHeight'] as const) {
+        for (let i = 1; i < rows.length; i++) {
+          expect(rows[i][key]).toBeGreaterThan(rows[i - 1][key]);
+        }
+      }
+    });
+
+    it('keeps the title baseline inside the reserved top margin', () => {
+      for (const size of ['base', 'large', 'extraLarge'] as const) {
+        const { titleY, titleFontPx, chartMarginTop } = getChartVerticalSpacing(size);
+        expect(titleY + titleFontPx / 2).toBeLessThan(chartMarginTop);
+      }
+    });
+
+    it('returns a copy so callers cannot mutate the table', () => {
+      const first = getChartVerticalSpacing('base');
+      first.chartHeight = 1;
+      expect(getChartVerticalSpacing('base').chartHeight).toBe(522);
     });
   });
 

@@ -11,7 +11,7 @@ import {
   BuildSessionDesignerBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
 import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
-import { ErrorDisplay } from '@/components/elements/suspense/error-display';
+import { RouteErrorRedirect } from '@/components/pages/error/route-error-view';
 import { KeySet } from '@/types/keyset';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/run/$keyset')({
@@ -93,7 +93,7 @@ function RouteComponent() {
 
             const currentKeySet = keysets.find((k: KeySet) => k.Name == Keyset);
 
-            if (!currentKeySet) return <ErrorDisplay Text={'KeySet not found.'} />;
+            if (!currentKeySet) return <RouteErrorRedirect message={'KeySet not found.'} />;
 
             return (
               <SessionRecorderPage

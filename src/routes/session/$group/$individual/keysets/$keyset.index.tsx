@@ -11,7 +11,7 @@ import { CleanUpString } from '@/lib/strings';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 import { type KeySet } from '@/types/keyset/core';
-import { ErrorDisplay } from '@/components/elements/suspense/error-display';
+import { RouteErrorRedirect } from '@/components/pages/error/route-error-view';
 
 export const Route = createFileRoute('/session/$group/$individual/keysets/$keyset/')({
   beforeLoad: ({ params, context }) => {
@@ -77,7 +77,7 @@ function RouteComponent() {
         {(keysets: KeySet[]) => {
           const relevantKeySet = keysets.find((ks) => ks.Name === KeySet);
 
-          if (!relevantKeySet) return <ErrorDisplay Text="KeySet not found" />;
+          if (!relevantKeySet) return <RouteErrorRedirect message="KeySet not found" />;
 
           return (
             <KeySetEditor Group={Group} Individual={Individual} KeySetObject={relevantKeySet} Handle={CleanHandle} />

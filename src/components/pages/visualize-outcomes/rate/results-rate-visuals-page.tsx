@@ -14,7 +14,9 @@ import { Button } from '@/components/ui/button';
 import { KeyboardIcon, LineChartIcon, ScatterChartIcon } from 'lucide-react';
 import RateFigureVisualization from './rate-figure';
 import { getLocalSeriesStyles, setLocalCachedPrefs, setLocalSeriesStyles } from '@/lib/local_storage';
-import { SeriesStylesDialog } from '@/components/pages/visualize-outcomes/shared/series-styles-dialog';
+import { SeriesStylesDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/series-styles-dialog';
+import { PhaseChangesDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/phase-changes-dialog';
+import { TextAnnotationsDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/text-annotations-dialog';
 import { type SeriesStyles } from '@/lib/graphing/series-style';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -112,9 +114,9 @@ export default function ResultsRateVisualsPage({
             <div className="flex flex-row gap-4">
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-fit">
-                    <KeyboardIcon className="mr-2 w-4 h-4" />
-                    Edit Keys Displayed
+                  <Button variant="outline" className="w-fit" aria-label="Edit Keys Displayed">
+                    <KeyboardIcon className="md:mr-2 w-4 h-4" />
+                    <span className="hidden md:inline">Keys</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
@@ -158,9 +160,9 @@ export default function ResultsRateVisualsPage({
             <div className="flex flex-row gap-2">
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-fit">
-                    <LineChartIcon className="mr-2 w-4 h-4" />
-                    Edit Conditions Displayed
+                  <Button variant="outline" className="w-fit" aria-label="Edit Conditions Displayed">
+                    <LineChartIcon className="md:mr-2 w-4 h-4" />
+                    <span className="hidden md:inline">Conditions</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
@@ -201,6 +203,10 @@ export default function ResultsRateVisualsPage({
                 styles={seriesStyles}
                 onChange={updateSeriesStyles}
               />
+
+              <PhaseChangesDialog styles={seriesStyles} onChange={updateSeriesStyles} />
+
+              <TextAnnotationsDialog page="rate" styles={seriesStyles} onChange={updateSeriesStyles} />
             </div>
           </div>
 

@@ -1,6 +1,6 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-95.85_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-92.07_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-95.82_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-95.44_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-91.26_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-95.08_Percent-green>)
 
-![Static Badge Version](https://img.shields.io/badge/Version-0.5.14-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge Version](https://img.shields.io/badge/Version-0.5.15-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 [![GitHub Bug Tracker](https://img.shields.io/badge/GitHub-Issues-181717?logo=github&logoColor=fff)](https://github.com/miyamot0/datatracker-pwa/issues) [![Slack Support Channel](https://img.shields.io/badge/Slack-4A154B?logo=slack&logoColor=fff)](https://datatrackerworkspace.slack.com/)
 
@@ -37,6 +37,11 @@ Features include the following:
 
 ### Changelog
 
+#### 0.5.15 (2026-06-27):
+
+- Round out visual package (i.e., annotations)
+- Improvements to error reporting
+
 #### 0.5.14 (2026-06-26):
 
 - Updates to series styling and figure customization options
@@ -61,6 +66,27 @@ In addition to the standard PWA build, there is also an 'islanded' mode that all
 This is not provided via the hosted site per se, but rather, is available for download and installation by users who need this level of security. The islanded version includes all the features of the standard PWA but is optimized for environments with more stringent data security requirements (e.g., hospital security with largely whitelisted network access, air-gapped machines, etc.).
 
 Islanded builds are compiled as main branch releases and are made available via the [GitHub releases page](https://github.com/miyamot0/datatracker-pwa/releases).
+
+### Docker/Self-hosting/On-prem Install
+
+Suggested for use in highly secure environments, the program can be run in a Docker container. This allows for a more controlled environment and can be used to ensure that the program is running in a secure and isolated manner (e.g., air-gapped networks, whitelisted network access, no outbound access, loopback to nowhere).
+
+The following commands can be used to run the program in a Docker container. Note: First command creates an isolated network for the container to run in (so it does not have access to the external network) and the second command runs the container within that isolated network pulling the latest image from the Docker repository. The address of each docker container and version is available at [https://hub.docker.com/repository/docker/miyamot0/datatracker](https://hub.docker.com/repository/docker/miyamot0/datatracker).
+
+```bash
+docker network create --internal isolation_lan 2>/dev/null || true
+
+docker run -d \
+  --name datatracker \
+  --network isolation_lan \
+  --read-only \
+  --cap-drop ALL \
+  --security-opt no-new-privileges \
+  --tmpfs /tmp \
+  --tmpfs /run:mode=1777 \
+  -p 127.0.0.1:8080:8080 \
+  miyamot0/datatracker:latest
+```
 
 ### Screenshots and Visuals
 
@@ -190,4 +216,4 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Current Version
 
-0.5.14
+0.5.15
