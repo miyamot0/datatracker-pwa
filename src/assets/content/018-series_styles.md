@@ -1,5 +1,5 @@
 ---
-title: Customizing Series Styles and Figures
+title: Customizing Figure Styles
 description: This entry reviews how to override marker shapes, marker fills, and line colors as well as how to hide series in figures. Information is provided regarding how these settings are adjusted and persisted over time in figures.
 date: 10/26/2026
 keywords: 'Series Styles, Marker Shapes, Hiding Data'
@@ -13,9 +13,9 @@ Figures provided in the proportion/rate visuals automatically assign default mar
 
 ### Style Controls in Rate/Proportion Visuals
 
-The Rate and Proportion sections of an evaluation provide access to several ways to adjust a visualization. Each of these are available through the toolbar at the top of the figure. The **Keys** control shows or hides individual keys, the **Conditions** control shows or hides whole conditions, the **Styles** control opens the styling dialog, and the **Phase Changes** and **Text** controls add vertical lines and text labels. On narrow screens these controls show only their icons, so hover over one to see its full name.
+The Rate and Proportion sections of an evaluation provide access to several ways to adjust a visualization. Each of these are available through the toolbar at the top of the figure. The **Keys** control shows or hides individual keys, the **Conditions** control shows or hides whole conditions, the **Styles** control opens the styling dialog, and the **Phase Changes** and **Text** controls add annotations, which are covered in [Adding Phase Lines and Text Annotations to Figures](/documentation/019-figure_annotations).
 
-Regardless of the control you use, changes only affect the visual representation of the figure and **do not alter the underlying session data**. Additional information on each control is provided in the sections below.
+Regardless of the control you use, changes only affect the visual representation of the figure and **do not alter the underlying session data**. Additional information on the style controls is provided in the sections below.
 
 #### Showing and Hiding Keys
 
@@ -43,30 +43,11 @@ Key-specific settings in the dialog are provided in the "Keys" section, where ea
 
 #### Resetting Styles
 
-There are various combinations of styles available to users, and in conditions where styles have become problematic or confusing, it may be helpful to reset them to the default values. Users can click the **Reset All to Defaults** button to revert all series and condition styles back to their automatic defaults. Phase change lines are not affected by this button.
+There are various combinations of styles available to users, and in conditions where styles have become problematic or confusing, it may be helpful to reset them to the default values. Users can click the **Reset All to Defaults** button to revert all series and condition styles back to their automatic defaults. Phase change lines and text annotations are not affected by this button.
 
-#### Phase Change Lines
+#### Phase Lines and Text Annotations
 
-Phase change lines are vertical reference lines that mark a point in the figure, such as where a new phase or condition begins. Clicking the **Phase Changes** control opens a dialog where you can add, edit, and delete lines. Each line is shown on its own row with:
-
-- **Position:** the x-axis value where the line is drawn. This must be a number greater than 0.
-- **Line type:** solid, dashed, or dotted. Lines are always black.
-- **Delete:** removes that line only.
-
-Click **Add Line** to create a new row. A row with an invalid position is shown with a message and is not saved until its position is corrected. Lines extend from the top of the plotting area down to the x-axis. Lines are saved with the other series styles for the evaluation and persist in the same way.
-
-#### Text Annotations
-
-Text annotations place a label at a specific point in the figure, such as a note describing a phase or an event. Clicking the **Text** control opens a dialog where you can add, edit, and delete text entries. Each entry is shown on its own row with:
-
-- **Label:** the text to draw. To break the text across lines, type the literal sequence `\n` where the new line should begin (for example, `Baseline\nWeek 1` is drawn on two lines). The text is drawn in black at the figure's text size.
-- **X:** the x-axis position in session units, the same units used by the figure.
-- **Y:** the y-axis position in the units of the figure's data (for proportion figures, 0 to 100).
-- **Anchor:** the point of the text box that sits at the X and Y position. Options are the nine positions from top-left to bottom-right, including center. For example, top-left places the top-left corner of the text at the point.
-- **Justify:** how lines are aligned inside the text box: left, center, or right. This matters only when the label has more than one line.
-- **Delete:** removes that entry only.
-
-Click **Add Text** to create a new row. A row missing a label or a numeric X or Y is shown with a message and is not saved until it is corrected. An entry whose position falls outside the plotted area is not drawn. Text annotations are saved with the other series styles for the evaluation, do not change when you use **Reset All to Defaults**, and persist in the same way as phase change lines. Text annotations do not change the underlying session data.
+Phase change lines and text annotations are not part of series styling, so they are documented separately in [Adding Phase Lines and Text Annotations to Figures](/documentation/019-figure_annotations). That entry covers how to add and edit each type, how text is scoped to the rate or proportion page, and how these annotations are saved.
 
 ### Closing Notes and Tips
 
