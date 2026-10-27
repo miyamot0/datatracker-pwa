@@ -79,6 +79,7 @@ describe('LocalStorage Prefs', () => {
         ConditionStyles: {},
         phase_changes: [],
         text_annotations: [],
+        aim_lines: [],
       });
     });
 
@@ -88,6 +89,7 @@ describe('LocalStorage Prefs', () => {
         ConditionStyles: {},
         phase_changes: [],
         text_annotations: [],
+        aim_lines: [],
       };
 
       setLocalSeriesStyles(' group1 ', ' individual1 ', ' evaluation1 ', styles);
@@ -102,6 +104,7 @@ describe('LocalStorage Prefs', () => {
         ConditionStyles: { Baseline: { color: '#FF0000' } },
         phase_changes: [],
         text_annotations: [],
+        aim_lines: [],
       };
 
       setLocalSeriesStyles('group1', 'individual1', 'evaluation1', styles);
@@ -111,12 +114,14 @@ describe('LocalStorage Prefs', () => {
         ConditionStyles: {},
         phase_changes: [],
         text_annotations: [],
+        aim_lines: [],
       });
       expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation2')).toEqual({
         KeyStyles: {},
         ConditionStyles: {},
         phase_changes: [],
         text_annotations: [],
+        aim_lines: [],
       });
     });
 
@@ -131,6 +136,7 @@ describe('LocalStorage Prefs', () => {
         ConditionStyles: {},
         phase_changes: [],
         text_annotations: [],
+        aim_lines: [],
       });
     });
 
@@ -153,6 +159,29 @@ describe('LocalStorage Prefs', () => {
 
       expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation1').text_annotations).toEqual([
         { label: 'Baseline\\nStart', x: 2, y: 50, anchor: 'top-left', justify: 'left' },
+      ]);
+    });
+
+    it('keeps only valid aim lines when reading saved styles', () => {
+      localStorage.setItem(
+        'group1_individual1_evaluation1_SeriesStyles',
+        JSON.stringify({
+          KeyStyles: {},
+          ConditionStyles: {},
+          phase_changes: [],
+          text_annotations: [],
+          aim_lines: [
+            { x1: 1, x2: 5, y: 40, lineType: 'dashed', color: '#9061C2', page: 'rate' },
+            { x1: 1, x2: 5, y: 40, lineType: 'wavy', color: '#9061C2' },
+            { x1: '1', x2: 5, y: 40, lineType: 'solid', color: '#9061C2' },
+            { x1: 1, x2: 5, y: 40, lineType: 'solid', color: '' },
+            { x1: 1, x2: 5, y: 40, lineType: 'solid', color: '#000000', page: 'phase' },
+          ],
+        }),
+      );
+
+      expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation1').aim_lines).toEqual([
+        { x1: 1, x2: 5, y: 40, lineType: 'dashed', color: '#9061C2', page: 'rate' },
       ]);
     });
 

@@ -30,6 +30,7 @@ import {
   type SeriesStyles,
   type TextPage,
   getPageTextAnnotations,
+  getPageAimLines,
 } from '@/lib/graphing/series-style';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { cn } from '@/lib/utils';
@@ -41,6 +42,7 @@ import { calculateSplitPoints } from '@/lib/graphing/data-preparation';
 import { getChartConfiguration, getChartVerticalSpacing } from '@/lib/graphing/chart-setup';
 import { AxisSpanLines } from './annotations/axis-span-lines';
 import { TextAnnotationsLayer } from './annotations/text-annotations-layer';
+import { AimLinesLayer } from './annotations/aim-lines-layer';
 import { ChartTitle } from './chart-title';
 import { XAxisLabel } from './x-axis-label';
 
@@ -269,6 +271,8 @@ export function BaseChart({
         ))}
 
         <TextAnnotationsLayer annotations={getPageTextAnnotations(seriesStyles.text_annotations, textPage)} />
+
+        <AimLinesLayer aimLines={getPageAimLines(seriesStyles.aim_lines, textPage)} />
 
         <Tooltip
           {...noAnimationProps}

@@ -1,5 +1,10 @@
 import { SessionTerminationOptionsType } from '@/types/terminations';
-import { isValidPhaseChange, isValidTextAnnotation, type SeriesStyles } from '@/lib/graphing/series-style';
+import {
+  isValidPhaseChange,
+  isValidTextAnnotation,
+  isValidAimLine,
+  type SeriesStyles,
+} from '@/lib/graphing/series-style';
 
 /**
  * This is the type definition for the ReturnLocalStorageCache type
@@ -72,7 +77,7 @@ export function getLocalSeriesStyles(Group: string, Individual: string, Evaluati
   const cached_information = localStorage.getItem(dynamic_key);
 
   if (!cached_information) {
-    return { KeyStyles: {}, ConditionStyles: {}, phase_changes: [], text_annotations: [] };
+    return { KeyStyles: {}, ConditionStyles: {}, phase_changes: [], text_annotations: [], aim_lines: [] };
   }
 
   const parsed = JSON.parse(cached_information) as Partial<SeriesStyles>;
@@ -84,6 +89,7 @@ export function getLocalSeriesStyles(Group: string, Individual: string, Evaluati
     text_annotations: Array.isArray(parsed.text_annotations)
       ? parsed.text_annotations.filter(isValidTextAnnotation)
       : [],
+    aim_lines: Array.isArray(parsed.aim_lines) ? parsed.aim_lines.filter(isValidAimLine) : [],
   };
 }
 

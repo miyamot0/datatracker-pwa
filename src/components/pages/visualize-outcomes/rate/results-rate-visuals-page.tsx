@@ -17,6 +17,7 @@ import { getLocalSeriesStyles, setLocalCachedPrefs, setLocalSeriesStyles } from 
 import { SeriesStylesDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/series-styles-dialog';
 import { PhaseChangesDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/phase-changes-dialog';
 import { TextAnnotationsDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/text-annotations-dialog';
+import { AimLinesDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/aim-lines-dialog';
 import { type SeriesStyles } from '@/lib/graphing/series-style';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -115,8 +116,8 @@ export default function ResultsRateVisualsPage({
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="w-fit" aria-label="Edit Keys Displayed">
-                    <KeyboardIcon className="md:mr-2 w-4 h-4" />
-                    <span className="hidden md:inline">Keys</span>
+                    <KeyboardIcon className="lg:mr-2 w-4 h-4" />
+                    <span className="hidden lg:inline">Keys</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
@@ -161,8 +162,8 @@ export default function ResultsRateVisualsPage({
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="w-fit" aria-label="Edit Conditions Displayed">
-                    <LineChartIcon className="md:mr-2 w-4 h-4" />
-                    <span className="hidden md:inline">Conditions</span>
+                    <LineChartIcon className="lg:mr-2 w-4 h-4" />
+                    <span className="hidden lg:inline">Conditions</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
@@ -207,6 +208,8 @@ export default function ResultsRateVisualsPage({
               <PhaseChangesDialog styles={seriesStyles} onChange={updateSeriesStyles} />
 
               <TextAnnotationsDialog page="rate" styles={seriesStyles} onChange={updateSeriesStyles} />
+
+              <AimLinesDialog page="rate" styles={seriesStyles} onChange={updateSeriesStyles} />
             </div>
           </div>
 
