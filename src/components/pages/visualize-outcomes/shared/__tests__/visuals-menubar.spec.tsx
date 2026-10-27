@@ -4,6 +4,7 @@ import { page } from 'vitest/browser';
 import { vi, describe, it, expect } from 'vitest';
 import { VisualsMenubar } from '../visuals-menubar';
 import { EMPTY_SERIES_STYLES } from '@/lib/graphing/series-style';
+import { EMPTY_FIGURE_LABEL_SETTINGS } from '@/lib/graphing/figure-labels';
 import type { ToggleDisplayCondition, ToggleDisplayKey } from '@/types/visuals';
 
 const keys: ToggleDisplayKey[] = [
@@ -34,6 +35,8 @@ function renderMenubar(overrides: Partial<React.ComponentProps<typeof VisualsMen
     onConnectSpansChange: vi.fn(),
     showTitle: true,
     onShowTitleChange: vi.fn(),
+    figureLabels: EMPTY_FIGURE_LABEL_SETTINGS,
+    onFigureLabelsChange: vi.fn(),
     ...overrides,
   };
 
@@ -41,11 +44,11 @@ function renderMenubar(overrides: Partial<React.ComponentProps<typeof VisualsMen
 }
 
 describe('VisualsMenubar', () => {
-  it('renders File, Visibility, and Design menus', async () => {
+  it('renders File, Data, and Design menus', async () => {
     renderMenubar();
 
     await expect.element(page.getByRole('menuitem', { name: 'File' })).toBeInTheDocument();
-    await expect.element(page.getByRole('menuitem', { name: 'Visibility' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Data' })).toBeInTheDocument();
     await expect.element(page.getByRole('menuitem', { name: 'Design' })).toBeInTheDocument();
   });
 
@@ -59,11 +62,11 @@ describe('VisualsMenubar', () => {
     expect(onSavePng).toHaveBeenCalledTimes(1);
   });
 
-  it('reports a key toggled off from Visibility > Keys and keeps the menu open', async () => {
+  it('reports a key toggled off from Data > Keys and keeps the menu open', async () => {
     const onKeyVisibilityChange = vi.fn();
     renderMenubar({ onKeyVisibilityChange });
 
-    await page.getByRole('menuitem', { name: 'Visibility' }).click();
+    await page.getByRole('menuitem', { name: 'Data' }).click();
     await page.getByRole('menuitem', { name: 'Keys' }).hover();
     await page.getByRole('menuitemcheckbox', { name: 'Key A' }).click();
 
@@ -71,7 +74,7 @@ describe('VisualsMenubar', () => {
     await expect.element(page.getByRole('menuitemcheckbox', { name: 'Key B' })).toBeInTheDocument();
   });
 
-  it('reports a condition toggled on from Visibility > Conditions', async () => {
+  it('reports a condition toggled on from Data > Conditions', async () => {
     const onConditionVisibilityChange = vi.fn();
     renderMenubar({
       onConditionVisibilityChange,
@@ -81,7 +84,7 @@ describe('VisualsMenubar', () => {
       ],
     });
 
-    await page.getByRole('menuitem', { name: 'Visibility' }).click();
+    await page.getByRole('menuitem', { name: 'Data' }).click();
     await page.getByRole('menuitem', { name: 'Conditions' }).hover();
     await page.getByRole('menuitemcheckbox', { name: 'Treatment' }).click();
 
@@ -118,11 +121,11 @@ describe('VisualsMenubar', () => {
     expect(onFigureTextSizeChange).toHaveBeenCalledWith('large');
   });
 
-  it('reports Connect All Spans toggled on from Design', async () => {
+  it('reports Connect All Spans toggled on from Data', async () => {
     const onConnectSpansChange = vi.fn();
     renderMenubar({ onConnectSpansChange });
 
-    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitem', { name: 'Data' }).click();
     await page.getByRole('menuitemcheckbox', { name: 'Connect All Spans' }).click();
 
     expect(onConnectSpansChange).toHaveBeenCalledWith(true);
@@ -139,10 +142,10 @@ describe('VisualsMenubar', () => {
     await expect.element(page.getByRole('menuitemcheckbox', { name: 'Show Title' })).toBeInTheDocument();
   });
 
-  it('keeps the Design menu open after toggling Connect All Spans', async () => {
+  it('keeps the Data menu open after toggling Connect All Spans', async () => {
     renderMenubar();
 
-    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitem', { name: 'Data' }).click();
     await page.getByRole('menuitemcheckbox', { name: 'Connect All Spans' }).click();
 
     await expect.element(page.getByRole('menuitemcheckbox', { name: 'Connect All Spans' })).toBeInTheDocument();
@@ -152,7 +155,7 @@ describe('VisualsMenubar', () => {
     renderMenubar();
 
     await page.getByRole('menuitem', { name: 'File' }).click();
-    await page.getByRole('menuitem', { name: 'Visibility' }).click();
+    await page.getByRole('menuitem', { name: 'Data' }).click();
 
     await expect.element(page.getByRole('menuitem', { name: 'Keys' })).toBeInTheDocument();
   });
@@ -160,7 +163,7 @@ describe('VisualsMenubar', () => {
   it('switches to another menu on hover while a menu is open', async () => {
     renderMenubar();
 
-    await page.getByRole('menuitem', { name: 'Visibility' }).click();
+    await page.getByRole('menuitem', { name: 'Data' }).click();
     await page.getByRole('menuitem', { name: 'Design' }).hover();
 
     await expect.element(page.getByRole('menuitem', { name: 'Series Styles' })).toBeInTheDocument();
@@ -169,9 +172,9 @@ describe('VisualsMenubar', () => {
   it('closes the open menu when its own trigger is clicked again', async () => {
     renderMenubar();
 
-    await page.getByRole('menuitem', { name: 'Visibility' }).click();
+    await page.getByRole('menuitem', { name: 'Data' }).click();
     await expect.element(page.getByRole('menuitem', { name: 'Keys' })).toBeInTheDocument();
-    await page.getByRole('menuitem', { name: 'Visibility' }).click();
+    await page.getByRole('menuitem', { name: 'Data' }).click();
 
     await expect.element(page.getByRole('menuitem', { name: 'Keys' })).not.toBeInTheDocument();
   });
@@ -181,7 +184,7 @@ describe('VisualsMenubar item hover', () => {
   it('highlights a menubar trigger on hover before any menu is open', async () => {
     renderMenubar();
 
-    const trigger = page.getByRole('menuitem', { name: 'Visibility' });
+    const trigger = page.getByRole('menuitem', { name: 'Data' });
     await expect.element(trigger).toBeInTheDocument();
     const before = getComputedStyle(trigger.element()).backgroundColor;
     await trigger.hover();
@@ -192,7 +195,7 @@ describe('VisualsMenubar item hover', () => {
   it('highlights a menu item on hover', async () => {
     renderMenubar();
 
-    await page.getByRole('menuitem', { name: 'Visibility' }).click();
+    await page.getByRole('menuitem', { name: 'Data' }).click();
     await page.getByRole('menuitem', { name: 'Keys' }).hover();
     const item = page.getByRole('menuitemcheckbox', { name: 'Key B' });
     await expect.element(item).toBeInTheDocument();

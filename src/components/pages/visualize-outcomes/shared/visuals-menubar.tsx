@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  CaseSensitiveIcon,
   DownloadIcon,
   FileJsonIcon,
   FlaskConicalIcon,
@@ -32,8 +33,10 @@ import { AimLinesDialog } from './dialogs/aim-lines-dialog';
 import { PhaseChangesDialog } from './dialogs/phase-changes-dialog';
 import { SeriesStylesDialog } from './dialogs/series-styles-dialog';
 import { TextAnnotationsDialog } from './dialogs/text-annotations-dialog';
+import { TitlesDialog } from './dialogs/titles-dialog';
+import { type FigureLabelSettings } from '@/lib/graphing/figure-labels';
 
-type AnnotationDialog = 'series-styles' | 'phase-changes' | 'text-annotations' | 'aim-lines';
+type AnnotationDialog = 'series-styles' | 'phase-changes' | 'text-annotations' | 'aim-lines' | 'titles';
 
 type Props = {
   page: TextPage;
@@ -52,6 +55,8 @@ type Props = {
   onConnectSpansChange: (connect: boolean) => void;
   showTitle: boolean;
   onShowTitleChange: (show: boolean) => void;
+  figureLabels: FigureLabelSettings;
+  onFigureLabelsChange: (labels: FigureLabelSettings) => void;
 };
 
 /**
@@ -77,6 +82,8 @@ export function VisualsMenubar({
   onConnectSpansChange,
   showTitle,
   onShowTitleChange,
+  figureLabels,
+  onFigureLabelsChange,
 }: Props) {
   const [activeDialog, setActiveDialog] = useState<AnnotationDialog | null>(null);
 
@@ -99,7 +106,7 @@ export function VisualsMenubar({
       </MenubarMenu>
 
       <MenubarMenu>
-        <MenubarTrigger>Visibility</MenubarTrigger>
+        <MenubarTrigger>Data</MenubarTrigger>
         <MenubarContent onCloseAutoFocus={(event) => event.preventDefault()}>
           <MenubarSub>
             <MenubarSubTrigger>
@@ -138,6 +145,14 @@ export function VisualsMenubar({
               ))}
             </MenubarSubContent>
           </MenubarSub>
+          <MenubarSeparator />
+          <MenubarCheckboxItem
+            checked={connectSpans}
+            onSelect={(event) => event.preventDefault()}
+            onCheckedChange={(checked) => onConnectSpansChange(checked === true)}
+          >
+            Connect All Spans
+          </MenubarCheckboxItem>
         </MenubarContent>
       </MenubarMenu>
 
@@ -186,6 +201,10 @@ export function VisualsMenubar({
             <PaintbrushIcon className="mr-2 h-4 w-4" />
             Series Styles
           </MenubarItem>
+          <MenubarItem onSelect={() => setActiveDialog('titles')}>
+            <CaseSensitiveIcon className="mr-2 h-4 w-4" />
+            Titles and Labels
+          </MenubarItem>
           <MenubarSeparator />
           <MenubarCheckboxItem
             checked={showTitle}
@@ -193,13 +212,6 @@ export function VisualsMenubar({
             onCheckedChange={(checked) => onShowTitleChange(checked === true)}
           >
             Show Title
-          </MenubarCheckboxItem>
-          <MenubarCheckboxItem
-            checked={connectSpans}
-            onSelect={(event) => event.preventDefault()}
-            onCheckedChange={(checked) => onConnectSpansChange(checked === true)}
-          >
-            Connect All Spans
           </MenubarCheckboxItem>
         </MenubarContent>
       </MenubarMenu>
@@ -232,6 +244,13 @@ export function VisualsMenubar({
         onChange={onStylesChange}
         open={activeDialog === 'aim-lines'}
         onOpenChange={dialogOpenChange('aim-lines')}
+      />
+      <TitlesDialog
+        page={page}
+        labels={figureLabels}
+        onChange={onFigureLabelsChange}
+        open={activeDialog === 'titles'}
+        onOpenChange={dialogOpenChange('titles')}
       />
     </Menubar>
   );

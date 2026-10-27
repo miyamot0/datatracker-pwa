@@ -13,6 +13,12 @@ import { RateTooltip } from './rate-elements';
 import { processMultipleSessionDataWithKeys } from '@/lib/calculations';
 import { convertLegacyTimerType } from '@/lib/calculations/calculation-helpers';
 import { EMPTY_SERIES_STYLES, type SeriesStyles } from '@/lib/graphing/series-style';
+import {
+  EMPTY_FIGURE_LABEL_SETTINGS,
+  FIGURE_LABEL_DEFAULTS,
+  resolveFigureLabels,
+  type FigureLabelSettings,
+} from '@/lib/graphing/figure-labels';
 
 type Props = {
   Group: string;
@@ -28,6 +34,7 @@ type Props = {
   MaxX: number;
   SeriesStyles?: SeriesStyles;
   ShowTitle?: boolean;
+  FigureLabels?: FigureLabelSettings;
   getDivPng: UseGenerateImage<HTMLDivElement>[0];
   divRef: UseGenerateImage<HTMLDivElement>[1]['ref'];
 };
@@ -46,6 +53,7 @@ export default function RateFigureVisualization({
   MaxX,
   SeriesStyles = EMPTY_SERIES_STYLES,
   ShowTitle = true,
+  FigureLabels = EMPTY_FIGURE_LABEL_SETTINGS,
   getDivPng,
   divRef,
 }: Props) {
@@ -53,13 +61,14 @@ export default function RateFigureVisualization({
     from: `/session/$group/$individual/$evaluation/rate`,
   });
 
+  const labels = resolveFigureLabels(FigureLabels, FIGURE_LABEL_DEFAULTS.rate);
   const x_ticks = generateTicks(MaxX, MinX);
   const legends = createChartLegends(FilteredSessions, KeySetFull, SeriesStyles);
   const onNavigate = createNavigationHandler(navigate, Group, Individual, Evaluation);
 
   const yAxisConfig = {
     min: 0,
-    label: 'Responses per Min',
+    label: labels.yAxis,
     padding: { bottom: 10 },
   };
 
@@ -80,13 +89,14 @@ export default function RateFigureVisualization({
   return (
     <div className="flex flex-col gap-4 w-full nuke-view-transition">
       <BaseChart
-        title="Visualization of Data as Rates"
+        title={labels.title}
         preparedData={preparedData}
         filteredSessions={FilteredSessions}
         keySetFull={KeySetFull}
         seriesStyles={SeriesStyles}
         textPage="rate"
         showTitle={ShowTitle}
+        xAxisLabel={labels.xAxis}
         figureTextSize={FigureTextSize}
         connectSpans={ConnectSpans}
         minX={MinX}

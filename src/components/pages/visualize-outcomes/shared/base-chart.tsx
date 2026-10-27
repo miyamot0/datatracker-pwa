@@ -70,6 +70,7 @@ type BaseChartProps = {
   seriesStyles?: SeriesStyles;
   textPage: TextPage;
   showTitle?: boolean;
+  xAxisLabel?: string;
 };
 
 export function BaseChart({
@@ -90,6 +91,7 @@ export function BaseChart({
   seriesStyles = EMPTY_SERIES_STYLES,
   textPage,
   showTitle = true,
+  xAxisLabel = 'Session',
 }: BaseChartProps) {
   const { noAnimationProps, chartMargins, xAxisConfig, yAxisStyle, labelStyle } = getChartConfiguration();
   const spacing = getChartVerticalSpacing(figureTextSize, showTitle);
@@ -252,7 +254,7 @@ export function BaseChart({
         >
           <Label
             {...noAnimationProps}
-            content={<XAxisLabel value="Session" offset={spacing.xAxisLabelOffset} style={labelStyle} />}
+            content={<XAxisLabel value={xAxisLabel} offset={spacing.xAxisLabelOffset} style={labelStyle} />}
           />
         </XAxis>
 

@@ -8,15 +8,18 @@ import { ScatterChartIcon } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   getLocalConnectSpans,
+  getLocalFigureLabels,
   getLocalSeriesStyles,
   getLocalShowTitle,
   setLocalCachedPrefs,
   setLocalConnectSpans,
+  setLocalFigureLabels,
   setLocalSeriesStyles,
   setLocalShowTitle,
 } from '@/lib/local_storage';
 import { VisualsMenubar } from '@/components/pages/visualize-outcomes/shared/visuals-menubar';
 import { type SeriesStyles } from '@/lib/graphing/series-style';
+import { type FigureLabelSettings } from '@/lib/graphing/figure-labels';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
@@ -78,6 +81,14 @@ export default function ResultsProportionVisualsPage({
   const setShowTitle = (show: boolean) => {
     setShowTitleState(show);
     setLocalShowTitle(Group, Individual, Evaluation, 'Proportion', show);
+  };
+
+  const [figureLabels, setFigureLabelsState] = useState<FigureLabelSettings>(() =>
+    getLocalFigureLabels(Group, Individual, Evaluation, 'Proportion'),
+  );
+  const setFigureLabels = (labels: FigureLabelSettings) => {
+    setFigureLabelsState(labels);
+    setLocalFigureLabels(Group, Individual, Evaluation, 'Proportion', labels);
   };
   const [getDivPng, { ref: figureRef }] = useGenerateImage<HTMLDivElement>();
   const [schedule, setSchedule] = useState<ScheduleMappingOptionsType | { value: string; label: string }>(TimerMapping);
@@ -153,6 +164,8 @@ export default function ResultsProportionVisualsPage({
             onConnectSpansChange={setConnectAllPoints}
             showTitle={showTitle}
             onShowTitleChange={setShowTitle}
+            figureLabels={figureLabels}
+            onFigureLabelsChange={setFigureLabels}
           />
 
           <div className="flex flex-row items-center gap-2 w-fit">
@@ -219,6 +232,7 @@ export default function ResultsProportionVisualsPage({
             FigureTextSize={figureTextSize}
             ConnectSpans={connectAllPoints}
             ShowTitle={showTitle}
+            FigureLabels={figureLabels}
             SeriesStyles={seriesStyles}
             getDivPng={getDivPng}
             divRef={figureRef}

@@ -5,6 +5,11 @@ import {
   isValidAimLine,
   type SeriesStyles,
 } from '@/lib/graphing/series-style';
+import {
+  EMPTY_FIGURE_LABEL_SETTINGS,
+  isValidFigureLabelSettings,
+  type FigureLabelSettings,
+} from '@/lib/graphing/figure-labels';
 
 /**
  * This is the type definition for the ReturnLocalStorageCache type
@@ -161,4 +166,45 @@ export function setLocalConnectSpans(
   const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ConnectSpans', Plot].join('_');
 
   localStorage.setItem(dynamic_key, String(ConnectSpans));
+}
+
+/**
+ * Retrieve the label overrides for a plot's figure. Defaults to no overrides when nothing valid is saved.
+ */
+export function getLocalFigureLabels(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  Plot: 'Rate' | 'Proportion',
+): FigureLabelSettings {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'FigureLabels', Plot].join('_');
+
+  const cached_information = localStorage.getItem(dynamic_key);
+
+  if (!cached_information) {
+    return EMPTY_FIGURE_LABEL_SETTINGS;
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(cached_information);
+
+    return isValidFigureLabelSettings(parsed) ? parsed : EMPTY_FIGURE_LABEL_SETTINGS;
+  } catch {
+    return EMPTY_FIGURE_LABEL_SETTINGS;
+  }
+}
+
+/**
+ * Store the label overrides for a plot's figure.
+ */
+export function setLocalFigureLabels(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  Plot: 'Rate' | 'Proportion',
+  Labels: FigureLabelSettings,
+) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'FigureLabels', Plot].join('_');
+
+  localStorage.setItem(dynamic_key, JSON.stringify(Labels));
 }

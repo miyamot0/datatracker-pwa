@@ -13,6 +13,12 @@ import { ProportionTooltip } from './proportion-elements';
 import { processMultipleSessionDataWithKeys } from '@/lib/calculations';
 import { convertLegacyTimerType } from '@/lib/calculations/calculation-helpers';
 import { EMPTY_SERIES_STYLES, type SeriesStyles } from '@/lib/graphing/series-style';
+import {
+  EMPTY_FIGURE_LABEL_SETTINGS,
+  FIGURE_LABEL_DEFAULTS,
+  resolveFigureLabels,
+  type FigureLabelSettings,
+} from '@/lib/graphing/figure-labels';
 
 type Props = {
   Group: string;
@@ -28,6 +34,7 @@ type Props = {
   MaxX: number;
   SeriesStyles?: SeriesStyles;
   ShowTitle?: boolean;
+  FigureLabels?: FigureLabelSettings;
   getDivPng: UseGenerateImage<HTMLDivElement>[0];
   divRef: UseGenerateImage<HTMLDivElement>[1]['ref'];
 };
@@ -46,6 +53,7 @@ export default function ProportionFigureVisualization({
   MaxX,
   SeriesStyles = EMPTY_SERIES_STYLES,
   ShowTitle = true,
+  FigureLabels = EMPTY_FIGURE_LABEL_SETTINGS,
   getDivPng,
   divRef,
 }: Props) {
@@ -55,6 +63,7 @@ export default function ProportionFigureVisualization({
 
   //const { preparedData } = prepareProportionData(FilteredSessions, ScheduleOption);
 
+  const labels = resolveFigureLabels(FigureLabels, FIGURE_LABEL_DEFAULTS.proportion);
   const x_ticks = generateTicks(MaxX, MinX);
   const legends = createChartLegends(FilteredSessions, KeySetFull, SeriesStyles);
   const onNavigate = createNavigationHandler(navigate, Group, Individual, Evaluation);
@@ -63,7 +72,7 @@ export default function ProportionFigureVisualization({
     min: 0,
     max: 100,
     domain: [0, 100] as [number, number],
-    label: 'Percentage of Session',
+    label: labels.yAxis,
     padding: { bottom: 10 },
   };
 
@@ -84,13 +93,14 @@ export default function ProportionFigureVisualization({
   return (
     <div className="flex flex-col gap-4 w-full">
       <BaseChart
-        title="Visualization of Data as Proportion of Session"
+        title={labels.title}
         preparedData={preparedData}
         filteredSessions={FilteredSessions}
         keySetFull={KeySetFull}
         seriesStyles={SeriesStyles}
         textPage="proportion"
         showTitle={ShowTitle}
+        xAxisLabel={labels.xAxis}
         figureTextSize={FigureTextSize}
         connectSpans={ConnectSpans}
         minX={MinX}

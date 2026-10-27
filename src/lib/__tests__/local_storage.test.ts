@@ -1,14 +1,17 @@
 import {
   getLocalCachedPrefs,
   getLocalConnectSpans,
+  getLocalFigureLabels,
   getLocalSeriesStyles,
   getLocalShowTitle,
   ReturnLocalStorageCache,
   setLocalCachedPrefs,
   setLocalConnectSpans,
+  setLocalFigureLabels,
   setLocalSeriesStyles,
   setLocalShowTitle,
 } from '../local_storage'; // Adjust the import path
+import { EMPTY_FIGURE_LABEL_SETTINGS } from '../graphing/figure-labels';
 
 describe('LocalStorage Prefs', () => {
   const group = 'group1';
@@ -250,6 +253,43 @@ describe('LocalStorage Prefs', () => {
       setLocalConnectSpans(group, individual, evaluation, 'Proportion', false);
 
       expect(getLocalConnectSpans(group, individual, evaluation, 'Proportion')).toBe(false);
+    });
+  });
+
+  describe('figure labels', () => {
+    const saved = {
+      overrideTitle: true,
+      titleText: 'Custom',
+      overrideXAxis: false,
+      xAxisText: '',
+      overrideYAxis: true,
+      yAxisText: 'Rate',
+    };
+
+    it('defaults to no overrides when nothing is saved', () => {
+      expect(getLocalFigureLabels(group, individual, evaluation, 'Rate')).toEqual(EMPTY_FIGURE_LABEL_SETTINGS);
+    });
+
+    it('round-trips label settings per plot type', () => {
+      setLocalFigureLabels(group, individual, evaluation, 'Rate', saved);
+
+      expect(getLocalFigureLabels(group, individual, evaluation, 'Rate')).toEqual(saved);
+      expect(getLocalFigureLabels(group, individual, evaluation, 'Proportion')).toEqual(EMPTY_FIGURE_LABEL_SETTINGS);
+    });
+
+    it('falls back to empty settings when stored JSON is invalid', () => {
+      localStorage.setItem(`${group}_${individual}_${evaluation}_FigureLabels_Rate`, '{not json');
+
+      expect(getLocalFigureLabels(group, individual, evaluation, 'Rate')).toEqual(EMPTY_FIGURE_LABEL_SETTINGS);
+    });
+
+    it('falls back to empty settings when stored data has the wrong shape', () => {
+      localStorage.setItem(
+        `${group}_${individual}_${evaluation}_FigureLabels_Rate`,
+        JSON.stringify({ overrideTitle: true }),
+      );
+
+      expect(getLocalFigureLabels(group, individual, evaluation, 'Rate')).toEqual(EMPTY_FIGURE_LABEL_SETTINGS);
     });
   });
 });

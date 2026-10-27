@@ -9,15 +9,18 @@ import { ScatterChartIcon } from 'lucide-react';
 import RateFigureVisualization from './rate-figure';
 import {
   getLocalConnectSpans,
+  getLocalFigureLabels,
   getLocalSeriesStyles,
   getLocalShowTitle,
   setLocalCachedPrefs,
   setLocalConnectSpans,
+  setLocalFigureLabels,
   setLocalSeriesStyles,
   setLocalShowTitle,
 } from '@/lib/local_storage';
 import { VisualsMenubar } from '@/components/pages/visualize-outcomes/shared/visuals-menubar';
 import { type SeriesStyles } from '@/lib/graphing/series-style';
+import { type FigureLabelSettings } from '@/lib/graphing/figure-labels';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
@@ -107,6 +110,14 @@ export default function ResultsRateVisualsPage({
     setShowTitleState(show);
     setLocalShowTitle(Group, Individual, Evaluation, 'Rate', show);
   };
+
+  const [figureLabels, setFigureLabelsState] = useState<FigureLabelSettings>(() =>
+    getLocalFigureLabels(Group, Individual, Evaluation, 'Rate'),
+  );
+  const setFigureLabels = (labels: FigureLabelSettings) => {
+    setFigureLabelsState(labels);
+    setLocalFigureLabels(Group, Individual, Evaluation, 'Rate', labels);
+  };
   const [getDivPng, { ref: figureRef }] = useGenerateImage<HTMLDivElement>();
 
   return (
@@ -157,6 +168,8 @@ export default function ResultsRateVisualsPage({
             onConnectSpansChange={setConnectAllPoints}
             showTitle={showTitle}
             onShowTitleChange={setShowTitle}
+            figureLabels={figureLabels}
+            onFigureLabelsChange={setFigureLabels}
           />
 
           <div className="flex flex-row gap-2">
@@ -224,6 +237,7 @@ export default function ResultsRateVisualsPage({
             FigureTextSize={figureTextSize}
             ConnectSpans={connectAllPoints}
             ShowTitle={showTitle}
+            FigureLabels={figureLabels}
             MinX={MinX}
             MaxX={MaxX}
             SeriesStyles={seriesStyles}

@@ -13,6 +13,15 @@ vi.mock('@/lib/local_storage', () => ({
   setLocalShowTitle: vi.fn(),
   getLocalConnectSpans: vi.fn(() => false),
   setLocalConnectSpans: vi.fn(),
+  getLocalFigureLabels: vi.fn(() => ({
+    overrideTitle: false,
+    titleText: '',
+    overrideXAxis: false,
+    xAxisText: '',
+    overrideYAxis: false,
+    yAxisText: '',
+  })),
+  setLocalFigureLabels: vi.fn(),
 }));
 
 vi.mock('@/types/schedules', () => ({
@@ -111,12 +120,12 @@ const renderPage = (override?: Record<string, unknown>) =>
   render(<ResultsProportionVisualsPage {...makeProps()} {...override} />);
 
 const openDisplayKeys = async () => {
-  await page.getByRole('menuitem', { name: 'Visibility' }).click();
+  await page.getByRole('menuitem', { name: 'Data' }).click();
   await page.getByRole('menuitem', { name: 'Display Keys' }).hover();
 };
 
 const openDisplayConditions = async () => {
-  await page.getByRole('menuitem', { name: 'Visibility' }).click();
+  await page.getByRole('menuitem', { name: 'Data' }).click();
   await page.getByRole('menuitem', { name: 'Display Conditions' }).hover();
 };
 
@@ -141,7 +150,7 @@ describe('ResultsProportionVisualsPage', () => {
 
     await expect.element(page.getByText('Visualization of Behavioral Proportions')).toBeInTheDocument();
     await expect.element(page.getByRole('link', { name: 'See Rate' })).toBeInTheDocument();
-    await expect.element(page.getByRole('menuitem', { name: 'Visibility' })).toBeInTheDocument();
+    await expect.element(page.getByRole('menuitem', { name: 'Data' })).toBeInTheDocument();
     await expect.element(page.getByRole('menuitem', { name: 'Design' })).toBeInTheDocument();
     await expect.element(page.getByText('Timer to Reference:')).toBeInTheDocument();
     await expect.element(page.getByTestId('figure-schedule')).toHaveTextContent('End on Primary Timer');
@@ -195,6 +204,7 @@ describe('ResultsProportionVisualsPage', () => {
     await page.getByRole('menuitem', { name: 'Design' }).click();
     await page.getByRole('menuitem', { name: 'Element Magnification' }).hover();
     await page.getByRole('menuitemradio', { name: 'Large', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'Data' }).click();
     await page.getByRole('menuitemcheckbox', { name: 'Connect All Spans' }).click();
 
     await expect.element(page.getByTestId('figure-text-size')).toHaveTextContent('large');
