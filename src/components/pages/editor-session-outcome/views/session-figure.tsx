@@ -19,8 +19,8 @@ import { ExpandedSavedSessionResult } from '@/lib/dtos/session-results';
 import { CustomTooltipProps, PlotPoint } from '@/types/visuals';
 import { KeyManageType } from '@/types/timing';
 import { createChartLegends, generateTicks } from '@/lib/graphing/chart-setup';
-import { AxisSpanLines } from '@/components/pages/visualize-outcomes/shared/axis-span-lines';
-import { ChartLegendContent } from '@/components/pages/visualize-outcomes/shared/chart-legend-content';
+import { AxisSpanLines } from '@/components/pages/visualize-outcomes/shared/annotations/axis-span-lines';
+import { ChartLegendContent } from '@/components/pages/visualize-outcomes/shared/legends/chart-legend-content';
 import {
   EMPTY_SERIES_STYLES,
   DEFAULT_LINE_COLOR,

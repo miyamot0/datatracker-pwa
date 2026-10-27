@@ -13,9 +13,9 @@ import {
 import { KeyboardIcon, LineChartIcon, ScatterChartIcon } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getLocalSeriesStyles, setLocalCachedPrefs, setLocalSeriesStyles } from '@/lib/local_storage';
-import { SeriesStylesDialog } from '@/components/pages/visualize-outcomes/shared/series-styles-dialog';
-import { PhaseChangesDialog } from '@/components/pages/visualize-outcomes/shared/phase-changes-dialog';
-import { TextAnnotationsDialog } from '@/components/pages/visualize-outcomes/shared/text-annotations-dialog';
+import { SeriesStylesDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/series-styles-dialog';
+import { PhaseChangesDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/phase-changes-dialog';
+import { TextAnnotationsDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/text-annotations-dialog';
 import { type SeriesStyles } from '@/lib/graphing/series-style';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

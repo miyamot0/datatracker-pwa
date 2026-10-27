@@ -59,7 +59,7 @@ vi.mock('recharts', () => ({
   Symbols: () => null,
 }));
 
-vi.mock('@/components/pages/visualize-outcomes/shared/chart-legend-content', () => ({
+vi.mock('@/components/pages/visualize-outcomes/shared/legends/chart-legend-content', () => ({
   ChartLegendContent: ({ payload }: any) => (
     <div data-testid="legend">
       {payload?.map((item: any, i: number) => (
@@ -80,7 +80,7 @@ vi.mock('@/lib/colors', () => ({
 vi.mock('@/lib/shapes', () => ({
   getShape: () => 'circle',
 }));
-vi.mock('@/components/pages/visualize-outcomes/shared/axis-span-lines', () => ({
+vi.mock('@/components/pages/visualize-outcomes/shared/annotations/axis-span-lines', () => ({
   AxisSpanLines: () => <div data-testid="axis-span-lines" />,
 }));
 

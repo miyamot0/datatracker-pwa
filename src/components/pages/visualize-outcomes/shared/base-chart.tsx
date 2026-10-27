@@ -16,7 +16,7 @@ import {
 import { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { getShape } from '@/lib/shapes';
-import { ChartLegendContent } from '@/components/pages/visualize-outcomes/shared/chart-legend-content';
+import { ChartLegendContent } from '@/components/pages/visualize-outcomes/shared/legends/chart-legend-content';
 import {
   EMPTY_SERIES_STYLES,
   DEFAULT_LINE_COLOR,
@@ -37,8 +37,8 @@ import { splitAtPoints } from '@/lib/arrays';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { calculateSplitPoints } from '@/lib/graphing/data-preparation';
 import { getChartConfiguration } from '@/lib/graphing/chart-setup';
-import { AxisSpanLines } from './axis-span-lines';
-import { TextAnnotationsLayer } from './text-annotations-layer';
+import { AxisSpanLines } from './annotations/axis-span-lines';
+import { TextAnnotationsLayer } from './annotations/text-annotations-layer';
 
 type BaseChartProps = {
   title: string;
