@@ -10,6 +10,11 @@ import {
   isValidFigureLabelSettings,
   type FigureLabelSettings,
 } from '@/lib/graphing/figure-labels';
+import {
+  DEFAULT_LEGEND_SETTINGS,
+  isValidLegendSettings,
+  type LegendSettings,
+} from '@/lib/graphing/legend-settings';
 
 /**
  * This is the type definition for the ReturnLocalStorageCache type
@@ -271,4 +276,45 @@ export function setLocalFigureLabels(
   const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'FigureLabels', Plot].join('_');
 
   localStorage.setItem(dynamic_key, JSON.stringify(Labels));
+}
+
+/**
+ * Retrieve the legend placement for a plot's figure. Defaults to the bottom, horizontal legend when nothing valid is saved.
+ */
+export function getLocalLegendSettings(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  Plot: 'Rate' | 'Proportion',
+): LegendSettings {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'LegendSettings', Plot].join('_');
+
+  const cached_information = localStorage.getItem(dynamic_key);
+
+  if (!cached_information) {
+    return DEFAULT_LEGEND_SETTINGS;
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(cached_information);
+
+    return isValidLegendSettings(parsed) ? parsed : DEFAULT_LEGEND_SETTINGS;
+  } catch {
+    return DEFAULT_LEGEND_SETTINGS;
+  }
+}
+
+/**
+ * Store the legend placement for a plot's figure.
+ */
+export function setLocalLegendSettings(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  Plot: 'Rate' | 'Proportion',
+  Settings: LegendSettings,
+) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'LegendSettings', Plot].join('_');
+
+  localStorage.setItem(dynamic_key, JSON.stringify(Settings));
 }

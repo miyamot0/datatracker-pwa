@@ -79,7 +79,7 @@ describe('buildChartSvg', () => {
   it('includes legend icons as nested svg elements', () => {
     const doc = parseSvg(buildChartSvg(root)!.svg);
 
-    const nested = Array.from(doc.querySelectorAll('svg')).filter((node) => node !== doc);
+    const nested = Array.from(doc.querySelectorAll('svg')).filter((node) => node !== (doc as Element));
     expect(nested.length).toBe(2);
   });
 });

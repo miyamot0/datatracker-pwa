@@ -2,6 +2,7 @@ import {
   getLocalCachedPrefs,
   getLocalConnectSpans,
   getLocalFigureLabels,
+  getLocalLegendSettings,
   getLocalSeriesStyles,
   getLocalShowTitle,
   getLocalShowTooltip,
@@ -9,6 +10,7 @@ import {
   getLocalShowDescription,
   ReturnLocalStorageCache,
   setLocalCachedPrefs,
+  setLocalLegendSettings,
   setLocalShowConditionLegend,
   setLocalShowDescription,
   setLocalShowTooltip,
@@ -18,6 +20,7 @@ import {
   setLocalShowTitle,
 } from '../local_storage'; // Adjust the import path
 import { EMPTY_FIGURE_LABEL_SETTINGS } from '../graphing/figure-labels';
+import { DEFAULT_LEGEND_SETTINGS } from '../graphing/legend-settings';
 
 describe('LocalStorage Prefs', () => {
   const group = 'group1';
@@ -329,6 +332,36 @@ describe('LocalStorage Prefs', () => {
       );
 
       expect(getLocalFigureLabels(group, individual, evaluation, 'Rate')).toEqual(EMPTY_FIGURE_LABEL_SETTINGS);
+    });
+  });
+
+  describe('legend settings', () => {
+    const saved = { position: 'upper-left' as const, layout: 'vertical' as const };
+
+    it('defaults to below and horizontal when nothing is saved', () => {
+      expect(getLocalLegendSettings(group, individual, evaluation, 'Rate')).toEqual(DEFAULT_LEGEND_SETTINGS);
+    });
+
+    it('round-trips legend settings per plot type', () => {
+      setLocalLegendSettings(group, individual, evaluation, 'Rate', saved);
+
+      expect(getLocalLegendSettings(group, individual, evaluation, 'Rate')).toEqual(saved);
+      expect(getLocalLegendSettings(group, individual, evaluation, 'Proportion')).toEqual(DEFAULT_LEGEND_SETTINGS);
+    });
+
+    it('falls back to defaults when stored JSON is invalid', () => {
+      localStorage.setItem(`${group}_${individual}_${evaluation}_LegendSettings_Rate`, '{not json');
+
+      expect(getLocalLegendSettings(group, individual, evaluation, 'Rate')).toEqual(DEFAULT_LEGEND_SETTINGS);
+    });
+
+    it('falls back to defaults when stored data has an unknown position', () => {
+      localStorage.setItem(
+        `${group}_${individual}_${evaluation}_LegendSettings_Rate`,
+        JSON.stringify({ position: 'center', layout: 'vertical' }),
+      );
+
+      expect(getLocalLegendSettings(group, individual, evaluation, 'Rate')).toEqual(DEFAULT_LEGEND_SETTINGS);
     });
   });
 });

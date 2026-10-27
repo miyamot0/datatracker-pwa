@@ -17,6 +17,7 @@ import {
   resolveFigureLabels,
   type FigureLabelSettings,
 } from '@/lib/graphing/figure-labels';
+import { DEFAULT_LEGEND_SETTINGS, type LegendSettings } from '@/lib/graphing/legend-settings';
 
 type Props = {
   Group: string;
@@ -34,6 +35,7 @@ type Props = {
   ShowTitle?: boolean;
   ShowTooltip?: boolean;
   ShowConditionLegend?: boolean;
+  LegendSettings?: LegendSettings;
   FigureLabels?: FigureLabelSettings;
   divRef: RefObject<HTMLDivElement | null>;
 };
@@ -54,6 +56,7 @@ export default function RateFigureVisualization({
   ShowTitle = true,
   ShowTooltip = true,
   ShowConditionLegend = true,
+  LegendSettings = DEFAULT_LEGEND_SETTINGS,
   FigureLabels = EMPTY_FIGURE_LABEL_SETTINGS,
   divRef,
 }: Props) {
@@ -98,6 +101,7 @@ export default function RateFigureVisualization({
         showTitle={ShowTitle}
         showTooltip={ShowTooltip}
         showConditionLegend={ShowConditionLegend}
+        legendSettings={LegendSettings}
         xAxisLabel={labels.xAxis}
         figureTextSize={FigureTextSize}
         connectSpans={ConnectSpans}

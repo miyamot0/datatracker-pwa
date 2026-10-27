@@ -8,6 +8,7 @@ import {
   MessageSquareIcon,
   MinusIcon,
   PaintbrushIcon,
+  PanelBottomIcon,
   RulerIcon,
   TypeIcon,
   ZoomInIcon,
@@ -35,9 +36,11 @@ import { PhaseChangesDialog } from './dialogs/phase-changes-dialog';
 import { SeriesStylesDialog } from './dialogs/series-styles-dialog';
 import { TextAnnotationsDialog } from './dialogs/text-annotations-dialog';
 import { TitlesDialog } from './dialogs/titles-dialog';
+import { LegendDialog } from './dialogs/legend-dialog';
 import { type FigureLabelSettings } from '@/lib/graphing/figure-labels';
+import { type LegendSettings } from '@/lib/graphing/legend-settings';
 
-type AnnotationDialog = 'series-styles' | 'phase-changes' | 'text-annotations' | 'aim-lines' | 'titles';
+type AnnotationDialog = 'series-styles' | 'phase-changes' | 'text-annotations' | 'aim-lines' | 'titles' | 'legend';
 
 type Props = {
   page: TextPage;
@@ -58,6 +61,8 @@ type Props = {
   onShowTitleChange: (show: boolean) => void;
   figureLabels: FigureLabelSettings;
   onFigureLabelsChange: (labels: FigureLabelSettings) => void;
+  legendSettings: LegendSettings;
+  onLegendSettingsChange: (settings: LegendSettings) => void;
   showTooltip: boolean;
   onShowTooltipChange: (show: boolean) => void;
   showConditionLegend: boolean;
@@ -91,6 +96,8 @@ export function VisualsMenubar({
   onShowTitleChange,
   figureLabels,
   onFigureLabelsChange,
+  legendSettings,
+  onLegendSettingsChange,
   showTooltip,
   onShowTooltipChange,
   showConditionLegend,
@@ -246,6 +253,10 @@ export function VisualsMenubar({
           >
             Show Condition Legend
           </MenubarCheckboxItem>
+          <MenubarItem onSelect={() => setActiveDialog('legend')}>
+            <PanelBottomIcon className="mr-2 h-4 w-4" />
+            Legend Position and Layout
+          </MenubarItem>
           <MenubarCheckboxItem
             checked={showTooltip}
             onSelect={(event) => event.preventDefault()}
@@ -298,6 +309,12 @@ export function VisualsMenubar({
         onChange={onFigureLabelsChange}
         open={activeDialog === 'titles'}
         onOpenChange={dialogOpenChange('titles')}
+      />
+      <LegendDialog
+        settings={legendSettings}
+        onChange={onLegendSettingsChange}
+        open={activeDialog === 'legend'}
+        onOpenChange={dialogOpenChange('legend')}
       />
     </Menubar>
   );

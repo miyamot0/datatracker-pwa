@@ -40,6 +40,11 @@ import { splitAtPoints } from '@/lib/arrays';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { calculateSplitPoints } from '@/lib/graphing/data-preparation';
 import { getChartConfiguration, getChartVerticalSpacing } from '@/lib/graphing/chart-setup';
+import {
+  DEFAULT_LEGEND_SETTINGS,
+  LEGEND_CHART_POSITIONS,
+  type LegendSettings,
+} from '@/lib/graphing/legend-settings';
 import { AxisSpanLines } from './annotations/axis-span-lines';
 import { TextAnnotationsLayer } from './annotations/text-annotations-layer';
 import { AimLinesLayer } from './annotations/aim-lines-layer';
@@ -75,6 +80,7 @@ type BaseChartProps = {
   showTitle?: boolean;
   showTooltip?: boolean;
   showConditionLegend?: boolean;
+  legendSettings?: LegendSettings;
   xAxisLabel?: string;
 };
 
@@ -98,10 +104,12 @@ export function BaseChart({
   showTitle = true,
   showTooltip = true,
   showConditionLegend = true,
+  legendSettings = DEFAULT_LEGEND_SETTINGS,
   xAxisLabel = 'Session',
 }: BaseChartProps) {
   const { noAnimationProps, chartMargins, xAxisConfig, yAxisStyle, labelStyle } = getChartConfiguration();
   const spacing = getChartVerticalSpacing(figureTextSize, showTitle);
+  const legendPosition = LEGEND_CHART_POSITIONS[legendSettings.position];
 
   const data_set_parsed_by_condition = getUniqueSessionConditions(filteredSessions).map((condition) => ({
     name: condition,
@@ -130,7 +138,7 @@ export function BaseChart({
       width="100%"
       height={spacing.chartHeight}
       className={cn(
-        'text-base text-primary bg-white nuke-view-transition [&_.recharts-legend-item]:inline-flex! [&_.recharts-legend-item]:items-center [&_.recharts-scatter-symbol]:cursor-pointer [&_*]:outline-none',
+        'text-base text-primary bg-white nuke-view-transition [&_.recharts-scatter-symbol]:cursor-pointer [&_*]:outline-none',
         {
           'text-xl': figureTextSize == FIGURE_TEXT_OPTIONS[1].value,
           'text-2xl': figureTextSize == FIGURE_TEXT_OPTIONS[2].value,
@@ -310,13 +318,17 @@ export function BaseChart({
         <Legend
           {...noAnimationProps}
           align="center"
-          wrapperStyle={{
-            left: chartMargins.left + Y_AXIS_WIDTH,
-            right: chartMargins.right,
-            width: 'auto',
-          }}
+          {...(legendPosition === undefined
+            ? { wrapperStyle: { left: chartMargins.left + Y_AXIS_WIDTH, right: chartMargins.right, width: 'auto' } }
+            : {
+                position: legendPosition,
+                wrapperStyle: { backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '2px 6px', borderRadius: 4 },
+              })}
+          layout={legendSettings.layout}
           content={() => (
             <ChartLegendContent
+              layout={legendSettings.layout}
+              align={legendPosition === undefined ? 'center' : 'start'}
               payload={showConditionLegend ? legends : legends.filter((entry) => entry.kind !== 'condition')}
             />
           )}

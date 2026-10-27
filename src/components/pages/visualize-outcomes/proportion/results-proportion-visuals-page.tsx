@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import {
   getLocalConnectSpans,
   getLocalFigureLabels,
+  getLocalLegendSettings,
   getLocalSeriesStyles,
   getLocalShowTitle,
   getLocalShowTooltip,
@@ -19,12 +20,14 @@ import {
   setLocalCachedPrefs,
   setLocalConnectSpans,
   setLocalFigureLabels,
+  setLocalLegendSettings,
   setLocalSeriesStyles,
   setLocalShowTitle,
 } from '@/lib/local_storage';
 import { VisualsMenubar } from '@/components/pages/visualize-outcomes/shared/visuals-menubar';
 import { type SeriesStyles } from '@/lib/graphing/series-style';
 import { type FigureLabelSettings } from '@/lib/graphing/figure-labels';
+import { type LegendSettings } from '@/lib/graphing/legend-settings';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BackButton from '@/components/ui/back-button';
@@ -114,6 +117,13 @@ export default function ResultsProportionVisualsPage({
     setFigureLabelsState(labels);
     setLocalFigureLabels(Group, Individual, Evaluation, 'Proportion', labels);
   };
+  const [legendSettings, setLegendSettingsState] = useState<LegendSettings>(() =>
+    getLocalLegendSettings(Group, Individual, Evaluation, 'Proportion'),
+  );
+  const setLegendSettings = (settings: LegendSettings) => {
+    setLegendSettingsState(settings);
+    setLocalLegendSettings(Group, Individual, Evaluation, 'Proportion', settings);
+  };
   const figureRef = useRef<HTMLDivElement>(null);
   const [schedule, setSchedule] = useState<ScheduleMappingOptionsType | { value: string; label: string }>(TimerMapping);
   const [seriesStyles, setSeriesStyles] = useState<SeriesStyles>(() =>
@@ -196,6 +206,8 @@ export default function ResultsProportionVisualsPage({
             onShowDescriptionChange={setShowDescription}
             figureLabels={figureLabels}
             onFigureLabelsChange={setFigureLabels}
+            legendSettings={legendSettings}
+            onLegendSettingsChange={setLegendSettings}
           />
 
           <div className="flex flex-row items-center gap-2 w-fit">
@@ -269,6 +281,7 @@ export default function ResultsProportionVisualsPage({
             ShowTooltip={showTooltip}
             ShowConditionLegend={showConditionLegend}
             FigureLabels={figureLabels}
+            LegendSettings={legendSettings}
             SeriesStyles={seriesStyles}
             divRef={figureRef}
           />

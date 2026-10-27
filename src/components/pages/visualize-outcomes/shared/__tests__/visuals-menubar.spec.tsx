@@ -5,6 +5,7 @@ import { vi, describe, it, expect } from 'vitest';
 import { VisualsMenubar } from '../visuals-menubar';
 import { EMPTY_SERIES_STYLES } from '@/lib/graphing/series-style';
 import { EMPTY_FIGURE_LABEL_SETTINGS } from '@/lib/graphing/figure-labels';
+import { DEFAULT_LEGEND_SETTINGS } from '@/lib/graphing/legend-settings';
 import type { ToggleDisplayCondition, ToggleDisplayKey } from '@/types/visuals';
 
 const keys: ToggleDisplayKey[] = [
@@ -41,6 +42,8 @@ function renderMenubar(overrides: Partial<React.ComponentProps<typeof VisualsMen
     onShowTooltipChange: vi.fn(),
     showConditionLegend: true,
     onShowConditionLegendChange: vi.fn(),
+    legendSettings: DEFAULT_LEGEND_SETTINGS,
+    onLegendSettingsChange: vi.fn(),
     showDescription: true,
     onShowDescriptionChange: vi.fn(),
     ...overrides,
@@ -126,6 +129,15 @@ describe('VisualsMenubar', () => {
     await page.getByRole('menuitem', { name: 'Series Styles' }).click();
 
     await expect.element(page.getByRole('dialog', { name: 'Series Styles' })).toBeInTheDocument();
+  });
+
+  it('opens the Legend Position and Layout dialog from Design', async () => {
+    renderMenubar();
+
+    await page.getByRole('menuitem', { name: 'Design' }).click();
+    await page.getByRole('menuitem', { name: 'Legend Position and Layout' }).click();
+
+    await expect.element(page.getByRole('dialog', { name: 'Legend Position and Layout' })).toBeInTheDocument();
   });
 
   it('selects an element magnification size from Design', async () => {

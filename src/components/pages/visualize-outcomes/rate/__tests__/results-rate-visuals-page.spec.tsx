@@ -30,6 +30,8 @@ vi.mock('@/lib/local_storage', () => ({
     yAxisText: '',
   })),
   setLocalFigureLabels: vi.fn(),
+  getLocalLegendSettings: vi.fn(() => ({ position: 'below', layout: 'horizontal' })),
+  setLocalLegendSettings: vi.fn(),
 }));
 
 vi.mock('@/types/schedules', () => ({
