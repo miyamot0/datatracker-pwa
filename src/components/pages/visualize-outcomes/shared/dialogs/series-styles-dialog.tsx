@@ -336,7 +336,7 @@ export function SeriesStylesDialog({
                         <SelectGroup>
                           <SelectItem value={DEFAULT_VALUE}>
                             <span className="flex flex-row items-center gap-2">
-                              <ShapeGlyph shape={defaultShape ?? effectiveShape} />
+                              <ShapeGlyph shape={defaultShapeForKey(activeKey)} />
                               Default ({defaultShape})
                             </span>
                           </SelectItem>
