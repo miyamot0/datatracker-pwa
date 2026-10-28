@@ -44,6 +44,16 @@ function inlineComputedStyles(live: Element, clone: Element) {
   });
 }
 
+/**
+ * Removes the keyboard-focus hooks Recharts adds to its groups (`tabindex`, `role`) so they don't persist in the export.
+ */
+function stripFocusAttributes(svg: Element) {
+  [svg, ...Array.from(svg.querySelectorAll('[tabindex], [role]'))].forEach((node) => {
+    node.removeAttribute('tabindex');
+    node.removeAttribute('role');
+  });
+}
+
 function createSvgElement<K extends keyof SVGElementTagNameMap>(tag: K): SVGElementTagNameMap[K] {
   return document.createElementNS(SVG_NAMESPACE, tag);
 }
@@ -86,6 +96,7 @@ export function buildChartSvg(root: HTMLElement): ChartSvg | null {
 
   const chartClone = chartSurface.cloneNode(true) as SVGSVGElement;
   inlineComputedStyles(chartSurface, chartClone);
+  stripFocusAttributes(chartClone);
   const chartBox = offsetRect(chartSurface, rootRect);
   chartClone.setAttribute('x', String(chartBox.x));
   chartClone.setAttribute('y', String(chartBox.y));

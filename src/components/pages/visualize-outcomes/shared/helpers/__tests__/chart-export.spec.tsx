@@ -43,6 +43,20 @@ describe('buildChartSvg', () => {
     expect(buildChartSvg(empty)).toBeNull();
   });
 
+  it('strips keyboard focus attributes from the chart groups', () => {
+    root.querySelector('svg.recharts-surface')!.setAttribute('tabindex', '0');
+    root.querySelector('svg.recharts-surface')!.setAttribute('role', 'application');
+    const group = document.createElementNS(SVG_NS, 'g');
+    group.setAttribute('tabindex', '-1');
+    group.setAttribute('role', 'img');
+    root.querySelector('svg.recharts-surface')!.appendChild(group);
+
+    const doc = parseSvg(buildChartSvg(root)!.svg);
+
+    expect(doc.querySelector('[tabindex]')).toBeNull();
+    expect(doc.querySelector('[role]')).toBeNull();
+  });
+
   it('produces a standalone svg sized to the container with a white background', () => {
     const result = buildChartSvg(root);
 
