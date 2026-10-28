@@ -101,12 +101,14 @@ export function useVisualsSettings(options: VisualsSettingsOptions) {
     setLocalLegendSettings(group, individual, evaluation, plot, settings),
   );
   usePersistOnChange(state.seriesStyles, (styles) => setLocalSeriesStyles(group, individual, evaluation, styles));
-  usePersistOnChange(state.keys, (keys) =>
+  const persistCachedPrefs = (keys: ToggleDisplayKey[], schedule: string) =>
     setLocalCachedPrefs(group, individual, evaluation, prefsType, {
       KeyDescription: keys.filter((key) => key.Visible === false).map((key) => key.KeyDescription),
-      Schedule: state.schedule.value,
-    }),
-  );
+      Schedule: schedule,
+    });
+
+  usePersistOnChange(state.keys, (keys) => persistCachedPrefs(keys, state.schedule.value));
+  usePersistOnChange(state.schedule.value, (schedule) => persistCachedPrefs(state.keys, schedule));
 
   return [state, dispatch] as const;
 }

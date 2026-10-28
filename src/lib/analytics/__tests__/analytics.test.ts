@@ -640,24 +640,7 @@ describe('Analytics Module Full Coverage', () => {
       expect(consoleWarnSpy).toHaveBeenCalledWith('gtag not available - Google Analytics not loaded');
     });
 
-    it('should skip gtag config when no measurement ID is present', async () => {
-      vi.resetModules();
-      vi.doMock('@/lib/analytics/analytics-config', () => ({
-        analyticsConfig: { enabled: true, measurementId: '', isDev: false, isProd: false },
-      }));
-      const gtagSpy = vi.fn();
-      window.gtag = gtagSpy;
 
-      try {
-        const { startAnalyticsSync } = await import('../analytics-sync');
-        startAnalyticsSync();
-
-        expect(gtagSpy).not.toHaveBeenCalled();
-      } finally {
-        delete (window as { gtag?: unknown }).gtag;
-        vi.doUnmock('@/lib/analytics/analytics-config');
-      }
-    });
 
     it('should configure gtag without dev logging outside dev', async () => {
       vi.resetModules();

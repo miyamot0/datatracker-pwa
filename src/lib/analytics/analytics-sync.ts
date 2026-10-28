@@ -60,18 +60,16 @@ function initializeGoogleAnalytics() {
     return;
   }
 
-  if (analyticsConfig.measurementId) {
-    window.gtag('config', analyticsConfig.measurementId, {
-      send_page_view: false, // important for SPA/PWA
-      anonymize_ip: true,
-      allow_google_signals: false,
-      allow_ad_personalization_signals: false,
-      transport_type: 'beacon',
-    });
+  window.gtag('config', analyticsConfig.measurementId, {
+    send_page_view: false, // important for SPA/PWA
+    anonymize_ip: true,
+    allow_google_signals: false,
+    allow_ad_personalization_signals: false,
+    transport_type: 'beacon',
+  });
 
-    if (analyticsConfig.isDev) {
-      console.log('✅ Google Analytics initialized:', analyticsConfig.measurementId);
-    }
+  if (analyticsConfig.isDev) {
+    console.log('✅ Google Analytics initialized:', analyticsConfig.measurementId);
   }
 }
 

@@ -138,6 +138,31 @@ describe('useVisualsSettings', () => {
     expect(result.current[0].schedule).toEqual({ value: 'weekly', label: 'Weekly' });
   });
 
+  it('persists a schedule change on its own as cached prefs', () => {
+    const { result } = renderHook(() => useVisualsSettings(baseOptions));
+
+    act(() => result.current[1]({ type: 'scheduleChanged', schedule: { value: 'weekly', label: 'Weekly' } }));
+
+    expect(storage.setLocalCachedPrefs).toHaveBeenCalledWith('G', 'I', 'E', 'Rate', {
+      KeyDescription: [],
+      Schedule: 'weekly',
+    });
+  });
+
+  it('keeps hidden keys when only the schedule changes', () => {
+    const { result } = renderHook(() => useVisualsSettings(baseOptions));
+
+    act(() => {
+      result.current[1]({ type: 'keyVisibilityChanged', keyDescription: 'Alpha', visible: false });
+    });
+    act(() => result.current[1]({ type: 'scheduleChanged', schedule: { value: 'weekly', label: 'Weekly' } }));
+
+    expect(storage.setLocalCachedPrefs).toHaveBeenLastCalledWith('G', 'I', 'E', 'Rate', {
+      KeyDescription: ['Alpha'],
+      Schedule: 'weekly',
+    });
+  });
+
   it('uses the Duration prefs scope when configured', () => {
     const { result } = renderHook(() => useVisualsSettings({ ...baseOptions, prefsType: 'Duration' }));
 
