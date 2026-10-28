@@ -1060,6 +1060,61 @@ describe('file-query-mutate-actions', () => {
       expect(mockGroupDir.getDirectoryHandle).not.toHaveBeenCalledWith('New Individual', { create: true });
     });
 
+    it('skips session files that are not valid saved results and de-identifies the rest', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { mockRootHandle, mockConditionDir, sessionWritable } = setupMocks({
+        existingIndividuals: ['Source Individual'],
+      });
+      const validHandle = await mockConditionDir.getFileHandle('1_Baseline_Primary.json');
+      const malformedHandle = createMockFileHandle('broken.json');
+      malformedHandle.getFile.mockResolvedValue(createMockFile('{"unexpected":true}'));
+
+      mockConditionDir.entries.mockImplementation(() =>
+        createEntriesIterator([
+          ['1_Baseline_Primary.json', validHandle],
+          ['broken.json', malformedHandle],
+        ]),
+      );
+      mockConditionDir.getFileHandle.mockImplementation((name: string) => {
+        if (name === '1_Baseline_Primary.json') return Promise.resolve(validHandle);
+        if (name === 'broken.json') return Promise.resolve(malformedHandle);
+        throw new Error(`Unexpected condition getFileHandle(${name})`);
+      });
+
+      const result = await mutateDeIdentifyIndividual(
+        mockRootHandle as any,
+        'group',
+        'Source Individual',
+        'New Individual',
+        2000,
+      );
+
+      expect(consoleSpy).toHaveBeenCalledWith('Skipping malformed session file broken.json during de-identification');
+      expect(sessionWritable.write).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(['Source Individual', 'New Individual']);
+      consoleSpy.mockRestore();
+    });
+
+    it('skips keyset files that cannot be parsed and still copies session results', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { mockRootHandle, sessionWritable, keySetWritable } = setupMocks({
+        existingIndividuals: ['Source Individual'],
+      });
+      vi.mocked(deserializeKeySet).mockImplementation(() => {
+        throw new SyntaxError('Unexpected token');
+      });
+
+      await mutateDeIdentifyIndividual(mockRootHandle as any, 'group', 'Source Individual', 'New Individual', 2000);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Skipping malformed keyset file KeySet1.json during de-identification:',
+        expect.any(SyntaxError),
+      );
+      expect(keySetWritable.write).not.toHaveBeenCalled();
+      expect(sessionWritable.write).toHaveBeenCalledTimes(1);
+      consoleSpy.mockRestore();
+    });
+
     it('throws when the new individual name already exists', async () => {
       const { mockRootHandle } = setupMocks({ existingIndividuals: ['Source Individual', 'New Individual'] });
 

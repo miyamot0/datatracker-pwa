@@ -714,6 +714,34 @@ describe('file-query-read-actions', () => {
       expect(result).toEqual([]);
     });
 
+    it('should keep other keysets when one keyset file cannot be read', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const mockRootHandle = createMockDirectoryHandle('root');
+      const mockGroupDir = createMockDirectoryHandle('group1');
+      const mockIndividualDir = createMockDirectoryHandle('individual1');
+      const mockBadFile = createMockFileHandle('bad.json');
+      const mockGoodFile = createMockFileHandle('good.json');
+      const goodKeySet = { Name: 'good' } as any;
+
+      mockRootHandle.getDirectoryHandle.mockResolvedValue(mockGroupDir);
+      mockGroupDir.getDirectoryHandle.mockResolvedValue(mockIndividualDir);
+      mockBadFile.getFile.mockRejectedValue(new Error('Read failure'));
+      mockGoodFile.getFile.mockResolvedValue(createMockFile('{"Name":"good"}'));
+      mockIndividualDir.entries.mockReturnValue(
+        createEntriesIterator([
+          ['bad.json', mockBadFile],
+          ['good.json', mockGoodFile],
+        ]),
+      );
+      mockedDeserializeKeySet.mockReturnValue(goodKeySet);
+
+      const result = await fetchKeysets(mockRootHandle as any, 'group1', 'individual1');
+
+      expect(result).toEqual([goodKeySet]);
+      expect(consoleSpy).toHaveBeenCalledWith('Error reading keyset bad.json:', expect.any(Error));
+      consoleSpy.mockRestore();
+    });
+
     it('should never read the reserved styles.json as a keyset', async () => {
       const mockRootHandle = createMockDirectoryHandle('root');
       const mockGroupDir = createMockDirectoryHandle('group1');
@@ -987,6 +1015,28 @@ describe('file-query-read-actions', () => {
       expect(mockWritable.write).toHaveBeenCalledWith(JSON.stringify(DEFAULT_SESSION_SETTINGS));
       expect(mockWritable.close).toHaveBeenCalled();
       expect(result).toEqual(DEFAULT_SESSION_SETTINGS);
+    });
+
+    it.each([['null'], ['[]']])('should fall back to defaults when settings.json is %s', async (content) => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const mockRootHandle = createMockDirectoryHandle('root');
+      const mockGroupDir = createMockDirectoryHandle('group1');
+      const mockIndividualDir = createMockDirectoryHandle('individual1');
+      const mockEvaluationDir = createMockDirectoryHandle('evaluation1');
+      const mockSettingsFile = createMockFileHandle('settings.json');
+
+      mockRootHandle.getDirectoryHandle.mockResolvedValue(mockGroupDir);
+      mockGroupDir.getDirectoryHandle.mockResolvedValue(mockIndividualDir);
+      mockIndividualDir.getDirectoryHandle.mockResolvedValue(mockEvaluationDir);
+      mockEvaluationDir.getFileHandle.mockResolvedValue(mockSettingsFile);
+      mockSettingsFile.getFile.mockResolvedValue(createMockFile(content));
+
+      const result = await fetchSessionParams(mockRootHandle as any, 'group1', 'individual1', 'evaluation1');
+
+      expect(result).toEqual(DEFAULT_SESSION_SETTINGS);
+      expect(consoleSpy).toHaveBeenCalledWith('Settings file not well-formed; using defaults without overwriting it');
+      expect(mockSettingsFile.createWritable).not.toHaveBeenCalled();
+      consoleSpy.mockRestore();
     });
 
     it('should handle malformed settings file', async () => {
