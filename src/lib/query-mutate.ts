@@ -1,13 +1,13 @@
 import { CleanUpString } from '@/lib/strings';
 import { DataExampleFiles } from '@/lib/data';
-import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
+import { createNewKeySet, deserializeKeySet, serializeKeySet } from '@/lib/keyset';
 import { isReservedKeysetName } from '@/lib/reserved-names';
 import { v4 as uuidv4 } from 'uuid';
 import { KeySet } from '@/types/keyset/core';
 import { KeySetExtended } from '@/types/keyset/extended';
 import { ModifiedSessionResult } from '@/types/storage';
 import { SavedSettings } from '@/lib/dtos/session-settings';
-import { SavedSessionResult } from '@/lib/dtos/session-results';
+import { SavedSessionResult, parseSavedSessionResult } from '@/lib/dtos/session-results';
 import { GenerateSavedFileName } from '@/lib/writer';
 import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
 import { importExistingKeysets } from '@/lib/keysets/import-keysets';
@@ -427,12 +427,19 @@ export async function mutateDeIdentifyIndividual(
           const file = await fileHandle.getFile();
           const text = await file.text();
 
+          const result = parseSavedSessionResult(JSON.parse(text));
+          if (!result) {
+            console.error(`Skipping malformed session file ${filename} during de-identification`);
+            continue;
+          }
+
           collectedEntries.push({
             evaluationName,
             conditionName,
             filename,
-            result: JSON.parse(text) as SavedSessionResult,
+            result,
           });
+
         }
       }
     }
@@ -482,11 +489,18 @@ export async function mutateDeIdentifyIndividual(
       const file = await fileHandle.getFile();
       const text = await file.text();
 
-      const parsedKeySet = JSON.parse(text) as KeySet;
+      let parsedKeySet: KeySet;
+      try {
+        parsedKeySet = deserializeKeySet(text);
+      } catch (error) {
+        console.error(`Skipping malformed keyset file ${filename} during de-identification:`, error);
+        continue;
+      }
+
       const shiftedKeySet: KeySet = {
         ...parsedKeySet,
-        createdAt: shiftDateLike(new Date(parsedKeySet.createdAt), context.offsetMs),
-        lastModified: shiftDateLike(new Date(parsedKeySet.lastModified), context.offsetMs),
+        createdAt: shiftDateLike(parsedKeySet.createdAt, context.offsetMs),
+        lastModified: shiftDateLike(parsedKeySet.lastModified, context.offsetMs),
       };
 
       const targetFileHandle = await target_dir.getFileHandle(filename, { create: true });
@@ -545,8 +559,7 @@ export async function mutateKeysets(
           const file = await fileHandle.getFile();
           const text = await file.text();
           if (text.length > 0) {
-            const keysetData = JSON.parse(text) as KeySet;
-            keysets.push(keysetData);
+            keysets.push(deserializeKeySet(text));
           }
         } catch (error) {
           console.error(`Error reading keyset file ${name}:`, error);
@@ -877,9 +890,7 @@ export async function mutateSessionOutcomes(
         cleanedSessionOutcomes = cleanedSessionOutcomes
           .filter((r) => !file_names_to_move.includes(r.Filename))
           .concat(new_session_files)
-          .sort(
-            (a, b) => new Date(b.SessionSettings.Session).valueOf() - new Date(a.SessionSettings.Session).valueOf(),
-          );
+          .sort((a, b) => b.SessionSettings.Session - a.SessionSettings.Session);
         break;
       }
 

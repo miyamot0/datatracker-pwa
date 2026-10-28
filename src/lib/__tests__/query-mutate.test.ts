@@ -17,7 +17,7 @@ import {
 } from '../query-mutate';
 import { CleanUpString } from '@/lib/strings';
 import { DataExampleFiles } from '@/lib/data';
-import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
+import { createNewKeySet, deserializeKeySet, serializeKeySet } from '@/lib/keyset';
 import { v4 as uuidv4 } from 'uuid';
 import { KeySet } from '@/types/keyset/core';
 import { KeySetExtended } from '@/types/keyset/extended';
@@ -149,6 +149,7 @@ describe('file-query-mutate-actions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockedCleanUpString.mockImplementation((str: string) => str.trim());
+    vi.mocked(deserializeKeySet).mockImplementation((text: string) => JSON.parse(text));
   });
 
   describe('copyDemoData', () => {
@@ -1822,11 +1823,11 @@ describe('file-query-mutate-actions', () => {
 
       const first = {
         Filename: 'session-a.json',
-        SessionSettings: { Condition: 'old-condition', Session: '2024-01-01T00:00:00.000Z' },
+        SessionSettings: { Condition: 'old-condition', Session: 1 },
       } as unknown as ModifiedSessionResult;
       const second = {
         Filename: 'session-b.json',
-        SessionSettings: { Condition: 'old-condition', Session: '2024-02-01T00:00:00.000Z' },
+        SessionSettings: { Condition: 'old-condition', Session: 2 },
       } as unknown as ModifiedSessionResult;
 
       mockedGenerateSavedFileName.mockReturnValueOnce('generated-a.json').mockReturnValueOnce('generated-b.json');
@@ -1855,9 +1856,8 @@ describe('file-query-mutate-actions', () => {
       );
 
       expect(result).toHaveLength(2);
-      expect(new Date(result[0].SessionSettings.Session).valueOf()).toBeGreaterThan(
-        new Date(result[1].SessionSettings.Session).valueOf(),
-      );
+      expect(result[0].SessionSettings.Session).toBe(2);
+      expect(result[1].SessionSettings.Session).toBe(1);
     });
 
     it('should skip non-directory entries and non-matching files during EditCondition', async () => {

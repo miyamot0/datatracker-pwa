@@ -1043,6 +1043,25 @@ describe('file-query-read-actions', () => {
   describe('fetchSessionOutcomes', () => {
     let consoleSpy: any;
 
+    // A minimally complete saved session result; SessionSettings and Keyset are required by the parser.
+    const validSessionJson = (session: number, extra: Record<string, unknown> = {}) =>
+      JSON.stringify({
+        SessionSettings: { Session: session },
+        Keyset: { Name: 'keyset' },
+        SystemKeyPresses: [],
+        FrequencyKeyPresses: [],
+        DurationKeyPresses: [],
+        SessionStart: '',
+        SessionEnd: '',
+        EndedEarly: false,
+        TimerMain: 0,
+        TimerOne: 0,
+        TimerTwo: 0,
+        TimerThree: 0,
+        SpecialKeyTimers: {},
+        ...extra,
+      });
+
     beforeEach(() => {
       consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     });
@@ -1060,8 +1079,8 @@ describe('file-query-read-actions', () => {
       const mockSettingsFile = createMockFileHandle('settings.json');
       const mockSessionFile1 = createMockFileHandle('session1.json');
       const mockSessionFile2 = createMockFileHandle('session2.json');
-      const mockFile1 = createMockFile('{"SessionSettings": {"Session": "2024-01-01"}, "data": "test1"}');
-      const mockFile2 = createMockFile('{"SessionSettings": {"Session": "2024-01-02"}, "data": "test2"}');
+      const mockFile1 = createMockFile(validSessionJson(1, { data: 'test1' }));
+      const mockFile2 = createMockFile(validSessionJson(2, { data: 'test2' }));
 
       mockRootHandle.getDirectoryHandle.mockResolvedValue(mockGroupDir);
       mockGroupDir.getDirectoryHandle.mockResolvedValue(mockIndividualDir);
@@ -1091,14 +1110,14 @@ describe('file-query-read-actions', () => {
       const result = await fetchSessionOutcomes(mockRootHandle as any, 'group1', 'individual1', 'evaluation1');
 
       expect(result).toHaveLength(2);
-      // Should be sorted by date descending (newest first)
-      expect(result[0]).toEqual({
-        SessionSettings: { Session: '2024-01-02' },
+      // Sorted by session number descending (latest session first)
+      expect(result[0]).toMatchObject({
+        SessionSettings: { Session: 2 },
         data: 'test2',
         Filename: 'session2.json',
       });
-      expect(result[1]).toEqual({
-        SessionSettings: { Session: '2024-01-01' },
+      expect(result[1]).toMatchObject({
+        SessionSettings: { Session: 1 },
         data: 'test1',
         Filename: 'session1.json',
       });
@@ -1148,7 +1167,7 @@ describe('file-query-read-actions', () => {
       const mockIndividualDir = createMockDirectoryHandle('individual1');
       const mockEvaluationDir = createMockDirectoryHandle('evaluation1');
       const mockSessionFile = createMockFileHandle('session.json');
-      const mockFile = createMockFile('{"SessionSettings": {"Session": "2024-01-01"}, "data": "direct"}');
+      const mockFile = createMockFile(validSessionJson(1, { data: 'direct' }));
 
       mockRootHandle.getDirectoryHandle.mockResolvedValue(mockGroupDir);
       mockGroupDir.getDirectoryHandle.mockResolvedValue(mockIndividualDir);
@@ -1161,11 +1180,40 @@ describe('file-query-read-actions', () => {
       const result = await fetchSessionOutcomes(mockRootHandle as any, 'group1', 'individual1', 'evaluation1');
 
       expect(result).toHaveLength(1);
-      expect(result[0]).toEqual({
-        SessionSettings: { Session: '2024-01-01' },
+      expect(result[0]).toMatchObject({
+        SessionSettings: { Session: 1 },
         data: 'direct',
         Filename: 'session.json',
       });
+    });
+
+    it('should skip session files that lack a Keyset object', async () => {
+      const mockRootHandle = createMockDirectoryHandle('root');
+      const mockGroupDir = createMockDirectoryHandle('group1');
+      const mockIndividualDir = createMockDirectoryHandle('individual1');
+      const mockEvaluationDir = createMockDirectoryHandle('evaluation1');
+      const mockGoodFile = createMockFileHandle('good.json');
+      const mockBadFile = createMockFileHandle('bad.json');
+      const badJson = JSON.stringify({ SessionSettings: { Session: 1 } });
+
+      mockRootHandle.getDirectoryHandle.mockResolvedValue(mockGroupDir);
+      mockGroupDir.getDirectoryHandle.mockResolvedValue(mockIndividualDir);
+      mockIndividualDir.getDirectoryHandle.mockResolvedValue(mockEvaluationDir);
+
+      mockEvaluationDir.entries.mockReturnValue(
+        createEntriesIterator([
+          ['good.json', mockGoodFile],
+          ['bad.json', mockBadFile],
+        ]),
+      );
+
+      mockGoodFile.getFile.mockResolvedValue(createMockFile(validSessionJson(2)));
+      mockBadFile.getFile.mockResolvedValue(createMockFile(badJson));
+
+      const result = await fetchSessionOutcomes(mockRootHandle as any, 'group1', 'individual1', 'evaluation1');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].Filename).toBe('good.json');
     });
 
     it('should handle file parsing errors gracefully', async () => {
@@ -1208,9 +1256,9 @@ describe('file-query-read-actions', () => {
       const mockSession1 = createMockFileHandle('session1.json');
       const mockSession2 = createMockFileHandle('session2.json');
       const mockSession3 = createMockFileHandle('session3.json');
-      const mockFile1 = createMockFile('{"SessionSettings": {"Session": "2024-01-01"}}');
-      const mockFile2 = createMockFile('{"SessionSettings": {"Session": "2024-01-03"}}');
-      const mockFile3 = createMockFile('{"SessionSettings": {"Session": "2024-01-02"}}');
+      const mockFile1 = createMockFile(validSessionJson(1));
+      const mockFile2 = createMockFile(validSessionJson(3));
+      const mockFile3 = createMockFile(validSessionJson(2));
 
       mockRootHandle.getDirectoryHandle.mockResolvedValue(mockGroupDir);
       mockGroupDir.getDirectoryHandle.mockResolvedValue(mockIndividualDir);
@@ -1232,9 +1280,9 @@ describe('file-query-read-actions', () => {
 
       expect(result).toHaveLength(3);
       // Should be sorted newest first
-      expect(result[0].SessionSettings.Session).toBe('2024-01-03');
-      expect(result[1].SessionSettings.Session).toBe('2024-01-02');
-      expect(result[2].SessionSettings.Session).toBe('2024-01-01');
+      expect(result[0].SessionSettings.Session).toBe(3);
+      expect(result[1].SessionSettings.Session).toBe(2);
+      expect(result[2].SessionSettings.Session).toBe(1);
     });
   });
 

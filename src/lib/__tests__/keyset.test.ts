@@ -185,6 +185,45 @@ describe('KeySet Functions', () => {
       expect(() => deserializeKeySet(JSON.stringify({ id: 'x' }))).toThrow();
     });
 
+    it('should keep an editor-shaped DerivedKey with field sources and steps', () => {
+      const field = { KeyName: 'A', KeyDescription: 'Key A', KeyCode: 65, Value: 3, Tag: 'field.Key A' };
+      const derived = {
+        id: 'derived-2',
+        name: 'Doubled',
+        value: 3,
+        initial: { type: 'field', field },
+        fields: [field],
+        steps: [
+          { id: 'step-1', operation: 'multiply', operand: { type: 'constant', value: 2 } },
+          { id: 'step-2', operation: 'add', operand: { type: 'field', field } },
+        ],
+      };
+
+      const result = deserializeKeySet(JSON.stringify({ id: 'test-id', Name: 'Test KeySet', DerivedKeys: [derived] }));
+
+      expect(result.DerivedKeys).toEqual([derived]);
+    });
+
+    it('should keep valid DerivedKeys and drop malformed ones', () => {
+      const validDerived = {
+        id: 'derived-1',
+        name: 'Derived',
+        value: 0,
+        initial: { type: 'constant', value: 0 },
+        fields: [],
+        steps: [],
+      };
+      const json = JSON.stringify({
+        id: 'test-id',
+        Name: 'Test KeySet',
+        DerivedKeys: [validDerived, { id: 'missing-fields' }, 'junk'],
+      });
+
+      const result = deserializeKeySet(json);
+
+      expect(result.DerivedKeys).toEqual([validDerived]);
+    });
+
     it('should handle date parsing errors gracefully', () => {
       const JSONWithInvalidDates = JSON.stringify({
         id: 'test-id',

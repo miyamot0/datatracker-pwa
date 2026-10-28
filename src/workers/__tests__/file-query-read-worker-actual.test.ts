@@ -537,14 +537,13 @@ describe('FileQueryReadWorker Actual Integration', () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
 
       const errorResponse = receivedMessages.find((msg) => !msg.success);
-      expect(errorResponse).toBeDefined();
-
-      if (errorResponse && !errorResponse.success) {
-        expect(errorResponse.id).toBe('test-error');
-        expect(errorResponse.error).toContain('Query operation failed');
-        expect(typeof errorResponse.executionTime).toBe('number');
-        expect(typeof errorResponse.timestamp).toBe('number');
-      }
+      expect(errorResponse).toMatchObject({
+        id: 'test-error',
+        success: false,
+        error: expect.stringContaining('Query operation failed'),
+      });
+      expect(typeof errorResponse?.executionTime).toBe('number');
+      expect(typeof errorResponse?.timestamp).toBe('number');
     });
 
     it('should handle FileSystem API errors', async () => {
@@ -567,12 +566,11 @@ describe('FileQueryReadWorker Actual Integration', () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
 
       const errorResponse = receivedMessages.find((msg) => !msg.success);
-      expect(errorResponse).toBeDefined();
-
-      if (errorResponse && !errorResponse.success) {
-        expect(errorResponse.id).toBe('test-filesystem-error');
-        expect(errorResponse.error).toContain('permission problems');
-      }
+      expect(errorResponse).toMatchObject({
+        id: 'test-filesystem-error',
+        success: false,
+        error: expect.stringContaining('permission problems'),
+      });
     });
   });
 
@@ -838,10 +836,23 @@ describe('FileQueryReadWorker Actual Integration', () => {
       const responses = receivedMessages.filter((r) => ['empty-array', 'single-item', 'complex-object'].includes(r.id));
       expect(responses.length).toBe(3);
 
+      const expectedData: Record<string, unknown> = {
+        'empty-array': [],
+        'single-item': ['single-client'],
+        'complex-object': [
+          {
+            groupName: 'group1',
+            clientName: 'client1',
+            evaluationName: 'eval1',
+            additionalData: { custom: 'value' },
+          },
+        ],
+      };
+
       responses.forEach((response) => {
         expect(response.success).toBe(true);
         if (response.success) {
-          expect(response.data).toBeDefined();
+          expect(response.data).toEqual(expectedData[response.id]);
         }
       });
     });

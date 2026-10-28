@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { LogicState, OperationTypes } from '@/lib/logic';
 
 /**
  * Keeps every entry that matches the item schema and drops the rest, so one bad entry does not reject a whole file.
@@ -29,5 +30,23 @@ export const KeySetInstanceSchema = z.looseObject({
   KeyCode: z.number(),
 });
 
-// Logic entries are checked only for being objects; the logic engine validates their contents.
-export const LogicEntrySchema = z.looseObject({});
+const ValueSourceSchema = z.union([
+  z.looseObject({ type: z.literal('constant'), value: z.number() }),
+  z.looseObject({ type: z.literal('field'), field: z.looseObject({}) }),
+]);
+
+const LogicalStepSchema = z.looseObject({
+  id: z.string(),
+  operation: z.enum(OperationTypes),
+  operand: ValueSourceSchema,
+});
+
+// Matches the shape the logical dialog writes; unknown extra keys are kept.
+export const LogicStateSchema: z.ZodType<LogicState> = z.looseObject({
+  id: z.string(),
+  name: z.string(),
+  value: z.number(),
+  initial: ValueSourceSchema,
+  fields: z.array(z.looseObject({})),
+  steps: z.array(LogicalStepSchema),
+});

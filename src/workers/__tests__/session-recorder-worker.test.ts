@@ -4,8 +4,12 @@ import { KeySet } from '@/types/keyset/core';
 import { WorkerMessage } from '../timing/types/session-recorder-worker-messaging';
 
 // Create mock class using vi.hoisted for proper constructor support in Vitest 4+
+const mockCores = vi.hoisted(() => [] as any[]);
 const MockSessionRecorderCore = vi.hoisted(() => {
   return class MockSessionRecorderCore {
+    constructor() {
+      mockCores.push(this);
+    }
     init = vi.fn();
     startSession = vi.fn(() => ({
       systemEvents: [{ KeyName: 'Start', KeyType: 'System' }],
@@ -37,30 +41,34 @@ const MockSessionRecorderCore = vi.hoisted(() => {
   };
 });
 
-// Mock the core module - keep simple for worker integration tests
-vi.mock('../timing/helpers/session-recorder-core', () => ({
+// The worker imports the core from src/lib/recorder-core
+vi.mock('../../lib/recorder-core', () => ({
   SessionRecorderCore: MockSessionRecorderCore,
-  getTimerConstants: vi.fn(() => ({ TIME_DELTA: 10, TIME_UNIT: 1000, INCREMENT: 0.01 })),
   getHighResTime: vi.fn(() => performance.now()),
 }));
 
-// Mock global self and its methods
-const mockPostMessage = vi.fn();
-const mockSelf = {
-  postMessage: mockPostMessage,
-  onmessage: null as ((event: MessageEvent<WorkerMessage>) => void) | null,
-};
-
-// Replace global self with mock
-Object.defineProperty(global, 'self', {
-  value: mockSelf,
-  writable: true,
+// Mock global self before the worker module is imported; the worker assigns self.onmessage at import time
+const { mockPostMessage, mockSelf } = vi.hoisted(() => {
+  const mockPostMessage = vi.fn();
+  const mockSelf = {
+    postMessage: mockPostMessage,
+    onmessage: null as ((event: MessageEvent<any>) => void) | null,
+  };
+  Object.defineProperty(globalThis, 'self', {
+    value: mockSelf,
+    writable: true,
+    configurable: true,
+  });
+  return { mockPostMessage, mockSelf };
 });
 
 // Import after mocking
 import '../timing/session-recorder-worker';
 
 describe('SessionRecorderWorker', () => {
+  // The worker constructs one core at import time; this is that instance.
+  // The worker constructs one core at import time; this is that instance.
+  const core = () => mockCores[0];
   let mockSettings: SavedSettings;
   let mockKeyset: KeySet;
   let mockMessagePort: MessagePort;
@@ -103,7 +111,9 @@ describe('SessionRecorderWorker', () => {
 
       const event = new MessageEvent('message', { data: message });
 
-      expect(() => mockSelf.onmessage?.(event)).not.toThrow();
+      mockSelf.onmessage?.(event);
+      // The channel is only used for timer updates; setup itself posts nothing to the main thread.
+      expect(mockPostMessage).not.toHaveBeenCalled();
     });
 
     it('should handle INIT message with valid payload', () => {
@@ -118,7 +128,8 @@ describe('SessionRecorderWorker', () => {
 
       const event = new MessageEvent('message', { data: message });
 
-      expect(() => mockSelf.onmessage?.(event)).not.toThrow();
+      mockSelf.onmessage?.(event);
+      expect(core().init).toHaveBeenCalledWith(mockSettings, mockKeyset, 'normal');
     });
 
     it('should ignore INIT message with missing payload', () => {
@@ -128,7 +139,8 @@ describe('SessionRecorderWorker', () => {
 
       const event = new MessageEvent('message', { data: message });
 
-      expect(() => mockSelf.onmessage?.(event)).not.toThrow();
+      mockSelf.onmessage?.(event);
+      expect(core().init).not.toHaveBeenCalled();
     });
 
     it('should handle START_SESSION message', () => {
@@ -149,10 +161,15 @@ describe('SessionRecorderWorker', () => {
 
       const event = new MessageEvent('message', { data: message });
 
-      expect(() => mockSelf.onmessage?.(event)).not.toThrow();
+      mockSelf.onmessage?.(event);
+      expect(core().startSession).toHaveBeenCalledTimes(1);
+      expect(mockPostMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'SYSTEM_EVENT' }));
     });
 
     it('should handle STOP_SESSION message with reason', () => {
+      // endSession only runs when the core reports a running session
+      core().getState.mockReturnValueOnce({ activeTimer: 'Primary', isRunning: true });
+
       const message: WorkerMessage = {
         type: 'STOP_SESSION',
         payload: { reason: 'Cancelled' },
@@ -160,7 +177,11 @@ describe('SessionRecorderWorker', () => {
 
       const event = new MessageEvent('message', { data: message });
 
-      expect(() => mockSelf.onmessage?.(event)).not.toThrow();
+      mockSelf.onmessage?.(event);
+      expect(core().endSession).toHaveBeenCalledWith('Cancelled');
+      expect(mockPostMessage).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'SESSION_ENDED', payload: expect.objectContaining({ reason: 'Completed' }) }),
+      );
     });
 
     it('should handle SWITCH_TIMER message', () => {
@@ -171,7 +192,9 @@ describe('SessionRecorderWorker', () => {
 
       const event = new MessageEvent('message', { data: message });
 
-      expect(() => mockSelf.onmessage?.(event)).not.toThrow();
+      mockSelf.onmessage?.(event);
+      expect(core().switchTimer).toHaveBeenCalledWith('Secondary');
+      expect(mockPostMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'SYSTEM_EVENT' }));
     });
 
     it('should handle SWITCH_SPECIAL_KEY message', () => {
@@ -182,7 +205,9 @@ describe('SessionRecorderWorker', () => {
 
       const event = new MessageEvent('message', { data: message });
 
-      expect(() => mockSelf.onmessage?.(event)).not.toThrow();
+      mockSelf.onmessage?.(event);
+      expect(core().switchToSpecialKey).toHaveBeenCalledWith('Duration1');
+      expect(mockPostMessage).toHaveBeenCalledWith(expect.objectContaining({ type: 'SYSTEM_EVENT' }));
     });
 
     it('should handle PROCESS_KEY message', () => {
@@ -193,7 +218,12 @@ describe('SessionRecorderWorker', () => {
 
       const event = new MessageEvent('message', { data: message });
 
-      expect(() => mockSelf.onmessage?.(event)).not.toThrow();
+      mockSelf.onmessage?.(event);
+      expect(core().processKey).toHaveBeenCalledWith('A', 65);
+      expect(mockPostMessage).toHaveBeenCalledWith({
+        type: 'KEY_PROCESSED',
+        payload: { key: { KeyName: 'A' }, totalKeys: 1 },
+      });
     });
 
     it('should handle DELETE_LAST_KEY message', () => {
@@ -203,7 +233,12 @@ describe('SessionRecorderWorker', () => {
 
       const event = new MessageEvent('message', { data: message });
 
-      expect(() => mockSelf.onmessage?.(event)).not.toThrow();
+      mockSelf.onmessage?.(event);
+      expect(core().deleteLastKey).toHaveBeenCalledTimes(1);
+      expect(mockPostMessage).toHaveBeenCalledWith({
+        type: 'KEY_DELETED',
+        payload: { deletedKey: { KeyName: 'A' }, totalKeys: 0 },
+      });
     });
 
     it('should ignore messages with missing required payload fields', () => {
@@ -216,10 +251,15 @@ describe('SessionRecorderWorker', () => {
       ];
 
       messages.forEach((message) => {
-        const event = new MessageEvent('message', { data: message });
-        expect(() => mockSelf.onmessage?.(event)).not.toThrow();
+        mockSelf.onmessage?.(new MessageEvent('message', { data: message }));
       });
+
+      expect(core().switchTimer).not.toHaveBeenCalled();
+      expect(core().switchToSpecialKey).not.toHaveBeenCalled();
+      expect(core().processKey).not.toHaveBeenCalled();
+      expect(core().endSession).not.toHaveBeenCalled();
     });
+
   });
 
   describe('Timer Integration', () => {
@@ -248,10 +288,12 @@ describe('SessionRecorderWorker', () => {
         type: 'START_SESSION',
       };
 
-      expect(() => mockSelf.onmessage?.(new MessageEvent('message', { data: startMessage }))).not.toThrow();
+      mockSelf.onmessage?.(new MessageEvent('message', { data: startMessage }));
+      expect(core().startSession).toHaveBeenCalledTimes(1);
 
       // Advance timers
-      expect(() => vi.advanceTimersByTime(100)).not.toThrow();
+      vi.advanceTimersByTime(100);
+      expect(core().updateTimers).toHaveBeenCalled();
     });
 
     it('should handle session stop during timer execution', () => {
@@ -278,7 +320,9 @@ describe('SessionRecorderWorker', () => {
         payload: { reason: 'Cancelled' },
       };
 
-      expect(() => mockSelf.onmessage?.(new MessageEvent('message', { data: stopMessage }))).not.toThrow();
+      core().getState.mockReturnValueOnce({ activeTimer: 'Primary', isRunning: true });
+      mockSelf.onmessage?.(new MessageEvent('message', { data: stopMessage }));
+      expect(core().endSession).toHaveBeenCalledWith('Cancelled');
     });
   });
 
@@ -358,18 +402,30 @@ describe('SessionRecorderWorker', () => {
   });
 
   describe('Error Handling', () => {
-    it('should handle malformed messages gracefully', () => {
-      const malformedEvents = [
+    it('should not reach the core for malformed messages', () => {
+      // Null and undefined data throw in the worker's destructuring today; no malformed input may reach the core.
+      const throwingEvents = [
         new MessageEvent('message', { data: null }),
         new MessageEvent('message', { data: undefined }),
+      ];
+      throwingEvents.forEach((event) => {
+        // @ts-ignore
+        expect(() => mockSelf.onmessage?.(event)).toThrow(TypeError);
+      });
+
+      const ignoredEvents = [
         new MessageEvent('message', { data: {} }),
         new MessageEvent('message', { data: { type: 'UNKNOWN_TYPE' } }),
       ];
-
-      malformedEvents.forEach((event) => {
+      ignoredEvents.forEach((event) => {
         // @ts-ignore
-        expect(() => mockSelf.onmessage?.(event)).not.toThrow();
+        mockSelf.onmessage?.(event);
       });
+
+      expect(core().init).not.toHaveBeenCalled();
+      expect(core().startSession).not.toHaveBeenCalled();
+      expect(core().processKey).not.toHaveBeenCalled();
+      expect(core().endSession).not.toHaveBeenCalled();
     });
 
     it('should handle worker operations without crashing', () => {

@@ -4,7 +4,7 @@ import { isReservedFileName } from '@/lib/reserved-names';
 import { KeySet } from '@/types/keyset/core';
 import { KeySetExtended } from '@/types/keyset/extended';
 import { DEFAULT_SESSION_SETTINGS, SavedSettings, SavedSettingsSchema } from '@/lib/dtos/session-settings';
-import { SavedSessionResult } from '@/lib/dtos/session-results';
+import { parseSavedSessionResult } from '@/lib/dtos/session-results';
 import { ModifiedSessionResult } from '@/types/storage';
 import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
 import { readKeyboardParameters } from '@/lib/reader';
@@ -432,22 +432,24 @@ export async function fetchSessionOutcomes(
         const file_data = await file.getFile();
         const file_text = await file_data.text();
 
-        const session_result: ModifiedSessionResult = {
-          ...(JSON.parse(file_text) as SavedSessionResult),
-          Filename: file.name,
-        };
+        const session_result = parseSavedSessionResult(JSON.parse(file_text));
 
-        if (session_result) {
-          session_results.push(session_result);
+        if (!session_result) {
+          console.error(`Skipping malformed session outcome file ${file.name}`);
+          continue;
         }
+
+        session_results.push({
+          ...session_result,
+          Filename: file.name,
+        });
       } catch (error) {
         console.error(`Error parsing session outcome file ${file.name}:`, error);
       }
     }
 
-    return session_results.sort(
-      (a, b) => new Date(b.SessionSettings.Session).valueOf() - new Date(a.SessionSettings.Session).valueOf(),
-    );
+
+    return session_results.sort((a, b) => b.SessionSettings.Session - a.SessionSettings.Session);
   } catch (error) {
     console.error('Error fetching session outcomes:', error);
     return [];
