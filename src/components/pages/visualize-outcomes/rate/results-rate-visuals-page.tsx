@@ -25,7 +25,6 @@ export default function ResultsRateVisualsPage({
   Evaluation,
   ...props
 }: VisualsResultsPageProps & {
-  Handle: FileSystemHandle;
   Results: SavedSessionResult[];
 }) {
   return (
@@ -56,10 +55,10 @@ export default function ResultsRateVisualsPage({
       }
       description={
         <>
-          This page provides a visual of the available data regarding <i>rate</i>. For convenience, series of data can be
-          enabled or disabled for viewing. Similarly, an omnibus measure of behavior can be calculated by selecting which
-          types of events to combine together using the optional logic builder. Options set here will persist for future
-          visits.
+          This page provides a visual of the available data regarding <i>rate</i>. For convenience, series of data can
+          be enabled or disabled for viewing. Similarly, an omnibus measure of behavior can be calculated by selecting
+          which types of events to combine together using the optional logic builder. Options set here will persist for
+          future visits.
         </>
       }
     />

@@ -1,5 +1,6 @@
 import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
 import { CleanUpString } from '@/lib/strings';
+import { isReservedKeysetName } from '@/lib/reserved-names';
 import { KeySet } from '@/types/keyset/core';
 
 /**
@@ -18,6 +19,11 @@ export async function importExistingKeyset(
   keysetBase: KeySet,
 ): Promise<KeySet | null> {
   const individuals_folder = await Handle.getDirectoryHandle(CleanUpString(Group), { create: true });
+  if (isReservedKeysetName(keysetBase.Name)) {
+    window.alert(`"${keysetBase.Name}" is a reserved name and cannot be used for a keyset`);
+    return null;
+  }
+
   const keyboards_folder = await individuals_folder.getDirectoryHandle(CleanUpString(Individual), { create: true });
 
   let keyboardExists = false;
@@ -25,7 +31,7 @@ export async function importExistingKeyset(
   const entries = await keyboards_folder.values();
 
   for await (const entry of entries) {
-    if (entry.kind !== 'directory' && entry.name === keysetBase.Name) {
+    if (entry.kind !== 'directory' && entry.name === `${keysetBase.Name}.json`) {
       keyboardExists = true;
       break;
     }

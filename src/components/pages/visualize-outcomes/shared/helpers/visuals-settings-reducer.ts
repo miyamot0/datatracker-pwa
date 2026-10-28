@@ -6,6 +6,19 @@ import { type ToggleDisplayCondition, type ToggleDisplayKey } from '@/types/visu
 
 export type ScheduleOption = { value: string; label: string };
 
+/** Style settings that are saved to local storage and can be reloaded from styles.json */
+export type PersistedVisualsSettings = Pick<
+  VisualsSettingsState,
+  | 'connectSpans'
+  | 'showTitle'
+  | 'showTooltip'
+  | 'showConditionLegend'
+  | 'showDescription'
+  | 'figureLabels'
+  | 'legendSettings'
+  | 'seriesStyles'
+>;
+
 export type VisualsSettingsState = {
   keys: ToggleDisplayKey[];
   conditions: ToggleDisplayCondition[];
@@ -33,7 +46,8 @@ export type VisualsSettingsAction =
   | { type: 'showDescriptionChanged'; show: boolean }
   | { type: 'figureLabelsChanged'; labels: FigureLabelSettings }
   | { type: 'legendSettingsChanged'; settings: LegendSettings }
-  | { type: 'seriesStylesChanged'; styles: SeriesStyles };
+  | { type: 'seriesStylesChanged'; styles: SeriesStyles }
+  | { type: 'settingsReloaded'; settings: PersistedVisualsSettings };
 
 /**
  * Pure state transitions for visualization settings. Toggles read the latest state, so rapid updates do not overwrite each other.
@@ -77,5 +91,7 @@ export function visualsSettingsReducer(
       return { ...state, legendSettings: action.settings };
     case 'seriesStylesChanged':
       return { ...state, seriesStyles: action.styles };
+    case 'settingsReloaded':
+      return { ...state, ...action.settings };
   }
 }

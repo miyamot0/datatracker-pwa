@@ -41,7 +41,16 @@ function makeSettings(overrides: Partial<VisualsSettingsState> = {}): VisualsSet
 function renderMenubar({
   settings = {},
   onSaveImage = vi.fn(),
-}: { settings?: Partial<VisualsSettingsState>; onSaveImage?: (format: ChartImageFormat) => void } = {}) {
+  onWriteStyles = vi.fn(),
+  onReadStyles = vi.fn(),
+  onDeleteStyles = vi.fn(),
+}: {
+  settings?: Partial<VisualsSettingsState>;
+  onSaveImage?: (format: ChartImageFormat) => void;
+  onWriteStyles?: () => void;
+  onReadStyles?: () => void;
+  onDeleteStyles?: () => void;
+} = {}) {
   const dispatch = vi.fn();
 
   return {
@@ -54,6 +63,9 @@ function renderMenubar({
         styleConditions={['Baseline', 'Treatment']}
         visibleStyleConditions={['Baseline', 'Treatment']}
         onSaveImage={onSaveImage}
+        onWriteStyles={onWriteStyles}
+        onReadStyles={onReadStyles}
+        onDeleteStyles={onDeleteStyles}
       />,
     ),
   };
@@ -91,6 +103,39 @@ describe('VisualsMenubar', () => {
     expect(onSaveImage).toHaveBeenCalledWith('png');
   });
 
+  it('calls onWriteStyles from File > Style Information > Write styles.json', async () => {
+    const onWriteStyles = vi.fn();
+    renderMenubar({ onWriteStyles });
+
+    await page.getByRole('menuitem', { name: 'File' }).click();
+    await page.getByRole('menuitem', { name: 'Style Information' }).click();
+    await page.getByRole('menuitem', { name: 'Write styles.json' }).click();
+
+    expect(onWriteStyles).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onReadStyles from File > Style Information > Read styles.json', async () => {
+    const onReadStyles = vi.fn();
+    renderMenubar({ onReadStyles });
+
+    await page.getByRole('menuitem', { name: 'File' }).click();
+    await page.getByRole('menuitem', { name: 'Style Information' }).click();
+    await page.getByRole('menuitem', { name: 'Read styles.json' }).click();
+
+    expect(onReadStyles).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onDeleteStyles from File > Style Information > Delete styles.json', async () => {
+    const onDeleteStyles = vi.fn();
+    renderMenubar({ onDeleteStyles });
+
+    await page.getByRole('menuitem', { name: 'File' }).click();
+    await page.getByRole('menuitem', { name: 'Style Information' }).click();
+    await page.getByRole('menuitem', { name: 'Delete styles.json' }).click();
+
+    expect(onDeleteStyles).toHaveBeenCalledTimes(1);
+  });
+
   it('dispatches a key toggled off from Data > Keys and keeps the menu open', async () => {
     const { dispatch } = renderMenubar();
 
@@ -116,7 +161,11 @@ describe('VisualsMenubar', () => {
     await page.getByRole('menuitem', { name: 'Conditions' }).hover();
     await page.getByRole('menuitemcheckbox', { name: 'Treatment' }).click();
 
-    expect(dispatch).toHaveBeenCalledWith({ type: 'conditionVisibilityChanged', condition: 'Treatment', visible: true });
+    expect(dispatch).toHaveBeenCalledWith({
+      type: 'conditionVisibilityChanged',
+      condition: 'Treatment',
+      visible: true,
+    });
   });
 
   it('opens the Aim Lines dialog from Aesthetics > Annotations submenu', async () => {
@@ -152,7 +201,7 @@ describe('VisualsMenubar', () => {
 
     await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
     await page.getByRole('menuitem', { name: 'Legend Settings' }).click();
-    await page.getByRole('checkbox', { name: 'Show Condition Legend' }).click();
+    await page.getByRole('checkbox', { name: 'Conditions in Legend' }).click();
 
     expect(dispatch).toHaveBeenLastCalledWith({ type: 'showConditionLegendChanged', show: false });
   });

@@ -10,7 +10,9 @@ import {
   PaintbrushIcon,
   PanelBottomIcon,
   RulerIcon,
+  Trash2Icon,
   TypeIcon,
+  UploadIcon,
   ZoomInIcon,
 } from 'lucide-react';
 import {
@@ -49,6 +51,9 @@ type Props = {
   styleConditions: string[];
   visibleStyleConditions: string[];
   onSaveImage: (format: ChartImageFormat) => void;
+  onWriteStyles: () => void;
+  onReadStyles: () => void;
+  onDeleteStyles: () => void;
 };
 
 /**
@@ -64,6 +69,9 @@ export function VisualsMenubar({
   styleConditions,
   visibleStyleConditions,
   onSaveImage,
+  onWriteStyles,
+  onReadStyles,
+  onDeleteStyles,
 }: Props) {
   const {
     keys,
@@ -109,10 +117,26 @@ export function VisualsMenubar({
             </MenubarSubContent>
           </MenubarSub>
           <MenubarSeparator />
-          <MenubarItem onSelect={() => console.log('Export Style: not implemented yet')}>
-            <FileJsonIcon className="mr-2 h-4 w-4" />
-            Export Style
-          </MenubarItem>
+          <MenubarSub>
+            <MenubarSubTrigger>
+              <FileJsonIcon className="mr-2 h-4 w-4" />
+              Style Information
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              <MenubarItem onSelect={onWriteStyles}>
+                <FileJsonIcon className="mr-2 h-4 w-4" />
+                Write styles.json
+              </MenubarItem>
+              <MenubarItem onSelect={onReadStyles}>
+                <UploadIcon className="mr-2 h-4 w-4" />
+                Read styles.json
+              </MenubarItem>
+              <MenubarItem onSelect={onDeleteStyles}>
+                <Trash2Icon className="mr-2 h-4 w-4" />
+                Delete styles.json
+              </MenubarItem>
+            </MenubarSubContent>
+          </MenubarSub>
         </MenubarContent>
       </MenubarMenu>
 
@@ -131,7 +155,11 @@ export function VisualsMenubar({
                   checked={key.Visible}
                   onSelect={(event) => event.preventDefault()}
                   onCheckedChange={(checked) =>
-                    dispatch({ type: 'keyVisibilityChanged', keyDescription: key.KeyDescription, visible: checked === true })
+                    dispatch({
+                      type: 'keyVisibilityChanged',
+                      keyDescription: key.KeyDescription,
+                      visible: checked === true,
+                    })
                   }
                 >
                   {key.KeyDescription}
@@ -152,7 +180,11 @@ export function VisualsMenubar({
                   checked={condition.Visible}
                   onSelect={(event) => event.preventDefault()}
                   onCheckedChange={(checked) =>
-                    dispatch({ type: 'conditionVisibilityChanged', condition: condition.Condition, visible: checked === true })
+                    dispatch({
+                      type: 'conditionVisibilityChanged',
+                      condition: condition.Condition,
+                      visible: checked === true,
+                    })
                   }
                 >
                   {condition.Condition}
@@ -218,7 +250,9 @@ export function VisualsMenubar({
             <MenubarSubContent>
               <MenubarRadioGroup
                 value={figureTextSize}
-                onValueChange={(value) => dispatch({ type: 'figureTextSizeChanged', size: value as FigureVisualSizing })}
+                onValueChange={(value) =>
+                  dispatch({ type: 'figureTextSizeChanged', size: value as FigureVisualSizing })
+                }
               >
                 {FIGURE_TEXT_OPTIONS.map((opt) => (
                   <MenubarRadioItem key={opt.value} value={opt.value} onSelect={(event) => event.preventDefault()}>

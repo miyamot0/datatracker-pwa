@@ -19,7 +19,7 @@ import {
   setLocalShowTooltip,
 } from '@/lib/local_storage';
 import { type ToggleDisplayKey } from '@/types/visuals';
-import { visualsSettingsReducer, type ScheduleOption } from './visuals-settings-reducer';
+import { visualsSettingsReducer, type PersistedVisualsSettings, type ScheduleOption } from './visuals-settings-reducer';
 
 export type VisualsSettingsOptions = {
   group: string;
@@ -34,14 +34,15 @@ export type VisualsSettingsOptions = {
   defaultSchedule: ScheduleOption;
 };
 
-function buildInitialState(options: VisualsSettingsOptions): VisualsSettingsState {
+/**
+ * Reads the style-related settings that are persisted in local storage for this page's plot.
+ */
+export function readPersistedVisualsSettings(
+  options: Pick<VisualsSettingsOptions, 'group' | 'individual' | 'evaluation' | 'plot'>,
+): PersistedVisualsSettings {
   const { group, individual, evaluation, plot } = options;
 
   return {
-    keys: [...options.keys].sort((a, b) => b.KeyType.localeCompare(a.KeyType)),
-    conditions: options.conditions.map((condition) => ({ Condition: condition, Visible: true })),
-    schedule: options.defaultSchedule,
-    figureTextSize: 'base',
     connectSpans: getLocalConnectSpans(group, individual, evaluation, plot),
     showTitle: getLocalShowTitle(group, individual, evaluation, plot),
     showTooltip: getLocalShowTooltip(group, individual, evaluation),
@@ -50,6 +51,16 @@ function buildInitialState(options: VisualsSettingsOptions): VisualsSettingsStat
     figureLabels: getLocalFigureLabels(group, individual, evaluation, plot),
     legendSettings: getLocalLegendSettings(group, individual, evaluation, plot),
     seriesStyles: getLocalSeriesStyles(group, individual, evaluation),
+  };
+}
+
+function buildInitialState(options: VisualsSettingsOptions): VisualsSettingsState {
+  return {
+    keys: [...options.keys].sort((a, b) => b.KeyType.localeCompare(a.KeyType)),
+    conditions: options.conditions.map((condition) => ({ Condition: condition, Visible: true })),
+    schedule: options.defaultSchedule,
+    figureTextSize: 'base',
+    ...readPersistedVisualsSettings(options),
   };
 }
 
@@ -85,9 +96,7 @@ export function useVisualsSettings(options: VisualsSettingsOptions) {
     setLocalShowConditionLegend(group, individual, evaluation, show),
   );
   usePersistOnChange(state.showDescription, (show) => setLocalShowDescription(group, individual, evaluation, show));
-  usePersistOnChange(state.figureLabels, (labels) =>
-    setLocalFigureLabels(group, individual, evaluation, plot, labels),
-  );
+  usePersistOnChange(state.figureLabels, (labels) => setLocalFigureLabels(group, individual, evaluation, plot, labels));
   usePersistOnChange(state.legendSettings, (settings) =>
     setLocalLegendSettings(group, individual, evaluation, plot, settings),
   );

@@ -1405,6 +1405,23 @@ describe('file-query-mutate-actions', () => {
       ).rejects.toThrow('No matching KeySet found.');
     });
 
+    it('should reject reserved keyset names on Add, Duplicate, and Rename', async () => {
+      mockIndividualDir.entries.mockReturnValue(createEntriesIterator([]));
+
+      await expect(mutateKeysets(mockRootHandle as any, 'group', 'individual', ['styles'], 'Add')).rejects.toThrow(
+        'reserved name',
+      );
+      await expect(mutateKeysets(mockRootHandle as any, 'group', 'individual', ['styles.json'], 'Add')).rejects.toThrow(
+        'reserved name',
+      );
+      await expect(
+        mutateKeysets(mockRootHandle as any, 'group', 'individual', ['source'], 'Duplicate', 'styles.json'),
+      ).rejects.toThrow('reserved name');
+      await expect(
+        mutateKeysets(mockRootHandle as any, 'group', 'individual', ['source'], 'Rename', 'styles'),
+      ).rejects.toThrow('reserved name');
+    });
+
     it('should skip invalid JSON files', async () => {
       const mockValidFile = createMockFileHandle('valid.json');
       const mockInvalidFile = createMockFileHandle('invalid.json');

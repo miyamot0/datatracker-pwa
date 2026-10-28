@@ -1,4 +1,5 @@
 import { type ComponentProps, type ComponentType, type ReactNode, useRef } from 'react';
+import { toast } from 'sonner';
 import type RateFigureVisualization from '@/components/pages/visualize-outcomes/rate/rate-figure';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { KeySet } from '@/types/keyset/core';
@@ -6,16 +7,24 @@ import { saveChartImage } from '@/components/pages/visualize-outcomes/shared/hel
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { VisualsMenubar } from '@/components/pages/visualize-outcomes/shared/ui/visuals-menubar';
-import { useVisualsSettings } from '@/components/pages/visualize-outcomes/shared/helpers/use-visuals-settings';
+import {
+  readPersistedVisualsSettings,
+  useVisualsSettings,
+} from '@/components/pages/visualize-outcomes/shared/helpers/use-visuals-settings';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
+import { filteredSessionScoringOptions, ScheduleMappingOptions, ScoringOptionsMapType } from '@/types/schedules';
+import { RESERVED_STYLES_FILE_NAME } from '@/lib/reserved-names';
 import {
-  filteredSessionScoringOptions,
-  ScheduleMappingOptions,
-  ScoringOptionsMapType,
-} from '@/types/schedules';
+  applyStylesFile,
+  deleteStylesFile,
+  readStylesFile,
+  restoreStylesBackup,
+  saveStylesBackup,
+  writeStylesFile,
+} from '@/lib/styles-file';
 
 export type VisualsFigureProps = ComponentProps<typeof RateFigureVisualization>;
 
@@ -36,6 +45,8 @@ export type VisualsResultsPageProps = {
   Group: string;
   Individual: string;
   Evaluation: string;
+  /** Root folder handle, used to read and write styles.json in the evaluation folder */
+  Handle: FileSystemDirectoryHandle;
   Conditions: string[];
   ResultsFiltered: SavedSessionResult[];
   DynamicKeySet: KeySet;
@@ -62,6 +73,7 @@ export function VisualsResultsPage({
   Group,
   Individual,
   Evaluation,
+  Handle,
   Conditions,
   ResultsFiltered,
   DynamicKeySet,
@@ -82,6 +94,70 @@ export function VisualsResultsPage({
     defaultSchedule: TimerMapping,
   });
   const figureRef = useRef<HTMLDivElement>(null);
+
+  const onWriteStyles = async () => {
+    try {
+      await writeStylesFile(Handle, Group, Individual, Evaluation);
+      toast.success(`Saved styles to ${RESERVED_STYLES_FILE_NAME}`);
+    } catch (error) {
+      console.error('Error writing styles file', error);
+      toast.error(`Could not write ${RESERVED_STYLES_FILE_NAME}`);
+    }
+  };
+
+  const onReadStyles = async () => {
+    const reloadSettings = () =>
+      dispatch({
+        type: 'settingsReloaded',
+        settings: readPersistedVisualsSettings({
+          group: Group,
+          individual: Individual,
+          evaluation: Evaluation,
+          plot: config.plot,
+        }),
+      });
+
+    try {
+      const file = await readStylesFile(Handle, Group, Individual, Evaluation);
+
+      if (!file) {
+        toast.info(`No ${RESERVED_STYLES_FILE_NAME} found in this evaluation folder`);
+        return;
+      }
+
+      saveStylesBackup(Group, Individual, Evaluation);
+      applyStylesFile(Group, Individual, Evaluation, file);
+      reloadSettings();
+      toast.success(`Loaded styles from ${RESERVED_STYLES_FILE_NAME}`, {
+        action: {
+          label: 'Undo',
+          onClick: () => {
+            if (restoreStylesBackup(Group, Individual, Evaluation)) {
+              reloadSettings();
+              toast.success('Restored styles from before the read');
+            }
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Error reading styles file', error);
+      toast.error(error instanceof Error ? error.message : `Could not read ${RESERVED_STYLES_FILE_NAME}`);
+    }
+  };
+
+  const onDeleteStyles = async () => {
+    if (!window.confirm(`Delete ${RESERVED_STYLES_FILE_NAME} from this evaluation folder? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const deleted = await deleteStylesFile(Handle, Group, Individual, Evaluation);
+      toast.success(deleted ? `Deleted ${RESERVED_STYLES_FILE_NAME}` : `No ${RESERVED_STYLES_FILE_NAME} to delete`);
+    } catch (error) {
+      console.error('Error deleting styles file', error);
+      toast.error(`Could not delete ${RESERVED_STYLES_FILE_NAME}`);
+    }
+  };
 
   // Matches the legend order (first appearance in results), so dialog rows and default colours line up with the chart
   const legendConditionOrder = getUniqueSessionConditions(ResultsFiltered);
@@ -130,6 +206,9 @@ export function VisualsResultsPage({
               settings.conditions.some((f) => f.Condition === c && f.Visible),
             )}
             onSaveImage={(format) => saveChartImage(figureRef.current, format, `${config.page}.${format}`)}
+            onWriteStyles={onWriteStyles}
+            onReadStyles={onReadStyles}
+            onDeleteStyles={onDeleteStyles}
           />
 
           <div className="flex flex-row gap-2">
@@ -141,16 +220,13 @@ export function VisualsResultsPage({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {filteredSessionScoringOptions(
-                      Settings,
-                      DynamicKeySet,
-                      true,
-                      config.includeScoringInSchedule,
-                    ).map((option) => (
-                      <SelectItem key={option.value} value={option.value as SessionTerminationOptionsType}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
+                    {filteredSessionScoringOptions(Settings, DynamicKeySet, true, config.includeScoringInSchedule).map(
+                      (option) => (
+                        <SelectItem key={option.value} value={option.value as SessionTerminationOptionsType}>
+                          {option.label}
+                        </SelectItem>
+                      ),
+                    )}
                   </SelectGroup>
                 </SelectContent>
               </Select>

@@ -1,6 +1,7 @@
 import { CleanUpString } from '@/lib/strings';
 import { DataExampleFiles } from '@/lib/data';
 import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
+import { isReservedKeysetName } from '@/lib/reserved-names';
 import { v4 as uuidv4 } from 'uuid';
 import { KeySet } from '@/types/keyset/core';
 import { KeySetExtended } from '@/types/keyset/extended';
@@ -524,6 +525,14 @@ export async function mutateKeysets(
   newKeySet?: KeySet,
 ): Promise<KeySet[]> {
   try {
+    if (action === 'Add' && isReservedKeysetName(keysetNames[0] ?? '')) {
+      throw new Error(`"${keysetNames[0]}" is a reserved name and cannot be used for a keyset`);
+    }
+
+    if ((action === 'Duplicate' || action === 'Rename') && renameTo && isReservedKeysetName(renameTo)) {
+      throw new Error(`"${renameTo}" is a reserved name and cannot be used for a keyset`);
+    }
+
     const group_dir = await handle.getDirectoryHandle(CleanUpString(groupName));
     const individual_dir = await group_dir.getDirectoryHandle(individualName);
 

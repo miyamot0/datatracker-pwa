@@ -39,7 +39,7 @@ describe('LegendDialog', () => {
       />,
     );
 
-    await page.getByRole('checkbox', { name: 'Show Condition Legend' }).click();
+    await page.getByRole('checkbox', { name: 'Conditions in Legend' }).click();
 
     expect(onShowConditionLegendChange).toHaveBeenLastCalledWith(false);
   });

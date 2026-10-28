@@ -714,6 +714,25 @@ describe('file-query-read-actions', () => {
       expect(result).toEqual([]);
     });
 
+    it('should never read the reserved styles.json as a keyset', async () => {
+      const mockRootHandle = createMockDirectoryHandle('root');
+      const mockGroupDir = createMockDirectoryHandle('group1');
+      const mockIndividualDir = createMockDirectoryHandle('individual1');
+      const mockStylesFile = createMockFileHandle('styles.json');
+
+      mockRootHandle.getDirectoryHandle.mockResolvedValue(mockGroupDir);
+      mockGroupDir.getDirectoryHandle.mockResolvedValue(mockIndividualDir);
+      mockStylesFile.getFile.mockResolvedValue(createMockFile('{"version":1}'));
+
+      mockIndividualDir.entries.mockReturnValue(createEntriesIterator([['styles.json', mockStylesFile]]));
+
+      const result = await fetchKeysets(mockRootHandle as any, 'group1', 'individual1');
+
+      expect(result).toEqual([]);
+      expect(mockStylesFile.getFile).not.toHaveBeenCalled();
+      expect(mockedDeserializeKeySet).not.toHaveBeenCalled();
+    });
+
     it('should handle errors gracefully', async () => {
       const mockRootHandle = createMockDirectoryHandle('root');
       mockRootHandle.getDirectoryHandle.mockRejectedValue(new Error('Access denied'));
@@ -939,7 +958,7 @@ describe('file-query-read-actions', () => {
       const result = await fetchSessionParams(mockRootHandle as any, 'group1', 'individual1', 'evaluation1');
 
       expect(mockEvaluationDir.getFileHandle).toHaveBeenCalledWith('settings.json');
-      expect(result).toEqual({ sessionLength: 300, condition: 'test' });
+      expect(result).toMatchObject({ sessionLength: 300, condition: 'test' });
     });
 
     it('should create default settings when file does not exist', async () => {
@@ -954,9 +973,9 @@ describe('file-query-read-actions', () => {
       mockGroupDir.getDirectoryHandle.mockResolvedValue(mockIndividualDir);
       mockIndividualDir.getDirectoryHandle.mockResolvedValue(mockEvaluationDir);
 
-      // First call fails (file doesn't exist), second call succeeds (creates file)
+      // First call reports a missing file, second call succeeds (creates file)
       mockEvaluationDir.getFileHandle
-        .mockRejectedValueOnce(new Error('File not found'))
+        .mockRejectedValueOnce(new DOMException('missing', 'NotFoundError'))
         .mockResolvedValueOnce(mockSettingsFile);
 
       mockSettingsFile.createWritable.mockResolvedValue(mockWritable);
@@ -1009,8 +1028,10 @@ describe('file-query-read-actions', () => {
       mockGroupDir.getDirectoryHandle.mockResolvedValue(mockIndividualDir);
       mockIndividualDir.getDirectoryHandle.mockResolvedValue(mockEvaluationDir);
 
-      // Both calls fail
-      mockEvaluationDir.getFileHandle.mockRejectedValue(new Error('File access denied'));
+      // First call reports a missing file; creating it then fails
+      mockEvaluationDir.getFileHandle
+        .mockRejectedValueOnce(new DOMException('missing', 'NotFoundError'))
+        .mockRejectedValueOnce(new Error('File access denied'));
 
       const result = await fetchSessionParams(mockRootHandle as any, 'group1', 'individual1', 'evaluation1');
 

@@ -138,11 +138,27 @@ describe('import-keysets', () => {
   it('returns null and alerts when a duplicate keyset exists', async () => {
     const input = createKeySet('Alpha');
 
-    individualHandle.values.mockReturnValue(createAsyncIterator<MockEntry>([{ kind: 'file', name: 'Alpha' }]));
+    individualHandle.values.mockReturnValue(createAsyncIterator<MockEntry>([{ kind: 'file', name: 'Alpha.json' }]));
 
     const result = await importKeysetsModule.importExistingKeyset(rootHandle as any, 'Group A', 'Person A', input);
 
     expect(alertSpy).toHaveBeenCalledWith('Keyset already exists');
+    expect(result).toBeNull();
+    expect(mockedCreateNewKeySet).not.toHaveBeenCalled();
+    expect(individualHandle.getFileHandle).not.toHaveBeenCalled();
+  });
+
+  it('alerts and returns null for a reserved keyset name', async () => {
+    individualHandle.values.mockReturnValue(createAsyncIterator<MockEntry>([]));
+
+    const result = await importKeysetsModule.importExistingKeyset(
+      rootHandle as any,
+      'Group A',
+      'Person A',
+      createKeySet('styles.json'),
+    );
+
+    expect(alertSpy).toHaveBeenCalled();
     expect(result).toBeNull();
     expect(mockedCreateNewKeySet).not.toHaveBeenCalled();
     expect(individualHandle.getFileHandle).not.toHaveBeenCalled();
@@ -157,8 +173,8 @@ describe('import-keysets', () => {
     mockedSerializeKeySet.mockReturnValue('{"Name":"One"}');
 
     individualHandle.values
-      .mockReturnValueOnce(createAsyncIterator<MockEntry>([{ kind: 'file', name: 'Other' }]))
-      .mockReturnValueOnce(createAsyncIterator<MockEntry>([{ kind: 'file', name: 'Two' }]));
+      .mockReturnValueOnce(createAsyncIterator<MockEntry>([{ kind: 'file', name: 'Other.json' }]))
+      .mockReturnValueOnce(createAsyncIterator<MockEntry>([{ kind: 'file', name: 'Two.json' }]));
 
     const result = await importKeysetsModule.importExistingKeysets(rootHandle as any, 'Group A', 'Person A', [
       keysetA,

@@ -78,7 +78,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/pr
 });
 
 function RouteComponent() {
-  const { Group, Individual, Evaluation, Settings, totalQuery } = Route.useLoaderData();
+  const { Group, Individual, Evaluation, Handle, Settings, totalQuery } = Route.useLoaderData();
 
   return (
     <PageWrapper
@@ -175,6 +175,7 @@ function RouteComponent() {
                 Conditions={conditions}
                 Results={sessionOutcomes}
                 ResultsFiltered={resultsFiltered}
+                Handle={Handle}
                 MinX={minX}
                 MaxX={maxX}
                 DynamicKeySet={dynamicKeyset}

@@ -147,7 +147,7 @@ describe('KeySet Functions', () => {
       expect(() => deserializeKeySet(invalidJSON)).toThrow();
     });
 
-    it('should handle missing properties in JSON', () => {
+    it('should default missing key lists to empty arrays', () => {
       const incompleteJSON = JSON.stringify({
         id: 'test-id',
         Name: 'Test KeySet',
@@ -158,8 +158,31 @@ describe('KeySet Functions', () => {
 
       expect(result.id).toBe('test-id');
       expect(result.Name).toBe('Test KeySet');
-      expect(result.FrequencyKeys).toBeUndefined();
-      expect(result.DurationKeys).toBeUndefined();
+      expect(result.FrequencyKeys).toEqual([]);
+      expect(result.DurationKeys).toEqual([]);
+    });
+
+    it('should drop malformed key entries and keep valid ones', () => {
+      const json = JSON.stringify({
+        id: 'test-id',
+        Name: 'Test KeySet',
+        FrequencyKeys: [
+          { KeyName: 'A', KeyDescription: 'Key A', KeyCode: 65 },
+          { KeyName: 'B', KeyCode: 'not-a-number' },
+          'junk',
+        ],
+        DurationKeys: 'not-a-list',
+      });
+
+      const result = deserializeKeySet(json);
+
+      expect(result.FrequencyKeys).toEqual([{ KeyName: 'A', KeyDescription: 'Key A', KeyCode: 65 }]);
+      expect(result.DurationKeys).toEqual([]);
+    });
+
+    it('should reject a keyset without an id or Name', () => {
+      expect(() => deserializeKeySet(JSON.stringify({ Name: 'No Id' }))).toThrow();
+      expect(() => deserializeKeySet(JSON.stringify({ id: 'x' }))).toThrow();
     });
 
     it('should handle date parsing errors gracefully', () => {
