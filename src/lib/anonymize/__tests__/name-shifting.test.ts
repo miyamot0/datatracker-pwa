@@ -92,4 +92,18 @@ describe('resolvePersonPseudonym', () => {
     const roster = new Map([['AB', 'Person 001']]);
     expect(resolvePersonPseudonym('AB', roster)).toBe('Person 001');
   });
+
+  it('passes through a value that is not in the roster', () => {
+    const roster = new Map([['AB', 'Person 001']]);
+    expect(resolvePersonPseudonym('ZZ', roster)).toBe('ZZ');
+  });
+
+  it('skips blank Therapist and Initials when building the roster', () => {
+    const base = createMockSession().SessionSettings;
+    const roster = buildPersonRoster([
+      createMockSession({ SessionSettings: { ...base, Therapist: '', Initials: 'AB' } }),
+      createMockSession({ SessionSettings: { ...base, Therapist: 'Jane Doe', Initials: '' } }),
+    ]);
+    expect([...roster.keys()]).toEqual(['AB', 'Jane Doe']);
+  });
 });

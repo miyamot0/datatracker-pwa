@@ -9,6 +9,7 @@ import {
   saveStylesBackup,
   writeStylesFile,
 } from '../styles-file';
+import type { StylesFile } from '../styles-file';
 import { setLocalShowTitle } from '../local_storage';
 
 type Entry = FileEntry | FolderEntry;
@@ -134,5 +135,180 @@ describe('styles file round trip', () => {
   it('returns false when no backup exists', () => {
     sessionStorage.clear();
     expect(restoreStylesBackup('G', 'I', 'E')).toBe(false);
+  });
+});
+
+describe('parseStylesFile validation messages', () => {
+  it('rejects each wrongly typed top-level flag', () => {
+    for (const key of ['showConditionLegend', 'showDescription']) {
+      expect(() => parseStylesFile(`{"version":1,"${key}":"yes"}`)).toThrow(`${key} must be true or false`);
+    }
+  });
+
+  it('rejects a non-object seriesStyles and non-object series maps', () => {
+    expect(() => parseStylesFile('{"version":1,"seriesStyles":[]}')).toThrow('seriesStyles must be an object');
+    expect(() => parseStylesFile('{"version":1,"seriesStyles":{"KeyStyles":[]}}')).toThrow(
+      'seriesStyles.KeyStyles must be an object',
+    );
+    expect(() => parseStylesFile('{"version":1,"seriesStyles":{"ConditionStyles":"x"}}')).toThrow(
+      'seriesStyles.ConditionStyles must be an object',
+    );
+  });
+
+  it('rejects a non-object plots value and non-object plot entries', () => {
+    expect(() => parseStylesFile('{"version":1,"plots":[]}')).toThrow('plots must be an object');
+    expect(() => parseStylesFile('{"version":1,"plots":{"Proportion":"x"}}')).toThrow(
+      'plots.Proportion must be an object',
+    );
+  });
+
+  it('rejects wrongly typed plot flags and plot sub-objects', () => {
+    expect(() => parseStylesFile('{"version":1,"plots":{"Rate":{"connectSpans":"no"}}}')).toThrow(
+      'plots.Rate.connectSpans must be true or false',
+    );
+    expect(() => parseStylesFile('{"version":1,"plots":{"Rate":{"figureLabels":[]}}}')).toThrow(
+      'plots.Rate.figureLabels must be an object',
+    );
+    expect(() => parseStylesFile('{"version":1,"plots":{"Rate":{"legendSettings":1}}}')).toThrow(
+      'plots.Rate.legendSettings must be an object',
+    );
+  });
+
+  it('accepts a fully populated, valid file and ignores undefined plots', () => {
+    const text = JSON.stringify({
+      version: 1,
+      showTooltip: true,
+      showConditionLegend: false,
+      showDescription: true,
+      seriesStyles: { KeyStyles: {}, ConditionStyles: {}, phase_changes: [], text_annotations: [], aim_lines: [] },
+      plots: {
+        Rate: { showTitle: true, connectSpans: false, figureLabels: {}, legendSettings: {} },
+        Proportion: undefined,
+      },
+    });
+    expect(parseStylesFile(text).showDescription).toBe(true);
+  });
+});
+
+describe('applyStylesFile branches', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  const seriesFile = (seriesStyles: object) => ({ version: 1, seriesStyles }) as unknown as StylesFile;
+
+  it('replace overwrites every series field and defaults missing ones to empty', () => {
+    applyStylesFile(
+      'G',
+      'I',
+      'E',
+      seriesFile({ KeyStyles: { A: { color: 'red' } }, phase_changes: [{ position: 1, lineType: 'solid' }] }),
+    );
+
+    applyStylesFile('G', 'I', 'E', seriesFile({}), { replace: true });
+
+    expect(buildStylesFile('G', 'I', 'E').seriesStyles).toEqual({
+      KeyStyles: {},
+      ConditionStyles: {},
+      phase_changes: [],
+      text_annotations: [],
+      aim_lines: [],
+    });
+  });
+
+  it('merge keeps existing series entries and lists when the file omits them', () => {
+    applyStylesFile(
+      'G',
+      'I',
+      'E',
+      seriesFile({ KeyStyles: { A: { color: 'red' } }, phase_changes: [{ position: 1, lineType: 'solid' }] }),
+    );
+
+    applyStylesFile('G', 'I', 'E', seriesFile({ KeyStyles: { B: { color: 'blue' } } }));
+
+    const merged = buildStylesFile('G', 'I', 'E').seriesStyles!;
+    expect(merged.KeyStyles).toEqual({ A: { color: 'red' }, B: { color: 'blue' } });
+    expect(merged.phase_changes).toEqual([{ position: 1, lineType: 'solid' }]);
+  });
+
+  it('merge replaces lists when the file provides them', () => {
+    applyStylesFile('G', 'I', 'E', seriesFile({ phase_changes: [{ position: 1, lineType: 'solid' }] }));
+
+    applyStylesFile('G', 'I', 'E', seriesFile({ phase_changes: [{ position: 9, lineType: 'dashed' }] }));
+
+    expect(buildStylesFile('G', 'I', 'E').seriesStyles!.phase_changes).toEqual([{ position: 9, lineType: 'dashed' }]);
+  });
+
+  it('applies top-level flags only when they are present', () => {
+    applyStylesFile('G', 'I', 'E', {
+      version: 1,
+      showTooltip: false,
+      showConditionLegend: true,
+      showDescription: false,
+    } as StylesFile);
+
+    const built = buildStylesFile('G', 'I', 'E');
+    expect(built.showTooltip).toBe(false);
+    expect(built.showConditionLegend).toBe(true);
+    expect(built.showDescription).toBe(false);
+  });
+
+  it('applies plot fields and skips plots that are absent', () => {
+    const defaults = buildStylesFile('G', 'I', 'E').plots.Rate;
+    const figureLabels = { ...defaults.figureLabels, overrideTitle: true, titleText: 'Rate' };
+    const legendSettings = Object.fromEntries(
+      Object.entries(defaults.legendSettings).map(([key, value]) => [key, typeof value === 'boolean' ? !value : value]),
+    );
+
+    applyStylesFile('G', 'I', 'E', {
+      version: 1,
+      plots: {
+        Rate: { showTitle: false, connectSpans: true, figureLabels, legendSettings },
+      },
+    } as StylesFile);
+
+    const rate = buildStylesFile('G', 'I', 'E').plots.Rate;
+    expect(rate.showTitle).toBe(false);
+    expect(rate.connectSpans).toBe(true);
+    expect(rate.figureLabels).toMatchObject(figureLabels);
+    expect(rate.legendSettings).toMatchObject(legendSettings);
+  });
+
+  it('leaves plot fields untouched when they are not in the file', () => {
+    applyStylesFile('G', 'I', 'E', { version: 1, plots: { Rate: {} } } as StylesFile);
+    expect(buildStylesFile('G', 'I', 'E').plots.Rate.showTitle).toBe(true);
+  });
+});
+
+describe('readStylesFile and deleteStylesFile error handling', () => {
+  /** Directory tree whose evaluation folder throws the given error for every file operation */
+  function rootThrowing(error: unknown): FileSystemDirectoryHandle {
+    const evaluation = {
+      getFileHandle: async () => {
+        throw error;
+      },
+      removeEntry: async () => {
+        throw error;
+      },
+    };
+    const individual = { getDirectoryHandle: async () => evaluation };
+    const group = { getDirectoryHandle: async () => individual };
+    return { getDirectoryHandle: async () => group } as unknown as FileSystemDirectoryHandle;
+  }
+
+  it('readStylesFile rethrows errors other than NotFound', async () => {
+    const failure = new Error('permission denied');
+    await expect(readStylesFile(rootThrowing(failure), 'G', 'I', 'E')).rejects.toBe(failure);
+  });
+
+  it('deleteStylesFile rethrows errors other than NotFound', async () => {
+    const failure = new DOMException('locked', 'NoModificationAllowedError');
+    await expect(deleteStylesFile(rootThrowing(failure), 'G', 'I', 'E')).rejects.toBe(failure);
+  });
+
+  it('readStylesFile and deleteStylesFile report NotFound as null and false', async () => {
+    const missing = rootThrowing(new DOMException('missing', 'NotFoundError'));
+    await expect(readStylesFile(missing, 'G', 'I', 'E')).resolves.toBeNull();
+    await expect(deleteStylesFile(missing, 'G', 'I', 'E')).resolves.toBe(false);
   });
 });

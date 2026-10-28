@@ -2,7 +2,7 @@ import { KeySet, KeySetInstance } from '../../types/keyset/core';
 import { v4 as uuidv4 } from 'uuid';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { createNewKeySet, deserializeKeySet, serializeKeySet } from '../keyset';
+import { createNewKeySet, deserializeKeySet, pullMostRecentSession, serializeKeySet } from '../keyset';
 import { SavedSessionResult } from '../dtos/session-results';
 import { SavedSettings } from '../dtos/session-settings';
 import { ModifiedSessionResult } from '@/types/storage';
@@ -241,14 +241,17 @@ describe('KeySet Functions', () => {
       const unmatched = { ...base, fields: [fieldWithoutTag] };
 
       const result = deserializeKeySet(
-        JSON.stringify({ id: 'test-id', Name: 'Test KeySet', DerivedKeys: [unmatched] })
+        JSON.stringify({ id: 'test-id', Name: 'Test KeySet', DerivedKeys: [unmatched] }),
       );
 
       expect(result.DerivedKeys).toEqual([unmatched]);
     });
 
     it('should load the demo DerivedKeys without dropping any entries', () => {
-      const demoPath = resolve(process.cwd(), 'src/assets/data/Evaluation Study/Participant 001/FC Treatment Evaluation.json');
+      const demoPath = resolve(
+        process.cwd(),
+        'src/assets/data/Evaluation Study/Participant 001/FC Treatment Evaluation.json',
+      );
       const demo = JSON.parse(readFileSync(demoPath, 'utf8'));
 
       const result = deserializeKeySet(JSON.stringify(demo));
@@ -278,6 +281,47 @@ describe('KeySet Functions', () => {
       expect(result.lastModified).toBeInstanceOf(Date);
       expect(isNaN(result.createdAt.getTime())).toBe(true); // Invalid date
       expect(isNaN(result.lastModified.getTime())).toBe(true); // Invalid date
+    });
+  });
+
+  describe('serializeKeySet fallbacks', () => {
+    it('writes empty lists when the optional key lists are absent', () => {
+      const keyset = createMockKeySet('Sparse') as Partial<KeySet>;
+      delete keyset.DerivedKeys;
+      delete keyset.SpecialDurationKeys;
+      delete keyset.ScorableDurationKeys;
+
+      const parsed = JSON.parse(serializeKeySet(keyset as KeySet));
+
+      expect(parsed.DerivedKeys).toEqual([]);
+      expect(parsed.SpecialDurationKeys).toEqual([]);
+      expect(parsed.ScorableDurationKeys).toEqual([]);
+    });
+  });
+
+  describe('pullMostRecentSession', () => {
+    it('returns the saved session with the highest session number', () => {
+      const sessions = [createMockSavedSession(2), createMockSavedSession(7), createMockSavedSession(4)];
+      const seven = sessions[1];
+
+      const latest = pullMostRecentSession(sessions);
+
+      expect(latest.SessionSettings.Session).toBe(7);
+      expect(latest).toBe(seven);
+    });
+
+    it('returns the modified session with the highest session number', () => {
+      const sessions = [createMockModifiedSession(3, 'A', 'a.json'), createMockModifiedSession(1, 'A', 'b.json')];
+
+      const latest = pullMostRecentSession(sessions);
+
+      expect(latest.SessionSettings.Session).toBe(3);
+      expect(latest).toEqual(expect.objectContaining({ Filename: 'a.json' }));
+    });
+
+    it('returns the only session when given a single item', () => {
+      const only = createMockSavedSession(5);
+      expect(pullMostRecentSession([only])).toBe(only);
     });
   });
 });

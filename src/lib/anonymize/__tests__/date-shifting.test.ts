@@ -112,4 +112,12 @@ describe('computeOffsetMs', () => {
     const anchor = new Date('2024-06-01T00:00:00Z');
     expect(computeOffsetMs(earliest, anchor)).toBe(anchor.getTime() - earliest.getTime());
   });
+
+  it('throws when no timestamp in the batch is a valid date', () => {
+    const invalid = createMockSession({
+      SessionStart: 'not-a-date',
+      Keyset: createMockKeySet('not-a-date', 'also-not-a-date'),
+    });
+    expect(() => findEarliestTimestamp([invalid])).toThrow('no valid dates found in results');
+  });
 });
