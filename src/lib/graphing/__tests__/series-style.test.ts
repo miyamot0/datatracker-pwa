@@ -11,6 +11,7 @@ import {
   resolveMarkerStroke,
   isSeriesHidden,
   isValidTextAnnotation,
+  isValidPhaseChange,
   getPageTextAnnotations,
   isValidAimLine,
   getPageAimLines,
@@ -193,7 +194,32 @@ describe('aim line helpers', () => {
   });
 });
 
+describe('phase change helpers', () => {
+  it('accepts a positive finite position with a known line type', () => {
+    expect(isValidPhaseChange({ position: 2, lineType: 'dashed' })).toBe(true);
+  });
+
+  it('rejects non-object values', () => {
+    expect(isValidPhaseChange(null)).toBe(false);
+    expect(isValidPhaseChange(undefined)).toBe(false);
+    expect(isValidPhaseChange('phase')).toBe(false);
+    expect(isValidPhaseChange(3)).toBe(false);
+  });
+
+  it('rejects non-positive, non-finite, or unknown values', () => {
+    expect(isValidPhaseChange({ position: 0, lineType: 'solid' })).toBe(false);
+    expect(isValidPhaseChange({ position: Number.NaN, lineType: 'solid' })).toBe(false);
+    expect(isValidPhaseChange({ position: Number.POSITIVE_INFINITY, lineType: 'solid' })).toBe(false);
+    expect(isValidPhaseChange({ position: 2, lineType: 'wavy' })).toBe(false);
+  });
+});
+
 describe('text annotation helpers', () => {
+  it('rejects non-object values', () => {
+    expect(isValidTextAnnotation(null)).toBe(false);
+    expect(isValidTextAnnotation('note')).toBe(false);
+  });
+
   it('accepts a complete annotation and rejects incomplete or unknown values', () => {
     const valid = { label: 'Note', x: 2, y: 50, anchor: 'top-left', justify: 'center' };
 

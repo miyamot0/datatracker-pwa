@@ -90,6 +90,107 @@ describe('Analytics Module Full Coverage', () => {
       const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
       expect(analyticsConfig.enabled).toBe(false);
     });
+
+    it('should leave the measurement ID empty when none is configured', async () => {
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', '');
+      vi.stubEnv('DEV', true);
+
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
+
+      expect(analyticsConfig.measurementId).toBe('');
+      expect(analyticsConfig.enabled).toBe(false);
+      expect(analyticsConfig.hasClientTracking).toBe(false);
+    });
+
+    it('should reject a malformed measurement ID outside the test environment', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'G-bad');
+      vi.stubEnv('DEV', true);
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
+
+      expect(analyticsConfig.measurementId).toBe('');
+      expect(analyticsConfig.enabled).toBe(false);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Invalid GA Measurement ID format:', 'G-bad');
+    });
+
+    it('should accept a well-formed measurement ID and secret outside the test environment', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'G-ABCDEFGHIJ');
+      vi.stubEnv('VITE_G4A_SECRET', 'a'.repeat(22));
+      vi.stubEnv('DEV', true);
+      const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
+
+      expect(analyticsConfig.measurementId).toBe('G-ABCDEFGHIJ');
+      expect(analyticsConfig.apiSecret).toBe('a'.repeat(22));
+      expect(analyticsConfig.enabled).toBe(true);
+      expect(analyticsConfig.hasServerTracking).toBe(true);
+      expect(consoleLogSpy).toHaveBeenCalledWith('✅ Valid GA Measurement ID configured');
+    });
+
+    it('should reject a short API secret outside the test environment', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'G-ABCDEFGHIJ');
+      vi.stubEnv('VITE_G4A_SECRET', 'short');
+      vi.stubEnv('DEV', true);
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
+
+      expect(analyticsConfig.apiSecret).toBe('');
+      expect(analyticsConfig.hasServerTracking).toBe(false);
+      expect(analyticsConfig.hasClientTracking).toBe(true);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('❌ GA API Secret appears invalid (too short)');
+    });
+
+    it('should reject a malformed measurement ID silently outside dev', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'G-bad');
+      vi.stubEnv('DEV', false);
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
+
+      expect(analyticsConfig.measurementId).toBe('');
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
+
+    it('should reject a short API secret silently outside dev', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'G-ABCDEFGHIJ');
+      vi.stubEnv('VITE_G4A_SECRET', 'short');
+      vi.stubEnv('DEV', false);
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
+
+      expect(analyticsConfig.apiSecret).toBe('');
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
+
+    it('should warn and skip server tracking when the API secret is missing', async () => {
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'test-measurement-id');
+      vi.stubEnv('VITE_G4A_SECRET', '');
+      vi.stubEnv('DEV', true);
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
+
+      expect(analyticsConfig.apiSecret).toBe('');
+      expect(analyticsConfig.hasServerTracking).toBe(false);
+      expect(consoleWarnSpy).toHaveBeenCalledWith('⚠️ GA API Secret not provided. Server-side events disabled.');
+    });
   });
 
   describe('analytics-consent.ts', () => {
@@ -498,6 +599,96 @@ describe('Analytics Module Full Coverage', () => {
 
       const result = chunk([], 3);
       expect(result).toEqual([]);
+    });
+
+    it('should configure gtag when it is loaded and a measurement ID is set', async () => {
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'G-ABCDEFGHIJ');
+      vi.stubEnv('DEV', true);
+      const gtagSpy = vi.fn();
+      window.gtag = gtagSpy;
+      const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      try {
+        const { startAnalyticsSync } = await import('../analytics-sync');
+        startAnalyticsSync();
+
+        expect(gtagSpy).toHaveBeenCalledWith('config', 'G-ABCDEFGHIJ', {
+          send_page_view: false,
+          anonymize_ip: true,
+          allow_google_signals: false,
+          allow_ad_personalization_signals: false,
+          transport_type: 'beacon',
+        });
+        expect(consoleLogSpy).toHaveBeenCalledWith('✅ Google Analytics initialized:', 'G-ABCDEFGHIJ');
+      } finally {
+        delete (window as { gtag?: unknown }).gtag;
+      }
+    });
+
+    it('should warn in dev when gtag is not loaded', async () => {
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'G-ABCDEFGHIJ');
+      vi.stubEnv('DEV', true);
+      delete (window as { gtag?: unknown }).gtag;
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      const { startAnalyticsSync } = await import('../analytics-sync');
+      startAnalyticsSync();
+
+      expect(consoleWarnSpy).toHaveBeenCalledWith('gtag not available - Google Analytics not loaded');
+    });
+
+    it('should skip gtag config when no measurement ID is present', async () => {
+      vi.resetModules();
+      vi.doMock('@/lib/analytics/analytics-config', () => ({
+        analyticsConfig: { enabled: true, measurementId: '', isDev: false, isProd: false },
+      }));
+      const gtagSpy = vi.fn();
+      window.gtag = gtagSpy;
+
+      try {
+        const { startAnalyticsSync } = await import('../analytics-sync');
+        startAnalyticsSync();
+
+        expect(gtagSpy).not.toHaveBeenCalled();
+      } finally {
+        delete (window as { gtag?: unknown }).gtag;
+        vi.doUnmock('@/lib/analytics/analytics-config');
+      }
+    });
+
+    it('should configure gtag without dev logging outside dev', async () => {
+      vi.resetModules();
+      vi.doMock('@/lib/analytics/analytics-config', () => ({
+        analyticsConfig: { enabled: true, measurementId: 'G-ABCDEFGHIJ', isDev: false, isProd: false },
+      }));
+      const gtagSpy = vi.fn();
+      window.gtag = gtagSpy;
+      const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      try {
+        const { startAnalyticsSync } = await import('../analytics-sync');
+        startAnalyticsSync();
+
+        expect(gtagSpy).toHaveBeenCalledWith('config', 'G-ABCDEFGHIJ', expect.any(Object));
+        expect(consoleLogSpy).not.toHaveBeenCalledWith('✅ Google Analytics initialized:', 'G-ABCDEFGHIJ');
+      } finally {
+        delete (window as { gtag?: unknown }).gtag;
+        vi.doUnmock('@/lib/analytics/analytics-config');
+      }
+    });
+
+    it('should return early without listeners when analytics is disabled outside dev', async () => {
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'false');
+      vi.stubEnv('DEV', false);
+      const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
+
+      const { startAnalyticsSync } = await import('../analytics-sync');
+      startAnalyticsSync();
+
+      expect(addEventListenerSpy).not.toHaveBeenCalledWith('online', expect.any(Function));
     });
 
     it('should not flush when offline', async () => {

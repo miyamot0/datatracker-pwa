@@ -91,6 +91,11 @@ describe('chart-setup', () => {
       expect(generateTicks(2, 98)).toEqual([]);
     });
 
+    it('should return an empty array for non-finite inputs', () => {
+      expect(generateTicks(Number.NaN, 1)).toEqual([]);
+      expect(generateTicks(5, Number.POSITIVE_INFINITY)).toEqual([]);
+    });
+
     it('should handle large ranges', () => {
       expect(generateTicks(100, 98)).toEqual([98, 99, 100]);
     });
