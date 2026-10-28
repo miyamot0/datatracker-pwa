@@ -88,7 +88,7 @@ export function VisualsMenubar({
   const onShowConditionLegendChange = (show: boolean) => dispatch({ type: 'showConditionLegendChanged', show });
 
   return (
-    <Menubar className="h-auto w-fit flex-wrap">
+    <Menubar className="h-auto w-fit flex-wrap bg-card dark:[--accent:0_0%_40%] shadow-none">
       <MenubarMenu>
         <MenubarTrigger>File</MenubarTrigger>
         <MenubarContent onCloseAutoFocus={(event) => event.preventDefault()}>
