@@ -46,15 +46,27 @@ const logicProj: TestProjectConfiguration = {
   test: {
     clearMocks: false,
     include: ['./**/*.test.{ts,tsx}'],
-    exclude: [
-      ...configDefaults.exclude,
-      '**/*-worker.test.{ts,tsx}',
-      '**/*.spec.{ts,tsx}',
-      '**/*-worker-actual.test.{ts,tsx}',
-    ],
+    exclude: [...configDefaults.exclude, 'src/workers/**', '**/*.spec.{ts,tsx}'],
     environment: 'jsdom',
     globals: true,
     name: 'unit-tests',
+  },
+};
+
+const workerProj: TestProjectConfiguration = {
+  extends: false,
+  resolve: {
+    alias: {
+      '@': path.resolve(import.meta.dirname, './src'),
+    },
+  },
+  test: {
+    clearMocks: false,
+    include: ['./src/workers/**/*.test.{ts,tsx}'],
+    exclude: [...configDefaults.exclude],
+    environment: 'jsdom',
+    globals: true,
+    name: 'worker-tests',
   },
 };
 
@@ -67,7 +79,9 @@ export default defineConfig(({ command, mode }) => {
 
   const isVercel = location === 'vercel';
 
-  const projects: TestProjectConfiguration[] = isVercel ? [logicProj] : [componentProj, logicProj];
+  const projects: TestProjectConfiguration[] = isVercel
+    ? [logicProj]
+    : [componentProj, logicProj, workerProj];
 
   const coverage: CoverageV8Options | undefined = isVercel
     ? {
@@ -85,6 +99,7 @@ export default defineConfig(({ command, mode }) => {
       reportsDirectory: './coverage',
       include: [
         'src/lib/**/*.{ts,tsx}',
+        'src/workers/**/*.ts',
         'src/calculations/**/*.ts',
         'src/analytics/**/*.ts',
         'src/components/elements/**/*.{ts,tsx}',

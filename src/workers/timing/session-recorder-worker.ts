@@ -196,6 +196,7 @@ class SessionRecorderWorker {
 const worker = new SessionRecorderWorker();
 
 self.onmessage = (event: MessageEvent<WorkerMessage>) => {
+  if (!event.data) return;
   const { type, payload, ports } = event.data;
 
   switch (type) {

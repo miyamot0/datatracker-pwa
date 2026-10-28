@@ -403,17 +403,9 @@ describe('SessionRecorderWorker', () => {
 
   describe('Error Handling', () => {
     it('should not reach the core for malformed messages', () => {
-      // Null and undefined data throw in the worker's destructuring today; no malformed input may reach the core.
-      const throwingEvents = [
+      const ignoredEvents = [
         new MessageEvent('message', { data: null }),
         new MessageEvent('message', { data: undefined }),
-      ];
-      throwingEvents.forEach((event) => {
-        // @ts-ignore
-        expect(() => mockSelf.onmessage?.(event)).toThrow(TypeError);
-      });
-
-      const ignoredEvents = [
         new MessageEvent('message', { data: {} }),
         new MessageEvent('message', { data: { type: 'UNKNOWN_TYPE' } }),
       ];
