@@ -1,4 +1,4 @@
-import { ApplicationSettingsTypes } from './settings';
+import { ApplicationSettingsTypes } from './settings/application-settings';
 
 // Session termination options
 export const SessionTerminationOptions = {

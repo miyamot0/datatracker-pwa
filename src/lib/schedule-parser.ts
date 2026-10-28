@@ -1,6 +1,6 @@
 import { KeyTiming } from '@/types/timing';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
-import { KeySetInstance } from '@/types/keyset';
+import { KeySetInstance } from '@/types/keyset/core';
 import { ModifiedSessionResult } from '@/types/storage';
 import { ScoringStrategy } from '@/types/calculation';
 

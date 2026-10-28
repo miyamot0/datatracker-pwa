@@ -35,7 +35,7 @@ import {
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { cn } from '@/lib/utils';
 import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
-import { ExpandedKeySetInstance } from '@/types/keyset';
+import { ExpandedKeySetInstance } from '@/types/keyset/display';
 import { splitAtPoints } from '@/lib/arrays';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { calculateSplitPoints } from '@/lib/graphing/data-preparation';

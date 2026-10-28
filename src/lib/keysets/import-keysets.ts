@@ -1,6 +1,6 @@
 import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
 import { CleanUpString } from '@/lib/strings';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 
 /**
  * Imports an existing keyset into the specified group and individual directory within the file system. It checks if a keyset with the same name already exists, and if not, it creates a new keyset file with the provided keyset data. The function returns the imported KeySet object if successful, or null if a keyset with the same name already exists.

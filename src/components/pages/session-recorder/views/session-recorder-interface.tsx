@@ -1,6 +1,6 @@
 import { useEventListener } from '@/components/elements/behavior/event-listeners';
 import { SavedSettings } from '@/lib/dtos/session-settings';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { KeyManageType, TimerSetting } from '@/types/timing';
 import SessionRecorderWorker from '@/workers/timing/session-recorder-worker.ts?worker';

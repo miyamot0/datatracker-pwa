@@ -1,6 +1,6 @@
 import { PaddedTimerRow } from './padded-row';
 import { TimerSetting } from '@/types/timing';
-import { KeySetInstance } from '@/types/keyset';
+import { KeySetInstance } from '@/types/keyset/core';
 import { cn } from '@/lib/utils';
 import { formatTimeSeconds } from '@/lib/time';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';

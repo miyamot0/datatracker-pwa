@@ -1,6 +1,6 @@
 import { displayConditionalNotification } from '../notifications';
 import { toast } from 'sonner';
-import { ApplicationSettingsTypes } from '../../types/settings';
+import { ApplicationSettingsTypes } from '../../types/settings/application-settings';
 
 // Mock the toast functions
 vi.mock('sonner', () => ({

@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { GenerateTableCols } from './ui-counts-cols';
 import { generateChunkedVisuals } from '@/lib/displays';

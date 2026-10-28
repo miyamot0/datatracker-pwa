@@ -18,7 +18,7 @@ import { generateTicks } from '@/lib/graphing/chart-setup';
 import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
 import { preparePlotDataCumulative } from '@/lib/summary';
 import { GenerateSavedFileName } from '@/lib/writer';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
 import SessionViewerContent from '@/components/pages/editor-session-outcome/views/session-viewer-content';
 import { ToggleDisplayKey } from '@/types/visuals';

@@ -4,7 +4,7 @@ import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-ou
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { pullMostRecentSession } from '@/lib/keyset';
 import { extractAndDeduplicateKeysets, mapKeysWithStoragePreference } from '@/lib/graphing/keyset-utils';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { ToggleDisplayKey } from '@/types/visuals';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
 import PageWrapper from '@/components/elements/page-wrapper';

@@ -1,5 +1,5 @@
 import { SessionTerminationOptionsType } from '@/types/terminations';
-import { SavedSessionResult } from '../dtos';
+import { SavedSessionResult } from '../dtos/session-results';
 import { walkSessionDurationKeyStateAware, walkSessionFrequencyKey } from '../schedule-parser';
 import { ExpandedKeySetInstance } from '@/types/keyset/display';
 import { KeySet } from '@/types/keyset/core';

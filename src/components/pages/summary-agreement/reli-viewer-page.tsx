@@ -1,6 +1,6 @@
 import ReliabilityViewerContent from './views/reli-viewer-content';
 import { ReliabilityPairType } from '@/types/reli';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { useMemo, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 

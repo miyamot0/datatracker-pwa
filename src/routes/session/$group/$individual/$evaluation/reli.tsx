@@ -15,9 +15,9 @@ import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-ou
 import { ModifiedSessionResult } from '@/types/storage';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { RouteErrorRedirect } from '@/components/pages/error/route-error-view';
-import { extractAndDeduplicateKeysets } from '@/lib/graphing';
+import { extractAndDeduplicateKeysets } from '@/lib/graphing/keyset-utils';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/reli')({
   beforeLoad: ({ context, params }) => {

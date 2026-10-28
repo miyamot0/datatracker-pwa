@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SavedSessionResult } from '../../dtos';
+import { SavedSessionResult } from '../../dtos/session-results';
 import { KeySet, KeySetInstance } from '@/types/keyset/core';
 import { ExpandedKeySetInstance } from '@/types/keyset/display';
 import { TRANSPARENT_COLOR } from '@/lib/graphing/series-style';

@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
 import { mutateKeyboardsAll } from '@/queries/keysets/mutate-keyboards-all';
-import { KeySet, KeySetExtended, KeySetInstance } from '@/types/keyset';
+import { KeySet, KeySetInstance } from '@/types/keyset/core';
+import { KeySetExtended } from '@/types/keyset/extended';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { useMutation } from '@tanstack/react-query';
 import { useRouter, useRouterState } from '@tanstack/react-router';

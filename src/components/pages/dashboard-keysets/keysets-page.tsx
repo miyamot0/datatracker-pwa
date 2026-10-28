@@ -4,7 +4,7 @@ import { Copy, Edit2, ImportIcon, Plus } from 'lucide-react';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import BackButton from '@/components/ui/back-button';
 import { ColumnDef } from '@tanstack/react-table';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
 import { DataTable } from '@/components/ui/data-table-common';
 import { toast } from 'sonner';

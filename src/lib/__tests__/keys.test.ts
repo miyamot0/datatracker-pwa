@@ -1,4 +1,4 @@
-import { KeySet, KeySetInstance } from '../../types/keyset';
+import { KeySet, KeySetInstance } from '../../types/keyset/core';
 import { is_key_already_assigned } from '../keys';
 
 describe('is_key_already_assigned', () => {

@@ -1,4 +1,4 @@
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 
 /**
  * Unified timer type that handles all possible timer configurations

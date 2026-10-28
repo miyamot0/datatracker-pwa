@@ -57,7 +57,7 @@ import ReliabilityViewerPage from '../reli-viewer-page';
 
 // ----- Helpers -----
 
-const mockKeyset: import('@/types/keyset').KeySet = {
+const mockKeyset: import('@/types/keyset/core').KeySet = {
   id: 'ks-001',
   Name: 'Functional Analysis',
   createdAt: new Date('2026-01-01'),
@@ -70,7 +70,7 @@ const mockKeyset: import('@/types/keyset').KeySet = {
 };
 
 function makeSession(primaryInitials: string, reliInitials: string): import('@/types/reli').ReliabilityPairType {
-  const base: import('@/lib/dtos').SavedSessionResult = {
+  const base: import('@/lib/dtos/session-results').SavedSessionResult = {
     Filename: 'session.json',
     Keyset: mockKeyset,
     SessionSettings: {

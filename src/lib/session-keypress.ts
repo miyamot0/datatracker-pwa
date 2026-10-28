@@ -1,4 +1,4 @@
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { KeyManageType, TimerSetting } from '@/types/timing';
 import { WorkerMessage, WorkerResponse } from '@/workers/timing/types/session-recorder-worker-messaging';
@@ -10,7 +10,8 @@ import {
 } from '@/workers/timing/types/session-recorder-worker-payloads';
 import { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { toast } from 'sonner';
-import { SavedSessionResult, SavedSettings } from './dtos';
+import { SavedSettings } from './dtos/session-settings';
+import { SavedSessionResult } from './dtos/session-results';
 import { UseMutationResult } from '@tanstack/react-query';
 import { ModifiedSessionResult } from '@/types/storage';
 import { RunningStateOptions } from '@/types/session';

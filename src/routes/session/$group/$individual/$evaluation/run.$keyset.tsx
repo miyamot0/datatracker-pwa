@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { RouteErrorRedirect } from '@/components/pages/error/route-error-view';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/run/$keyset')({
   beforeLoad: ({ context, params }) => {

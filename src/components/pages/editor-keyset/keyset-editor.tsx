@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowDown, ArrowUp, ChevronDown, DeleteIcon, EditIcon } from 'lucide-react';
 import BackButton from '@/components/ui/back-button';
-import { KeySetInstance, KeySet } from '@/types/keyset';
+import { KeySetInstance, KeySet } from '@/types/keyset/core';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { mutationKeyboards } from '@/queries/keysets/mutate-keyboards';

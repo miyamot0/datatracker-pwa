@@ -1,4 +1,4 @@
-import { KeySetInstance } from './keyset';
+import { KeySetInstance } from './keyset/core';
 
 /**
  * Defines the types for visualizations in the application.

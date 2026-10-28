@@ -3,7 +3,7 @@ import ViewDurationResults from './views/view-duration-results';
 import ViewFrequencyResults from './views/view-frequency-results';
 import { useState } from 'react';
 import { ModifiedSessionResult } from '@/types/storage';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import {
   filteredSessionScoringOptions,
   ScheduleMappingOptions,

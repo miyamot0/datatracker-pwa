@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import BackButton from '@/components/ui/back-button';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';

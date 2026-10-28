@@ -1,6 +1,6 @@
 import { getLocalCachedPrefs } from '@/lib/local_storage';
 import { CleanUpString } from '@/lib/strings';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { extractAndDeduplicateKeysets, mapKeysWithStoragePreference } from '@/lib/graphing/keyset-utils';

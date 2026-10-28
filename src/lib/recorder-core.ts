@@ -1,4 +1,4 @@
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { SavedSettings } from '@/lib/dtos/session-settings';
 import { KeyManageType, KeyTiming, TimerSetting } from '@/types/timing';
 import { SessionPollingIntervals, SessionRecorderPolling } from '@/types/settings/performance-settings';

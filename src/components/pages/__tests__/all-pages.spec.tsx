@@ -454,7 +454,7 @@ describe('ClientsPage', () => {
 
 // ----- Shared sample data -----
 
-const mockKeyset: import('@/types/keyset').KeySet = {
+const mockKeyset: import('@/types/keyset/core').KeySet = {
   id: 'ks-001',
   Name: 'Functional Analysis',
   createdAt: new Date('2026-01-01'),
@@ -470,7 +470,7 @@ const mockKeyset: import('@/types/keyset').KeySet = {
   ScorableDurationKeys: [],
 };
 
-const mockSessionSettings: import('@/lib/dtos').SavedSettings = {
+const mockSessionSettings: import('@/lib/dtos/session-settings').SavedSettings = {
   Therapist: 'Dr. Smith',
   Condition: 'Baseline',
   KeySet: 'Functional Analysis',
@@ -528,17 +528,17 @@ const mockShowKeys: import('@/types/visuals').ToggleDisplayKey[] = [
   { KeyName: 's', KeyDescription: 'Self-Injury', KeyCode: 83, KeyType: 'Observed', Visible: true },
 ];
 
-type ImportedKeySet = Omit<import('@/types/keyset').KeySet, 'createdAt' | 'lastModified'> & {
+type ImportedKeySet = Omit<import('@/types/keyset/core').KeySet, 'createdAt' | 'lastModified'> & {
   createdAt: string;
   lastModified: string;
 };
 
-type ImportedSessionResult = Omit<import('@/lib/dtos').SavedSessionResult, 'Keyset'> & {
-  Keyset?: Partial<import('@/types/keyset').KeySet>;
+type ImportedSessionResult = Omit<import('@/lib/dtos/session-results').SavedSessionResult, 'Keyset'> & {
+  Keyset?: Partial<import('@/types/keyset/core').KeySet>;
   SpecialKeyTimers?: Record<string, number>;
 };
 
-function hydrateImportedKeyset(keyset: ImportedKeySet): import('@/types/keyset').KeySet {
+function hydrateImportedKeyset(keyset: ImportedKeySet): import('@/types/keyset/core').KeySet {
   return {
     ...keyset,
     DerivedKeys: keyset.DerivedKeys ?? [],
@@ -552,7 +552,7 @@ function hydrateImportedKeyset(keyset: ImportedKeySet): import('@/types/keyset')
 function hydrateImportedSession(
   filename: string,
   session: ImportedSessionResult,
-  keyset: import('@/types/keyset').KeySet,
+  keyset: import('@/types/keyset/core').KeySet,
 ): import('@/types/storage').ModifiedSessionResult {
   return {
     ...session,
@@ -631,7 +631,7 @@ const demandTreatmentSessionViewerYValues = demandTreatmentSessionViewerPlot
 
 const demandTreatmentSessionViewerMaxY = Math.max(...demandTreatmentSessionViewerYValues) + 1;
 
-const demandTreatmentSessionViewerExpandedSession: import('@/lib/dtos').ExpandedSavedSessionResult = {
+const demandTreatmentSessionViewerExpandedSession: import('@/lib/dtos/session-results').ExpandedSavedSessionResult = {
   ...demandTreatmentSessionViewerSession,
   Comments: demandTreatmentSessionViewerSession.Comments ?? 'Imported example session.',
   MaxY: demandTreatmentSessionViewerMaxY,

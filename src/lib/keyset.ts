@@ -1,6 +1,7 @@
-import { KeySet, KeySetSerialize } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
+import { KeySetSerialize } from '@/types/keyset/serialization';
 import { v4 as uuidv4 } from 'uuid';
-import { SavedSessionResult } from './dtos';
+import { SavedSessionResult } from './dtos/session-results';
 import { ModifiedSessionResult } from '@/types/storage';
 
 /**
@@ -78,16 +79,4 @@ export function pullMostRecentSession(
 ): SavedSessionResult | ModifiedSessionResult {
   const latest = data.sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session).slice(-1)[0];
   return latest;
-}
-
-/**
- * Pull the most recent key set from an array of session results
- *
- * @param data - An array of session results, which can be either SavedSessionResult or ModifiedSessionResult, both containing a Keyset property
- * @returns The KeySet object from the most recent session result, determined by the highest SessionSettings.Session value in the input array
- * @deprecated Need to pull from session params for latest
- */
-export function pullMostRecentKeySet(data: SavedSessionResult[] | ModifiedSessionResult[]): KeySet {
-  const latest = pullMostRecentSession(data);
-  return latest.Keyset;
 }

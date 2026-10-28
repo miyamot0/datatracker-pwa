@@ -1,4 +1,4 @@
-import { SavedSessionResult } from '../dtos';
+import { SavedSessionResult } from '../dtos/session-results';
 import { FIGURE_PATH_COLORS } from '../colors';
 import { getShape } from '../shapes';
 import { getUniqueSessionConditions } from './session-filters';

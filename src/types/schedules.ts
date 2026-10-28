@@ -1,5 +1,5 @@
-import { KeySet } from './keyset';
-import { ApplicationSettingsTypes } from './settings';
+import { KeySet } from './keyset/core';
+import { ApplicationSettingsTypes } from './settings/application-settings';
 import { SessionTerminationOptions } from './terminations';
 
 /**

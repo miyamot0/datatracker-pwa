@@ -3,7 +3,7 @@ import Spreadsheet from 'react-spreadsheet';
 import { prepareDurationReliTable, prepareFrequencyReliTable } from '@/lib/reli';
 import BackButton from '@/components/ui/back-button';
 import { ReliabilityPairType } from '@/types/reli';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 
 type Props = {
   Group: string;

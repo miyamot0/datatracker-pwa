@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { PROCESSING_TEMPLATES, processMultipleSessionDataWithKeys } from '../calculations';
-import type { SavedSessionResult } from '../dtos';
+import type { SavedSessionResult } from '../dtos/session-results';
 import type { KeySet } from '@/types/keyset/core';
 import type { LogicState } from '../logic';
 

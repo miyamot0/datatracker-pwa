@@ -1,5 +1,5 @@
 import { ParsedLocation } from '@tanstack/react-router';
-import { TransitionSettingTypes } from './settings';
+import { TransitionSettingTypes } from './settings/display-settings';
 
 /**
  * Type for transition classes, which maps each `TransitionOptions` value to an array of corresponding CSS class names that should be applied to the view during the transition. This type is used to define the specific CSS classes that will be used to implement the visual effects associated with each transition option, allowing for a clear and organized way to manage the styling of transitions within the application.

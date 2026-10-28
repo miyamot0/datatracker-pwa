@@ -5,7 +5,7 @@ import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { FolderHandleContext } from '@/context/folder-context';
 import { DEFAULT_ENTRY, is_key_already_assigned, PROTECTED_KEY_ENTRIES } from '@/lib/keys';
 import { displayConditionalNotification } from '@/lib/notifications';
-import { KeySet, KeySetInstance } from '@/types/keyset';
+import { KeySet, KeySetInstance } from '@/types/keyset/core';
 import { PlusIcon } from 'lucide-react';
 import { createRef, useContext, useState } from 'react';
 

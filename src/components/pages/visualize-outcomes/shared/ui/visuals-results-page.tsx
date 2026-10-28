@@ -1,7 +1,7 @@
 import { type ComponentProps, type ComponentType, type ReactNode, useRef } from 'react';
 import type RateFigureVisualization from '@/components/pages/visualize-outcomes/rate/rate-figure';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { saveChartImage } from '@/components/pages/visualize-outcomes/shared/helpers/chart-export';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

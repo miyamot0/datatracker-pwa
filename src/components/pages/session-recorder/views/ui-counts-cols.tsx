@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ReactNode } from 'react';
-import { KeySetInstance } from '@/types/keyset';
+import { KeySetInstance } from '@/types/keyset/core';
 import { cn } from '@/lib/utils';
 import { KeyManageType } from '@/types/timing';
 

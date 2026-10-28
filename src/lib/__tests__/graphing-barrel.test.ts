@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SavedSessionResult } from '../dtos';
+import { SavedSessionResult } from '../dtos/session-results';
+import { SavedSettings } from '../dtos/session-settings';
 import { KeySet, KeySetInstance } from '@/types/keyset/core';
 import { ExpandedKeySetInstance } from '@/types/keyset/display';
 import { ModifiedSessionResult } from '@/types/storage';
@@ -32,17 +33,20 @@ import {
   filterSessionsByPrimaryRole,
   filterSessionsByReliabilityRole,
   getUniqueSessionConditions,
+} from '../graphing/session-filters';
+import {
   generateTicks,
-  generateChartPreparation,
-  extractAndDeduplicateKeysets,
-  mapKeysWithStoragePreference,
-  calculateSplitPoints,
   createChartLegends,
   getChartConfiguration,
   createNavigationHandler,
+} from '../graphing/chart-setup';
+import {
+  generateChartPreparation,
+  calculateSplitPoints,
   prepareRateDataUniversal,
   prepareProportionDataUniversal,
-} from '../graphing';
+} from '../graphing/data-preparation';
+import { extractAndDeduplicateKeysets, mapKeysWithStoragePreference } from '../graphing/keyset-utils';
 
 // Import the mocked functions for use in tests
 import { walkSessionFrequencyKey, walkSessionDurationKeyStateAware } from '@/lib/schedule-parser';

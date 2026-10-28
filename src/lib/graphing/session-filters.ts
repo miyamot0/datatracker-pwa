@@ -1,4 +1,4 @@
-import { SavedSessionResult } from '../dtos';
+import { SavedSessionResult } from '../dtos/session-results';
 
 /**
  * Filters session results to only include primary role sessions, sorted by session number
