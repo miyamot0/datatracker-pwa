@@ -19,7 +19,7 @@ import {
   setLocalShowTooltip,
 } from '@/lib/local_storage';
 import { type ToggleDisplayKey } from '@/types/visuals';
-import { visualsSettingsReducer, type PersistedVisualsSettings, type ScheduleOption } from './visuals-settings-reducer';
+import { visualsSettingsReducer, VisualsSettingsState, type PersistedVisualsSettings, type ScheduleOption } from './visuals-settings-reducer';
 
 export type VisualsSettingsOptions = {
   group: string;
