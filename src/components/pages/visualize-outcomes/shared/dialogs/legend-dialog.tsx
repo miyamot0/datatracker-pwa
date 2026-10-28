@@ -50,7 +50,7 @@ export function LegendDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md data-[state=open]:slide-in-from-left-0! data-[state=open]:slide-in-from-top-0! data-[state=closed]:slide-out-to-left-0! data-[state=closed]:slide-out-to-top-0! data-[state=open]:zoom-in-100! data-[state=closed]:zoom-out-100!">
         <DialogHeader>
           <DialogTitle>Legend Position and Layout</DialogTitle>
           <DialogDescription>
@@ -102,7 +102,7 @@ export function LegendDialog({
           </div>
 
           <div className="flex flex-row items-center justify-between gap-4">
-            <Label htmlFor={conditionId}>Show Condition Legend</Label>
+            <Label htmlFor={conditionId}>Conditions in Legend</Label>
             <Checkbox
               id={conditionId}
               checked={showConditionLegend}

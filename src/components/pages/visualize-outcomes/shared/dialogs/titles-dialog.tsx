@@ -52,7 +52,7 @@ export function TitlesDialog({ page, labels, onChange, showTitle, onShowTitleCha
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg data-[state=open]:slide-in-from-left-0! data-[state=open]:slide-in-from-top-0! data-[state=closed]:slide-out-to-left-0! data-[state=closed]:slide-out-to-top-0! data-[state=open]:zoom-in-100! data-[state=closed]:zoom-out-100!">
         <DialogHeader>
           <DialogTitle>Titles and Labels</DialogTitle>
           <DialogDescription>
