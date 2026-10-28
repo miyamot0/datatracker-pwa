@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { SavedSessionResult } from './dtos/session-results';
 import { ModifiedSessionResult } from '@/types/storage';
-import { KeySetInstanceSchema, LogicStateSchema, parseLenientList } from '@/lib/lenient-schemas';
+import { KeySetInstanceSchema, LogicStateSchema, parseKeepingUnmatchedList, parseLenientList } from '@/lib/lenient-schemas';
 
 // Only id and Name are required. Other fields are optional, and bad entries are dropped by parseLenientList.
 const KeySetFileSchema = z.looseObject({
@@ -77,7 +77,7 @@ export function deserializeKeySet(json: string): KeySet {
     DurationKeys: parseLenientList(keyset_json.DurationKeys, KeySetInstanceSchema),
     createdAt: new Date(keyset_json.createdAt ?? ''),
     lastModified: new Date(keyset_json.lastModified ?? ''),
-    DerivedKeys: parseLenientList(keyset_json.DerivedKeys, LogicStateSchema),
+    DerivedKeys: parseKeepingUnmatchedList(keyset_json.DerivedKeys, LogicStateSchema),
     SpecialDurationKeys: parseLenientList(keyset_json.SpecialDurationKeys, KeySetInstanceSchema),
     ScorableDurationKeys: parseLenientList(keyset_json.ScorableDurationKeys, KeySetInstanceSchema),
   };

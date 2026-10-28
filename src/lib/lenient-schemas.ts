@@ -24,15 +24,43 @@ export function parseLenientList<T>(value: unknown, itemSchema: z.ZodType<T>): T
   return items;
 }
 
+/**
+ * Like parseLenientList, but keeps entries that fail the schema as-is (with a warning) instead of dropping them.
+ * Use where the file is rewritten on save, so unmatched entries are not deleted from the user's data.
+ * Callers must handle the unmatched entries, which are not guaranteed to match T.
+ */
+export function parseKeepingUnmatchedList<T>(value: unknown, itemSchema: z.ZodType<T>): T[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.map((entry) => {
+    const parsed = itemSchema.safeParse(entry);
+
+    if (parsed.success) {
+      return parsed.data;
+    }
+
+    console.warn('Keeping entry that does not match the expected shape', parsed.error.issues);
+    return entry as T;
+  });
+}
+
 export const KeySetInstanceSchema = z.looseObject({
   KeyName: z.string(),
   KeyDescription: z.string().catch(''),
   KeyCode: z.number(),
 });
 
+// A key entry as stored inside DerivedKeys (see KeySetLogical), including the computed Value and Tag.
+const KeySetLogicalSchema = KeySetInstanceSchema.extend({
+  Value: z.number(),
+  Tag: z.string(),
+});
+
 const ValueSourceSchema = z.union([
   z.looseObject({ type: z.literal('constant'), value: z.number() }),
-  z.looseObject({ type: z.literal('field'), field: z.looseObject({}) }),
+  z.looseObject({ type: z.literal('field'), field: KeySetLogicalSchema }),
 ]);
 
 const LogicalStepSchema = z.looseObject({
@@ -47,6 +75,6 @@ export const LogicStateSchema: z.ZodType<LogicState> = z.looseObject({
   name: z.string(),
   value: z.number(),
   initial: ValueSourceSchema,
-  fields: z.array(z.looseObject({})),
+  fields: z.array(KeySetLogicalSchema),
   steps: z.array(LogicalStepSchema),
 });

@@ -1,5 +1,7 @@
 import { KeySet, KeySetInstance } from '../../types/keyset/core';
 import { v4 as uuidv4 } from 'uuid';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { createNewKeySet, deserializeKeySet, serializeKeySet } from '../keyset';
 import { SavedSessionResult } from '../dtos/session-results';
 import { SavedSettings } from '../dtos/session-settings';
@@ -204,7 +206,7 @@ describe('KeySet Functions', () => {
       expect(result.DerivedKeys).toEqual([derived]);
     });
 
-    it('should keep valid DerivedKeys and drop malformed ones', () => {
+    it('should keep valid DerivedKeys and keep malformed ones unchanged', () => {
       const validDerived = {
         id: 'derived-1',
         name: 'Derived',
@@ -213,15 +215,51 @@ describe('KeySet Functions', () => {
         fields: [],
         steps: [],
       };
+      const malformed = { id: 'missing-fields' };
       const json = JSON.stringify({
         id: 'test-id',
         Name: 'Test KeySet',
-        DerivedKeys: [validDerived, { id: 'missing-fields' }, 'junk'],
+        DerivedKeys: [validDerived, malformed, 'junk'],
       });
 
       const result = deserializeKeySet(json);
 
-      expect(result.DerivedKeys).toEqual([validDerived]);
+      expect(result.DerivedKeys).toEqual([validDerived, malformed, 'junk']);
+    });
+
+    it('should keep a DerivedKey whose field entry lacks Value or Tag, so saving does not delete it', () => {
+      const field = { KeyName: 'A', KeyDescription: 'Key A', KeyCode: 65, Value: 1, Tag: 'field.Key A' };
+      const { Tag: _tag, ...fieldWithoutTag } = field;
+      const base = {
+        id: 'derived-3',
+        name: 'Derived',
+        value: 0,
+        initial: { type: 'field', field },
+        fields: [field],
+        steps: [],
+      };
+      const unmatched = { ...base, fields: [fieldWithoutTag] };
+
+      const result = deserializeKeySet(
+        JSON.stringify({ id: 'test-id', Name: 'Test KeySet', DerivedKeys: [unmatched] })
+      );
+
+      expect(result.DerivedKeys).toEqual([unmatched]);
+    });
+
+    it('should load the demo DerivedKeys without dropping any entries', () => {
+      const demoPath = resolve(process.cwd(), 'src/assets/data/Evaluation Study/Participant 001/FC Treatment Evaluation.json');
+      const demo = JSON.parse(readFileSync(demoPath, 'utf8'));
+
+      const result = deserializeKeySet(JSON.stringify(demo));
+
+      expect(result.DerivedKeys).toHaveLength(2);
+      expect(result.DerivedKeys).toEqual(demo.DerivedKeys);
+      expect(result.DerivedKeys.map((d) => d.name)).toEqual(['CTB', 'Comply PCT']);
+      expect(result.DerivedKeys[1].steps.map((s) => [s.operation, s.operand.type])).toEqual([
+        ['divide', 'field'],
+        ['multiply', 'constant'],
+      ]);
     });
 
     it('should handle date parsing errors gracefully', () => {

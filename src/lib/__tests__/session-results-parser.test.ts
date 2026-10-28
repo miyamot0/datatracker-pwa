@@ -3,7 +3,7 @@ import { parseSavedSessionResult } from '../dtos/session-results';
 
 const validResult = () => ({
   Keyset: { id: 'ks', Name: 'KeySet' },
-  SessionSettings: { Session: '2024-01-01' },
+  SessionSettings: { Session: 2 },
   SystemKeyPresses: [{ KeyName: 'A', KeyCode: 65 }],
   FrequencyKeyPresses: [],
   DurationKeyPresses: [],
@@ -41,6 +41,19 @@ describe('parseSavedSessionResult', () => {
     expect(parseSavedSessionResult(noKeyset)).toBeNull();
     expect(parseSavedSessionResult({ ...validResult(), SessionSettings: 'bad' })).toBeNull();
     expect(parseSavedSessionResult({ ...validResult(), Keyset: 42 })).toBeNull();
+  });
+
+  it('keeps the numeric session number from SessionSettings', () => {
+    const result = parseSavedSessionResult({ ...validResult(), SessionSettings: { Session: 12, KeySet: 'x' } });
+
+    expect(result?.SessionSettings.Session).toBe(12);
+    expect(result?.SessionSettings).toMatchObject({ KeySet: 'x' });
+  });
+
+  it('returns null when Session is missing or not a number', () => {
+    expect(parseSavedSessionResult({ ...validResult(), SessionSettings: {} })).toBeNull();
+    expect(parseSavedSessionResult({ ...validResult(), SessionSettings: { Session: '2024-01-01' } })).toBeNull();
+    expect(parseSavedSessionResult({ ...validResult(), SessionSettings: { Session: null } })).toBeNull();
   });
 
   it('drops malformed key press entries individually and keeps valid ones', () => {

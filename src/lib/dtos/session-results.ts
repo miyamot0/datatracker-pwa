@@ -30,10 +30,11 @@ const KeyPressSchema = z.looseObject({
   KeyCode: z.number(),
 });
 
-// SessionSettings and Keyset must be objects; their contents are checked by their own readers.
-// Other fields fall back to a neutral value on their own, so one bad field does not discard the session.
+// Session is the session number used for ordering; it has no safe fallback, so a non-number rejects the file.
+// Keyset contents are checked by the keyset reader. Other fields fall back to a neutral value on their own,
+// so one bad field does not discard the session.
 const SavedSessionResultSchema = z.looseObject({
-  SessionSettings: z.looseObject({}),
+  SessionSettings: z.looseObject({ Session: z.number() }),
   Keyset: z.looseObject({}),
   SystemKeyPresses: z.unknown(),
   FrequencyKeyPresses: z.unknown(),
