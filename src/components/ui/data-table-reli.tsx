@@ -19,6 +19,7 @@ import { Button } from './button';
 import { RefreshCcw, X } from 'lucide-react';
 import { Badge } from './badge';
 import { DataTableViewOptions } from './data-table-column-visibility';
+import { DataTableTypeFilter } from './data-table-type-filter';
 import { SyncEntryTableRow } from '@/types/sync';
 
 interface DataTableProps<TData, TValue> {
@@ -53,7 +54,6 @@ export function ReliabilityDataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     condition: false,
-    type: false,
   });
   const [rowSelection, setRowSelection] = useState({});
 
@@ -138,6 +138,7 @@ export function ReliabilityDataTable<TData, TValue>({
             {optionalButtons}
           </div>
 
+          <DataTableTypeFilter table={table} />
           <DataTableViewOptions table={table} />
         </div>
       </div>

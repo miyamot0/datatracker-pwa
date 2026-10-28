@@ -258,6 +258,17 @@ describe('Sync Utilities', () => {
   });
 
   describe('iterativeRead', () => {
+    it('should skip .DS_Store files and folders', async () => {
+      const pathArray: string[] = [];
+      const mockDsStore = createMockFileHandle('.DS_Store');
+      const mockDsFolder = createMockDirectoryHandle('.DS_Store', [createMockFileHandle('inner.json')]);
+      const mockDir = createMockDirectoryHandle('maindir', [mockDsStore, mockDsFolder, createMockFileHandle('a.json')]);
+
+      await iterativeRead(mockDir, '/maindir', pathArray);
+
+      expect(pathArray).toEqual(['/maindir/a.json']);
+    });
+
     it('should add file paths to array for file entries', async () => {
       const pathArray: string[] = [];
       const mockFile = createMockFileHandle('test.txt');
@@ -449,6 +460,17 @@ describe('Sync Utilities', () => {
     it('should classify depth-4 non-settings files as session_outcome', () => {
       expect(classifySyncFileType(['Group', 'Individual', 'Evaluation', 'data.json'])).toBe('session_outcome');
       expect(classifySyncFileType(['Group', 'Individual', 'Evaluation', 'other.json'])).toBe('session_outcome');
+    });
+
+    it('should classify depth-4 styles.json as figure_styles', () => {
+      expect(classifySyncFileType(['Group', 'Individual', 'Evaluation', 'styles.json'])).toBe('figure_styles');
+      expect(classifySyncFileType(['Group', 'Individual', 'Evaluation', 'Styles.JSON'])).toBe('figure_styles');
+    });
+
+    it('should classify depth-5 styles.json as session_outcome', () => {
+      expect(classifySyncFileType(['Group', 'Individual', 'Evaluation', 'Condition', 'styles.json'])).toBe(
+        'session_outcome',
+      );
     });
 
     it('should classify depth-5 paths as session_outcome', () => {

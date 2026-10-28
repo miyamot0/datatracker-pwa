@@ -36,6 +36,7 @@ async function iterativeRead(
   pathArray: string[],
   processedCount: { count: number },
 ): Promise<void> {
+  if (entry.name === '.DS_Store') return;
   if (entry.kind === 'file') {
     pathArray.push(path);
   } else if (entry.kind === 'directory') {
@@ -63,6 +64,7 @@ async function listFilesInDirectory(handle: FileSystemDirectoryHandle): Promise<
     const entries = handle.values();
 
     for await (const entry of entries) {
+      if (entry.name === '.DS_Store') continue;
       if (entry.kind === 'file') {
         // Handle root-level files
         pathArray.push(`/${entry.name}`);

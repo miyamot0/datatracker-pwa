@@ -42,7 +42,7 @@ Users may click **Reset to Defaults** to turn off all three overrides and clear 
 
 ### Exporting Figures
 
-Once the legend, title, and labels are set, the figure can be saved from the **File** menu. Click **File**, then **Figure Output**, and choose one of the two formats:
+Once the legend, title, and labels are set, the figure can be saved from the **File** menu. To keep these settings for later or for another machine, write them to a style file as described in [Saving, Loading, and Deleting Style Files](/documentation/021-styles_file). Click **File**, then **Figure Output**, and choose one of the two formats:
 
 - **Save to SVG:** Saves the figure as a vector image. Lines, text, and the legend stay sharp at any size, so SVG is the better choice for a figure that will be resized, edited in a drawing program, or printed at a large size.
 - **Save to PNG:** Saves the figure as a raster image at twice its on-screen size, on a white background. PNG is the better choice for pasting into a document or presentation where a single bitmap is expected.

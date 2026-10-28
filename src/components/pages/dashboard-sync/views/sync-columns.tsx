@@ -67,6 +67,7 @@ export const syncColumns: ColumnDef<SyncEntryTableRow>[] = [
           className={cn('', {
             'bg-blue-600 hover:bg-blue-400 dark:text-white': value === 'keyset',
             'bg-teal-600 hover:bg-teal-400 dark:text-white': value === 'session_parameters',
+            'bg-purple-600 hover:bg-purple-400 dark:text-white': value === 'figure_styles',
             'bg-amber-600 hover:bg-amber-400 dark:text-white': value === 'session_outcome',
           })}
         >

@@ -10,7 +10,7 @@ export interface SyncEntryTableRow {
 /**
  * Categorization of a synced file based on its path structure
  */
-export type SyncFileType = 'session_outcome' | 'session_parameters' | 'keyset';
+export type SyncFileType = 'session_outcome' | 'session_parameters' | 'figure_styles' | 'keyset';
 
 /**
  * A file entry returned from directory listing with parsed path segments
