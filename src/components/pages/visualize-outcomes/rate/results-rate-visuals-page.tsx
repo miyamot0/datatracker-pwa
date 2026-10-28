@@ -8,7 +8,7 @@ import {
   VisualsResultsPage,
   type VisualsPageConfig,
   type VisualsResultsPageProps,
-} from '@/components/pages/visualize-outcomes/shared/visuals-results-page';
+} from '@/components/pages/visualize-outcomes/shared/ui/visuals-results-page';
 
 const RATE_CONFIG: VisualsPageConfig = {
   page: 'rate',

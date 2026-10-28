@@ -29,14 +29,14 @@ import {
 } from '@/components/ui/menubar';
 import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import { type SeriesStyles, type TextPage } from '@/lib/graphing/series-style';
-import type { ChartImageFormat } from '@/components/pages/visualize-outcomes/shared/chart-export';
-import type { VisualsSettingsAction, VisualsSettingsState } from './visuals-settings-reducer';
-import { AimLinesDialog } from './dialogs/aim-lines-dialog';
-import { PhaseChangesDialog } from './dialogs/phase-changes-dialog';
-import { SeriesStylesDialog } from './dialogs/series-styles-dialog';
-import { TextAnnotationsDialog } from './dialogs/text-annotations-dialog';
-import { TitlesDialog } from './dialogs/titles-dialog';
-import { LegendDialog } from './dialogs/legend-dialog';
+import type { ChartImageFormat } from '@/components/pages/visualize-outcomes/shared/helpers/chart-export';
+import type { VisualsSettingsAction, VisualsSettingsState } from '../helpers/visuals-settings-reducer';
+import { AimLinesDialog } from '../dialogs/aim-lines-dialog';
+import { PhaseChangesDialog } from '../dialogs/phase-changes-dialog';
+import { SeriesStylesDialog } from '../dialogs/series-styles-dialog';
+import { TextAnnotationsDialog } from '../dialogs/text-annotations-dialog';
+import { TitlesDialog } from '../dialogs/titles-dialog';
+import { LegendDialog } from '../dialogs/legend-dialog';
 import { type FigureLabelSettings } from '@/lib/graphing/figure-labels';
 import { type LegendSettings } from '@/lib/graphing/legend-settings';
 

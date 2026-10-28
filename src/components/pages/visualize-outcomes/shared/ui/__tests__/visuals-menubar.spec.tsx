@@ -7,8 +7,8 @@ import { EMPTY_SERIES_STYLES } from '@/lib/graphing/series-style';
 import { EMPTY_FIGURE_LABEL_SETTINGS } from '@/lib/graphing/figure-labels';
 import { DEFAULT_LEGEND_SETTINGS } from '@/lib/graphing/legend-settings';
 import type { ToggleDisplayCondition, ToggleDisplayKey } from '@/types/visuals';
-import type { ChartImageFormat } from '@/components/pages/visualize-outcomes/shared/chart-export';
-import type { VisualsSettingsState } from '../visuals-settings-reducer';
+import type { ChartImageFormat } from '@/components/pages/visualize-outcomes/shared/helpers/chart-export';
+import type { VisualsSettingsState } from '../../helpers/visuals-settings-reducer';
 
 const keys: ToggleDisplayKey[] = [
   { KeyName: 'a', KeyCode: 1, KeyDescription: 'Key A', KeyType: 'Observed', Visible: true },

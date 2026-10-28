@@ -45,11 +45,11 @@ import {
   LEGEND_CHART_POSITIONS,
   type LegendSettings,
 } from '@/lib/graphing/legend-settings';
-import { AxisSpanLines } from './annotations/axis-span-lines';
-import { TextAnnotationsLayer } from './annotations/text-annotations-layer';
-import { AimLinesLayer } from './annotations/aim-lines-layer';
-import { ChartTitle } from './chart-title';
-import { XAxisLabel } from './x-axis-label';
+import { AxisSpanLines } from '../annotations/axis-span-lines';
+import { TextAnnotationsLayer } from '../annotations/text-annotations-layer';
+import { AimLinesLayer } from '../annotations/aim-lines-layer';
+import { ChartTitle } from '../elements/chart-title';
+import { XAxisLabel } from '../elements/x-axis-label';
 
 /** Width reserved for the Y axis, which sets where the plot area's left edge sits */
 const Y_AXIS_WIDTH = 60;

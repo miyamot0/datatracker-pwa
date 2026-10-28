@@ -53,7 +53,7 @@ vi.mock('@/lib/shapes', () => ({
 
 import '@/styles/globals.css';
 import { BaseChart } from '../base-chart';
-import { ProportionTooltip } from '../../proportion/proportion-elements';
+import { ProportionTooltip } from '../../../proportion/proportion-elements';
 
 const legendItems = [
   { id: 'Baseline', type: 'circle' as const, value: 'Baseline', color: '#ff0000' },

@@ -6,7 +6,7 @@ import { ExpandedKeySetInstance, KeySet } from '@/types/keyset';
 import { generateTicks, createChartLegends, createNavigationHandler } from '@/lib/graphing/chart-setup';
 import { prepareRateDataUniversal } from '@/lib/graphing/data-preparation';
 import { SessionTerminationOptionsType } from '@/types/terminations';
-import { BaseChart } from '@/components/pages/visualize-outcomes/shared/base-chart';
+import { BaseChart } from '@/components/pages/visualize-outcomes/shared/ui/base-chart';
 import { RateTooltip } from './rate-elements';
 import { processMultipleSessionDataWithKeys } from '@/lib/calculations';
 import { convertLegacyTimerType } from '@/lib/calculations/calculation-helpers';

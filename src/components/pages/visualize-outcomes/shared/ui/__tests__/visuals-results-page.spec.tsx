@@ -1,0 +1,247 @@
+import { render } from 'vitest-browser-react';
+import { page } from 'vitest/browser';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const mockFigure = vi.hoisted(() => vi.fn());
+const mockMenubar = vi.hoisted(() => vi.fn());
+const mockFilteredSessionScoringOptions = vi.hoisted(() => vi.fn());
+const mockGetLocalShowDescription = vi.hoisted(() => vi.fn(() => true));
+
+vi.mock('@/lib/local_storage', () => ({
+  setLocalCachedPrefs: vi.fn(),
+  getLocalConnectSpans: vi.fn(() => false),
+  setLocalConnectSpans: vi.fn(),
+  getLocalFigureLabels: vi.fn(() => ({
+    overrideTitle: false,
+    titleText: '',
+    overrideXAxis: false,
+    xAxisText: '',
+    overrideYAxis: false,
+    yAxisText: '',
+  })),
+  setLocalFigureLabels: vi.fn(),
+  getLocalLegendSettings: vi.fn(() => ({ position: 'below', layout: 'horizontal' })),
+  setLocalLegendSettings: vi.fn(),
+  getLocalSeriesStyles: vi.fn(() => ({ KeyStyles: {}, ConditionStyles: {} })),
+  setLocalSeriesStyles: vi.fn(),
+  getLocalShowTitle: vi.fn(() => true),
+  setLocalShowTitle: vi.fn(),
+  getLocalShowTooltip: vi.fn(() => true),
+  setLocalShowTooltip: vi.fn(),
+  getLocalShowConditionLegend: vi.fn(() => true),
+  setLocalShowConditionLegend: vi.fn(),
+  getLocalShowDescription: mockGetLocalShowDescription,
+  setLocalShowDescription: vi.fn(),
+}));
+
+vi.mock('@/types/schedules', () => ({
+  ScheduleMappingOptions: [
+    { value: 'End on Primary Timer', label: 'Score Total Time' },
+    { value: 'End on Timer #1', label: 'Score Timer #1 Time' },
+  ],
+  filteredSessionScoringOptions: mockFilteredSessionScoringOptions,
+}));
+
+vi.mock('@/components/ui/select', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/components/ui/select')>();
+  return {
+    ...actual,
+    Select: ({ value, onValueChange, children }: any) => (
+      <div>
+        <div data-testid="schedule-value">{String(value)}</div>
+        <button onClick={() => onValueChange('End on Timer #1')}>Set Fixed Schedule</button>
+        <button onClick={() => onValueChange('Score by Special')}>Set Special Schedule</button>
+        <button onClick={() => onValueChange('Unknown Value')}>Set Unknown Schedule</button>
+        {children}
+      </div>
+    ),
+    SelectTrigger: ({ children }: any) => <div>{children}</div>,
+    SelectValue: ({ placeholder }: any) => <span>{placeholder}</span>,
+    SelectContent: ({ children }: any) => <div>{children}</div>,
+    SelectGroup: ({ children }: any) => <div>{children}</div>,
+    SelectItem: ({ children, value }: any) => <div data-value={value}>{children}</div>,
+  };
+});
+
+vi.mock('../visuals-menubar', () => ({
+  VisualsMenubar: (props: any) => {
+    mockMenubar(props);
+    return <div data-testid="menubar" />;
+  },
+}));
+
+import { VisualsResultsPage } from '../visuals-results-page';
+
+const MockFigure = (props: any) => {
+  mockFigure(props);
+  return <div data-testid="figure">figure</div>;
+};
+
+const config = {
+  page: 'rate',
+  plot: 'Rate',
+  prefsType: 'Rate',
+  title: 'Rate Title',
+  includeScoringInSchedule: true,
+  Figure: MockFigure,
+} as const;
+
+const makeProps = (override?: Record<string, unknown>) =>
+  ({
+    config,
+    actions: <button>Export Data</button>,
+    description: 'Description text',
+    Group: 'GroupA',
+    Individual: 'ClientB',
+    Evaluation: 'Eval1',
+    Conditions: ['Baseline', 'Treatment'],
+    ShowKeys: [
+      { KeyDescription: 'Derived Metric', KeyName: 'd', KeyType: 'Derived', Visible: true },
+      { KeyDescription: 'Aggression', KeyName: 'a', KeyType: 'Observed', Visible: true },
+    ],
+    DynamicKeySet: {
+      Name: 'KeysetA',
+      FrequencyKeys: [],
+      DurationKeys: [],
+      DerivedKeys: [],
+      SpecialDurationKeys: [],
+      ScorableDurationKeys: [],
+    },
+    ResultsFiltered: [
+      { SessionSettings: { Condition: 'Treatment' } },
+      { SessionSettings: { Condition: 'Baseline' } },
+    ],
+    TimerMapping: { value: 'End on Primary Timer', label: 'Score Total Time' },
+    MinX: 1,
+    MaxX: 10,
+    Settings: { TimerTwoDisplay: 'show', TimerThreeDisplay: 'hide' },
+    ...override,
+  }) as any;
+
+const renderPage = (override?: Record<string, unknown>) => render(<VisualsResultsPage {...makeProps(override)} />);
+
+const lastFigureProps = () => mockFigure.mock.lastCall?.[0];
+const lastMenubarProps = () => mockMenubar.mock.lastCall?.[0];
+
+describe('VisualsResultsPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetLocalShowDescription.mockReturnValue(true);
+    mockFilteredSessionScoringOptions.mockReturnValue([
+      { value: 'End on Primary Timer', label: 'Score Total Time' },
+      { value: 'End on Timer #1', label: 'Score Timer #1 Time' },
+      { value: 'Score by Special', label: 'Special Key' },
+    ]);
+  });
+
+  describe('header', () => {
+    it('renders the config title, the actions slot, and the description', async () => {
+      renderPage();
+
+      await expect.element(page.getByText('Rate Title')).toBeVisible();
+      await expect.element(page.getByRole('button', { name: 'Export Data' })).toBeVisible();
+      await expect.element(page.getByText('Description text')).toBeVisible();
+    });
+
+    it('omits the description when showDescription is false', async () => {
+      mockGetLocalShowDescription.mockReturnValue(false);
+      renderPage();
+
+      await expect.element(page.getByText('Rate Title')).toBeVisible();
+      await expect.element(page.getByText('Description text')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('schedule select', () => {
+    it('shows the default timer from TimerMapping', async () => {
+      renderPage();
+
+      await expect.element(page.getByTestId('schedule-value')).toHaveTextContent('End on Primary Timer');
+      expect(lastFigureProps().ScheduleOption).toBe('End on Primary Timer');
+    });
+
+    it('passes a fixed schedule change through to the figure', async () => {
+      renderPage();
+
+      await page.getByRole('button', { name: 'Set Fixed Schedule' }).click();
+
+      await expect.element(page.getByTestId('schedule-value')).toHaveTextContent('End on Timer #1');
+      expect(lastFigureProps().ScheduleOption).toBe('End on Timer #1');
+    });
+
+    it('passes a special-key schedule change through to the figure', async () => {
+      renderPage();
+
+      await page.getByRole('button', { name: 'Set Special Schedule' }).click();
+
+      await expect.element(page.getByTestId('schedule-value')).toHaveTextContent('Score by Special');
+      expect(lastFigureProps().ScheduleOption).toBe('Score by Special');
+    });
+
+    it('ignores a value that matches neither option list', async () => {
+      renderPage();
+
+      await page.getByRole('button', { name: 'Set Unknown Schedule' }).click();
+
+      expect(lastFigureProps().ScheduleOption).toBe('End on Primary Timer');
+    });
+
+    it('requests scoring options only when includeScoringInSchedule is set', async () => {
+      renderPage();
+      await expect.element(page.getByTestId('schedule-value')).toBeInTheDocument();
+      expect(mockFilteredSessionScoringOptions).toHaveBeenCalledWith(expect.anything(), expect.anything(), true, true);
+    });
+
+    it('omits scoring options from the timer list when includeScoringInSchedule is not set', async () => {
+      renderPage({ config: { ...config, includeScoringInSchedule: false } });
+      await expect.element(page.getByTestId('schedule-value')).toBeInTheDocument();
+      expect(mockFilteredSessionScoringOptions).toHaveBeenCalledWith(expect.anything(), expect.anything(), true, false);
+    });
+  });
+
+  describe('menubar wiring', () => {
+    it('orders style conditions by legend appearance, then any remaining configured conditions', async () => {
+      renderPage({
+        Conditions: ['Baseline', 'Treatment', 'Unused'],
+        ResultsFiltered: [{ SessionSettings: { Condition: 'Treatment' } }],
+      });
+
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+      expect(lastMenubarProps().styleConditions).toEqual(['Treatment', 'Baseline', 'Unused']);
+    });
+
+    it('passes the page key and only visible conditions', async () => {
+      renderPage();
+
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+      const props = lastMenubarProps();
+      expect(props.page).toBe('rate');
+      expect(props.visibleStyleConditions).toEqual(props.styleConditions);
+      expect(typeof props.onSaveImage).toBe('function');
+    });
+  });
+
+  describe('figure', () => {
+    it('renders the figure with the page inputs when a DynamicKeySet is provided', async () => {
+      renderPage();
+
+      await expect.element(page.getByTestId('figure')).toBeInTheDocument();
+      const props = lastFigureProps();
+      expect(props.Group).toBe('GroupA');
+      expect(props.Individual).toBe('ClientB');
+      expect(props.Evaluation).toBe('Eval1');
+      expect(props.MinX).toBe(1);
+      expect(props.MaxX).toBe(10);
+      expect(props.KeySetFull).toHaveLength(2);
+      expect(props.FilteredSessions).toHaveLength(2);
+    });
+
+    it('does not render the figure without a DynamicKeySet', async () => {
+      renderPage({ DynamicKeySet: undefined });
+
+      await expect.element(page.getByText('Rate Title')).toBeVisible();
+      await expect.element(page.getByTestId('figure')).not.toBeInTheDocument();
+      expect(mockFigure).not.toHaveBeenCalled();
+    });
+  });
+});

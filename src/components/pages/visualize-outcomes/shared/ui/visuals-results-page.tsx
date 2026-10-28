@@ -2,11 +2,11 @@ import { type ComponentProps, type ComponentType, type ReactNode, useRef } from 
 import type RateFigureVisualization from '@/components/pages/visualize-outcomes/rate/rate-figure';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { KeySet } from '@/types/keyset';
-import { saveChartImage } from '@/components/pages/visualize-outcomes/shared/chart-export';
+import { saveChartImage } from '@/components/pages/visualize-outcomes/shared/helpers/chart-export';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { VisualsMenubar } from '@/components/pages/visualize-outcomes/shared/visuals-menubar';
-import { useVisualsSettings } from '@/components/pages/visualize-outcomes/shared/use-visuals-settings';
+import { VisualsMenubar } from '@/components/pages/visualize-outcomes/shared/ui/visuals-menubar';
+import { useVisualsSettings } from '@/components/pages/visualize-outcomes/shared/helpers/use-visuals-settings';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';

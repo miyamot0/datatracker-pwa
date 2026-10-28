@@ -20,7 +20,7 @@ const mockBaseChart = vi.hoisted(() => vi.fn());
 
 // ----- Module mocks -----
 
-vi.mock('@/components/pages/visualize-outcomes/shared/base-chart', () => ({
+vi.mock('@/components/pages/visualize-outcomes/shared/ui/base-chart', () => ({
   BaseChart: (props: any) => {
     mockBaseChart(props);
     return (
