@@ -54,16 +54,14 @@ type Props = {
 };
 
 /**
- * Parses a typed coordinate. Returns undefined when the text is not a finite number.
+ * Parses a typed coordinate. Returns undefined when the text is empty.
  */
 function parseCoordinate(text: string): number | undefined {
   if (text.trim() === '') {
     return undefined;
   }
 
-  const value = Number(text);
-
-  return Number.isFinite(value) ? value : undefined;
+  return Number(text);
 }
 
 /**

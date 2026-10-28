@@ -99,6 +99,38 @@ describe('buildChartSvg', () => {
 });
 
 describe('svgToPngDataUrl', () => {
+  it('skips legend items that have no icon or label', () => {
+    const root = createChartRoot();
+    root
+      .querySelector('.recharts-default-legend')!
+      .insertAdjacentHTML('beforeend', '<li class="recharts-legend-item"><span>Plain</span></li>');
+
+    const doc = parseSvg(buildChartSvg(root)!.svg);
+    root.remove();
+
+    expect(doc.querySelectorAll('text')).toHaveLength(1);
+    expect(doc.textContent).not.toContain('Plain');
+  });
+
+  it('rejects when the canvas has no 2d context', async () => {
+    const root = createChartRoot();
+    const chart = buildChartSvg(root)!;
+    root.remove();
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null as never);
+
+    try {
+      await expect(svgToPngDataUrl(chart)).rejects.toThrow('Canvas 2D context is unavailable');
+    } finally {
+      getContext.mockRestore();
+    }
+  });
+
+  it('rejects when the svg cannot be decoded as an image', async () => {
+    await expect(svgToPngDataUrl({ svg: 'not an svg', width: 10, height: 10 })).rejects.toThrow(
+      'Failed to rasterize chart SVG',
+    );
+  });
+
   it('rasterizes the svg to a png at the requested scale', async () => {
     const root = createChartRoot();
     const chart = buildChartSvg(root)!;
@@ -149,6 +181,12 @@ describe('saveChartImage', () => {
     expect(downloads).toHaveLength(1);
     expect(downloads[0].download).toBe('figure.png');
     expect(downloads[0].href.startsWith('data:image/png;base64,')).toBe(true);
+  });
+
+  it('does nothing when the chart surface is missing', async () => {
+    await saveChartImage(document.createElement('div'), 'png', 'figure.png');
+
+    expect(downloads).toHaveLength(0);
   });
 
   it('does nothing when the container is missing', async () => {

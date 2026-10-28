@@ -57,6 +57,38 @@ describe('ChartLegendContent', () => {
     expect(style.stroke).not.toBe('rgb(0, 0, 0)');
   });
 
+  it('stacks items in a column with spacing below each item for the vertical layout', async () => {
+    await render(<ChartLegendContent payload={[conditionEntry, keyEntry]} layout="vertical" />);
+
+    const list = document.querySelector<HTMLElement>('.recharts-default-legend')!;
+    const item = document.querySelector<HTMLElement>('.recharts-legend-item')!;
+    expect(getComputedStyle(list).flexDirection).toBe('column');
+    expect(getComputedStyle(list).flexWrap).toBe('nowrap');
+    expect(getComputedStyle(item).marginBottom).toBe('4px');
+    expect(getComputedStyle(item).marginRight).toBe('0px');
+  });
+
+  it('aligns vertical items to the start when requested', async () => {
+    await render(<ChartLegendContent payload={[conditionEntry]} layout="vertical" align="start" />);
+
+    const list = document.querySelector<HTMLElement>('.recharts-default-legend')!;
+    expect(getComputedStyle(list).alignItems).toBe('flex-start');
+    expect(getComputedStyle(list).justifyContent).toBe('flex-start');
+    expect(getComputedStyle(list).textAlign).toBe('start');
+  });
+
+  it('runs items across in a centered row with spacing to the right by default', async () => {
+    await render(<ChartLegendContent payload={[conditionEntry, keyEntry]} />);
+
+    const list = document.querySelector<HTMLElement>('.recharts-default-legend')!;
+    const item = document.querySelector<HTMLElement>('.recharts-legend-item')!;
+    expect(getComputedStyle(list).flexDirection).toBe('row');
+    expect(getComputedStyle(list).justifyContent).toBe('center');
+    expect(getComputedStyle(list).alignItems).toBe('center');
+    expect(getComputedStyle(item).marginRight).toBe('10px');
+    expect(getComputedStyle(item).marginBottom).toBe('0px');
+  });
+
   it('labels each icon with its entry value for accessibility', async () => {
     await render(<ChartLegendContent payload={[conditionEntry, keyEntry]} />);
 

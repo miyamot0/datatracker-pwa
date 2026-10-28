@@ -88,7 +88,7 @@ export function VisualsMenubar({
   } = settings;
   const [activeDialog, setActiveDialog] = useState<AnnotationDialog | null>(null);
 
-  const dialogOpenChange = (dialog: AnnotationDialog) => (next: boolean) => setActiveDialog(next ? dialog : null);
+  const closeDialog = () => setActiveDialog(null);
   const onStylesChange = (next: SeriesStyles) => dispatch({ type: 'seriesStylesChanged', styles: next });
   const onFigureLabelsChange = (labels: FigureLabelSettings) => dispatch({ type: 'figureLabelsChanged', labels });
   const onLegendSettingsChange = (next: LegendSettings) => dispatch({ type: 'legendSettingsChanged', settings: next });
@@ -292,27 +292,27 @@ export function VisualsMenubar({
         styles={styles}
         onChange={onStylesChange}
         open={activeDialog === 'series-styles'}
-        onOpenChange={dialogOpenChange('series-styles')}
+        onOpenChange={closeDialog}
       />
       <PhaseChangesDialog
         styles={styles}
         onChange={onStylesChange}
         open={activeDialog === 'phase-changes'}
-        onOpenChange={dialogOpenChange('phase-changes')}
+        onOpenChange={closeDialog}
       />
       <TextAnnotationsDialog
         page={page}
         styles={styles}
         onChange={onStylesChange}
         open={activeDialog === 'text-annotations'}
-        onOpenChange={dialogOpenChange('text-annotations')}
+        onOpenChange={closeDialog}
       />
       <AimLinesDialog
         page={page}
         styles={styles}
         onChange={onStylesChange}
         open={activeDialog === 'aim-lines'}
-        onOpenChange={dialogOpenChange('aim-lines')}
+        onOpenChange={closeDialog}
       />
       <TitlesDialog
         page={page}
@@ -321,7 +321,7 @@ export function VisualsMenubar({
         showTitle={showTitle}
         onShowTitleChange={onShowTitleChange}
         open={activeDialog === 'titles'}
-        onOpenChange={dialogOpenChange('titles')}
+        onOpenChange={closeDialog}
       />
       <LegendDialog
         settings={legendSettings}
@@ -329,7 +329,7 @@ export function VisualsMenubar({
         showConditionLegend={showConditionLegend}
         onShowConditionLegendChange={onShowConditionLegendChange}
         open={activeDialog === 'legend'}
-        onOpenChange={dialogOpenChange('legend')}
+        onOpenChange={closeDialog}
       />
     </Menubar>
   );

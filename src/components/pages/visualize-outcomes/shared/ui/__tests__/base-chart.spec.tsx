@@ -53,6 +53,7 @@ vi.mock('@/lib/shapes', () => ({
 
 import '@/styles/globals.css';
 import { BaseChart } from '../base-chart';
+import { EMPTY_SERIES_STYLES } from '@/lib/graphing/series-style';
 import { ProportionTooltip } from '../../../proportion/proportion-elements';
 
 const legendItems = [
@@ -202,6 +203,50 @@ describe('BaseChart', () => {
     expect(mockGetShape).toHaveBeenCalledTimes(2);
     expect(mockGetShape).toHaveBeenNthCalledWith(1, 0);
     expect(mockGetShape).toHaveBeenNthCalledWith(2, 1);
+  });
+
+  it('draws a reference line for each phase change on the page', async () => {
+    await render(
+      <BaseChart
+        {...defaultProps}
+        seriesStyles={{
+          ...EMPTY_SERIES_STYLES,
+          phase_changes: [{ position: 1, lineType: 'dashed' }],
+        }}
+      />,
+    );
+
+    await expect.poll(() => document.querySelectorAll('.recharts-reference-line').length).toBeGreaterThan(0);
+  });
+
+  it('places the legend inside the plot and aligns it to the start when a position is chosen', async () => {
+    await render(
+      <BaseChart
+        {...defaultProps}
+        legends={[{ id: 'Kicking', type: 'diamond' as const, value: 'Kicking', color: 'black' }]}
+        legendSettings={{ position: 'upper-right', layout: 'horizontal' }}
+      />,
+    );
+
+    await expect
+      .poll(() => getComputedStyle(document.querySelector<HTMLElement>('.recharts-default-legend')!).textAlign)
+      .toBe('start');
+  });
+
+  it('hides condition entries from the legend when condition legends are turned off', async () => {
+    await render(
+      <BaseChart
+        {...defaultProps}
+        showConditionLegend={false}
+        legends={[
+          { id: 'Cond', kind: 'condition', type: 'circle', value: 'Hidden Condition', color: 'white' },
+          { id: 'Key', type: 'diamond', value: 'Shown Key', color: 'black' },
+        ]}
+      />,
+    );
+
+    await expect.poll(() => document.querySelectorAll('.recharts-legend-item').length).toBe(1);
+    expect(document.querySelector('.recharts-legend-item')!.textContent).toBe('Shown Key');
   });
 
   it('renders custom legend entries from the legends prop', async () => {

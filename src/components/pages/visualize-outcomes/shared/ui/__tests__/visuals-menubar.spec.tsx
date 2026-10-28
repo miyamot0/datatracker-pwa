@@ -178,6 +178,70 @@ describe('VisualsMenubar', () => {
     await expect.element(page.getByRole('dialog', { name: 'Aim Lines' })).toBeInTheDocument();
   });
 
+  it('opens the Titles and Labels dialog and dispatches a hidden title', async () => {
+    const { dispatch } = renderMenubar();
+
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Titles and Labels' }).click();
+    await expect.element(page.getByRole('dialog', { name: 'Titles and Labels' })).toBeInTheDocument();
+
+    await page.getByRole('checkbox', { name: 'Hide Title' }).click();
+
+    expect(dispatch).toHaveBeenCalledWith({ type: 'showTitleChanged', show: false });
+
+    await page.getByRole('button', { name: 'Reset to Defaults' }).click();
+
+    expect(dispatch).toHaveBeenCalledWith({ type: 'figureLabelsChanged', labels: EMPTY_FIGURE_LABEL_SETTINGS });
+
+    await page.getByRole('button', { name: 'Done' }).click();
+    await expect.element(page.getByRole('dialog', { name: 'Titles and Labels' })).not.toBeInTheDocument();
+  });
+
+  it('dispatches a legend layout chosen in the Legend Position and Layout dialog', async () => {
+    const { dispatch } = renderMenubar();
+
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Legend Settings' }).click();
+    await page.getByRole('combobox', { name: 'Legend layout' }).click();
+    await page.getByRole('option', { name: 'Vertical' }).click();
+
+    expect(dispatch).toHaveBeenCalledWith({
+      type: 'legendSettingsChanged',
+      settings: expect.objectContaining({ layout: 'vertical' }),
+    });
+  });
+
+  it('dispatches a series style chosen in the Series Styles dialog', async () => {
+    const { dispatch } = renderMenubar();
+
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Style Series' }).click();
+    await page.getByRole('combobox', { name: 'Shape for Key A' }).click();
+    await page.getByRole('option', { name: 'triangle', exact: true }).click();
+
+    expect(dispatch).toHaveBeenCalledWith({ type: 'seriesStylesChanged', styles: expect.any(Object) });
+  });
+
+  it('opens the Text Annotations dialog from Aesthetics > Annotations > Text Labels', async () => {
+    renderMenubar();
+
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Annotations' }).hover();
+    await page.getByRole('menuitem', { name: 'Text Labels' }).click();
+
+    await expect.element(page.getByRole('dialog', { name: 'Text Annotations' })).toBeInTheDocument();
+  });
+
+  it('opens the Phase Changes dialog from Aesthetics > Annotations > Phase Change Lines', async () => {
+    renderMenubar();
+
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Annotations' }).hover();
+    await page.getByRole('menuitem', { name: 'Phase Change Lines' }).click();
+
+    await expect.element(page.getByRole('dialog', { name: 'Phase Changes' })).toBeInTheDocument();
+  });
+
   it('opens the Series Styles dialog from Aesthetics', async () => {
     renderMenubar();
 

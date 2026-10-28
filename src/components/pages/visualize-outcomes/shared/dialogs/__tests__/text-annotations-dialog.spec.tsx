@@ -135,4 +135,72 @@ describe('TextAnnotationsDialog', () => {
 
     expect(onChange).toHaveBeenLastCalledWith({ ...EMPTY_SERIES_STYLES, text_annotations: [] });
   });
+
+  it('does not save a text whose coordinate is not a finite number', async () => {
+    const onChange = vi.fn();
+    await render(<TextAnnotationsDialog page="rate" styles={EMPTY_SERIES_STYLES} onChange={onChange} />);
+
+    await page.getByRole('button', { name: 'Edit Text Annotations' }).click();
+    await page.getByRole('button', { name: 'Add Text' }).click();
+    await page.getByLabelText('Label for text 1').fill('Note');
+    await page.getByLabelText('X position for text 1').fill('1e999');
+    await page.getByLabelText('Y position for text 1').fill('50');
+
+    expect(onChange).toHaveBeenLastCalledWith({ ...EMPTY_SERIES_STYLES, text_annotations: [] });
+  });
+
+  it('saves a new anchor and justification picked for a text', async () => {
+    const onChange = vi.fn();
+    await render(<TextAnnotationsDialog page="rate" styles={withTexts} onChange={onChange} />);
+
+    await page.getByRole('button', { name: 'Edit Text Annotations' }).click();
+    await page.getByRole('combobox', { name: 'Anchor for text 1' }).click();
+    await page.getByRole('option', { name: 'Bottom right' }).click();
+
+    expect(onChange).toHaveBeenLastCalledWith({
+      ...withTexts,
+      text_annotations: [
+        { ...withTexts.text_annotations[0], anchor: 'bottom-right', weight: 'normal' },
+        { ...withTexts.text_annotations[1], weight: 'normal' },
+      ],
+    });
+
+    await page.getByRole('combobox', { name: 'Justify for text 2' }).click();
+    await page.getByRole('option', { name: 'Right' }).click();
+
+    expect(onChange).toHaveBeenLastCalledWith({
+      ...withTexts,
+      text_annotations: [
+        { ...withTexts.text_annotations[0], anchor: 'bottom-right', weight: 'normal' },
+        { ...withTexts.text_annotations[1], justify: 'right', weight: 'normal' },
+      ],
+    });
+  });
+
+  it('closes the dialog when Done is pressed', async () => {
+    await render(<TextAnnotationsDialog page="rate" styles={withTexts} onChange={vi.fn()} />);
+
+    await page.getByRole('button', { name: 'Edit Text Annotations' }).click();
+    await page.getByRole('button', { name: 'Done' }).click();
+
+    await expect.element(page.getByRole('button', { name: 'Done' })).not.toBeInTheDocument();
+  });
+
+  it('defers open state to the parent when controlled', async () => {
+    const onOpenChange = vi.fn();
+    await render(
+      <TextAnnotationsDialog
+        page="rate"
+        styles={withTexts}
+        onChange={vi.fn()}
+        open={true}
+        onOpenChange={onOpenChange}
+      />,
+    );
+
+    await page.getByRole('button', { name: 'Done' }).click();
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    await expect.element(page.getByRole('button', { name: 'Done' })).toBeInTheDocument();
+  });
 });

@@ -84,4 +84,79 @@ describe('AimLinesDialog', () => {
       aim_lines: [{ x1: 2, x2: 6, y: 30, lineType: 'dashed', color: '#9061C2', page: 'rate' }],
     });
   });
+
+  it('does not save a coordinate that is not a finite number', async () => {
+    const onChange = vi.fn();
+    await render(<AimLinesDialog page="rate" styles={EMPTY_SERIES_STYLES} onChange={onChange} />);
+
+    await page.getByRole('button', { name: 'Edit Aim Lines' }).click();
+    await page.getByRole('button', { name: 'Add Aim Line' }).click();
+    await page.getByLabelText('X1 for aim line 1').fill('1e999');
+    await page.getByLabelText('X2 for aim line 1').fill('6');
+    await page.getByLabelText('Y for aim line 1').fill('30');
+
+    expect(onChange).toHaveBeenLastCalledWith({ ...EMPTY_SERIES_STYLES, aim_lines: [] });
+  });
+
+  it('treats styles without an aim line list as empty', async () => {
+    const styles = { ...EMPTY_SERIES_STYLES, aim_lines: undefined } as unknown as SeriesStyles;
+    const onChange = vi.fn();
+    await render(<AimLinesDialog page="rate" styles={styles} onChange={onChange} />);
+
+    await page.getByRole('button', { name: 'Edit Aim Lines' }).click();
+    await expect.element(page.getByText('No aim lines.')).toBeInTheDocument();
+
+    await page.getByRole('button', { name: 'Add Aim Line' }).click();
+
+    expect(onChange).toHaveBeenLastCalledWith({ ...EMPTY_SERIES_STYLES, aim_lines: [] });
+  });
+
+  it('edits only the chosen row when several aim lines share a page', async () => {
+    const onChange = vi.fn();
+    const samePage: SeriesStyles = {
+      ...EMPTY_SERIES_STYLES,
+      aim_lines: [
+        { x1: 1, x2: 5, y: 40, lineType: 'dashed', color: '#000000', page: 'rate' },
+        { x1: 2, x2: 8, y: 12, lineType: 'solid', color: '#FFFFFF', page: 'rate' },
+      ],
+    };
+    await render(<AimLinesDialog page="rate" styles={samePage} onChange={onChange} />);
+
+    await page.getByRole('button', { name: 'Edit Aim Lines' }).click();
+    await page.getByLabelText('Y for aim line 1').fill('55');
+
+    expect(onChange).toHaveBeenLastCalledWith({
+      ...samePage,
+      aim_lines: [{ ...samePage.aim_lines[0], y: 55 }, samePage.aim_lines[1]],
+    });
+  });
+
+  it('saves a new line type and color picked for an aim line', async () => {
+    const onChange = vi.fn();
+    await render(<AimLinesDialog page="rate" styles={withAimLines} onChange={onChange} />);
+
+    await page.getByRole('button', { name: 'Edit Aim Lines' }).click();
+    await page.getByRole('combobox', { name: 'Line type for aim line 1' }).click();
+    await page.getByRole('option', { name: 'Solid' }).click();
+
+    expect(onChange).toHaveBeenLastCalledWith({
+      ...withAimLines,
+      aim_lines: [withAimLines.aim_lines[1], { ...withAimLines.aim_lines[0], lineType: 'solid' }],
+    });
+
+    await page.getByRole('combobox', { name: 'Color for aim line 1' }).click();
+    await page.getByRole('option').first().click();
+
+    expect(onChange.mock.lastCall?.[0].aim_lines[0].color).not.toBe('#000000');
+  });
+
+  it('closes the dialog when Done is pressed', async () => {
+    await render(<AimLinesDialog page="rate" styles={withAimLines} onChange={vi.fn()} />);
+
+    await page.getByRole('button', { name: 'Edit Aim Lines' }).click();
+    await expect.element(page.getByRole('button', { name: 'Done' })).toBeInTheDocument();
+    await page.getByRole('button', { name: 'Done' }).click();
+
+    await expect.element(page.getByRole('button', { name: 'Done' })).not.toBeInTheDocument();
+  });
 });
