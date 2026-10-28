@@ -137,6 +137,7 @@ export function BaseChart({
       {...noAnimationProps}
       width="100%"
       height={spacing.chartHeight}
+      style={{ fontFamily: 'Times New Roman' }}
       className={cn(
         'text-base text-primary bg-white nuke-view-transition [&_.recharts-scatter-symbol]:cursor-pointer [&_*]:outline-none',
         {
@@ -321,9 +322,9 @@ export function BaseChart({
           {...(legendPosition === undefined
             ? { wrapperStyle: { left: chartMargins.left + Y_AXIS_WIDTH, right: chartMargins.right, width: 'auto' } }
             : {
-                position: legendPosition,
-                wrapperStyle: { backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '2px 6px', borderRadius: 4 },
-              })}
+              position: legendPosition,
+              wrapperStyle: { backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '2px 6px', borderRadius: 4 },
+            })}
           layout={legendSettings.layout}
           content={() => (
             <ChartLegendContent
