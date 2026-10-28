@@ -7,6 +7,8 @@ import { EMPTY_SERIES_STYLES } from '@/lib/graphing/series-style';
 import { EMPTY_FIGURE_LABEL_SETTINGS } from '@/lib/graphing/figure-labels';
 import { DEFAULT_LEGEND_SETTINGS } from '@/lib/graphing/legend-settings';
 import type { ToggleDisplayCondition, ToggleDisplayKey } from '@/types/visuals';
+import type { ChartImageFormat } from '@/components/pages/visualize-outcomes/shared/chart-export';
+import type { VisualsSettingsState } from '../visuals-settings-reducer';
 
 const keys: ToggleDisplayKey[] = [
   { KeyName: 'a', KeyCode: 1, KeyDescription: 'Key A', KeyType: 'Observed', Visible: true },
@@ -18,38 +20,43 @@ const conditions: ToggleDisplayCondition[] = [
   { Condition: 'Treatment', Visible: true },
 ];
 
-function renderMenubar(overrides: Partial<React.ComponentProps<typeof VisualsMenubar>> = {}) {
-  const props = {
-    page: 'rate' as const,
+function makeSettings(overrides: Partial<VisualsSettingsState> = {}): VisualsSettingsState {
+  return {
     keys,
-    onKeyVisibilityChange: vi.fn(),
     conditions,
-    onConditionVisibilityChange: vi.fn(),
-    styleConditions: ['Baseline', 'Treatment'],
-    visibleStyleConditions: ['Baseline', 'Treatment'],
-    styles: EMPTY_SERIES_STYLES,
-    onStylesChange: vi.fn(),
-    onSaveImage: vi.fn(),
-    figureTextSize: 'base' as const,
-    onFigureTextSizeChange: vi.fn(),
+    schedule: { value: 'Default', label: 'Default' },
+    figureTextSize: 'base',
     connectSpans: false,
-    onConnectSpansChange: vi.fn(),
     showTitle: true,
-    onShowTitleChange: vi.fn(),
-    figureLabels: EMPTY_FIGURE_LABEL_SETTINGS,
-    onFigureLabelsChange: vi.fn(),
     showTooltip: true,
-    onShowTooltipChange: vi.fn(),
     showConditionLegend: true,
-    onShowConditionLegendChange: vi.fn(),
-    legendSettings: DEFAULT_LEGEND_SETTINGS,
-    onLegendSettingsChange: vi.fn(),
     showDescription: true,
-    onShowDescriptionChange: vi.fn(),
+    figureLabels: EMPTY_FIGURE_LABEL_SETTINGS,
+    legendSettings: DEFAULT_LEGEND_SETTINGS,
+    seriesStyles: EMPTY_SERIES_STYLES,
     ...overrides,
   };
+}
 
-  return { props, ...render(<VisualsMenubar {...props} />) };
+function renderMenubar({
+  settings = {},
+  onSaveImage = vi.fn(),
+}: { settings?: Partial<VisualsSettingsState>; onSaveImage?: (format: ChartImageFormat) => void } = {}) {
+  const dispatch = vi.fn();
+
+  return {
+    dispatch,
+    ...render(
+      <VisualsMenubar
+        page="rate"
+        settings={makeSettings(settings)}
+        dispatch={dispatch}
+        styleConditions={['Baseline', 'Treatment']}
+        visibleStyleConditions={['Baseline', 'Treatment']}
+        onSaveImage={onSaveImage}
+      />,
+    ),
+  };
 }
 
 describe('VisualsMenubar', () => {
@@ -84,33 +91,32 @@ describe('VisualsMenubar', () => {
     expect(onSaveImage).toHaveBeenCalledWith('png');
   });
 
-  it('reports a key toggled off from Data > Keys and keeps the menu open', async () => {
-    const onKeyVisibilityChange = vi.fn();
-    renderMenubar({ onKeyVisibilityChange });
+  it('dispatches a key toggled off from Data > Keys and keeps the menu open', async () => {
+    const { dispatch } = renderMenubar();
 
     await page.getByRole('menuitem', { name: 'Data' }).click();
     await page.getByRole('menuitem', { name: 'Keys' }).hover();
     await page.getByRole('menuitemcheckbox', { name: 'Key A' }).click();
 
-    expect(onKeyVisibilityChange).toHaveBeenCalledWith('Key A', false);
+    expect(dispatch).toHaveBeenCalledWith({ type: 'keyVisibilityChanged', keyDescription: 'Key A', visible: false });
     await expect.element(page.getByRole('menuitemcheckbox', { name: 'Key B' })).toBeInTheDocument();
   });
 
-  it('reports a condition toggled on from Data > Conditions', async () => {
-    const onConditionVisibilityChange = vi.fn();
-    renderMenubar({
-      onConditionVisibilityChange,
-      conditions: [
-        { Condition: 'Baseline', Visible: true },
-        { Condition: 'Treatment', Visible: false },
-      ],
+  it('dispatches a condition toggled on from Data > Conditions', async () => {
+    const { dispatch } = renderMenubar({
+      settings: {
+        conditions: [
+          { Condition: 'Baseline', Visible: true },
+          { Condition: 'Treatment', Visible: false },
+        ],
+      },
     });
 
     await page.getByRole('menuitem', { name: 'Data' }).click();
     await page.getByRole('menuitem', { name: 'Conditions' }).hover();
     await page.getByRole('menuitemcheckbox', { name: 'Treatment' }).click();
 
-    expect(onConditionVisibilityChange).toHaveBeenCalledWith('Treatment', true);
+    expect(dispatch).toHaveBeenCalledWith({ type: 'conditionVisibilityChanged', condition: 'Treatment', visible: true });
   });
 
   it('opens the Aim Lines dialog from Aesthetics > Annotations submenu', async () => {
@@ -141,57 +147,52 @@ describe('VisualsMenubar', () => {
     await expect.element(page.getByRole('dialog', { name: 'Legend Position and Layout' })).toBeInTheDocument();
   });
 
-  it('wires the condition legend checkbox in the legend dialog to the page callback', async () => {
-    const onShowConditionLegendChange = vi.fn();
-    renderMenubar({ onShowConditionLegendChange });
+  it('dispatches the condition legend checkbox from the legend dialog', async () => {
+    const { dispatch } = renderMenubar();
 
     await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
     await page.getByRole('menuitem', { name: 'Legend Settings' }).click();
     await page.getByRole('checkbox', { name: 'Show Condition Legend' }).click();
 
-    expect(onShowConditionLegendChange).toHaveBeenLastCalledWith(false);
+    expect(dispatch).toHaveBeenLastCalledWith({ type: 'showConditionLegendChanged', show: false });
   });
 
-  it('selects an element magnification size from Aesthetics', async () => {
-    const onFigureTextSizeChange = vi.fn();
-    renderMenubar({ onFigureTextSizeChange });
+  it('dispatches an element magnification size from Aesthetics', async () => {
+    const { dispatch } = renderMenubar();
 
     await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
     await page.getByRole('menuitem', { name: 'Element Sizing' }).hover();
     await page.getByRole('menuitemradio', { name: 'Large', exact: true }).click();
 
-    expect(onFigureTextSizeChange).toHaveBeenCalledWith('large');
+    expect(dispatch).toHaveBeenCalledWith({ type: 'figureTextSizeChanged', size: 'large' });
   });
 
-  it('reports Connect All Spans toggled on from Data', async () => {
-    const onConnectSpansChange = vi.fn();
-    renderMenubar({ onConnectSpansChange });
+  it('dispatches Connect All Spans toggled on from Data', async () => {
+    const { dispatch } = renderMenubar();
 
     await page.getByRole('menuitem', { name: 'Data' }).click();
     await page.getByRole('menuitemcheckbox', { name: 'Connect All Spans' }).click();
 
-    expect(onConnectSpansChange).toHaveBeenCalledWith(true);
+    expect(dispatch).toHaveBeenCalledWith({ type: 'connectSpansChanged', connect: true });
   });
 
-  it('reports Enable Tooltip toggled off from Settings and keeps the menu open', async () => {
-    const onShowTooltipChange = vi.fn();
-    renderMenubar({ onShowTooltipChange, showTooltip: true });
+  it('dispatches Enable Tooltip toggled off from Settings and keeps the menu open', async () => {
+    const { dispatch } = renderMenubar({ settings: { showTooltip: true } });
 
     await page.getByRole('menuitem', { name: 'Settings' }).click();
     await page.getByRole('menuitemcheckbox', { name: 'Enable Tooltip' }).click();
 
-    expect(onShowTooltipChange).toHaveBeenCalledWith(false);
+    expect(dispatch).toHaveBeenCalledWith({ type: 'showTooltipChanged', show: false });
     await expect.element(page.getByRole('menuitemcheckbox', { name: 'Enable Tooltip' })).toBeInTheDocument();
   });
 
-  it('reports Show Description toggled off from Settings and keeps the menu open', async () => {
-    const onShowDescriptionChange = vi.fn();
-    renderMenubar({ onShowDescriptionChange, showDescription: true });
+  it('dispatches Show Description toggled off from Settings and keeps the menu open', async () => {
+    const { dispatch } = renderMenubar({ settings: { showDescription: true } });
 
     await page.getByRole('menuitem', { name: 'Settings' }).click();
     await page.getByRole('menuitemcheckbox', { name: 'Show Description' }).click();
 
-    expect(onShowDescriptionChange).toHaveBeenCalledWith(false);
+    expect(dispatch).toHaveBeenCalledWith({ type: 'showDescriptionChanged', show: false });
     await expect.element(page.getByRole('menuitemcheckbox', { name: 'Show Description' })).toBeInTheDocument();
   });
 

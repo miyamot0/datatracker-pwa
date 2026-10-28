@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type Dispatch } from 'react';
 import {
   CaseSensitiveIcon,
   DownloadIcon,
@@ -30,7 +30,7 @@ import {
 import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import { type SeriesStyles, type TextPage } from '@/lib/graphing/series-style';
 import type { ChartImageFormat } from '@/components/pages/visualize-outcomes/shared/chart-export';
-import { type ToggleDisplayCondition, type ToggleDisplayKey } from '@/types/visuals';
+import type { VisualsSettingsAction, VisualsSettingsState } from './visuals-settings-reducer';
 import { AimLinesDialog } from './dialogs/aim-lines-dialog';
 import { PhaseChangesDialog } from './dialogs/phase-changes-dialog';
 import { SeriesStylesDialog } from './dialogs/series-styles-dialog';
@@ -44,70 +44,48 @@ type AnnotationDialog = 'series-styles' | 'phase-changes' | 'text-annotations' |
 
 type Props = {
   page: TextPage;
-  keys: ToggleDisplayKey[];
-  onKeyVisibilityChange: (keyDescription: string, visible: boolean) => void;
-  conditions: ToggleDisplayCondition[];
-  onConditionVisibilityChange: (condition: string, visible: boolean) => void;
+  settings: VisualsSettingsState;
+  dispatch: Dispatch<VisualsSettingsAction>;
   styleConditions: string[];
   visibleStyleConditions: string[];
-  styles: SeriesStyles;
-  onStylesChange: (styles: SeriesStyles) => void;
   onSaveImage: (format: ChartImageFormat) => void;
-  figureTextSize: FigureVisualSizing;
-  onFigureTextSizeChange: (size: FigureVisualSizing) => void;
-  connectSpans: boolean;
-  onConnectSpansChange: (connect: boolean) => void;
-  showTitle: boolean;
-  onShowTitleChange: (show: boolean) => void;
-  figureLabels: FigureLabelSettings;
-  onFigureLabelsChange: (labels: FigureLabelSettings) => void;
-  legendSettings: LegendSettings;
-  onLegendSettingsChange: (settings: LegendSettings) => void;
-  showTooltip: boolean;
-  onShowTooltipChange: (show: boolean) => void;
-  showConditionLegend: boolean;
-  onShowConditionLegendChange: (show: boolean) => void;
-  showDescription: boolean;
-  onShowDescriptionChange: (show: boolean) => void;
 };
 
 /**
  * Menubar grouping visibility toggles and annotation editors for a visualization page
  *
- * Keys and conditions are checkable lists that report changes through the given callbacks, so the page keeps
- * ownership of their state. Annotation editors open the same dialogs used by the toolbar buttons.
+ * Settings are read from the given state and changed by dispatching actions, so the page owns a single reducer.
+ * Annotation editors open the same dialogs used by the toolbar buttons.
  */
 export function VisualsMenubar({
   page,
-  keys,
-  onKeyVisibilityChange,
-  conditions,
-  onConditionVisibilityChange,
+  settings,
+  dispatch,
   styleConditions,
   visibleStyleConditions,
-  styles,
-  onStylesChange,
   onSaveImage,
-  figureTextSize,
-  onFigureTextSizeChange,
-  connectSpans,
-  onConnectSpansChange,
-  showTitle,
-  onShowTitleChange,
-  figureLabels,
-  onFigureLabelsChange,
-  legendSettings,
-  onLegendSettingsChange,
-  showTooltip,
-  onShowTooltipChange,
-  showConditionLegend,
-  onShowConditionLegendChange,
-  showDescription,
-  onShowDescriptionChange,
 }: Props) {
+  const {
+    keys,
+    conditions,
+    seriesStyles: styles,
+    figureTextSize,
+    connectSpans,
+    showTitle,
+    figureLabels,
+    legendSettings,
+    showTooltip,
+    showConditionLegend,
+    showDescription,
+  } = settings;
   const [activeDialog, setActiveDialog] = useState<AnnotationDialog | null>(null);
 
   const dialogOpenChange = (dialog: AnnotationDialog) => (next: boolean) => setActiveDialog(next ? dialog : null);
+  const onStylesChange = (next: SeriesStyles) => dispatch({ type: 'seriesStylesChanged', styles: next });
+  const onFigureLabelsChange = (labels: FigureLabelSettings) => dispatch({ type: 'figureLabelsChanged', labels });
+  const onLegendSettingsChange = (next: LegendSettings) => dispatch({ type: 'legendSettingsChanged', settings: next });
+  const onShowTitleChange = (show: boolean) => dispatch({ type: 'showTitleChanged', show });
+  const onShowConditionLegendChange = (show: boolean) => dispatch({ type: 'showConditionLegendChanged', show });
 
   return (
     <Menubar className="h-auto w-fit flex-wrap">
@@ -152,7 +130,9 @@ export function VisualsMenubar({
                   key={key.KeyDescription}
                   checked={key.Visible}
                   onSelect={(event) => event.preventDefault()}
-                  onCheckedChange={(checked) => onKeyVisibilityChange(key.KeyDescription, checked === true)}
+                  onCheckedChange={(checked) =>
+                    dispatch({ type: 'keyVisibilityChanged', keyDescription: key.KeyDescription, visible: checked === true })
+                  }
                 >
                   {key.KeyDescription}
                   {key.KeyType === 'Derived' && <span className="ml-2 text-xs text-muted-foreground">(Derived)</span>}
@@ -171,7 +151,9 @@ export function VisualsMenubar({
                   key={condition.Condition}
                   checked={condition.Visible}
                   onSelect={(event) => event.preventDefault()}
-                  onCheckedChange={(checked) => onConditionVisibilityChange(condition.Condition, checked === true)}
+                  onCheckedChange={(checked) =>
+                    dispatch({ type: 'conditionVisibilityChanged', condition: condition.Condition, visible: checked === true })
+                  }
                 >
                   {condition.Condition}
                 </MenubarCheckboxItem>
@@ -182,7 +164,7 @@ export function VisualsMenubar({
           <MenubarCheckboxItem
             checked={connectSpans}
             onSelect={(event) => event.preventDefault()}
-            onCheckedChange={(checked) => onConnectSpansChange(checked === true)}
+            onCheckedChange={(checked) => dispatch({ type: 'connectSpansChanged', connect: checked === true })}
           >
             Connect All Spans
           </MenubarCheckboxItem>
@@ -236,7 +218,7 @@ export function VisualsMenubar({
             <MenubarSubContent>
               <MenubarRadioGroup
                 value={figureTextSize}
-                onValueChange={(value) => onFigureTextSizeChange(value as FigureVisualSizing)}
+                onValueChange={(value) => dispatch({ type: 'figureTextSizeChanged', size: value as FigureVisualSizing })}
               >
                 {FIGURE_TEXT_OPTIONS.map((opt) => (
                   <MenubarRadioItem key={opt.value} value={opt.value} onSelect={(event) => event.preventDefault()}>
@@ -255,14 +237,14 @@ export function VisualsMenubar({
           <MenubarCheckboxItem
             checked={showTooltip}
             onSelect={(event) => event.preventDefault()}
-            onCheckedChange={(checked) => onShowTooltipChange(checked === true)}
+            onCheckedChange={(checked) => dispatch({ type: 'showTooltipChanged', show: checked === true })}
           >
             Enable Tooltip
           </MenubarCheckboxItem>
           <MenubarCheckboxItem
             checked={showDescription}
             onSelect={(event) => event.preventDefault()}
-            onCheckedChange={(checked) => onShowDescriptionChange(checked === true)}
+            onCheckedChange={(checked) => dispatch({ type: 'showDescriptionChanged', show: checked === true })}
           >
             Show Description
           </MenubarCheckboxItem>
