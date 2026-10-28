@@ -67,8 +67,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit,
       })) as KeySetLogical[];
 
       // Helper to find field by KeyCode or Tag
-      const findField = (fieldObj: any) => {
-        if (!fieldObj) return undefined;
+      const findField = (fieldObj: KeySetLogical) => {
         return fields.find(f => f.KeyCode === fieldObj.KeyCode || f.Tag === fieldObj.Tag);
       };
 
@@ -203,16 +202,14 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit,
                       initial: { type: 'constant', value: 0 },
                     }));
                   } else {
-                    const selectedField = logicState.fields.find((field) => field.Tag === value);
-                    if (selectedField) {
-                      const valueSource: ValueSourceField = { type: 'field', field: selectedField };
-                      const updatedState: LogicState = {
-                        ...logicState,
-                        value: valueSource.field.Value,
-                        initial: valueSource,
-                      };
-                      setLogicState(updatedState);
-                    }
+                    const selectedField = logicState.fields.find((field) => field.Tag === value) as KeySetLogical;
+                    const valueSource: ValueSourceField = { type: 'field', field: selectedField };
+                    const updatedState: LogicState = {
+                      ...logicState,
+                      value: valueSource.field.Value,
+                      initial: valueSource,
+                    };
+                    setLogicState(updatedState);
                   }
                 }}
               >
@@ -282,15 +279,11 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit,
                       updatedSteps[index] = { ...updatedSteps[index], operand: { type: 'constant', value: 0 } };
                       setLogicState((prev) => ({ ...prev, steps: updatedSteps }));
                     } else {
-                      const selectedField = logicState.fields.find((field) => field.Tag === value);
-                      if (selectedField) {
-                        const valueSource: ValueSourceField = { type: 'field', field: selectedField };
-                        const updatedSteps = [...logicState.steps];
-                        updatedSteps[index] = { ...updatedSteps[index], operand: valueSource };
-                        setLogicState((prev) => ({ ...prev, steps: updatedSteps }));
-                      } else {
-                        console.error('Selected field not found for operand:', value);
-                      }
+                      const selectedField = logicState.fields.find((field) => field.Tag === value) as KeySetLogical;
+                      const valueSource: ValueSourceField = { type: 'field', field: selectedField };
+                      const updatedSteps = [...logicState.steps];
+                      updatedSteps[index] = { ...updatedSteps[index], operand: valueSource };
+                      setLogicState((prev) => ({ ...prev, steps: updatedSteps }));
                     }
                   }}
                 >

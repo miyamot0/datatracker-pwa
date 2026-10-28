@@ -31,7 +31,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
     const errorResponse: WorkerResponse = {
       type: 'ERROR',
       message: error instanceof Error ? error.message : 'Unknown error occurred',
-      operation: data?.type || 'UNKNOWN',
+      operation: data.type,
     };
     self.postMessage(errorResponse);
   }

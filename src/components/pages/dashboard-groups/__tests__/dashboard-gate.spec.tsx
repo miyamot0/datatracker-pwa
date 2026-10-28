@@ -27,9 +27,6 @@ vi.mock('../unauthorized-display', () => ({
   default: () => <div data-testid="unauthorized-display">Unauthorized Display</div>,
 }));
 
-vi.mock('@/components/elements/suspense/loading-display', () => ({
-  LoadingDisplay: () => <div data-testid="loading-display">Loading...</div>,
-}));
 
 vi.mock('../authorized-display-content', () => ({
   default: ({ Groups, Settings, Handle }: any) => (

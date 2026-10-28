@@ -1,5 +1,6 @@
 import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
+import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockFigure = vi.hoisted(() => vi.fn());
@@ -63,6 +64,27 @@ vi.mock('@/components/ui/select', async (importOriginal) => {
   };
 });
 
+const mockToast = vi.hoisted(() => ({
+  success: vi.fn(),
+  info: vi.fn(),
+  error: vi.fn(),
+}));
+
+vi.mock('sonner', () => ({ toast: mockToast }));
+
+vi.mock('@/lib/styles-file', () => ({
+  writeStylesFile: vi.fn(),
+  readStylesFile: vi.fn(),
+  deleteStylesFile: vi.fn(),
+  applyStylesFile: vi.fn(),
+  saveStylesBackup: vi.fn(),
+  restoreStylesBackup: vi.fn(),
+}));
+
+vi.mock('@/components/pages/visualize-outcomes/shared/helpers/chart-export', () => ({
+  saveChartImage: vi.fn(),
+}));
+
 vi.mock('../visuals-menubar', () => ({
   VisualsMenubar: (props: any) => {
     mockMenubar(props);
@@ -71,10 +93,23 @@ vi.mock('../visuals-menubar', () => ({
 }));
 
 import { VisualsResultsPage } from '../visuals-results-page';
+import {
+  writeStylesFile,
+  readStylesFile,
+  deleteStylesFile,
+  applyStylesFile,
+  saveStylesBackup,
+  restoreStylesBackup,
+} from '@/lib/styles-file';
+import { saveChartImage } from '@/components/pages/visualize-outcomes/shared/helpers/chart-export';
 
 const MockFigure = (props: any) => {
   mockFigure(props);
-  return <div data-testid="figure">figure</div>;
+  return (
+    <div data-testid="figure" ref={props.divRef}>
+      figure
+    </div>
+  );
 };
 
 const config = {
@@ -218,6 +253,189 @@ describe('VisualsResultsPage', () => {
       expect(props.page).toBe('rate');
       expect(props.visibleStyleConditions).toEqual(props.styleConditions);
       expect(typeof props.onSaveImage).toBe('function');
+    });
+  });
+
+  describe('styles file actions', () => {
+    const STYLES = 'styles.json';
+
+    beforeEach(() => {
+      vi.mocked(writeStylesFile).mockResolvedValue(undefined as any);
+      vi.mocked(readStylesFile).mockResolvedValue(null as any);
+      vi.mocked(deleteStylesFile).mockResolvedValue(true);
+      vi.mocked(restoreStylesBackup).mockReturnValue(true);
+      vi.spyOn(window, 'confirm').mockReturnValue(true);
+    });
+
+    it('writes the styles file and reports success', async () => {
+      renderPage();
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+
+      await act(() => lastMenubarProps().onWriteStyles());
+
+      expect(writeStylesFile).toHaveBeenCalledWith(undefined, 'GroupA', 'ClientB', 'Eval1');
+      expect(mockToast.success).toHaveBeenCalledWith(`Saved styles to ${STYLES}`);
+    });
+
+    it('reports an error when writing the styles file fails', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.mocked(writeStylesFile).mockRejectedValue(new Error('disk full'));
+      renderPage();
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+
+      await act(() => lastMenubarProps().onWriteStyles());
+
+      expect(mockToast.error).toHaveBeenCalledWith(`Could not write ${STYLES}`);
+      expect(mockToast.success).not.toHaveBeenCalled();
+    });
+
+    it('shows an info toast when no styles file exists', async () => {
+      renderPage();
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+
+      await act(() => lastMenubarProps().onReadStyles());
+
+      expect(mockToast.info).toHaveBeenCalledWith(`No ${STYLES} found in this evaluation folder`);
+      expect(applyStylesFile).not.toHaveBeenCalled();
+      expect(saveStylesBackup).not.toHaveBeenCalled();
+    });
+
+    it('backs up, applies, and reloads settings when a styles file is read', async () => {
+      const file = { version: 1 } as any;
+      vi.mocked(readStylesFile).mockResolvedValue(file);
+      renderPage();
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+
+      await act(() => lastMenubarProps().onReadStyles());
+
+      expect(saveStylesBackup).toHaveBeenCalledWith('GroupA', 'ClientB', 'Eval1');
+      expect(applyStylesFile).toHaveBeenCalledWith('GroupA', 'ClientB', 'Eval1', file);
+      expect(mockToast.success).toHaveBeenCalledWith(`Loaded styles from ${STYLES}`, expect.any(Object));
+    });
+
+    it('restores the backup and reports it when Undo is clicked', async () => {
+      vi.mocked(readStylesFile).mockResolvedValue({ version: 1 } as any);
+      renderPage();
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+
+      await act(() => lastMenubarProps().onReadStyles());
+      const options = mockToast.success.mock.calls[0][1] as any;
+      await act(() => options.action.onClick());
+
+      expect(restoreStylesBackup).toHaveBeenCalledWith('GroupA', 'ClientB', 'Eval1');
+      expect(mockToast.success).toHaveBeenLastCalledWith('Restored styles from before the read');
+    });
+
+    it('does not report a restore when there is no backup to restore', async () => {
+      vi.mocked(readStylesFile).mockResolvedValue({ version: 1 } as any);
+      vi.mocked(restoreStylesBackup).mockReturnValue(false);
+      renderPage();
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+
+      await act(() => lastMenubarProps().onReadStyles());
+      const options = mockToast.success.mock.calls[0][1] as any;
+      mockToast.success.mockClear();
+      await act(() => options.action.onClick());
+
+      expect(restoreStylesBackup).toHaveBeenCalled();
+      expect(mockToast.success).not.toHaveBeenCalled();
+    });
+
+    it('shows the error message when reading an invalid styles file throws an Error', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.mocked(readStylesFile).mockRejectedValue(new Error('Invalid styles file'));
+      renderPage();
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+
+      await act(() => lastMenubarProps().onReadStyles());
+
+      expect(mockToast.error).toHaveBeenCalledWith('Invalid styles file');
+    });
+
+    it('shows a generic message when reading fails with a non-Error value', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.mocked(readStylesFile).mockRejectedValue('unexpected');
+      renderPage();
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+
+      await act(() => lastMenubarProps().onReadStyles());
+
+      expect(mockToast.error).toHaveBeenCalledWith(`Could not read ${STYLES}`);
+    });
+
+    it('does nothing when the delete confirmation is cancelled', async () => {
+      vi.mocked(window.confirm).mockReturnValue(false);
+      renderPage();
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+
+      await act(() => lastMenubarProps().onDeleteStyles());
+
+      expect(deleteStylesFile).not.toHaveBeenCalled();
+      expect(mockToast.success).not.toHaveBeenCalled();
+    });
+
+    it('reports a deleted styles file', async () => {
+      renderPage();
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+
+      await act(() => lastMenubarProps().onDeleteStyles());
+
+      expect(deleteStylesFile).toHaveBeenCalledWith(undefined, 'GroupA', 'ClientB', 'Eval1');
+      expect(mockToast.success).toHaveBeenCalledWith(`Deleted ${STYLES}`);
+    });
+
+    it('reports when there was no styles file to delete', async () => {
+      vi.mocked(deleteStylesFile).mockResolvedValue(false);
+      renderPage();
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+
+      await act(() => lastMenubarProps().onDeleteStyles());
+
+      expect(mockToast.success).toHaveBeenCalledWith(`No ${STYLES} to delete`);
+    });
+
+    it('reports an error when deleting the styles file fails', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.mocked(deleteStylesFile).mockRejectedValue(new Error('locked'));
+      renderPage();
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+
+      await act(() => lastMenubarProps().onDeleteStyles());
+
+      expect(mockToast.error).toHaveBeenCalledWith(`Could not delete ${STYLES}`);
+    });
+  });
+
+  describe('image export', () => {
+    it('saves the figure through saveChartImage using the page name and format', async () => {
+      renderPage();
+      await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
+
+      lastMenubarProps().onSaveImage('png');
+
+      expect(saveChartImage).toHaveBeenCalledWith(expect.any(HTMLDivElement), 'png', 'rate.png');
+    });
+  });
+
+  describe('hidden conditions', () => {
+    it('removes a hidden condition from the figure sessions and the visible style list', async () => {
+      renderPage();
+      await expect.element(page.getByTestId('figure')).toBeInTheDocument();
+      expect(lastFigureProps().FilteredSessions).toHaveLength(2);
+
+      await act(() =>
+        lastMenubarProps().dispatch({ type: 'conditionVisibilityChanged', condition: 'Baseline', visible: false }),
+      );
+
+      expect(lastFigureProps().FilteredSessions).toEqual([{ SessionSettings: { Condition: 'Treatment' } }]);
+      expect(lastMenubarProps().visibleStyleConditions).not.toContain('Baseline');
+    });
+
+    it('keeps sessions whose condition has no matching setting', async () => {
+      renderPage({ ResultsFiltered: [{ SessionSettings: { Condition: 'Unlisted' } }] });
+      await expect.element(page.getByTestId('figure')).toBeInTheDocument();
+
+      expect(lastFigureProps().FilteredSessions).toHaveLength(1);
     });
   });
 

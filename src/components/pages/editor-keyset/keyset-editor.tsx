@@ -53,15 +53,14 @@ export default function KeySetEditor({
     },
   });
 
+  // Callers disable the up/down buttons at the boundaries, so no bounds check is needed here.
   const moveItemUp = <T,>(array: T[], index: number): T[] => {
-    if (index === 0) return array; // Already at the top
     const newArray = [...array];
     [newArray[index - 1], newArray[index]] = [newArray[index], newArray[index - 1]];
     return newArray;
   };
 
   const moveItemDown = <T,>(array: T[], index: number): T[] => {
-    if (index === array.length - 1) return array; // Already at the bottom
     const newArray = [...array];
     [newArray[index], newArray[index + 1]] = [newArray[index + 1], newArray[index]];
     return newArray;

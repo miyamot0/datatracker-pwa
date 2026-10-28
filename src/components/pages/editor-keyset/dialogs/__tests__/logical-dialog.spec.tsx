@@ -195,3 +195,203 @@ describe('LogicalDialogKeyCreator', () => {
     expect(mockCallback).toHaveBeenCalledWith(expect.objectContaining({ name: 'Combined Score' }));
   });
 });
+
+const logicFixture = (overrides: Record<string, unknown> = {}) => ({
+  id: 'ls-1',
+  name: 'Existing Key',
+  value: 0,
+  initial: { type: 'constant', value: 3 },
+  steps: [],
+  fields: [],
+  ...overrides,
+});
+
+const renderControlled = async (props: Record<string, unknown> = {}) => {
+  const ui = (p: Record<string, unknown>) => (
+    <FolderContextProvider>
+      <DropdownMenu open>
+        <DropdownMenuContent forceMount>
+          <LogicalDialogKeyCreator KeySet={makeKeyset()} Callback={mockCallback} open onClose={mockOnClose} {...p} />
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </FolderContextProvider>
+  );
+  const result = await render(ui(props));
+  return { rerender: (p: Record<string, unknown>) => result.rerender(ui(p)) };
+};
+
+const formulaText = () => (page.getByText(/Formula:/).element() as HTMLElement).textContent ?? '';
+
+const mockOnClose = vi.hoisted(() => vi.fn());
+
+describe('LogicalDialogKeyCreator controlled and edit modes', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('edit mode shows the edit title, a locked name, and Save Changes', async () => {
+    await renderControlled({ logicToEdit: logicFixture(), lockName: true });
+
+    await expect.element(page.getByText('Edit Derived Key')).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Save Changes' })).toBeVisible();
+    expect(nameInput().value).toBe('Existing Key');
+    expect(nameInput().readOnly).toBe(true);
+  });
+
+  it('remaps field-based initial and operand references onto keyset fields', async () => {
+    await renderControlled({
+      logicToEdit: logicFixture({
+        initial: { type: 'field', field: { KeyCode: 65, KeyDescription: 'Hitting', Tag: 'stale' } },
+        steps: [
+          {
+            id: 's1',
+            operation: 'multiply',
+            operand: { type: 'field', field: { KeyCode: 66, KeyDescription: 'Running', Tag: 'stale' } },
+          },
+        ],
+      }),
+    });
+
+    await expect.element(page.getByText(/Formula:/)).toBeVisible();
+    expect(formulaText()).toMatch(/Hitting\s+\*=\s+Running/);
+  });
+
+  it('keeps field references that do not match any keyset field', async () => {
+    await renderControlled({
+      logicToEdit: logicFixture({
+        initial: { type: 'field', field: { KeyCode: 999, KeyDescription: 'Ghost', Tag: 'field.Ghost' } },
+        steps: [
+          { id: 's1', operation: 'add', operand: { type: 'constant', value: 2 } },
+          {
+            id: 's2',
+            operation: 'subtract',
+            operand: { type: 'field', field: { KeyCode: 998, KeyDescription: 'Unknown', Tag: 'field.Unknown' } },
+          },
+        ],
+      }),
+    });
+
+    await expect.element(page.getByText(/Formula:/)).toBeVisible();
+    expect(formulaText()).toMatch(/Ghost\s+\+=\s+2\s+-=\s+Unknown/);
+  });
+
+  it('formula renders every operation symbol', async () => {
+    await renderControlled({
+      logicToEdit: logicFixture({
+        initial: { type: 'constant', value: 10 },
+        steps: [
+          { id: 's1', operation: 'add', operand: { type: 'constant', value: 1 } },
+          { id: 's2', operation: 'subtract', operand: { type: 'constant', value: 1 } },
+          { id: 's3', operation: 'multiply', operand: { type: 'constant', value: 1 } },
+          { id: 's4', operation: 'divide', operand: { type: 'constant', value: 1 } },
+        ],
+      }),
+    });
+
+    await expect.element(page.getByText(/Formula:/)).toBeVisible();
+    expect(formulaText()).toMatch(/10\s+\+=\s+1\s+-=\s+1\s+\*=\s+1\s+\/=\s+1/);
+  });
+
+  it('saves an edited key with its original id and closes the dialog', async () => {
+    await renderControlled({ logicToEdit: logicFixture(), lockName: true });
+
+    await page.getByRole('button', { name: 'Save Changes' }).click();
+
+    expect(mockCallback).toHaveBeenCalledWith(expect.objectContaining({ id: 'ls-1', name: 'Existing Key' }));
+    expect(mockOnClose).toHaveBeenCalled();
+  });
+
+  it('closing an edited key via the dialog close button calls onClose without saving', async () => {
+    await renderControlled({ logicToEdit: logicFixture(), lockName: true });
+
+    await page.getByRole('button', { name: 'Close' }).click();
+
+    expect(mockOnClose).toHaveBeenCalled();
+    expect(mockCallback).not.toHaveBeenCalled();
+  });
+
+  it('syncs when logicToEdit is set and then cleared', async () => {
+    const view = await renderControlled({ logicToEdit: null });
+    await expect.element(page.getByText('Derived Key Creator')).toBeVisible();
+
+    await view.rerender({ logicToEdit: logicFixture({ name: 'Loaded Key' }), lockName: true });
+    await expect.element(page.getByText('Edit Derived Key')).toBeVisible();
+    expect(nameInput().value).toBe('Loaded Key');
+
+    await view.rerender({ logicToEdit: null });
+    await expect.element(page.getByText('Derived Key Creator')).toBeVisible();
+    expect(nameInput().value).toBe('');
+  });
+
+  it('removes only the targeted step', async () => {
+    await renderControlled({
+      logicToEdit: logicFixture({
+        initial: { type: 'constant', value: 0 },
+        steps: [
+          { id: 's1', operation: 'add', operand: { type: 'constant', value: 11 } },
+          { id: 's2', operation: 'add', operand: { type: 'constant', value: 22 } },
+          { id: 's3', operation: 'add', operand: { type: 'constant', value: 33 } },
+        ],
+      }),
+      lockName: true,
+    });
+
+    const trashButtons = Array.from(document.querySelectorAll('button')).filter((b) =>
+      b.className.includes('destructive'),
+    );
+    expect(trashButtons.length).toBe(3);
+    (trashButtons[1] as HTMLButtonElement).click();
+
+    await expect.element(page.getByText(/Formula:/)).toBeVisible();
+    expect(formulaText()).toMatch(/11/);
+    expect(formulaText()).toMatch(/33/);
+    expect(formulaText()).not.toMatch(/22/);
+  });
+
+  it('selects a field as the initial value and reverts to a custom constant', async () => {
+    await renderControlled();
+
+    await page.getByRole('combobox').nth(0).click();
+    await page.getByRole('option', { name: 'Hitting', exact: true }).click();
+    await expect.element(page.getByText(/Formula: Hitting/)).toBeVisible();
+
+    await page.getByRole('combobox').nth(0).click();
+    await page.getByRole('option', { name: 'Custom Constant', exact: true }).click();
+    await expect.element(page.getByText(/Formula: 0/)).toBeVisible();
+  });
+
+  it('initial constant ignores non-numeric input and accepts numbers', async () => {
+    await renderControlled();
+
+    const initialInput = document.querySelector('input[type="numeric"]') as HTMLInputElement;
+    setInputValue(initialInput, '4');
+    await expect.element(page.getByText(/Formula: 4/)).toBeVisible();
+
+    setInputValue(initialInput, 'abc');
+    await expect.element(page.getByText(/Formula: 4/)).toBeVisible();
+  });
+
+  it('adds a step, changes its operation, and switches its operand between field and constant', async () => {
+    await renderControlled();
+
+    await page.getByText('Add Step').click();
+    await expect.element(page.getByText('Step 1')).toBeVisible();
+
+    await page.getByRole('combobox').nth(1).click();
+    await page.getByRole('option', { name: 'multiply', exact: true }).click();
+    await expect.element(page.getByText(/\*=/)).toBeVisible();
+
+    await page.getByRole('combobox').nth(2).click();
+    await page.getByRole('option', { name: 'Running', exact: true }).click();
+    await expect.element(page.getByText(/\*=\s+Running/)).toBeVisible();
+
+    await page.getByRole('combobox').nth(2).click();
+    await page.getByRole('option', { name: 'Custom Constant', exact: true }).click();
+    const operandInput = document.querySelectorAll('input[type="numeric"]')[1] as HTMLInputElement;
+    setInputValue(operandInput, '7');
+    await expect.element(page.getByText(/\*=\s+7/)).toBeVisible();
+
+    setInputValue(operandInput, 'xyz');
+    await expect.element(page.getByText(/\*=\s+7/)).toBeVisible();
+  });
+});
