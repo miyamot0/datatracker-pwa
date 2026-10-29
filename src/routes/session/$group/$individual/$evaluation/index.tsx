@@ -46,13 +46,13 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/')
   loader: ({ context }) => {
     const { Group, Individual, Evaluation, CleanHandle } = context;
 
-    const fetchConditions = context.queryClient.fetchQuery(
+    const fetchConditions = context.queryClient.query(
       conditionQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
+    const fetchKeyboards = context.queryClient.query(keyboardQueryOptions(CleanHandle, Group, Individual));
 
-    const fetchSessionParams = context.queryClient.fetchQuery(
+    const fetchSessionParams = context.queryClient.query(
       sessionQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 

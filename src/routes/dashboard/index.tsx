@@ -16,7 +16,7 @@ export const Route = createFileRoute('/dashboard/')({
     }
 
     const fetchGroups = trackSettlement(
-      context.queryClient.fetchQuery(groupQueryOptions(context.folderHandleContext.handle)),
+      context.queryClient.query(groupQueryOptions(context.folderHandleContext.handle)),
     );
 
     return {

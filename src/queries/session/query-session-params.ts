@@ -20,6 +20,7 @@ export const sessionQueryOptions = (
 ) => ({
   queryKey: ['/', Group, Individual, Evaluation, 'settings'],
   queryFn: () => fetchSessionParamsWorker(Handle, Group, Individual, Evaluation),
+  staleTime: 'static' as const,
 });
 
 /**

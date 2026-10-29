@@ -54,10 +54,10 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/re
   loader: ({ context }) => {
     const { Group, Individual, Evaluation, CleanHandle, Settings } = context;
 
-    const fetchSessionOutcomes = context.queryClient.fetchQuery(
+    const fetchSessionOutcomes = context.queryClient.query(
       sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
-    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
+    const fetchKeyboards = context.queryClient.query(keyboardQueryOptions(CleanHandle, Group, Individual));
 
     const totalQuery = trackSettlement(Promise.all([fetchSessionOutcomes, fetchKeyboards]));
 

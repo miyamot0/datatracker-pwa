@@ -55,13 +55,13 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
   loader: async ({ context }) => {
     const { Group, Individual, Evaluation, CleanHandle, Settings } = context;
 
-    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
+    const fetchKeyboards = context.queryClient.query(keyboardQueryOptions(CleanHandle, Group, Individual));
 
-    const fetchSessionOutcomes = context.queryClient.fetchQuery(
+    const fetchSessionOutcomes = context.queryClient.query(
       sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const fetchConditions = context.queryClient.fetchQuery(
+    const fetchConditions = context.queryClient.query(
       conditionQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 

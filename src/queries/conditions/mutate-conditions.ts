@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from '@/lib/uuid';
 import { MutateConditionsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**
- * This function is responsible for mutating the conditions associated with a specific group, individual, and evaluation. It takes in the necessary parameters to identify the target evaluation and the condition to be added. The function first retrieves the current list of conditions using React Query's `fetchQuery` method. It then performs the specified action (in this case, adding a new condition) by interacting with the file system through the provided directory handle. Finally, it returns the updated list of conditions after the mutation is complete.
+ * This function is responsible for mutating the conditions associated with a specific group, individual, and evaluation. It takes in the necessary parameters to identify the target evaluation and the condition to be added. The function first retrieves the current list of conditions using React Query's `query` method. It then performs the specified action (in this case, adding a new condition) by interacting with the file system through the provided directory handle. Finally, it returns the updated list of conditions after the mutation is complete.
  *
  * @param Group - The name of the group associated with the evaluation.
  * @param Individual - The name of the individual associated with the evaluation.
@@ -30,7 +30,7 @@ export const mutationConditions = async ({
   Handle: FileSystemDirectoryHandle;
   Action: 'Add' | 'Clear';
 }): Promise<string[]> => {
-  const conditions: string[] = await queryClient.fetchQuery(
+  const conditions: string[] = await queryClient.query(
     conditionQueryOptions(Handle, Group, Individual, Evaluation),
   );
 

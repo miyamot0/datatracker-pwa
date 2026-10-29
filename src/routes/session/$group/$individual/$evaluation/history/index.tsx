@@ -47,7 +47,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
     const { Group, Individual, Evaluation, CleanHandle, Settings } = context;
 
     const fetchSessionOutcomes = trackSettlement(
-      context.queryClient.fetchQuery(sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation)),
+      context.queryClient.query(sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation)),
     );
 
     return {

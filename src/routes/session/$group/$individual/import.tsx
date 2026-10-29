@@ -44,7 +44,7 @@ export const Route = createFileRoute('/session/$group/$individual/import')({
   loader: ({ context }) => {
     const { Group, Individual, CleanHandle } = context;
 
-    const fetchAllEvaluation = trackSettlement(context.queryClient.fetchQuery(evaluationsAllQueryOptions(CleanHandle)));
+    const fetchAllEvaluation = trackSettlement(context.queryClient.query(evaluationsAllQueryOptions(CleanHandle)));
 
     return {
       Group: CleanUpString(Group),

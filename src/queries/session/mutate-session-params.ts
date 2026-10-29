@@ -29,7 +29,7 @@ export const mutationSettingsParams = async ({
   Settings: SavedSettings;
   Handle: FileSystemDirectoryHandle;
 }): Promise<SavedSettings> => {
-  const savedSettings: SavedSettings = await queryClient.fetchQuery(
+  const savedSettings: SavedSettings = await queryClient.query(
     sessionQueryOptions(Handle, Group, Individual, Evaluation),
   );
 

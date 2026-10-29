@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from '@/lib/uuid';
 export const clientQueryOptions = (Handle: FileSystemDirectoryHandle, Group: string) => ({
   queryKey: ['/', Group],
   queryFn: () => fetchIndividualsWorker(Handle, Group),
+  staleTime: 'static' as const,
 });
 
 /**

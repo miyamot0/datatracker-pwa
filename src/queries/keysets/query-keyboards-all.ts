@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from '@/lib/uuid';
 export const keyboardsAllQueryOptions = (Handle: FileSystemDirectoryHandle, Group: string, Individual: string) => ({
   queryKey: ['/', Group, 'metaKeyboards'],
   queryFn: () => fetchKeyboardsAllWorker(Handle, Group, Individual),
+  staleTime: 'static' as const,
 });
 
 /**

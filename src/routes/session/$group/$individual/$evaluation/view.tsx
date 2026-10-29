@@ -54,8 +54,8 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/vi
   loader: async ({ context }) => {
     const { CleanHandle, Group, Individual, Evaluation, Settings } = context;
 
-    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
-    const fetchSessionOutcomes = context.queryClient.fetchQuery(
+    const fetchKeyboards = context.queryClient.query(keyboardQueryOptions(CleanHandle, Group, Individual));
+    const fetchSessionOutcomes = context.queryClient.query(
       sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 

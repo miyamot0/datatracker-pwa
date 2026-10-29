@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from '@/lib/uuid';
 import { MutateEvaluationsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**
- * This function is responsible for mutating the evaluations associated with a specific group and individual. It takes in the necessary parameters to identify the target evaluations and the action to be performed (in this case, adding, deleting, duplicating, or renaming evaluations). The function first retrieves the current list of evaluations using React Query's `fetchQuery` method. It then performs the specified action by interacting with the file system through the provided directory handle. Finally, it returns the updated list of evaluation names after the mutation is complete.
+ * This function is responsible for mutating the evaluations associated with a specific group and individual. It takes in the necessary parameters to identify the target evaluations and the action to be performed (in this case, adding, deleting, duplicating, or renaming evaluations). The function first retrieves the current list of evaluations using React Query's `query` method. It then performs the specified action by interacting with the file system through the provided directory handle. Finally, it returns the updated list of evaluation names after the mutation is complete.
  *
  * @param Group - The name of the group associated with the evaluations.
  * @param Individual - The name of the individual associated with the evaluations.
@@ -30,7 +30,7 @@ export const mutationEvaluations = async ({
   Handle: FileSystemDirectoryHandle;
   Action: 'Add' | 'Delete' | 'Duplicate' | 'Rename';
 }): Promise<string[]> => {
-  const evaluations: string[] = await queryClient.fetchQuery(evaluationQueryOptions(Handle, Group, Individual));
+  const evaluations: string[] = await queryClient.query(evaluationQueryOptions(Handle, Group, Individual));
 
   if (!evaluations) {
     throw new Error('Evaluations not found');

@@ -20,6 +20,7 @@ export const sessionOutcomesQueryOptions = (
 ) => ({
   queryKey: ['/', Group, Individual, Evaluation, 'outcomes'],
   queryFn: () => fetchSessionOutcomesWorker(Handle, Group, Individual, Evaluation),
+  staleTime: 'static' as const,
 });
 
 /**

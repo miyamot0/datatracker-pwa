@@ -26,7 +26,7 @@ export const mutateKeyboardsAll = async ({
   Individual: string;
   KeySets: KeySet[];
 }) => {
-  const keysets = await queryClient.fetchQuery(keyboardsAllQueryOptions(Handle, Group, Individual));
+  const keysets = await queryClient.query(keyboardsAllQueryOptions(Handle, Group, Individual));
 
   return await mutateKeyboardsAllWorker({
     Handle,

@@ -45,7 +45,7 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/import
   loader: ({ context }) => {
     const { Group, Individual, CleanHandle } = context;
 
-    const fetchAllKeysets = trackSettlement(context.queryClient.fetchQuery(keyboardsAllQueryOptions(CleanHandle, Group, Individual)));
+    const fetchAllKeysets = trackSettlement(context.queryClient.query(keyboardsAllQueryOptions(CleanHandle, Group, Individual)));
 
     return {
       Group,

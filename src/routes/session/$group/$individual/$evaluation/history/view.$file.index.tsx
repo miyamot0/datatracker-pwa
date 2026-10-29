@@ -61,15 +61,15 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
   loader: async ({ context }) => {
     const { Group, Individual, Evaluation, FileString, CleanHandle, Settings } = context;
 
-    const fetchSessionOutcomes = context.queryClient.fetchQuery(
+    const fetchSessionOutcomes = context.queryClient.query(
       sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const fetchSessionParams = context.queryClient.fetchQuery(
+    const fetchSessionParams = context.queryClient.query(
       sessionQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
+    const fetchKeyboards = context.queryClient.query(keyboardQueryOptions(CleanHandle, Group, Individual));
 
     const totalQuery = trackSettlement(Promise.all([fetchSessionOutcomes, fetchSessionParams, fetchKeyboards]));
 

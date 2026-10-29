@@ -35,7 +35,7 @@ export const mutationDeIdentifyIndividual = async ({
   RedactComments: boolean;
   Handle: FileSystemDirectoryHandle;
 }): Promise<string[]> => {
-  const individuals: string[] = await queryClient.fetchQuery(clientQueryOptions(Handle, Group));
+  const individuals: string[] = await queryClient.query(clientQueryOptions(Handle, Group));
 
   if (!individuals) {
     throw new Error('Individuals not found');

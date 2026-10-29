@@ -38,7 +38,7 @@ export const Route = createFileRoute('/session/$group/')({
   loader: ({ params, context }) => {
     const { Group, CleanHandle } = context;
 
-    const fetchClients = trackSettlement(context.queryClient.fetchQuery(clientQueryOptions(CleanHandle, Group)));
+    const fetchClients = trackSettlement(context.queryClient.query(clientQueryOptions(CleanHandle, Group)));
 
     return {
       Group: params.group,

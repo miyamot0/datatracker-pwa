@@ -19,6 +19,7 @@ export const conditionQueryOptions = (
 ) => ({
   queryKey: ['/', Group, Individual, Evaluation, 'conditions'],
   queryFn: () => fetchConditionsWorker(Handle, Group, Individual, Evaluation),
+  staleTime: 'static' as const,
 });
 
 /**

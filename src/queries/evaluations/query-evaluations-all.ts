@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from '@/lib/uuid';
 export const evaluationsAllQueryOptions = (Handle: FileSystemDirectoryHandle) => ({
   queryKey: ['/', 'metaEvaluations'],
   queryFn: () => fetchEvaluationsAllWorker(Handle),
+  staleTime: 'static' as const,
 });
 
 /**

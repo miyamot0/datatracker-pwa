@@ -44,7 +44,7 @@ export const mutationSettingsOutcomes = async ({
   Handle: FileSystemDirectoryHandle;
   Action: 'Delete' | 'EditCondition' | 'Modify' | 'Add';
 }): Promise<ModifiedSessionResult[]> => {
-  const sessionOutcomes: ModifiedSessionResult[] = await queryClient.fetchQuery(
+  const sessionOutcomes: ModifiedSessionResult[] = await queryClient.query(
     sessionOutcomesQueryOptions(Handle, Group, Individual, Evaluation),
   );
 

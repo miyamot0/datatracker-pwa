@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const workerState = vi.hoisted(() => ({ instance: null as null | { onmessage: any; onerror: any } }));
 
 vi.mock('@/App', () => ({
-  queryClient: { fetchQuery: vi.fn().mockResolvedValue([]) },
+  queryClient: { query: vi.fn().mockResolvedValue([]) },
 }));
 
 vi.mock('@/workers/mutations/file-query-mutate-worker.ts?worker', () => ({
