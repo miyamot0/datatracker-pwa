@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import Spreadsheet from 'react-spreadsheet';
+import { DataTable } from '@/components/ui/data-table';
 import { prepareDurationReliTable, prepareFrequencyReliTable } from '@/lib/reli';
 import BackButton from '@/components/ui/back-button';
 import { ReliabilityPairType } from '@/types/reli';
@@ -28,12 +28,9 @@ export default function ReliabilityViewerContent({ Paired, Keyset }: Props) {
         </CardHeader>
 
         <CardContent className="overflow-x-auto">
-          <Spreadsheet
-            data={frequencyData.rows}
-            columnLabels={frequencyData.headings}
-            onKeyDown={(ev) => {
-              if (ev.key.toLocaleLowerCase() === 'v') ev.preventDefault();
-            }}
+          <DataTable
+            headings={frequencyData.headings}
+            rows={frequencyData.rows.map((row) => row.map((cell) => cell.value))}
           />
         </CardContent>
       </Card>
@@ -48,12 +45,9 @@ export default function ReliabilityViewerContent({ Paired, Keyset }: Props) {
         </CardHeader>
 
         <CardContent className="overflow-x-auto">
-          <Spreadsheet
-            data={durationData.rows}
-            columnLabels={durationData.headings}
-            onKeyDown={(ev) => {
-              if (ev.key.toLocaleLowerCase() === 'v') ev.preventDefault();
-            }}
+          <DataTable
+            headings={durationData.headings}
+            rows={durationData.rows.map((row) => row.map((cell) => cell.value))}
           />
         </CardContent>
       </Card>

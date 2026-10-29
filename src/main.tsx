@@ -4,7 +4,6 @@ import App from './App.tsx';
 import '@/styles/globals.css';
 import 'virtual:docs-highlight.css';
 import 'sonner/dist/styles.css';
-import '@/styles/Spreadsheet.css';
 
 import { initializeSharedArrayBufferSupport } from '@/lib/shared-buffer.ts';
 import { startAnalyticsSync } from './lib/analytics/analytics-sync.ts';
