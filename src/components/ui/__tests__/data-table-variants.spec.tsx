@@ -90,6 +90,16 @@ describe('DataTable selection and actions', () => {
     expect(callback).toHaveBeenCalledWith(rows);
   });
 
+  it('shows the default delete button for the primary callback and clears the selection after it runs', async () => {
+    const callback = vi.fn();
+    await render(<DataTable columns={simpleColumns} data={rows} settings={settings(true)} callback={callback} />);
+
+    await page.getByRole('checkbox', { name: 'Select row' }).first().click();
+    await page.getByRole('button', { name: 'Delete' }).click();
+    expect(callback).toHaveBeenCalledWith([rows[0]]);
+    await expect.element(page.getByRole('checkbox', { name: 'Select row' }).first()).not.toBeChecked();
+  });
+
   it('renders the alternative button for the second callback', async () => {
     const callback2 = vi.fn();
     await render(
