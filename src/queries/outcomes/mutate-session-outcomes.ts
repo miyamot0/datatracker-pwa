@@ -4,7 +4,7 @@ import { queryClient } from '@/App';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { MutateSessionOutcomesRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from '@/lib/uuid';
+import { v4 } from '@/lib/uuid';
 
 /**
  * Mutates the session outcomes based on the specified action (Delete, EditCondition, Modify, Add) for a given group, individual, and evaluation. It interacts with the file system to delete, copy and rename, modify, or add session outcome files accordingly and returns the updated list of ModifiedSessionResult objects.
@@ -109,7 +109,7 @@ export const mutationKeysetsWorker = async ({
 }) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'MUTATE_SESSION_OUTCOMES',
     handle: Handle,
     groupName: Group,

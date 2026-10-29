@@ -3,7 +3,7 @@ import { KeySetExtended } from '@/types/keyset/extended';
 import { keyboardsAllQueryOptions } from './query-keyboards-all';
 import { queryClient } from '@/App';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from '@/lib/uuid';
+import { v4 } from '@/lib/uuid';
 import { MutateKeysetsAllRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**
@@ -62,7 +62,7 @@ export const mutateKeyboardsAllWorker = async ({
 }) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'MUTATE_KEYSETS_ALL',
     handle: Handle,
     groupName: Group,

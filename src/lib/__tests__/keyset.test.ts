@@ -1,5 +1,5 @@
 import { KeySet, KeySetInstance } from '../../types/keyset/core';
-import { v4 as uuidv4 } from '@/lib/uuid';
+import { v4 } from '@/lib/uuid';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createNewKeySet, deserializeKeySet, pullMostRecentSession, serializeKeySet } from '../keyset';
@@ -69,7 +69,7 @@ describe('KeySet Functions', () => {
   describe('createNewKeySet', () => {
     it('should create a new KeySet with the given name and generate a unique id', () => {
       const mockUUID = '123e4567-e89b-12d3-a456-426614174000';
-      (uuidv4 as Mock).mockReturnValue(mockUUID);
+      (v4 as Mock).mockReturnValue(mockUUID);
 
       const keySetName = 'Test KeySet';
       const result = createNewKeySet(keySetName);

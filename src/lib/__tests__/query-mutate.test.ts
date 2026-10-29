@@ -18,7 +18,7 @@ import {
 import { CleanUpString } from '@/lib/strings';
 import { extractDemoArchive, fetchVerifiedDemoArchive } from '@/lib/demo-archive';
 import { createNewKeySet, deserializeKeySet, serializeKeySet } from '@/lib/keyset';
-import { v4 as uuidv4 } from '@/lib/uuid';
+import { v4 } from '@/lib/uuid';
 import { KeySet } from '@/types/keyset/core';
 import { KeySetExtended } from '@/types/keyset/extended';
 import { ModifiedSessionResult } from '@/types/storage';
@@ -42,7 +42,7 @@ const mockedExtractDemoArchive = vi.mocked(extractDemoArchive);
 const mockedFetchVerifiedDemoArchive = vi.mocked(fetchVerifiedDemoArchive);
 const mockedCreateNewKeySet = vi.mocked(createNewKeySet);
 const mockedSerializeKeySet = vi.mocked(serializeKeySet);
-const mockedUuidv4 = vi.mocked(uuidv4);
+const mockedV4 = vi.mocked(v4);
 const mockedGenerateSavedFileName = vi.mocked(GenerateSavedFileName);
 const mockedImportExistingKeysets = vi.mocked(importExistingKeysets);
 
@@ -1269,7 +1269,7 @@ describe('file-query-mutate-actions', () => {
         throw new Error('Not found');
       });
 
-      mockedUuidv4.mockReturnValue('789');
+      mockedV4.mockReturnValue('789');
       mockedSerializeKeySet.mockReturnValue(JSON.stringify(mockDuplicatedKeyset));
       mockFileHandle.createWritable.mockResolvedValue(mockWritable);
 

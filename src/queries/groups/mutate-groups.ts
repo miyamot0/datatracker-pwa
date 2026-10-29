@@ -1,7 +1,7 @@
 import { queryClient } from '@/App';
 import { groupQueryOptions } from './query-groups';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from '@/lib/uuid';
+import { v4 } from '@/lib/uuid';
 import { MutateGroupsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**
@@ -49,7 +49,7 @@ export const mutationGroupsWorker = async ({
 }) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'MUTATE_GROUPS',
     handle: Handle,
     groupNames: Group,

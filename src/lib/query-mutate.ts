@@ -2,7 +2,7 @@ import { CleanUpString } from '@/lib/strings';
 import { DemoArchiveFile, extractDemoArchive, fetchVerifiedDemoArchive } from '@/lib/demo-archive';
 import { createNewKeySet, deserializeKeySet, serializeKeySet } from '@/lib/keyset';
 import { isReservedKeysetName } from '@/lib/reserved-names';
-import { v4 as uuidv4 } from '@/lib/uuid';
+import { v4 } from '@/lib/uuid';
 import { KeySet } from '@/types/keyset/core';
 import { KeySetExtended } from '@/types/keyset/extended';
 import { ModifiedSessionResult } from '@/types/storage';
@@ -614,7 +614,7 @@ export async function mutateKeysets(
         const key_set = {
           ...keySetMatch,
           Name: renameTo,
-          id: uuidv4(),
+          id: v4(),
           createdAt: new Date(),
           lastModified: new Date(),
         };

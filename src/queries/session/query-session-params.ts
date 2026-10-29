@@ -1,7 +1,7 @@
 import { DEFAULT_SESSION_SETTINGS, SavedSettings } from '@/lib/dtos/session-settings';
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
 import { FetchSessionParamsRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
-import { v4 as uuidv4 } from '@/lib/uuid';
+import { v4 } from '@/lib/uuid';
 
 /**
  * Defines the query options for fetching session parameters based on the provided file system handle, group, individual, and evaluation identifiers. It constructs a query key using these parameters and specifies a query function that retrieves the session parameters by calling the fetchSessionParams function with the appropriate arguments.
@@ -41,7 +41,7 @@ export const fetchSessionParamsWorker = async (
 ) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'FETCH_SESSION_PARAMS',
     handle: Handle,
     groupName: Group,

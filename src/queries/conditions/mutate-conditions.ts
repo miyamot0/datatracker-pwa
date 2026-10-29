@@ -1,7 +1,7 @@
 import { queryClient } from '@/App';
 import { conditionQueryOptions } from './query-conditions';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from '@/lib/uuid';
+import { v4 } from '@/lib/uuid';
 import { MutateConditionsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**
@@ -69,7 +69,7 @@ export const mutationConditionsWorker = async ({
 }) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'MUTATE_CONDITIONS',
     handle: Handle,
     groupName: Group,

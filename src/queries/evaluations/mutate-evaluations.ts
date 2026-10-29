@@ -1,7 +1,7 @@
 import { evaluationQueryOptions } from './query-evaluations';
 import { queryClient } from '@/App';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from '@/lib/uuid';
+import { v4 } from '@/lib/uuid';
 import { MutateEvaluationsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**
@@ -67,7 +67,7 @@ export const mutationEvaluationsWorker = async ({
 }) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'MUTATE_EVALUATIONS',
     handle: Handle,
     groupName: Group,

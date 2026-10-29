@@ -2,7 +2,7 @@ import { MutateEvaluationsAllRequest, MutationResponse } from '@/workers/mutatio
 import { EvaluationRecord } from '../keysets/types/evaluation-record';
 import { evaluationsAllQueryOptions } from './query-evaluations-all';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from '@/lib/uuid';
+import { v4 } from '@/lib/uuid';
 import { queryClient } from '@/App';
 
 /**
@@ -72,7 +72,7 @@ export const mutationEvaluationsAllWorker = async ({
 }) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'MUTATE_EVALUATIONS_ALL',
     handle: Handle,
     groupName: Group,

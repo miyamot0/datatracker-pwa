@@ -1,6 +1,6 @@
 import { KeySet } from '@/types/keyset/core';
 import { KeySetSerialize } from '@/types/keyset/serialization';
-import { v4 as uuidv4 } from '@/lib/uuid';
+import { v4 } from '@/lib/uuid';
 import { z } from 'zod';
 import { SavedSessionResult } from './dtos/session-results';
 import { ModifiedSessionResult } from '@/types/storage';
@@ -30,7 +30,7 @@ export function createNewKeySet(Name: string): KeySet {
     Name,
     FrequencyKeys: [],
     DurationKeys: [],
-    id: uuidv4(),
+    id: v4(),
     createdAt: new Date(),
     lastModified: new Date(),
     DerivedKeys: [],
