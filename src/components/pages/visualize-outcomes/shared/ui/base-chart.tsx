@@ -134,7 +134,6 @@ export function BaseChart({
 
   return (
     <ResponsiveContainer
-      {...noAnimationProps}
       width="100%"
       height={spacing.chartHeight}
       style={{ fontFamily: 'Times New Roman' }}
@@ -149,7 +148,6 @@ export function BaseChart({
     >
       <ComposedChart
         className="nuke-view-transition"
-        {...noAnimationProps}
         width={600}
         height={300}
         title=""

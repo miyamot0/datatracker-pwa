@@ -117,7 +117,6 @@ export default function SessionFigure({ Session, PlotData, KeysHidden, SeriesSty
         }
       >
         <ComposedChart
-          {...noAnimationProps}
           width={600}
           height={300}
           title=""
