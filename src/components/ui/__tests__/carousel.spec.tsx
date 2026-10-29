@@ -1,6 +1,6 @@
 import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 import '@/styles/globals.css';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselDots } from '../carousel';
@@ -71,5 +71,31 @@ describe('Carousel', () => {
     await region.click();
     await page.getByRole('region').element().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
     await expect.element(page.getByRole('button', { name: 'Go to slide 2' })).toHaveAttribute('aria-current', 'true');
+  });
+
+  it('forwards mouse and focus callbacks while still tracking pause state', async () => {
+    const onMouseEnter = vi.fn();
+    const onMouseLeave = vi.fn();
+    const onFocus = vi.fn();
+    const onBlur = vi.fn();
+    await render(
+      <Carousel opts={{ autoplay: true }} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} onFocus={onFocus} onBlur={onBlur}>
+        <CarouselContent>
+          <CarouselItem>One</CarouselItem>
+          <CarouselItem>Two</CarouselItem>
+        </CarouselContent>
+      </Carousel>,
+    );
+
+    const region = page.getByRole('region');
+    await region.hover();
+    expect(onMouseEnter).toHaveBeenCalled();
+    await page.getByRole('region').element().dispatchEvent(new MouseEvent('mouseout', { bubbles: true, relatedTarget: document.body }));
+    expect(onMouseLeave).toHaveBeenCalled();
+
+    (page.getByRole('region').element() as HTMLElement).dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    expect(onFocus).toHaveBeenCalled();
+    (page.getByRole('region').element() as HTMLElement).dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: document.body }));
+    expect(onBlur).toHaveBeenCalled();
   });
 });
