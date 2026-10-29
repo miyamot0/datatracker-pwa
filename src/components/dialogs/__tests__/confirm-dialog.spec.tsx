@@ -1,5 +1,5 @@
 import { render } from 'vitest-browser-react';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { describe, expect, it, vi } from 'vitest';
 import { ConfirmDialog, type ConfirmDialogProps } from '../confirm-dialog';
 
@@ -51,6 +51,40 @@ describe('ConfirmDialog', () => {
 
     expect(props.onConfirm).not.toHaveBeenCalled();
     expect(props.onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('calls onCancel when the cancel button is clicked', async () => {
+    const onCancel = vi.fn();
+    renderDialog({ onCancel });
+
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onCancel when dismissed with Escape', async () => {
+    const onCancel = vi.fn();
+    const props = renderDialog({ onCancel });
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(props.onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('does not call onCancel when confirmed', async () => {
+    const onCancel = vi.fn();
+    renderDialog({ onCancel, confirmLabel: 'Save' });
+
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+
+  it('focuses the confirm button on open when autoFocusConfirm is set', async () => {
+    renderDialog({ autoFocusConfirm: true, confirmLabel: 'Save' });
+
+    await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toHaveFocus();
   });
 
   it('styles the confirm button as destructive when requested', async () => {
