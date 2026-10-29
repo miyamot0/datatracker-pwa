@@ -1,4 +1,11 @@
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselDots,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 
 const IMAGES_REMOTE = [
   'concurrent_chains.svg',
@@ -12,15 +19,7 @@ const IMAGES_REMOTE = [
 export default function ImageCarousel() {
   return (
     <div className="max-w-lg">
-      <Carousel
-        opts={{
-          align: 'center',
-          loop: true,
-          axis: 'x',
-          containScroll: 'keepSnaps',
-          skipSnaps: true,
-        }}
-      >
+      <Carousel opts={{ loop: true, autoplay: true }}>
         <CarouselContent>
           {IMAGES_REMOTE.map((img, index) => (
             <CarouselItem key={index} className="w-full flex flex-row justify-center items-center shadow-xl">
@@ -30,6 +29,7 @@ export default function ImageCarousel() {
         </CarouselContent>
         <CarouselPrevious className="shadow-xl" />
         <CarouselNext className="shadow-xl" />
+        <CarouselDots />
       </Carousel>
     </div>
   );

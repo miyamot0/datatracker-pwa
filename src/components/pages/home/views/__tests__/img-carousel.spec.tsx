@@ -13,6 +13,7 @@ vi.mock('@/components/ui/carousel', () => ({
   CarouselItem: ({ children }: { children: React.ReactNode }) => <div data-testid="carousel-item">{children}</div>,
   CarouselNext: () => <button data-testid="carousel-next">Next</button>,
   CarouselPrevious: () => <button data-testid="carousel-previous">Previous</button>,
+  CarouselDots: () => <div data-testid="carousel-dots" />,
 }));
 
 // ----- Import under test -----
