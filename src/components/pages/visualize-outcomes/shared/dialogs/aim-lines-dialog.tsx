@@ -152,7 +152,7 @@ export function AimLinesDialog({ styles, page, onChange, open: openProp, onOpenC
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto data-[state=open]:slide-in-from-left-0! data-[state=open]:slide-in-from-top-0! data-[state=closed]:slide-out-to-left-0! data-[state=closed]:slide-out-to-top-0! data-[state=open]:zoom-in-100! data-[state=closed]:zoom-out-100!">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Aim Lines</DialogTitle>
           <DialogDescription>
