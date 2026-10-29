@@ -2,8 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Pencil1Icon } from '@radix-ui/react-icons';
-import { DeleteIcon, SaveIcon } from 'lucide-react';
+import { DeleteIcon, PencilIcon, SaveIcon } from 'lucide-react';
 import BackButton from '@/components/ui/back-button';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { toast } from 'sonner';
@@ -246,7 +245,7 @@ export default function SessionManagerContent({
                           );
                         }}
                       >
-                        <Pencil1Icon className="h-4 w-4" />
+                        <PencilIcon className="h-4 w-4" />
                         Replace Key
                       </Button>
                     </div>

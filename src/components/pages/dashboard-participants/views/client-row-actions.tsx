@@ -61,7 +61,6 @@ export default function ClientRowActions({ Group, Individual, Clients, Handle, S
     mode: 'onChange',
   });
 
-  // validated manually (not via zodResolver) since @hookform/resolvers v3 is incompatible with zod v4
   const watchedValues = form.watch();
   const parseResult = deIdentifySchema.safeParse(watchedValues);
   const isFormValid = parseResult.success;

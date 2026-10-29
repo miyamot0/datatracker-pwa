@@ -16,7 +16,7 @@ import {
 } from '@/components/pages/editor-session/session-designer-schema';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from '@/lib/zod-resolver';
 import { z } from 'zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { SavedSettings, toSavedSettings } from '@/lib/dtos/session-settings';
