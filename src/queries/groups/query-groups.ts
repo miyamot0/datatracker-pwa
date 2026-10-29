@@ -1,6 +1,6 @@
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
 import { FetchGroupsRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from '@/lib/uuid';
 
 /**
  * Queries the groups by accessing the file system and retrieving the names of group directories. It returns an array of group names that are found, or an empty array if no groups are found or if there is an error during the file system operations.

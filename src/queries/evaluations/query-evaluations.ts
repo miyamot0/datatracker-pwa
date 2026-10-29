@@ -1,6 +1,6 @@
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
 import { FetchEvaluationsRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from '@/lib/uuid';
 
 /**
  * Queries the evaluations for a specific group and individual by accessing the file system and retrieving the names of evaluation directories within the individual's folder. It returns an array of evaluation names that are found, or an empty array if no evaluations are found or if there is an error during the file system operations.

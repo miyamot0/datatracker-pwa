@@ -1,7 +1,7 @@
 import { clientQueryOptions } from './query-individuals';
 import { queryClient } from '@/App';
 import DeIdentifyIndividualWorker from '@/workers/mutations/deidentify-individual-worker.ts?worker';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from '@/lib/uuid';
 import {
   DeIdentifyIndividualRequest,
   DeIdentifyIndividualResponse,

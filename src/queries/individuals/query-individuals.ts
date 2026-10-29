@@ -1,6 +1,6 @@
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
 import { FetchClientsRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from '@/lib/uuid';
 
 /**
  * Queries the individuals for a specific group by accessing the file system and retrieving the names of individual directories within the group's folder. It returns an array of individual names that are found, or an empty array if no individuals are found or if there is an error during the file system operations.

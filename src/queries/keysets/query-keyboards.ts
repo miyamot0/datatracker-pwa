@@ -1,7 +1,7 @@
 import { KeySet } from '@/types/keyset/core';
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
 import { FetchKeysetsRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from '@/lib/uuid';
 
 /**
  * Queries the keyboards for a specific group and individual by accessing the file system and retrieving the relevant information about the keyboards stored within the individual's folder. It returns an array of KeySet objects that contain the details of each keyboard found, or an empty array if no keyboards are found or if there is an error during the file system operations.

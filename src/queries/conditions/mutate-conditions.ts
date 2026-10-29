@@ -1,7 +1,7 @@
 import { queryClient } from '@/App';
 import { conditionQueryOptions } from './query-conditions';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from '@/lib/uuid';
 import { MutateConditionsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**

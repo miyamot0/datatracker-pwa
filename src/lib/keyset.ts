@@ -1,6 +1,6 @@
 import { KeySet } from '@/types/keyset/core';
 import { KeySetSerialize } from '@/types/keyset/serialization';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from '@/lib/uuid';
 import { z } from 'zod';
 import { SavedSessionResult } from './dtos/session-results';
 import { ModifiedSessionResult } from '@/types/storage';

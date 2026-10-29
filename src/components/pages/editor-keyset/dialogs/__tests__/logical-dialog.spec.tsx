@@ -24,7 +24,7 @@ vi.mock('@/lib/notifications', () => ({
   displayConditionalNotification: mockDisplayConditionalNotification,
 }));
 
-vi.mock('uuid', () => ({
+vi.mock('@/lib/uuid', () => ({
   v4: () => 'test-uuid-1234',
 }));
 

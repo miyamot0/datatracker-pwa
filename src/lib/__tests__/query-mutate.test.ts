@@ -18,7 +18,7 @@ import {
 import { CleanUpString } from '@/lib/strings';
 import { DataExampleFiles } from '@/lib/data';
 import { createNewKeySet, deserializeKeySet, serializeKeySet } from '@/lib/keyset';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from '@/lib/uuid';
 import { KeySet } from '@/types/keyset/core';
 import { KeySetExtended } from '@/types/keyset/extended';
 import { ModifiedSessionResult } from '@/types/storage';
@@ -32,7 +32,7 @@ vi.mock('@/lib/data', () => ({
   DataExampleFiles: [],
 }));
 vi.mock('@/lib/keyset');
-vi.mock('uuid');
+vi.mock('@/lib/uuid');
 vi.mock('@/lib/writer');
 vi.mock('@/lib/keysets/import-keysets');
 

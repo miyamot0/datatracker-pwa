@@ -1,7 +1,7 @@
 import { clientQueryOptions } from './query-individuals';
 import { queryClient } from '@/App';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from '@/lib/uuid';
 import { MutateIndividualsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**

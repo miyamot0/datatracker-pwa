@@ -1,5 +1,5 @@
 import { KeySet, KeySetInstance } from '../../types/keyset/core';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from '@/lib/uuid';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createNewKeySet, deserializeKeySet, pullMostRecentSession, serializeKeySet } from '../keyset';
@@ -8,7 +8,7 @@ import { SavedSettings } from '../dtos/session-settings';
 import { ModifiedSessionResult } from '@/types/storage';
 import { Mock, vi, describe, it, expect, beforeEach } from 'vitest';
 
-vi.mock('uuid', () => ({
+vi.mock('@/lib/uuid', () => ({
   v4: vi.fn(),
 }));
 

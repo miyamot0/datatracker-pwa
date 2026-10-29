@@ -19,7 +19,7 @@ import { KeySet } from '@/types/keyset/core';
 import { KeySetLogical } from '@/types/keyset/serialization';
 import { PlusIcon, Trash } from 'lucide-react';
 import { createRef, useContext, useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from '@/lib/uuid';
 
 type Props = {
   KeySet: KeySet;

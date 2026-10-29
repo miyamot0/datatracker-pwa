@@ -1,7 +1,7 @@
 import { EvaluationRecord } from '../keysets/types/evaluation-record';
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
 import { FetchEvaluationsAllRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from '@/lib/uuid';
 
 /**
  * Queries all evaluations by accessing the file system and retrieving the relevant information about groups, individuals, evaluations, and their associated conditions. It returns an array of EvaluationRecord objects that contain the details of each evaluation found within the file system structure, or an empty array if no evaluations are found or if there is an error during the file system operations.

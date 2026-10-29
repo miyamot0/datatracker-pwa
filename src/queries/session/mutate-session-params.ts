@@ -3,7 +3,7 @@ import { SavedSettings } from '@/lib/dtos/session-settings';
 import { queryClient } from '@/App';
 import { MutateSessionParamsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from '@/lib/uuid';
 
 /**
  * Mutates the session parameters by updating the settings for a specific group, individual, and evaluation. It interacts with the file system to write the new settings to a 'settings.json' file within the appropriate evaluation directory and returns the updated settings after the mutation is complete.

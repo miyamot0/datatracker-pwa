@@ -3,7 +3,7 @@ import { KeySetExtended } from '@/types/keyset/extended';
 import { keyboardsAllQueryOptions } from './query-keyboards-all';
 import { queryClient } from '@/App';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from '@/lib/uuid';
 import { MutateKeysetsAllRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**
