@@ -250,7 +250,7 @@ describe('KeySet Functions', () => {
     it('should load the demo DerivedKeys without dropping any entries', () => {
       const demoPath = resolve(
         process.cwd(),
-        'src/assets/data/Evaluation Study/Participant 001/FC Treatment Evaluation.json',
+        'demo-data/Evaluation Study/Participant 001/FC Treatment Evaluation.json',
       );
       const demo = JSON.parse(readFileSync(demoPath, 'utf8'));
 

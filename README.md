@@ -1,4 +1,4 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-99.33_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-97.60_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-99.79_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-99.31_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-97.58_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-99.72_Percent-green>)
 
 ![Static Badge Version](https://img.shields.io/badge/Version-0.5.15-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
@@ -157,6 +157,8 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
 class-variance-authority (0.7.1). Copyright Joe Bell (https://joebell.co.uk) -- Apache-2.0 Licensed: [Repo](https://github.com/joe-bell/cva.git) 
  
 clsx (2.1.1). Copyright Luke Edwards luke.edwards05@gmail.com https://lukeed.com -- MIT Licensed: [Repo](https://github.com/lukeed/clsx.git) 
+ 
+fflate (0.8.3). Copyright Arjun Barrett <arjunbarrett@gmail.com> -- MIT Licensed: [Repo](https://github.com/101arrowz/fflate.git) 
  
 lucide-react (0.577.0). Copyright Eric Fennis -- ISC Licensed: [Repo](https://github.com/lucide-icons/lucide.git) 
  

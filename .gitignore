@@ -15,7 +15,7 @@ dist-island
 *.local
 .tanstack
 *.tsbuildinfo
-demo
+!src/assets/demo/
 
 # Editor directories and files
 !.vscode/extensions.json

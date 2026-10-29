@@ -35,18 +35,18 @@ import { SessionTerminationOptions } from '@/types/terminations';
 import { preparePlotDataCumulative } from '@/lib/summary';
 import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
 import { generateTicks } from '@/lib/graphing/chart-setup';
-import demandTreatmentKeysetJson from '@/assets/data/Evaluation Study/Participant 001/FC Treatment Evaluation.json';
+import demandTreatmentKeysetJson from '../../../../demo-data/Evaluation Study/Participant 001/FC Treatment Evaluation.json';
 
 const demandTreatmentSessionModules = {
   ...import.meta.glob(
-    '/src/assets/data/Evaluation Study/Participant 001/Demand Treatment Evaluation/Baseline/*_Primary.json',
+    '/demo-data/Evaluation Study/Participant 001/Demand Treatment Evaluation/Baseline/*_Primary.json',
     {
       eager: true,
       import: 'default',
     },
   ),
   ...import.meta.glob(
-    '/src/assets/data/Evaluation Study/Participant 001/Demand Treatment Evaluation/Intervention/*_Primary.json',
+    '/demo-data/Evaluation Study/Participant 001/Demand Treatment Evaluation/Intervention/*_Primary.json',
     {
       eager: true,
       import: 'default',

@@ -1,5 +1,5 @@
 import { CleanUpString } from '@/lib/strings';
-import { DataExampleFiles } from '@/lib/data';
+import { DemoArchiveFile, extractDemoArchive, fetchVerifiedDemoArchive } from '@/lib/demo-archive';
 import { createNewKeySet, deserializeKeySet, serializeKeySet } from '@/lib/keyset';
 import { isReservedKeysetName } from '@/lib/reserved-names';
 import { v4 as uuidv4 } from '@/lib/uuid';
@@ -20,9 +20,13 @@ export const DemoDataFolderName = 'Example DataTracker Group';
  * Utility function to copy demo data into user's file system. Checks for existing demo folder to prevent overwriting.
  *
  * @param handle - The FileSystemDirectoryHandle representing the root directory where the demo data should be copied.
+ * @param loadArchive - Returns the verified demo archive bytes. Rejects if the download or integrity check fails.
  * @returns A promise that resolves when the copying is complete, or rejects if the demo folder already exists or if any error occurs during copying.
  */
-export async function copyDemoData(handle: FileSystemDirectoryHandle): Promise<void> {
+export async function copyDemoData(
+  handle: FileSystemDirectoryHandle,
+  loadArchive: () => Promise<Uint8Array> = () => fetchVerifiedDemoArchive(),
+): Promise<void> {
   // Check if demo folder already exists
   const groups: string[] = [];
   for await (const [name, entry] of handle.entries()) {
@@ -37,9 +41,11 @@ export async function copyDemoData(handle: FileSystemDirectoryHandle): Promise<v
     );
   }
 
+  const demoFiles: DemoArchiveFile[] = extractDemoArchive(await loadArchive());
+
   const folder = await handle.getDirectoryHandle(DemoDataFolderName, { create: true });
 
-  for (const file of DataExampleFiles) {
+  for (const file of demoFiles) {
     const participantId = file.path[0];
     const participantFolder = await folder.getDirectoryHandle(participantId, { create: true });
 
@@ -51,9 +57,9 @@ export async function copyDemoData(handle: FileSystemDirectoryHandle): Promise<v
       subfolderHandle = await subfolderHandle.getDirectoryHandle(subfolder, { create: true });
     }
 
-    const fileHandle = await subfolderHandle.getFileHandle(file.filename!, { create: true });
+    const fileHandle = await subfolderHandle.getFileHandle(file.filename, { create: true });
     const writable = await fileHandle.createWritable();
-    await writable.write(file.text);
+    await writable.write(file.bytes as BufferSource);
     await writable.close();
   }
 }
