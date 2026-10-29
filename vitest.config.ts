@@ -4,10 +4,11 @@ import { playwright } from '@vitest/browser-playwright';
 import tailwindcss from '@tailwindcss/vite';
 import { CoverageV8Options } from 'vitest/node';
 import { loadEnv } from 'vite';
+import { prerenderDocsPlugin } from './scripts/plugins/prerender-docs.ts';
 
 const componentProj: TestProjectConfiguration = {
   extends: false,
-  plugins: [tailwindcss()],
+  plugins: [tailwindcss(), prerenderDocsPlugin],
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
@@ -38,6 +39,7 @@ const componentProj: TestProjectConfiguration = {
 
 const logicProj: TestProjectConfiguration = {
   extends: false,
+  plugins: [prerenderDocsPlugin],
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),

@@ -99,7 +99,7 @@ vi.mock('@/routes/documentation/$slug', () => ({
 }));
 
 vi.mock('@/components/pages/documentation/views/md-viewer-lite', () => ({
-  MdViewerLite: ({ source }) => <div data-testid="md-viewer-lite">{source}</div>,
+  MdViewerLite: ({ html }) => <div data-testid="md-viewer-lite">{html}</div>,
 }));
 
 vi.mock('@/components/elements/page-wrapper', () => ({

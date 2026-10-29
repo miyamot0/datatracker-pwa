@@ -17,7 +17,7 @@ The DataTracker program is designed to support many forms of IOA customary in cl
 
 The EIA is the percentage of intervals in which the raters agree on the exact same behavior. This is the most stringent form of agreement. It is calculated as follows:
 
-```
+```text
 EIA = (Number of Matching Intervals / Total Number of Intervals) * 100
 ```
 
@@ -27,7 +27,7 @@ For example, if two raters agreement closely across intervals, but only _exactly
 
 The PIA is the percentage of intervals in which the raters agree on the presence of the behavior. This is a less stringent form of agreement. It is calculated by _averaging_ the percentage of intervals in which the raters agree on the presence of the behavior. It is calculated by dividing the lower of the two values by the higher of the two values and multiplying. This is done for each bin and then averaged across all 10s bins.
 
-```
+```text
 PIA[n] = (min(Value) / max(Value))
 
 PIA = mean(PIA) \* 100
@@ -39,7 +39,7 @@ Whereas the EIA indicates 'strict' agreement, which may be difficult to achieve 
 
 The TIA is another more permissive IOA metric. The TIA reflects agreement on the _presence_ and _absence_ of target behavior. Specifically, it reflects agreement on whether _some_ degree of behavior did or did not occur.
 
-```
+```text
 TIA = (Bins with Agreement something did or didn't occur / Total Number of Bins) * 100
 ```
 
@@ -49,7 +49,7 @@ The TIA is somewhat more permissive than the PIA and may be a better fit for beh
 
 The OIA is related to the TIA, but specific to agreement on the _presence_ of some target behavior. That is, it reflects the percentage of agreement where raters match on the _presence_ of behavior.
 
-```
+```text
 OIA = (Bins with Agreement / Total Number of Bins) * 100
 ```
 
@@ -59,7 +59,7 @@ The OIA warrants considerations like the TIA.
 
 The NIA is related to the TIA, but specific to agreement on the _absence_ of some target behavior. That is, it reflects the percentage of agreement where raters match on the _absence_ of behavior. It is essentially the _inverse_ of OIA.
 
-```
+```text
 NIA = (Bins with Agreement / Total Number of Bins) * 100
 ```
 
@@ -69,7 +69,7 @@ The OIA warrants considerations like the TIA.
 
 Finally, the RPMA is the number of responses per minute that the raters agree on. Said more simply, this calculation focuses on a sequence of six 10s interval bins rather than one, which may be more valid when rapid behavior onset and offset introduces challenges to consistent recording.
 
-```
+```text
 RPMA = (60s Bins with Agreement / Total Number of 60s Bins) * 100
 ```
 

@@ -2,8 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import '@/styles/globals.css';
-import '@/styles/github.min.css';
-import '@/styles/github-dark.min.css';
+import 'virtual:docs-highlight.css';
 import 'sonner/dist/styles.css';
 import '@/styles/Spreadsheet.css';
 

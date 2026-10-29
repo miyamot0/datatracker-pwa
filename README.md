@@ -1,4 +1,4 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-99.42_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-97.75_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-99.78_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-99.41_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-97.72_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-99.85_Percent-green>)
 
 ![Static Badge Version](https://img.shields.io/badge/Version-0.5.15-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
@@ -186,15 +186,11 @@ react-dom (18.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/fac
  
 react-hook-form (7.90.0). Copyright Beier(Bill) Luo <bluebill1049@hotmail.com> -- MIT Licensed: [Repo](https://github.com/react-hook-form/react-hook-form.git) 
  
-react-markdown (10.1.0). Copyright Espen Hovlandsdal <espen@hovlandsdal.com> -- MIT Licensed: [Repo](https://github.com/remarkjs/react-markdown.git) 
- 
 react-spreadsheet (0.10.1). Copyright Iddan Aaronsohn <mail@aniddan.com> (https://aniddan.com) -- MIT Licensed: [Repo](https://github.com/iddan/react-spreadsheet.git) 
  
 react-use-pwa-install (1.0.3). Copyright Filip Chalupa chalupa.filip@gmail.com https://www.npmjs.com/~onset -- ISC Licensed: [Repo](https://github.com/FilipChalupa/react-use-pwa-install.git) 
  
 recharts (3.10.1). Copyright recharts group -- MIT Licensed: [Repo](https://github.com/recharts/recharts.git) 
- 
-rehype-highlight (7.0.2). Copyright Titus Wormer <tituswormer@gmail.com> (https://wooorm.com) -- MIT Licensed: [Repo](https://github.com/rehypejs/rehype-highlight.git) 
  
 scheduler (0.23.2). Copyright n/a -- MIT Licensed: [Repo](https://github.com/facebook/react.git) 
  

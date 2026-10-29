@@ -1,37 +1,23 @@
-import { KeywordColors } from '@/types/colors';
+import { AllFrontMatter, AllKeywordsArray, loadBody } from 'virtual:docs';
 import { ParsedFrontMatterType } from '@/types/mdx';
-import { generateKeywordColors } from './colors';
+
+export { AllFrontMatter, AllKeywordsArray };
 
 /**
- * Generate an array of documentation objects by parsing the front matter and content of markdown files in the specified directory
+ * Looks up the front matter for a documentation entry by its slug (filename without `.md`)
  */
-const all_md_files = import.meta.glob('/src/assets/content/*.md', { query: '?raw', eager: true, import: 'default' });
+export const findFrontMatter = (slug: string) => AllFrontMatter.find((matter) => matter.slug === slug);
 
 /**
- * Generate an array of documentation objects by parsing the front matter and content of markdown files in the specified directory
+ * Loads a documentation entry with its pre-rendered HTML body (built at compile time by the prerender-docs plugin)
  *
- * @returns an array of documentation objects with parsed front matter and content
+ * @returns the entry, or undefined if no entry exists for the slug
  */
-export const DocumentationObjects: ParsedFrontMatterType[] = Object.entries(all_md_files).map(([key, value]) => {
-  const filename = key.split('/').pop();
-  const content = (value as string).split('---');
+export async function loadEntry(slug: string): Promise<ParsedFrontMatterType | undefined> {
+  const matter = findFrontMatter(slug);
+  const load = loadBody[slug];
+  if (!matter || !load) return undefined;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const matter = {} as any;
-  const entries = content[1].split('\n').filter((str: string) => str.trim() !== '');
-
-  entries.forEach((entry) => {
-    const [key, value] = entry.split(':');
-    matter[key.trim()] = value.trim().replaceAll("'", '');
-  });
-
-  matter.index = parseInt(matter.index);
-  matter.filename = filename?.trim();
-  matter.slug = filename?.replace('.md', '').trim();
-
-  return { matter, value: content[2] } satisfies ParsedFrontMatterType;
-});
-
-export const AllFrontMatter = DocumentationObjects.map((doc) => doc.matter).sort((a, b) => a.index - b.index);
-
-export const AllKeywordsArray: KeywordColors[] = generateKeywordColors(AllFrontMatter);
+  const { default: value } = await load();
+  return { matter, value };
+}
