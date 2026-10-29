@@ -2,7 +2,7 @@
   "name": "data-tracker",
   "type": "module",
   "engines": {
-    "node": "24.22.1"
+    "node": "^24.22.1"
   },
   "description": "DataTracker is a web application that helps you to track various forms of behavioral phenomena",
   "homepage": "https://www.smallnstats.com",
