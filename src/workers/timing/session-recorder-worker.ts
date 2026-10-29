@@ -41,6 +41,8 @@ class SessionRecorderWorker {
 
     const { systemEvents, startTime } = result;
 
+    uiUpdateCounter = 0;
+
     this.postMessage({
       type: 'SYSTEM_EVENT',
       payload: {
