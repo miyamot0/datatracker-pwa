@@ -15,6 +15,7 @@ import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outc
 import { queryClient } from '@/App';
 import { KeyManageType } from '@/types/timing';
 import { useRouter, useRouterState } from '@tanstack/react-router';
+import { useConfirmDialog } from '@/components/dialogs/use-confirm-dialog';
 
 function ColoredDot({ KeyObject }: { KeyObject: KeyManageType }) {
   let key_color = '#fff';
@@ -69,6 +70,7 @@ export default function SessionManagerContent({
 
   const [currentKeys, setCurrentKeys] = useState(SavedKeys);
   const textareaRef = useRef(null);
+  const { openConfirmDialog, confirmDialog } = useConfirmDialog();
 
   const mutateSessionOutcomes = useMutation({
     mutationFn: mutationSettingsOutcomes,
@@ -118,25 +120,24 @@ export default function SessionManagerContent({
               variant={'outline'}
               className="shadow"
               size={'sm'}
-              onClick={() => {
-                const confirm_save = window.confirm(
-                  'Are you sure you want to save the changes made to this session file?',
-                );
-
-                if (!confirm_save) {
-                  return;
-                }
-
-                toast.promise(async () => await saveUpdatedSession(), {
-                  loading: 'Saving updated session...',
-                  success: () => {
-                    return 'Session file has been updated successfully!';
+              onClick={() =>
+                openConfirmDialog({
+                  title: 'Save Session Changes',
+                  description: 'Are you sure you want to save the changes made to this session file?',
+                  confirmLabel: 'Save',
+                  onConfirm: () => {
+                    toast.promise(async () => await saveUpdatedSession(), {
+                      loading: 'Saving updated session...',
+                      success: () => {
+                        return 'Session file has been updated successfully!';
+                      },
+                      error: (e: Error) => {
+                        return `An error occurred while saving the session file: ${e.message}.`;
+                      },
+                    });
                   },
-                  error: (e: Error) => {
-                    return `An error occurred while saving the session file: ${e.message}.`;
-                  },
-                });
-              }}
+                })
+              }
             >
               <SaveIcon className="mr-2 h-4 w-4" />
               Update File
@@ -193,17 +194,17 @@ export default function SessionManagerContent({
                         variant={'destructive'}
                         className="text-primary flex flex-row gap-1 items-center text-white"
                         disabled={!(key.KeyType === 'Frequency' || key.KeyType === 'Duration')}
-                        onClick={() => {
-                          const confirm_delete = window.confirm(
-                            `Are you sure you want to delete the key press of "${
+                        onClick={() =>
+                          openConfirmDialog({
+                            title: 'Delete Key Press',
+                            description: `Are you sure you want to delete the key press of "${
                               key.KeyDescription
                             }" recorded at ${key.TimeIntoSession.toFixed(2)} seconds? This action cannot be undone.`,
-                          );
-
-                          if (!confirm_delete) return;
-
-                          setCurrentKeys((prevKeys) => prevKeys.filter((_, i) => i !== index));
-                        }}
+                            confirmLabel: 'Delete',
+                            destructive: true,
+                            onConfirm: () => setCurrentKeys((prevKeys) => prevKeys.filter((_, i) => i !== index)),
+                          })
+                        }
                       >
                         <DeleteIcon className="h-4 w-4" />
                         Delete Key
@@ -266,6 +267,7 @@ export default function SessionManagerContent({
           <Textarea ref={textareaRef} minLength={3} defaultValue={Session.Comments} />
         </div>
       </CardContent>
+      {confirmDialog}
     </Card>
   );
 }

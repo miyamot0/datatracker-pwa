@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { queryClient } from '@/App';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
+import { useConfirmDialog } from '@/components/dialogs/use-confirm-dialog';
 
 export default function DashboardHistoryPage({
   Group,
@@ -32,6 +33,7 @@ export default function DashboardHistoryPage({
   const router = useRouter();
   const routerState = useRouterState();
   const currentRouteId = routerState.matches[routerState.matches.length - 1]?.routeId;
+  const { openConfirmDialog, confirmDialog } = useConfirmDialog();
 
   const mutateSessionOutcomes = useMutation({
     mutationFn: mutationSettingsOutcomes,
@@ -158,34 +160,34 @@ export default function DashboardHistoryPage({
           columns={columns}
           data={Sessions}
           callback={async (rows) => {
-            const confirm_delete = window.confirm(
-              `Are you sure you want to delete ${rows.length} sessions? This CANNOT be undone.`,
-            );
-
-            if (!confirm_delete) {
-              return;
-            }
-
-            toast.promise(
-              async () =>
-                await mutateSessionOutcomes.mutateAsync({
-                  Handle,
-                  Group,
-                  Individual,
-                  Evaluation,
-                  Outcomes: rows,
-                  Action: 'Delete',
-                }),
-              {
-                loading: 'Deleting specific session files...',
-                success: () => {
-                  return 'Session files have been deleted successfully!';
-                },
-                error: () => {
-                  return 'An error occurred while deleting specific session files.';
-                },
+            openConfirmDialog({
+              title: 'Delete Sessions',
+              description: `Are you sure you want to delete ${rows.length} sessions? This CANNOT be undone.`,
+              confirmLabel: 'Delete',
+              destructive: true,
+              onConfirm: () => {
+                toast.promise(
+                  async () =>
+                    await mutateSessionOutcomes.mutateAsync({
+                      Handle,
+                      Group,
+                      Individual,
+                      Evaluation,
+                      Outcomes: rows,
+                      Action: 'Delete',
+                    }),
+                  {
+                    loading: 'Deleting specific session files...',
+                    success: () => {
+                      return 'Session files have been deleted successfully!';
+                    },
+                    error: () => {
+                      return 'An error occurred while deleting specific session files.';
+                    },
+                  },
+                );
               },
-            );
+            });
           }}
           customCheckboxButton2={<>Rename Conditions</>}
           callback2={async (rows) => {
@@ -222,6 +224,7 @@ export default function DashboardHistoryPage({
           }}
         />
       </CardContent>
+      {confirmDialog}
     </Card>
   );
 }

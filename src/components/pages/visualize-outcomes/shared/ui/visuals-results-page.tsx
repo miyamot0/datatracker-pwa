@@ -17,6 +17,7 @@ import { ToggleDisplayKey } from '@/types/visuals';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { filteredSessionScoringOptions, ScheduleMappingOptions, ScoringOptionsMapType } from '@/types/schedules';
 import { RESERVED_STYLES_FILE_NAME } from '@/lib/reserved-names';
+import { useConfirmDialog } from '@/components/dialogs/use-confirm-dialog';
 import {
   applyStylesFile,
   deleteStylesFile,
@@ -94,6 +95,7 @@ export function VisualsResultsPage({
     defaultSchedule: TimerMapping,
   });
   const figureRef = useRef<HTMLDivElement>(null);
+  const { openConfirmDialog, confirmDialog } = useConfirmDialog();
 
   const onWriteStyles = async () => {
     try {
@@ -145,19 +147,22 @@ export function VisualsResultsPage({
     }
   };
 
-  const onDeleteStyles = async () => {
-    if (!window.confirm(`Delete ${RESERVED_STYLES_FILE_NAME} from this evaluation folder? This cannot be undone.`)) {
-      return;
-    }
-
-    try {
-      const deleted = await deleteStylesFile(Handle, Group, Individual, Evaluation);
-      toast.success(deleted ? `Deleted ${RESERVED_STYLES_FILE_NAME}` : `No ${RESERVED_STYLES_FILE_NAME} to delete`);
-    } catch (error) {
-      console.error('Error deleting styles file', error);
-      toast.error(`Could not delete ${RESERVED_STYLES_FILE_NAME}`);
-    }
-  };
+  const onDeleteStyles = () =>
+    openConfirmDialog({
+      title: `Delete ${RESERVED_STYLES_FILE_NAME}`,
+      description: `Delete ${RESERVED_STYLES_FILE_NAME} from this evaluation folder? This cannot be undone.`,
+      confirmLabel: 'Delete',
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          const deleted = await deleteStylesFile(Handle, Group, Individual, Evaluation);
+          toast.success(deleted ? `Deleted ${RESERVED_STYLES_FILE_NAME}` : `No ${RESERVED_STYLES_FILE_NAME} to delete`);
+        } catch (error) {
+          console.error('Error deleting styles file', error);
+          toast.error(`Could not delete ${RESERVED_STYLES_FILE_NAME}`);
+        }
+      },
+    });
 
   // Matches the legend order (first appearance in results), so dialog rows and default colours line up with the chart
   const legendConditionOrder = getUniqueSessionConditions(ResultsFiltered);
@@ -264,6 +269,7 @@ export function VisualsResultsPage({
           </Suspense>
         )}
       </CardContent>
+      {confirmDialog}
     </Card>
   );
 }

@@ -6,7 +6,6 @@ const mockMutateAsync = vi.hoisted(() => vi.fn());
 const mockInvalidate = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const mockSetQueryData = vi.hoisted(() => vi.fn());
 const mockInvalidateQueries = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
-const mockConfirm = vi.hoisted(() => vi.fn());
 
 vi.mock('@/App', () => ({
   queryClient: {
@@ -143,6 +142,11 @@ const renderEditor = (keyset: any = makeKeyset()) =>
 
 const payloadKeySet = (call: number) => mockMutateAsync.mock.calls[call][0].NewKeySet;
 
+const removeKeyFromRow = async (rowText: string, index: number) => {
+  await (await page.getByRole('row').filter({ hasText: rowText }).getByRole('button').all())[index].click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Remove', exact: true }).click();
+};
+
 describe('KeySetEditor', () => {
   beforeEach(() => {
     mockMutateAsync.mockReset();
@@ -150,10 +154,7 @@ describe('KeySetEditor', () => {
     mockSetQueryData.mockReset();
     mockInvalidateQueries.mockReset();
     mockInvalidate.mockReset();
-    mockConfirm.mockReset();
-    mockConfirm.mockReturnValue(true);
     mockRouterState.matches = [{ routeId: '/test' }];
-    vi.stubGlobal('confirm', mockConfirm);
   });
 
   it('renders dropdowns for custom key types in both sections', async () => {
@@ -281,23 +282,26 @@ describe('KeySetEditor', () => {
   });
 
   it('does not delete any row when confirmation is canceled', async () => {
-    mockConfirm.mockReturnValue(false);
     await renderEditor();
 
-    await (await page.getByRole('row').filter({ hasText: 'Freq 1' }).getByRole('button').all())[2].click();
-    await (await page.getByRole('row').filter({ hasText: 'Dur 1' }).getByRole('button').all())[2].click();
-    await (await page.getByRole('row').filter({ hasText: 'Derived 1 (Derived)' }).getByRole('button').all())[1].click();
-    await (await page.getByRole('row').filter({ hasText: 'Special 1 (Special Timing)' }).getByRole('button').all())[0].click();
-    await (await page.getByRole('row').filter({ hasText: 'Scored 1 (Scored Duration)' }).getByRole('button').all())[0].click();
+    const cancelRowAction = async (rowText: string, index: number) => {
+      await (await page.getByRole('row').filter({ hasText: rowText }).getByRole('button').all())[index].click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
+    };
 
-    expect(mockConfirm).toHaveBeenCalledTimes(5);
+    await cancelRowAction('Freq 1', 2);
+    await cancelRowAction('Dur 1', 2);
+    await cancelRowAction('Derived 1 (Derived)', 1);
+    await cancelRowAction('Special 1 (Special Timing)', 0);
+    await cancelRowAction('Scored 1 (Scored Duration)', 0);
+
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
   it('deletes a frequency key when confirmed', async () => {
     await renderEditor();
 
-    await (await page.getByRole('row').filter({ hasText: 'Freq 1' }).getByRole('button').all())[2].click();
+    await removeKeyFromRow('Freq 1', 2);
 
     expect(payloadKeySet(0).FrequencyKeys).toEqual([expect.objectContaining({ KeyName: 'F2' })]);
   });
@@ -305,7 +309,7 @@ describe('KeySetEditor', () => {
   it('deletes a duration key when confirmed', async () => {
     await renderEditor();
 
-    await (await page.getByRole('row').filter({ hasText: 'Dur 2' }).getByRole('button').all())[2].click();
+    await removeKeyFromRow('Dur 2', 2);
 
     expect(payloadKeySet(0).DurationKeys).toEqual([expect.objectContaining({ KeyName: 'D1' })]);
   });
@@ -313,9 +317,9 @@ describe('KeySetEditor', () => {
   it('deletes derived, special, and scored keys when confirmed', async () => {
     await renderEditor();
 
-    await (await page.getByRole('row').filter({ hasText: 'Derived 1 (Derived)' }).getByRole('button').all())[1].click();
-    await (await page.getByRole('row').filter({ hasText: 'Special 1 (Special Timing)' }).getByRole('button').all())[0].click();
-    await (await page.getByRole('row').filter({ hasText: 'Scored 1 (Scored Duration)' }).getByRole('button').all())[0].click();
+    await removeKeyFromRow('Derived 1 (Derived)', 1);
+    await removeKeyFromRow('Special 1 (Special Timing)', 0);
+    await removeKeyFromRow('Scored 1 (Scored Duration)', 0);
 
     expect(mockMutateAsync).toHaveBeenCalledTimes(3);
     expect(payloadKeySet(0).DerivedKeys).toEqual([]);

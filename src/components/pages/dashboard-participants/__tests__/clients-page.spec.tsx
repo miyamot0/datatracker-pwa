@@ -132,26 +132,20 @@ describe('ClientsPage', () => {
     await expect.element(page.getByRole('button', { name: 'Create' })).toBeInTheDocument();
   });
 
-  it('delete callback returns when confirmation is false', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => false),
-    );
+  it('delete callback returns when confirmation is canceled', async () => {
     await renderPage();
 
     await page.getByRole('button', { name: 'Trigger Delete Callback' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  it('delete callback mutates when confirmation is true', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => true),
-    );
+  it('delete callback mutates when confirmation is accepted', async () => {
     await renderPage();
 
     await page.getByRole('button', { name: 'Trigger Delete Callback' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
 
     expect(mockMutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({ Action: 'Delete', Group: 'GroupA', Individuals: ['Client1', 'Client2'] }),

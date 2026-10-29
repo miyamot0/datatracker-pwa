@@ -106,6 +106,7 @@ export default defineConfig(({ command, mode }) => {
         'src/analytics/**/*.ts',
         'src/components/elements/**/*.{ts,tsx}',
         'src/components/pages/**/*.{ts,tsx}',
+        'src/components/dialogs/**/*.{ts,tsx}',
       ],
       exclude: ['**/__tests__/**/*', '**/types/**/*', 'src/lib/utils.ts', 'src/components/ui/**'],
     };

@@ -161,26 +161,20 @@ describe('DashboardHistoryPage', () => {
     await expect.element(page.getByText('14.50')).toBeInTheDocument();
   });
 
-  it('delete callback returns when confirmation is false', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => false),
-    );
+  it('delete callback returns when confirmation is canceled', async () => {
     await renderPage(true);
 
     await page.getByRole('button', { name: 'Trigger Delete Callback' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  it('delete callback mutates selected rows when confirmed', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => true),
-    );
+  it('delete callback mutates selected rows when accepted', async () => {
     await renderPage(true);
 
     await page.getByRole('button', { name: 'Trigger Delete Callback' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
 
     expect(mockMutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({

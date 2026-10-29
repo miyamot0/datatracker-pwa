@@ -8,6 +8,7 @@ import { ApplicationSettingsTypes } from '@/types/settings/application-settings'
 import { useMutation } from '@tanstack/react-query';
 import { useRouter, useRouterState } from '@tanstack/react-router';
 import { toast } from 'sonner';
+import { useConfirmDialog } from '@/components/dialogs/use-confirm-dialog';
 import { buildClientColumns } from './views/clients-columns';
 import CreateClientButton from './views/create-client-button';
 
@@ -39,6 +40,7 @@ export default function ClientsPage({
   });
 
   const columns = buildClientColumns({ Group, Clients, Handle, Settings });
+  const { openConfirmDialog, confirmDialog } = useConfirmDialog();
 
   return (
     <Card className="w-full max-w-(--breakpoint-2xl)">
@@ -68,37 +70,38 @@ export default function ClientsPage({
           callback={(rows) => {
             const individualNames = rows.map((row) => row.Individual);
 
-            const confirm_delete = window.confirm(
-              `Are you sure you want to delete ${individualNames.length} client(s)? This CANNOT be undone.`,
-            );
-
-            if (!confirm_delete) {
-              return;
-            }
-
-            toast.promise(
-              async () =>
-                await mutateIndividuals.mutateAsync({
-                  Group,
-                  Individuals: individualNames,
-                  Handle,
-                  Action: 'Delete',
-                }),
-              {
-                loading: 'Deleting client folders...',
-                success: () => {
-                  return 'Client folders have been deleted successfully!';
-                },
-                error: (e: Error) => {
-                  return `An error occurred while deleting client folders: ${e.message}.`;
-                },
+            openConfirmDialog({
+              title: 'Delete Clients',
+              description: `Are you sure you want to delete ${individualNames.length} client(s)? This CANNOT be undone.`,
+              confirmLabel: 'Delete',
+              destructive: true,
+              onConfirm: () => {
+                toast.promise(
+                  async () =>
+                    await mutateIndividuals.mutateAsync({
+                      Group,
+                      Individuals: individualNames,
+                      Handle,
+                      Action: 'Delete',
+                    }),
+                  {
+                    loading: 'Deleting client folders...',
+                    success: () => {
+                      return 'Client folders have been deleted successfully!';
+                    },
+                    error: (e: Error) => {
+                      return `An error occurred while deleting client folders: ${e.message}.`;
+                    },
+                  },
+                );
               },
-            );
+            });
           }}
           filterCol="Individual"
           optionalButtons={<CreateClientButton Group={Group} Clients={Clients} Handle={Handle} />}
         />
       </CardContent>
+      {confirmDialog}
     </Card>
   );
 }

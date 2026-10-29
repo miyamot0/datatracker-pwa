@@ -13,7 +13,6 @@ const mockToastPromise = vi.hoisted(() =>
     return result;
   }),
 );
-const mockAlert = vi.hoisted(() => vi.fn());
 
 vi.mock('@/App', () => ({
   queryClient: {
@@ -66,42 +65,40 @@ describe('CreateClientButton', () => {
       options?.filter?.({ routeId: '/clients' });
     });
     mockToastPromise.mockClear();
-    mockAlert.mockReset();
-
-    vi.stubGlobal('alert', mockAlert);
   });
 
-  it('returns on canceled prompt', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => null),
-    );
+  it('does not submit when the dialog is canceled', async () => {
     await renderComponent();
 
-    await page.getByRole('button', { name: 'Create' }).click();
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    await page.getByRole('button', { name: 'Cancel' }).click();
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  it('blocks duplicate and too-short names', async () => {
-    vi.stubGlobal('prompt', vi.fn().mockReturnValueOnce('Client1').mockReturnValueOnce('abc'));
+  it('blocks duplicate and too-short names inline', async () => {
     await renderComponent();
 
-    await page.getByRole('button', { name: 'Create' }).click();
-    await page.getByRole('button', { name: 'Create' }).click();
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    const submit = page.getByRole('button', { name: 'Create client', exact: true });
 
-    expect(mockAlert).toHaveBeenNthCalledWith(1, 'Client already exists.');
-    expect(mockAlert).toHaveBeenNthCalledWith(2, 'Client name must be at least 4 characters long.');
+    await page.getByLabelText('Client name').fill('abc');
+    await expect.element(page.getByRole('alert')).toHaveTextContent('Client name must be at least 4 characters long.');
+    await expect.element(submit).toBeDisabled();
+
+    await page.getByLabelText('Client name').fill('client1');
+    await expect.element(page.getByRole('alert')).toHaveTextContent('Client already exists.');
+    await expect.element(submit).toBeDisabled();
+
+    expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  it('adds client for valid prompt input', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => '  Client3  '),
-    );
+  it('adds client for valid dialog input', async () => {
     await renderComponent();
 
-    await page.getByRole('button', { name: 'Create' }).click();
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    await page.getByLabelText('Client name').fill('  Client3  ');
+    await page.getByRole('button', { name: 'Create client', exact: true }).click();
 
     expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ Action: 'Add', Individuals: ['Client3'] }));
   });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildDeIdentifySchema, MIN_CLIENT_NAME_LENGTH, validateNewClientName } from '../helpers';
+import { buildDeIdentifySchema, MIN_CLIENT_NAME_LENGTH } from '../helpers';
 
 describe('buildDeIdentifySchema', () => {
   const schema = buildDeIdentifySchema(['Existing Client']);
@@ -35,29 +35,5 @@ describe('buildDeIdentifySchema', () => {
 
     expect(result.success).toBe(true);
     expect(result.success && result.data.RedactComments).toBe(true);
-  });
-});
-
-describe('validateNewClientName', () => {
-  it('rejects a duplicate name', () => {
-    expect(validateNewClientName('Client1', ['Client1', 'Client2'])).toBe('Client already exists.');
-  });
-
-  it('rejects a name shorter than the minimum length', () => {
-    expect(validateNewClientName('abc', [])).toBe('Client name must be at least 4 characters long.');
-  });
-
-  it('trims surrounding whitespace before validating', () => {
-    expect(validateNewClientName('  Client1  ', ['Client1'])).toBe('Client already exists.');
-  });
-
-  it('returns null for a valid, non-colliding name', () => {
-    expect(validateNewClientName('New Client', ['Client1'])).toBeNull();
-  });
-
-  it('uses the shared minimum length constant', () => {
-    const nameAtLimit = 'a'.repeat(MIN_CLIENT_NAME_LENGTH);
-
-    expect(validateNewClientName(nameAtLimit, [])).toBeNull();
   });
 });

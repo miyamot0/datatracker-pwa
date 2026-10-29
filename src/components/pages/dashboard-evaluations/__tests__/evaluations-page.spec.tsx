@@ -14,7 +14,6 @@ const mockToastPromise = vi.hoisted(() =>
     return result;
   }),
 );
-const mockAlert = vi.hoisted(() => vi.fn());
 
 vi.mock('@/App', () => ({
   queryClient: {
@@ -128,9 +127,6 @@ describe('EvaluationsPage', () => {
     mockInvalidateQueries.mockReset();
     mockInvalidateQueries.mockResolvedValue(undefined);
     mockToastPromise.mockClear();
-    mockAlert.mockReset();
-
-    vi.stubGlobal('alert', mockAlert);
   });
 
   it('renders headings, table headers, and action links', async () => {
@@ -155,26 +151,20 @@ describe('EvaluationsPage', () => {
     expect(await page.getByRole('button', { name: 'Rename Evaluation' }).query()).toBeNull();
   });
 
-  it('delete callback returns early when confirmation is false', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => false),
-    );
+  it('delete callback returns early when confirmation is canceled', async () => {
     await renderPage(true);
 
     await page.getByRole('button', { name: 'Trigger Delete Callback' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  it('delete callback mutates when confirmation is true', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => true),
-    );
+  it('delete callback mutates when confirmation is accepted', async () => {
     await renderPage(true);
 
     await page.getByRole('button', { name: 'Trigger Delete Callback' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
 
     expect(mockToastPromise).toHaveBeenCalled();
     expect(mockMutateAsync).toHaveBeenCalledWith(
@@ -190,40 +180,40 @@ describe('EvaluationsPage', () => {
     expect(mockRouterInvalidate).toHaveBeenCalled();
   });
 
-  it('create button returns when prompt is canceled', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => null),
-    );
+  it('create button does not submit when the dialog is canceled', async () => {
     await renderPage(true);
 
-    await page.getByRole('button', { name: 'Create' }).click();
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  it('create button blocks duplicate and too-short names', async () => {
-    const prompt = vi.fn().mockReturnValueOnce('EvalOne').mockReturnValueOnce('abc');
-    vi.stubGlobal('prompt', prompt);
-
+  it('create button blocks duplicate and too-short names inline', async () => {
     await renderPage(true);
 
-    await page.getByRole('button', { name: 'Create' }).click();
-    await page.getByRole('button', { name: 'Create' }).click();
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    const submit = page.getByRole('dialog').getByRole('button', { name: 'Create evaluation', exact: true });
 
-    expect(mockAlert).toHaveBeenNthCalledWith(1, 'Evaluation already exists.');
-    expect(mockAlert).toHaveBeenNthCalledWith(2, 'Evaluation name must be at least 4 characters long.');
+    await page.getByLabelText('Evaluation name').fill('abc');
+    await expect
+      .element(page.getByRole('alert'))
+      .toHaveTextContent('Evaluation name must be at least 4 characters long.');
+    await expect.element(submit).toBeDisabled();
+
+    await page.getByLabelText('Evaluation name').fill('EvalOne');
+    await expect.element(page.getByRole('alert')).toHaveTextContent('Evaluation already exists.');
+    await expect.element(submit).toBeDisabled();
+
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
   it('create button adds a valid evaluation', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => '  NewEvaluation  '),
-    );
     await renderPage(true);
 
-    await page.getByRole('button', { name: 'Create' }).click();
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    await page.getByLabelText('Evaluation name').fill('  NewEvaluation  ');
+    await page.getByRole('dialog').getByRole('button', { name: 'Create evaluation', exact: true }).click();
 
     expect(mockMutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -233,37 +223,41 @@ describe('EvaluationsPage', () => {
     );
   });
 
-  it('duplicate and rename actions return early for null and short names', async () => {
-    const prompt = vi
-      .fn()
-      .mockReturnValueOnce(null)
-      .mockReturnValueOnce('abc')
-      .mockReturnValueOnce(null)
-      .mockReturnValueOnce('ab');
-    vi.stubGlobal('prompt', prompt);
-
+  it('duplicate and rename dialogs block short names inline', async () => {
     await renderPage(true);
 
-    const duplicateBtn = page.getByText('Duplicate Evaluation').first();
-    const renameBtn = page.getByText('Rename Evaluation').first();
+    await page.getByText('Duplicate Evaluation').first().click();
+    await page.getByLabelText('Evaluation name').fill('abc');
+    await expect
+      .element(page.getByRole('alert'))
+      .toHaveTextContent('Evaluation name must be at least 4 characters long.');
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
 
-    await duplicateBtn.click();
-    await duplicateBtn.click();
-    await renameBtn.click();
-    await renameBtn.click();
+    await page.getByText('Rename Evaluation').first().click();
+    await page.getByLabelText('Evaluation name').fill('ab');
+    await expect
+      .element(page.getByRole('alert'))
+      .toHaveTextContent('Evaluation name must be at least 4 characters long.');
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
 
     expect(mockMutateAsync).not.toHaveBeenCalledWith(expect.objectContaining({ Action: 'Duplicate' }));
     expect(mockMutateAsync).not.toHaveBeenCalledWith(expect.objectContaining({ Action: 'Rename' }));
   });
 
+  it('rename dialog blocks the current name as a no-op', async () => {
+    await renderPage(true);
+
+    await page.getByText('Rename Evaluation').first().click();
+    await expect.element(page.getByRole('alert')).toHaveTextContent('Enter a different name to rename.');
+    await expect.element(page.getByRole('dialog').getByRole('button', { name: 'Rename', exact: true })).toBeDisabled();
+  });
+
   it('duplicate action mutates for valid input', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => 'EvalCopy'),
-    );
     await renderPage(true);
 
     await page.getByText('Duplicate Evaluation').first().click();
+    await page.getByLabelText('Evaluation name').fill('EvalCopy');
+    await page.getByRole('dialog').getByRole('button', { name: 'Duplicate', exact: true }).click();
 
     await vi.waitFor(() => {
       expect(mockMutateAsync).toHaveBeenCalledWith(
@@ -273,13 +267,11 @@ describe('EvaluationsPage', () => {
   });
 
   it('rename action mutates for valid input', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => 'EvalRenamed'),
-    );
     await renderPage(true);
 
     await page.getByText('Rename Evaluation').first().click();
+    await page.getByLabelText('Evaluation name').fill('EvalRenamed');
+    await page.getByRole('dialog').getByRole('button', { name: 'Rename', exact: true }).click();
 
     await vi.waitFor(() => {
       expect(mockMutateAsync).toHaveBeenCalledWith(

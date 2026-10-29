@@ -28,6 +28,7 @@ import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import BackButton from '@/components/ui/back-button';
 import { mutationConditions } from '@/queries/conditions/mutate-conditions';
 import { useMutation } from '@tanstack/react-query';
+import { useConfirmDialog } from '@/components/dialogs/use-confirm-dialog';
 import { mutationSettingsParams } from '@/queries/session/mutate-session-params';
 import { queryClient } from '@/App';
 import { useNavigate, useRouter, useRouterState } from '@tanstack/react-router';
@@ -112,6 +113,7 @@ export default function SessionDesigner({
   });
 
   const [keySet, setKeySet] = useState<KeySet | undefined>(Keysets.find((k) => k.Name === SessionSettings.KeySet));
+  const { openConfirmDialog, confirmDialog } = useConfirmDialog();
 
   async function onSubmit(values: z.infer<typeof SessionDesignerSchema>) {
     const newer_settings = toSavedSettings(values);
@@ -188,34 +190,36 @@ export default function SessionDesigner({
                 variant={'outline'}
                 className="shadow"
                 size={'sm'}
-                onClick={async () => {
-                  const confirm_delete = window.confirm(
-                    `Are you sure you wish to delete empty evaluation conditions? This CANNOT be undone.`,
-                  );
-
-                  if (!confirm_delete) return;
-
-                  toast.promise(
-                    async () =>
-                      await mutateConditions.mutateAsync({
-                        Group,
-                        Individual,
-                        Evaluation,
-                        Condition: '',
-                        Handle,
-                        Action: 'Clear',
-                      }),
-                    {
-                      loading: 'Clearing empty conditions...',
-                      success: () => {
-                        return 'Empty conditions have been cleared successfully!';
-                      },
-                      error: (e: Error) => {
-                        return `An error occurred while clearing empty conditions: ${e.message}`;
-                      },
+                onClick={() =>
+                  openConfirmDialog({
+                    title: 'Clear Empty Conditions',
+                    description: `Are you sure you wish to delete empty evaluation conditions? This CANNOT be undone.`,
+                    confirmLabel: 'Clear',
+                    destructive: true,
+                    onConfirm: () => {
+                      toast.promise(
+                        async () =>
+                          await mutateConditions.mutateAsync({
+                            Group,
+                            Individual,
+                            Evaluation,
+                            Condition: '',
+                            Handle,
+                            Action: 'Clear',
+                          }),
+                        {
+                          loading: 'Clearing empty conditions...',
+                          success: () => {
+                            return 'Empty conditions have been cleared successfully!';
+                          },
+                          error: (e: Error) => {
+                            return `An error occurred while clearing empty conditions: ${e.message}`;
+                          },
+                        },
+                      );
                     },
-                  );
-                }}
+                  })
+                }
               >
                 <FolderMinus className="mr-2 h-4 w-4" />
                 Clear Empty Condition(s)
@@ -451,6 +455,7 @@ export default function SessionDesigner({
             </form>
           </Form>
         </CardContent>
+        {confirmDialog}
       </Card>
       <div className="flex flex-col gap-2">
         <Card className="w-full">

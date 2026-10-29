@@ -10,7 +10,6 @@ const mockInvalidate = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const mockDisplayNotification = vi.hoisted(() => vi.fn());
 const mockToastPromise = vi.hoisted(() => vi.fn(async (fn: () => Promise<unknown>) => await fn()));
 const mockPrompt = vi.hoisted(() => vi.fn());
-const mockConfirm = vi.hoisted(() => vi.fn());
 const mockMutationConditionsFn = vi.hoisted(() => vi.fn());
 const mockMutationSettingsFn = vi.hoisted(() => vi.fn());
 const mockFilteredSessionTerminationOptions = vi.hoisted(() => vi.fn(() => ['1', 'UNKNOWN_OPTION']));
@@ -163,13 +162,11 @@ describe('SessionDesigner', () => {
     mockDisplayNotification.mockReset();
     mockToastPromise.mockClear();
     mockPrompt.mockReset();
-    mockConfirm.mockReset();
 
     mockConditionsMutate.mockResolvedValue([]);
     mockSettingsMutate.mockResolvedValue({ KeySet: 'Keyset B' });
 
     vi.stubGlobal('prompt', mockPrompt);
-    vi.stubGlobal('confirm', mockConfirm);
   });
 
   it('renders session designer sections and fields', async () => {
@@ -240,19 +237,19 @@ describe('SessionDesigner', () => {
   });
 
   it('cancels clear empty conditions when user declines', async () => {
-    mockConfirm.mockReturnValue(false);
     await renderDesigner();
 
     await page.getByRole('button', { name: 'Clear Empty Condition(s)' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
 
     expect(mockConditionsMutate).not.toHaveBeenCalledWith(expect.objectContaining({ Action: 'Clear' }));
   });
 
   it('clears empty conditions when confirmed', async () => {
-    mockConfirm.mockReturnValue(true);
     await renderDesigner();
 
     await page.getByRole('button', { name: 'Clear Empty Condition(s)' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Clear', exact: true }).click();
 
     expect(mockToastPromise).toHaveBeenCalled();
     expect(mockConditionsMutate).toHaveBeenCalledWith(expect.objectContaining({ Action: 'Clear' }));

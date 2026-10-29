@@ -1,4 +1,4 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-99.41_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-97.84_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-99.78_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-99.33_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-97.60_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-99.79_Percent-green>)
 
 ![Static Badge Version](https://img.shields.io/badge/Version-0.5.15-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 

@@ -30,8 +30,11 @@ import {
   Table2Icon,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useConfirmDialog } from '@/components/dialogs/use-confirm-dialog';
 import BackButton from '../../ui/back-button';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
+import { useNameDialog } from '@/components/dialogs/use-name-dialog';
+import { RESERVED_STYLES_FILE_NAME } from '@/lib/reserved-names';
 
 type EvaluationTableRow = {
   Evaluation: string;
@@ -66,6 +69,9 @@ export default function EvaluationsPage({
       });
     },
   });
+
+  const { openNameDialog, nameDialog } = useNameDialog();
+  const { openConfirmDialog, confirmDialog } = useConfirmDialog();
 
   const DynamicButtonList = ({ row }: { row: Row<EvaluationTableRow> }) => {
     return (
@@ -164,73 +170,77 @@ export default function EvaluationsPage({
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={async () => {
-                    const new_evaluation_name = window.prompt(
-                      'Enter the name for the duplicated evaluation:',
-                      `${row.original.Evaluation}_Copy`,
-                    );
-
-                    if (!new_evaluation_name) return;
-
-                    if (new_evaluation_name.trim().length < 4) return;
-
-                    toast.promise(
-                      async () =>
-                        await mutateEvaluations.mutateAsync({
-                          Group,
-                          Individual,
-                          Evaluations: [row.original.Evaluation],
-                          Rename: new_evaluation_name,
-                          Handle,
-                          Action: 'Duplicate',
-                        }),
-                      {
-                        loading: 'Duplicating existing evaluation...',
-                        success: () => {
-                          return 'Evaluation folders have been created successfully!';
-                        },
-                        error: (e: Error) => {
-                          return `An error occurred while creating evaluation folders: ${e.message}`;
-                        },
+                  onClick={() =>
+                    openNameDialog({
+                      title: 'Duplicate Evaluation',
+                      description: `Creates a copy of "${row.original.Evaluation}".`,
+                      entityLabel: 'Evaluation',
+                      submitLabel: 'Duplicate',
+                      initialValue: `${row.original.Evaluation}_Copy`,
+                      existingNames: Evaluations,
+                      reservedNames: [RESERVED_STYLES_FILE_NAME],
+                      onSubmit: (name) => {
+                        toast.promise(
+                          async () =>
+                            await mutateEvaluations.mutateAsync({
+                              Group,
+                              Individual,
+                              Evaluations: [row.original.Evaluation],
+                              Rename: name,
+                              Handle,
+                              Action: 'Duplicate',
+                            }),
+                          {
+                            loading: 'Duplicating existing evaluation...',
+                            success: () => {
+                              return 'Evaluation folders have been created successfully!';
+                            },
+                            error: (e: Error) => {
+                              return `An error occurred while creating evaluation folders: ${e.message}`;
+                            },
+                          },
+                        );
                       },
-                    );
-                  }}
+                    })
+                  }
                 >
                   <Copy className="mr-2 h-4 w-4" />
                   Duplicate Evaluation
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={async () => {
-                    const new_evaluation_name = window.prompt(
-                      'Enter the name for the renamed evaluation:',
-                      `${row.original.Evaluation}`,
-                    );
-
-                    if (!new_evaluation_name) return;
-
-                    if (new_evaluation_name.trim().length < 4) return;
-
-                    toast.promise(
-                      async () =>
-                        await mutateEvaluations.mutateAsync({
-                          Group,
-                          Individual,
-                          Evaluations: [row.original.Evaluation],
-                          Rename: new_evaluation_name,
-                          Handle,
-                          Action: 'Rename',
-                        }),
-                      {
-                        loading: 'Renaming existing evaluation...',
-                        success: () => {
-                          return 'Evaluation folders have been renamed successfully!';
-                        },
-                        error: (e: Error) => {
-                          return `An error occurred while renaming evaluation folders: ${e.message}`;
-                        },
+                  onClick={() =>
+                    openNameDialog({
+                      title: 'Rename Evaluation',
+                      entityLabel: 'Evaluation',
+                      submitLabel: 'Rename',
+                      initialValue: row.original.Evaluation,
+                      previous: row.original.Evaluation,
+                      existingNames: Evaluations,
+                      reservedNames: [RESERVED_STYLES_FILE_NAME],
+                      onSubmit: (name) => {
+                        toast.promise(
+                          async () =>
+                            await mutateEvaluations.mutateAsync({
+                              Group,
+                              Individual,
+                              Evaluations: [row.original.Evaluation],
+                              Rename: name,
+                              Handle,
+                              Action: 'Rename',
+                            }),
+                          {
+                            loading: 'Renaming existing evaluation...',
+                            success: () => {
+                              return 'Evaluation folders have been renamed successfully!';
+                            },
+                            error: (e: Error) => {
+                              return `An error occurred while renaming evaluation folders: ${e.message}`;
+                            },
+                          },
+                        );
                       },
-                    );
-                  }}
+                    })
+                  }
                 >
                   <Edit2Icon className="mr-2 h-4 w-4" />
                   Rename Evaluation
@@ -288,31 +298,33 @@ export default function EvaluationsPage({
           callback={(rows) => {
             const evaluationNames = rows.map((row) => row.Evaluation);
 
-            const confirm_delete = window.confirm(
-              `Are you sure you want to delete ${evaluationNames.length} evaluations? This CANNOT be undone.`,
-            );
-
-            if (!confirm_delete) return;
-
-            toast.promise(
-              async () =>
-                await mutateEvaluations.mutateAsync({
-                  Group,
-                  Individual,
-                  Evaluations: evaluationNames,
-                  Handle,
-                  Action: 'Delete',
-                }),
-              {
-                loading: 'Deleting evaluation folders...',
-                success: () => {
-                  return 'Evaluation folders have been deleted successfully!';
-                },
-                error: (e: Error) => {
-                  return `An error occurred while deleting evaluation folders: ${e.message}`;
-                },
+            openConfirmDialog({
+              title: 'Delete Evaluations',
+              description: `Are you sure you want to delete ${evaluationNames.length} evaluations? This CANNOT be undone.`,
+              confirmLabel: 'Delete',
+              destructive: true,
+              onConfirm: () => {
+                toast.promise(
+                  async () =>
+                    await mutateEvaluations.mutateAsync({
+                      Group,
+                      Individual,
+                      Evaluations: evaluationNames,
+                      Handle,
+                      Action: 'Delete',
+                    }),
+                  {
+                    loading: 'Deleting evaluation folders...',
+                    success: () => {
+                      return 'Evaluation folders have been deleted successfully!';
+                    },
+                    error: (e: Error) => {
+                      return `An error occurred while deleting evaluation folders: ${e.message}`;
+                    },
+                  },
+                );
               },
-            );
+            });
           }}
           filterCol="Evaluation"
           optionalButtons={
@@ -322,41 +334,36 @@ export default function EvaluationsPage({
                   variant={'outline'}
                   size={'sm'}
                   className="shadow"
-                  onClick={async () => {
-                    const input = window.prompt('Enter a name for the new evaluation.');
-
-                    if (!input) return;
-
-                    if (Evaluations.includes(input.trim())) {
-                      alert('Evaluation already exists.');
-                      return;
-                    }
-
-                    if (input.trim().length < 4) {
-                      alert('Evaluation name must be at least 4 characters long.');
-                      return;
-                    }
-
-                    toast.promise(
-                      async () =>
-                        await mutateEvaluations.mutateAsync({
-                          Group,
-                          Individual,
-                          Evaluations: [input.trim()],
-                          Handle,
-                          Action: 'Add',
-                        }),
-                      {
-                        loading: 'Creating evaluation folders...',
-                        success: () => {
-                          return 'Evaluation folders have been created successfully!';
-                        },
-                        error: (e: Error) => {
-                          return `An error occurred while creating the evaluation folder: ${e.message}`;
-                        },
+                  onClick={() =>
+                    openNameDialog({
+                      title: 'Add an Evaluation',
+                      entityLabel: 'Evaluation',
+                      submitLabel: 'Create evaluation',
+                      existingNames: Evaluations,
+                      reservedNames: [RESERVED_STYLES_FILE_NAME],
+                      onSubmit: (name) => {
+                        toast.promise(
+                          async () =>
+                            await mutateEvaluations.mutateAsync({
+                              Group,
+                              Individual,
+                              Evaluations: [name],
+                              Handle,
+                              Action: 'Add',
+                            }),
+                          {
+                            loading: 'Creating evaluation folders...',
+                            success: () => {
+                              return 'Evaluation folders have been created successfully!';
+                            },
+                            error: (e: Error) => {
+                              return `An error occurred while creating the evaluation folder: ${e.message}`;
+                            },
+                          },
+                        );
                       },
-                    );
-                  }}
+                    })
+                  }
                 >
                   <FilePlus className="w-4 h-4 mr-2" />
                   Create
@@ -396,6 +403,8 @@ export default function EvaluationsPage({
           }
         />
       </CardContent>
+      {nameDialog}
+      {confirmDialog}
     </Card>
   );
 }

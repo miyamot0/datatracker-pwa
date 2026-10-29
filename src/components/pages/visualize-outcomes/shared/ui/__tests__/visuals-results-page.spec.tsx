@@ -264,7 +264,6 @@ describe('VisualsResultsPage', () => {
       vi.mocked(readStylesFile).mockResolvedValue(null as any);
       vi.mocked(deleteStylesFile).mockResolvedValue(true);
       vi.mocked(restoreStylesBackup).mockReturnValue(true);
-      vi.spyOn(window, 'confirm').mockReturnValue(true);
     });
 
     it('writes the styles file and reports success', async () => {
@@ -364,11 +363,11 @@ describe('VisualsResultsPage', () => {
     });
 
     it('does nothing when the delete confirmation is cancelled', async () => {
-      vi.mocked(window.confirm).mockReturnValue(false);
       renderPage();
       await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
 
       await act(() => lastMenubarProps().onDeleteStyles());
+      await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
 
       expect(deleteStylesFile).not.toHaveBeenCalled();
       expect(mockToast.success).not.toHaveBeenCalled();
@@ -379,6 +378,7 @@ describe('VisualsResultsPage', () => {
       await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
 
       await act(() => lastMenubarProps().onDeleteStyles());
+      await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
 
       expect(deleteStylesFile).toHaveBeenCalledWith(undefined, 'GroupA', 'ClientB', 'Eval1');
       expect(mockToast.success).toHaveBeenCalledWith(`Deleted ${STYLES}`);
@@ -390,6 +390,7 @@ describe('VisualsResultsPage', () => {
       await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
 
       await act(() => lastMenubarProps().onDeleteStyles());
+      await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
 
       expect(mockToast.success).toHaveBeenCalledWith(`No ${STYLES} to delete`);
     });
@@ -401,6 +402,7 @@ describe('VisualsResultsPage', () => {
       await expect.element(page.getByTestId('menubar')).toBeInTheDocument();
 
       await act(() => lastMenubarProps().onDeleteStyles());
+      await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
 
       expect(mockToast.error).toHaveBeenCalledWith(`Could not delete ${STYLES}`);
     });
