@@ -15,9 +15,10 @@ import { ApplicationSettingsTypes } from '@/types/settings/application-settings'
 import { useMutation } from '@tanstack/react-query';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { ChevronDown, FolderInput, UserIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { zodResolver } from '@/lib/zod-resolver';
 import { buildDeIdentifySchema, DeIdentifySchemaType } from '../helpers';
 
 type Props = {
@@ -50,9 +51,10 @@ export default function ClientRowActions({ Group, Individual, Clients, Handle, S
     },
   });
 
-  const deIdentifySchema = buildDeIdentifySchema(Clients);
+  const deIdentifySchema = useMemo(() => buildDeIdentifySchema(Clients), [Clients]);
 
   const form = useForm<DeIdentifySchemaType>({
+    resolver: zodResolver(deIdentifySchema),
     defaultValues: {
       NewName: '',
       ReplacementYear: '' as unknown as number,
@@ -61,19 +63,7 @@ export default function ClientRowActions({ Group, Individual, Clients, Handle, S
     mode: 'onChange',
   });
 
-  const watchedValues = form.watch();
-  const parseResult = deIdentifySchema.safeParse(watchedValues);
-  const isFormValid = parseResult.success;
-
-  useEffect(() => {
-    form.clearErrors();
-    if (!parseResult.success) {
-      for (const issue of parseResult.error.issues) {
-        const field = issue.path[0] as keyof DeIdentifySchemaType;
-        form.setError(field, { type: 'manual', message: issue.message });
-      }
-    }
-  }, [JSON.stringify(watchedValues)]);
+  const isFormValid = form.formState.isValid;
 
   function onSubmit(values: DeIdentifySchemaType) {
     toast.promise(
