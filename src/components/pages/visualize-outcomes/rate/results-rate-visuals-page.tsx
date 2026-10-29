@@ -1,7 +1,7 @@
+import { lazy } from 'react';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { Button } from '@/components/ui/button';
 import { ScatterChartIcon } from 'lucide-react';
-import RateFigureVisualization from './rate-figure';
 import BackButton from '@/components/ui/back-button';
 import { Link } from '@tanstack/react-router';
 import {
@@ -16,7 +16,7 @@ const RATE_CONFIG: VisualsPageConfig = {
   prefsType: 'Rate',
   title: 'Visualization of Behavioral Rates',
   includeScoringInSchedule: true,
-  Figure: RateFigureVisualization,
+  Figure: lazy(() => import('./rate-figure')),
 };
 
 export default function ResultsRateVisualsPage({

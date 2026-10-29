@@ -1,4 +1,4 @@
-import { useState, type Dispatch } from 'react';
+import { lazy, Suspense, useState, type Dispatch } from 'react';
 import {
   CaseSensitiveIcon,
   DownloadIcon,
@@ -33,12 +33,19 @@ import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibil
 import { type SeriesStyles, type TextPage } from '@/lib/graphing/series-style';
 import type { ChartImageFormat } from '@/components/pages/visualize-outcomes/shared/helpers/chart-export';
 import type { VisualsSettingsAction, VisualsSettingsState } from '../helpers/visuals-settings-reducer';
-import { AimLinesDialog } from '../dialogs/aim-lines-dialog';
-import { PhaseChangesDialog } from '../dialogs/phase-changes-dialog';
-import { SeriesStylesDialog } from '../dialogs/series-styles-dialog';
-import { TextAnnotationsDialog } from '../dialogs/text-annotations-dialog';
-import { TitlesDialog } from '../dialogs/titles-dialog';
-import { LegendDialog } from '../dialogs/legend-dialog';
+// Loaded on demand so each dialog only downloads when opened
+const SeriesStylesDialog = lazy(() =>
+  import('../dialogs/series-styles-dialog').then((m) => ({ default: m.SeriesStylesDialog })),
+);
+const LegendDialog = lazy(() => import('../dialogs/legend-dialog').then((m) => ({ default: m.LegendDialog })));
+const PhaseChangesDialog = lazy(() =>
+  import('../dialogs/phase-changes-dialog').then((m) => ({ default: m.PhaseChangesDialog })),
+);
+const TextAnnotationsDialog = lazy(() =>
+  import('../dialogs/text-annotations-dialog').then((m) => ({ default: m.TextAnnotationsDialog })),
+);
+const AimLinesDialog = lazy(() => import('../dialogs/aim-lines-dialog').then((m) => ({ default: m.AimLinesDialog })));
+const TitlesDialog = lazy(() => import('../dialogs/titles-dialog').then((m) => ({ default: m.TitlesDialog })));
 import { type FigureLabelSettings } from '@/lib/graphing/figure-labels';
 import { type LegendSettings } from '@/lib/graphing/legend-settings';
 
@@ -285,52 +292,70 @@ export function VisualsMenubar({
         </MenubarContent>
       </MenubarMenu>
 
-      <SeriesStylesDialog
-        keys={keys}
-        conditions={styleConditions}
-        visibleConditions={visibleStyleConditions}
-        styles={styles}
-        onChange={onStylesChange}
-        open={activeDialog === 'series-styles'}
-        onOpenChange={closeDialog}
-      />
-      <PhaseChangesDialog
-        styles={styles}
-        onChange={onStylesChange}
-        open={activeDialog === 'phase-changes'}
-        onOpenChange={closeDialog}
-      />
-      <TextAnnotationsDialog
-        page={page}
-        styles={styles}
-        onChange={onStylesChange}
-        open={activeDialog === 'text-annotations'}
-        onOpenChange={closeDialog}
-      />
-      <AimLinesDialog
-        page={page}
-        styles={styles}
-        onChange={onStylesChange}
-        open={activeDialog === 'aim-lines'}
-        onOpenChange={closeDialog}
-      />
-      <TitlesDialog
-        page={page}
-        labels={figureLabels}
-        onChange={onFigureLabelsChange}
-        showTitle={showTitle}
-        onShowTitleChange={onShowTitleChange}
-        open={activeDialog === 'titles'}
-        onOpenChange={closeDialog}
-      />
-      <LegendDialog
-        settings={legendSettings}
-        onChange={onLegendSettingsChange}
-        showConditionLegend={showConditionLegend}
-        onShowConditionLegendChange={onShowConditionLegendChange}
-        open={activeDialog === 'legend'}
-        onOpenChange={closeDialog}
-      />
+      <Suspense fallback={null}>
+        {activeDialog === 'series-styles' && (
+          <SeriesStylesDialog
+            keys={keys}
+            conditions={styleConditions}
+            visibleConditions={visibleStyleConditions}
+            styles={styles}
+            onChange={onStylesChange}
+            open={activeDialog === 'series-styles'}
+            onOpenChange={closeDialog}
+          />
+        )}
+      </Suspense>
+      <Suspense fallback={null}>
+        {activeDialog === 'phase-changes' && (
+          <PhaseChangesDialog
+            styles={styles}
+            onChange={onStylesChange}
+            open={activeDialog === 'phase-changes'}
+            onOpenChange={closeDialog}
+          />
+        )}
+        {activeDialog === 'text-annotations' && (
+          <TextAnnotationsDialog
+            page={page}
+            styles={styles}
+            onChange={onStylesChange}
+            open={activeDialog === 'text-annotations'}
+            onOpenChange={closeDialog}
+          />
+        )}
+        {activeDialog === 'aim-lines' && (
+          <AimLinesDialog
+            page={page}
+            styles={styles}
+            onChange={onStylesChange}
+            open={activeDialog === 'aim-lines'}
+            onOpenChange={closeDialog}
+          />
+        )}
+        {activeDialog === 'titles' && (
+          <TitlesDialog
+            page={page}
+            labels={figureLabels}
+            onChange={onFigureLabelsChange}
+            showTitle={showTitle}
+            onShowTitleChange={onShowTitleChange}
+            open={activeDialog === 'titles'}
+            onOpenChange={closeDialog}
+          />
+        )}
+      </Suspense>
+      <Suspense fallback={null}>
+        {activeDialog === 'legend' && (
+          <LegendDialog
+            settings={legendSettings}
+            onChange={onLegendSettingsChange}
+            showConditionLegend={showConditionLegend}
+            onShowConditionLegendChange={onShowConditionLegendChange}
+            open={activeDialog === 'legend'}
+            onOpenChange={closeDialog}
+          />
+        )}
+      </Suspense>
     </Menubar>
   );
 }

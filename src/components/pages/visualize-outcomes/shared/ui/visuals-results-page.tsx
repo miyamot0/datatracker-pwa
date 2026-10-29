@@ -1,4 +1,4 @@
-import { type ComponentProps, type ComponentType, type ReactNode, useRef } from 'react';
+import { type ComponentProps, type ComponentType, type ReactNode, Suspense, useRef } from 'react';
 import { toast } from 'sonner';
 import type RateFigureVisualization from '@/components/pages/visualize-outcomes/rate/rate-figure';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
@@ -237,6 +237,7 @@ export function VisualsResultsPage({
         {settings.showDescription ? <p>{description}</p> : <div className="h-[25px]" />}
 
         {DynamicKeySet && (
+          <Suspense fallback={<div className="h-[500px] w-full" aria-busy="true" />}>
           <Figure
             FilteredSessions={ResultsFiltered.filter((result) => {
               const conditionMatch = settings.conditions.find((c) => c.Condition === result.SessionSettings.Condition);
@@ -260,6 +261,7 @@ export function VisualsResultsPage({
             SeriesStyles={settings.seriesStyles}
             divRef={figureRef}
           />
+          </Suspense>
         )}
       </CardContent>
     </Card>

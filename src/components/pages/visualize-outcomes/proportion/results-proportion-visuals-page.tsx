@@ -1,7 +1,7 @@
+import { lazy } from 'react';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { Button } from '@/components/ui/button';
 import { ScatterChartIcon } from 'lucide-react';
-import ProportionFigureVisualization from '@/components/pages/visualize-outcomes/proportion/proportion-figure';
 import { Link } from '@tanstack/react-router';
 import BackButton from '@/components/ui/back-button';
 import {
@@ -16,7 +16,7 @@ const PROPORTION_CONFIG: VisualsPageConfig = {
   prefsType: 'Duration',
   title: 'Visualization of Behavioral Proportions',
   includeScoringInSchedule: false,
-  Figure: ProportionFigureVisualization,
+  Figure: lazy(() => import('@/components/pages/visualize-outcomes/proportion/proportion-figure')),
 };
 
 export default function ResultsProportionVisualsPage({

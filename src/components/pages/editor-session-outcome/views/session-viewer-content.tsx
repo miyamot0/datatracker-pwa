@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -15,11 +15,12 @@ import { getLocalSeriesStyles, setLocalCachedPrefs } from '@/lib/local_storage';
 import BackButton from '@/components/ui/back-button';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import SessionFigure from './session-figure';
 import SessionKeyList from './session-key-list';
 import { ExpandedSavedSessionResult } from '@/lib/dtos/session-results';
 import { ToggleDisplayKey } from '@/types/visuals';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
+
+const SessionFigure = lazy(() => import('./session-figure'));
 
 export default function SessionViewerContent({
   Group,
@@ -159,12 +160,14 @@ export default function SessionViewerContent({
           </div>
         )}
 
-        <SessionFigure
-          Session={ExpandedSession}
-          PlotData={PlotObject}
-          KeysHidden={filteredKeys}
-          SeriesStyles={getLocalSeriesStyles(Group, Individual, Evaluation)}
-        />
+        <Suspense fallback={<div className="h-[500px] w-full" aria-busy="true" />}>
+          <SessionFigure
+            Session={ExpandedSession}
+            PlotData={PlotObject}
+            KeysHidden={filteredKeys}
+            SeriesStyles={getLocalSeriesStyles(Group, Individual, Evaluation)}
+          />
+        </Suspense>
 
         <Separator className="my-4" />
 
