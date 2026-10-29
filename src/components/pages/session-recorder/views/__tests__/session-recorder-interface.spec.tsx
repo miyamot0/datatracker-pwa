@@ -354,7 +354,7 @@ describe('SessionRecorderInterface', () => {
 
     const worker = workerInstances[0];
     worker.onmessage?.({ data: { type: 'RUNNING' } } as MessageEvent<any>);
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await vi.waitFor(() => expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 100));
 
     expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 100);
     expect(dateNowSpy).toHaveBeenCalled();
