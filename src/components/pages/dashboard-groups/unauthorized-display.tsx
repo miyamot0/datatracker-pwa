@@ -6,10 +6,6 @@ import { useRouter, useRouterState } from '@tanstack/react-router';
 import { useContext } from 'react';
 import { FolderHandleContext } from '@/context/folder-context';
 
-async function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export default function UnauthorizedDisplay() {
   const router = useRouter();
   const routerState = useRouterState();
@@ -72,9 +68,6 @@ export default function UnauthorizedDisplay() {
                   'Access Authorized',
                   'You can now interact with files in the relevant folder.',
                 );
-
-                // Hack: do not like this
-                await sleep(150);
 
                 await router.invalidate({
                   filter: (match) => match.routeId === currentRouteId,

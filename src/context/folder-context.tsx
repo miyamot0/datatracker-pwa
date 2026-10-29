@@ -2,10 +2,11 @@ import { queryClient } from '@/App';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ApplicationSettingsTypes, DEFAULT_APPLICATION_SETTINGS } from '@/types/settings/application-settings';
-import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react';
+import { createContext, Dispatch, ReactNode, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 
 export interface FolderHandleContextType {
   handle: FileSystemDirectoryHandle | undefined;
+  getHandle: () => FileSystemDirectoryHandle | undefined;
   setHandle: Dispatch<SetStateAction<FileSystemDirectoryHandle | undefined>>;
   settings: ApplicationSettingsTypes;
   setSettings: Dispatch<SetStateAction<ApplicationSettingsTypes>>;
@@ -17,6 +18,7 @@ export interface FolderHandleContextType {
 // Context for folder handle
 export const FolderHandleContext = createContext({
   handle: undefined as FileSystemDirectoryHandle | undefined,
+  getHandle: () => undefined as FileSystemDirectoryHandle | undefined,
   setHandle: undefined as unknown as Dispatch<SetStateAction<FileSystemDirectoryHandle | undefined>>,
   settings: DEFAULT_APPLICATION_SETTINGS,
   setSettings: undefined as unknown as Dispatch<SetStateAction<ApplicationSettingsTypes>>,
@@ -33,7 +35,18 @@ export const FolderHandleContext = createContext({
  * @returns A context provider component that wraps its children with the FolderHandleContext, providing access to the folder handle, settings, and related functions. It also includes a Toaster for displaying notifications and a TooltipProvider for tooltips.
  */
 export function FolderContextProvider({ children }: { children: ReactNode }) {
-  const [handle, setHandle] = useState<FileSystemDirectoryHandle | undefined>();
+  const [handle, setHandleState] = useState<FileSystemDirectoryHandle | undefined>();
+  const handleRef = useRef<FileSystemDirectoryHandle | undefined>(undefined);
+
+  // Updates the ref synchronously so route loaders invalidated right after this call read the new handle
+  const setHandle = useCallback<Dispatch<SetStateAction<FileSystemDirectoryHandle | undefined>>>((action) => {
+    const next = typeof action === 'function' ? action(handleRef.current) : action;
+    handleRef.current = next;
+    setHandleState(next);
+  }, []);
+
+  const getHandle = useCallback(() => handleRef.current, []);
+
   const [settings, setSettings] = useState<ApplicationSettingsTypes>(DEFAULT_APPLICATION_SETTINGS);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -106,6 +119,7 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
       <FolderHandleContext.Provider
         value={{
           handle,
+          getHandle,
           setHandle,
           settings,
           setSettings,

@@ -52,7 +52,13 @@ const InnerApp = () => {
   const routerContext = useMemo(
     () => ({
       queryClient,
-      folderHandleContext,
+      // Route loaders run outside render, so `handle` is read through a getter to see the latest value immediately
+      folderHandleContext: {
+        ...folderHandleContext,
+        get handle() {
+          return folderHandleContext.getHandle();
+        },
+      },
     }),
     [folderHandleContext],
   );
