@@ -74,6 +74,7 @@ export function handleWorkerMessage(
     mutateSettings,
     history,
     displayConditionalNotification,
+    confirmEndedEarly,
     setRunningState,
     setStartTime,
     wakelockRef,
@@ -129,6 +130,8 @@ export function handleWorkerMessage(
       duration?: number,
       isError?: boolean,
     ) => void;
+    /** Resolves true to save a session that ended early, false to discard it */
+    confirmEndedEarly: () => Promise<boolean>;
     setRunningState: Dispatch<SetStateAction<RunningStateOptions>>;
     setStartTime: Dispatch<SetStateAction<Date | null>>;
     wakelockRef: MutableRefObject<WakeLockSentinel | undefined>;
@@ -254,6 +257,7 @@ export function handleWorkerMessage(
         handleSessionEnded(payload as SessionEndedPayload, {
           history,
           displayConditionalNotification,
+          confirmEndedEarly,
           setRunningState,
           setStartTime,
           ApplicationSettings,
@@ -294,6 +298,7 @@ export async function handleSessionEnded(
     mutateSettings,
     history,
     displayConditionalNotification,
+    confirmEndedEarly,
     setRunningState,
     setStartTime,
     wakelockRef,
@@ -343,6 +348,7 @@ export async function handleSessionEnded(
       duration?: number,
       isError?: boolean,
     ) => void;
+    confirmEndedEarly: () => Promise<boolean>;
     setRunningState: Dispatch<SetStateAction<RunningStateOptions>>;
     setStartTime: Dispatch<SetStateAction<Date | null>>;
     wakelockRef: MutableRefObject<WakeLockSentinel | undefined>;
@@ -371,12 +377,11 @@ export async function handleSessionEnded(
     setRunningState(reason);
     const ended_early = reason === 'Cancelled';
     const sessionStart = new Date(sessionStartTime);
+    const sessionEnd = new Date().toJSON();
     setStartTime(sessionStart);
 
     if (ended_early) {
-      const confirm_save = window.confirm(
-        'This session was terminated early. If you would like to save the results, click "OK", otherwise click "Cancel" to discard the session and return to the session overview to re-attempt the session.',
-      );
+      const confirm_save = await confirmEndedEarly();
 
       if (confirm_save === false) {
         history.go(-1);
@@ -392,7 +397,7 @@ export async function handleSessionEnded(
       SystemKeyPresses: finalSystemKeys,
       SessionStart: sessionStart.toJSON(),
       Keyset: Keyset,
-      SessionEnd: new Date().toJSON(),
+      SessionEnd: sessionEnd,
       EndedEarly: ended_early,
       TimerMain: timers.total,
       TimerOne: timers.first,
@@ -404,27 +409,61 @@ export async function handleSessionEnded(
     if (wakelockRef.current) wakelockRef.current.release();
     wakelockRef.current = undefined;
 
-    try {
-      await mutateSessionOutcomes.mutateAsync({
-        Handle,
-        Group,
-        Individual,
-        Evaluation,
-        NewOutcome: sessionFileToSave,
-        Outcomes: [],
-        Action: 'Add',
-      });
+    // Each step is tracked so a retry only repeats what has not succeeded (no duplicate outcome rows)
+    let outcomeSaved = false;
+    let settingsSaved = false;
+    let saveInFlight = false;
 
-      await mutateSettings.mutateAsync({
-        Group,
-        Individual,
-        Evaluation,
-        Handle,
-        Settings: {
-          ...Settings,
-          Session: Settings.Session + 1,
-        },
-      });
+    const saveSessionResults = async () => {
+      if (saveInFlight) return;
+      saveInFlight = true;
+
+      try {
+        if (!outcomeSaved) {
+          await mutateSessionOutcomes.mutateAsync({
+            Handle,
+            Group,
+            Individual,
+            Evaluation,
+            NewOutcome: sessionFileToSave,
+            Outcomes: [],
+            Action: 'Add',
+          });
+
+          outcomeSaved = true;
+        }
+
+        if (!settingsSaved) {
+          await mutateSettings.mutateAsync({
+            Group,
+            Individual,
+            Evaluation,
+            Handle,
+            Settings: {
+              ...Settings,
+              Session: Settings.Session + 1,
+            },
+          });
+
+          settingsSaved = true;
+        }
+      } catch {
+        // The session data only lives in this closure, so keep the toast up until the user retries
+        toast.error('Error Saving Results', {
+          description: 'The session was not saved. Select Retry to try again.',
+          duration: Infinity,
+          action: {
+            label: 'Retry save',
+            onClick: () => {
+              void saveSessionResults();
+            },
+          },
+        });
+
+        return;
+      } finally {
+        saveInFlight = false;
+      }
 
       switch (ApplicationSettings.PostSessionBx) {
         case 'AutoAdvance':
@@ -446,16 +485,9 @@ export async function handleSessionEnded(
 
           break;
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (e) {
-      displayConditionalNotification(
-        ApplicationSettings,
-        'Error Saving Results',
-        'An error occurred while saving the results. Please try again.',
-        3000,
-        true,
-      );
-    }
+    };
+
+    await saveSessionResults();
   };
 
   void save_output().catch(() => {
@@ -521,6 +553,7 @@ export function SessionProcessKeypress(
     wakelockRef,
     setStartTime,
     keysPressed,
+    history,
   }: {
     ApplicationSettings: ApplicationSettingsTypes;
     Keyset: KeySet;
@@ -531,11 +564,15 @@ export function SessionProcessKeypress(
 
     setStartTime: Dispatch<SetStateAction<Date | null>>;
     keysPressed: KeyManageType[];
+    history: RouterHistory;
   },
 ) {
   if (ev.repeat) return;
 
-  if (ev.key === 'Space' || ev.key === ' ') ev.preventDefault();
+  // A confirmation dialog owns the keyboard while an early-ended session awaits a save/discard decision
+  if (runningState === 'Cancelled') return;
+
+  if (ev.key === ' ') ev.preventDefault();
 
   if (runningState === 'Not Started') {
     if (ev.key === 'Escape') history.go(-1);
@@ -557,7 +594,18 @@ export function SessionProcessKeypress(
       // Request wake-lock
       const request_wake_lock = async () => {
         if (navigator && navigator.wakeLock) {
-          wakelockRef.current = await navigator.wakeLock.request('screen');
+          try {
+            const sentinel = await navigator.wakeLock.request('screen');
+
+            // Session may have ended while the request was pending
+            if (endingProcessedRef.current) {
+              await sentinel.release();
+            } else {
+              wakelockRef.current = sentinel;
+            }
+          } catch {
+            // Wake lock is best-effort (e.g., denied when the tab is hidden)
+          }
         }
       };
 
