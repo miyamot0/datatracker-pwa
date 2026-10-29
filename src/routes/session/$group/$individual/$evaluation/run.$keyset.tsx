@@ -14,6 +14,8 @@ import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { RouteErrorRedirect } from '@/components/pages/error/route-error-view';
 import { KeySet } from '@/types/keyset/core';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/run/$keyset')({
   beforeLoad: ({ context, params }) => {
     if (!context.folderHandleContext.isInitialized) {
@@ -53,7 +55,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ru
       sessionQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const totalQuery = Promise.all([fetchKeyboards, fetchSessionParams]);
+    const totalQuery = trackSettlement(Promise.all([fetchKeyboards, fetchSessionParams]));
 
     return {
       Group: Group,

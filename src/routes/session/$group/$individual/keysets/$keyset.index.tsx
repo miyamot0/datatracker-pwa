@@ -13,6 +13,8 @@ import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 import { type KeySet } from '@/types/keyset/core';
 import { RouteErrorRedirect } from '@/components/pages/error/route-error-view';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/keysets/$keyset/')({
   beforeLoad: ({ params, context }) => {
     if (!context.folderHandleContext.isInitialized) {
@@ -45,7 +47,7 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/$keyse
   loader: ({ context }) => {
     const { Group, Individual, KeySet, CleanHandle } = context;
 
-    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
+    const fetchKeyboards = trackSettlement(context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual)));
 
     return {
       Group: Group,

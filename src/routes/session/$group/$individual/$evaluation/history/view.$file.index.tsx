@@ -25,6 +25,8 @@ import { ToggleDisplayKey } from '@/types/visuals';
 import { sessionQueryOptions } from '@/queries/session/query-session-params';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/view/$file/')({
   beforeLoad: ({ context, params }) => {
     if (!context.folderHandleContext.isInitialized) {
@@ -69,7 +71,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
 
     const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
 
-    const totalQuery = Promise.all([fetchSessionOutcomes, fetchSessionParams, fetchKeyboards]);
+    const totalQuery = trackSettlement(Promise.all([fetchSessionOutcomes, fetchSessionParams, fetchKeyboards]));
 
     return {
       Group,

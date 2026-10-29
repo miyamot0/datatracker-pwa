@@ -19,6 +19,8 @@ import { KeySet } from '@/types/keyset/core';
 import { RouteErrorRedirect } from '@/components/pages/error/route-error-view';
 import { extractAndDeduplicateKeysets } from '@/lib/graphing/keyset-utils';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/reli')({
   beforeLoad: ({ context, params }) => {
     if (!context.folderHandleContext.isInitialized) {
@@ -57,7 +59,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/re
     );
     const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
 
-    const totalQuery = Promise.all([fetchSessionOutcomes, fetchKeyboards]);
+    const totalQuery = trackSettlement(Promise.all([fetchSessionOutcomes, fetchKeyboards]));
 
     return {
       Group,

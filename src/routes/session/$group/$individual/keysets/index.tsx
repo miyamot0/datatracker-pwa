@@ -11,6 +11,8 @@ import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { KeySet } from '@/types/keyset/core';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/keysets/')({
   beforeLoad: ({ context, params }) => {
     if (!context.folderHandleContext.isInitialized) {
@@ -42,7 +44,7 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/')({
   loader: ({ context }) => {
     const { Group, Individual, CleanHandle } = context;
 
-    const fetchKeySets = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
+    const fetchKeySets = trackSettlement(context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual)));
 
     return {
       Group,

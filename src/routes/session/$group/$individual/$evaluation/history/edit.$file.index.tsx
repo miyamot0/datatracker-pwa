@@ -14,6 +14,8 @@ import SessionManagerContent from '@/components/pages/editor-session-outcome/ses
 import { RouteErrorRedirect } from '@/components/pages/error/route-error-view';
 import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/edit/$file/')({
   beforeLoad: ({ context, params }) => {
     if (!context.folderHandleContext.isInitialized) {
@@ -48,8 +50,8 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
   loader: async ({ context }) => {
     const { Group, Individual, Evaluation, FileString, CleanHandle, Settings } = context;
 
-    const fetchSessionOutcomes = context.queryClient.fetchQuery(
-      sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
+    const fetchSessionOutcomes = trackSettlement(
+      context.queryClient.fetchQuery(sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation)),
     );
 
     return {

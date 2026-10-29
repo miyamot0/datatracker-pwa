@@ -11,6 +11,8 @@ import { evaluationsAllQueryOptions } from '@/queries/evaluations/query-evaluati
 import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/import')({
   beforeLoad: ({ context, params }) => {
     if (!context.folderHandleContext.isInitialized) {
@@ -42,7 +44,7 @@ export const Route = createFileRoute('/session/$group/$individual/import')({
   loader: ({ context }) => {
     const { Group, Individual, CleanHandle } = context;
 
-    const fetchAllEvaluation = context.queryClient.fetchQuery(evaluationsAllQueryOptions(CleanHandle));
+    const fetchAllEvaluation = trackSettlement(context.queryClient.fetchQuery(evaluationsAllQueryOptions(CleanHandle)));
 
     return {
       Group: CleanUpString(Group),

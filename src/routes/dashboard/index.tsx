@@ -2,6 +2,8 @@ import { groupQueryOptions } from '@/queries/groups/query-groups';
 import { createFileRoute } from '@tanstack/react-router';
 import { DashboardGate } from '@/components/pages/dashboard-groups/dashboard-gate';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/dashboard/')({
   loader: ({ context }) => {
     const isAuthorized = context.folderHandleContext.handle !== null;
@@ -13,7 +15,9 @@ export const Route = createFileRoute('/dashboard/')({
       };
     }
 
-    const fetchGroups = context.queryClient.fetchQuery(groupQueryOptions(context.folderHandleContext.handle));
+    const fetchGroups = trackSettlement(
+      context.queryClient.fetchQuery(groupQueryOptions(context.folderHandleContext.handle)),
+    );
 
     return {
       handle: context.folderHandleContext.handle,

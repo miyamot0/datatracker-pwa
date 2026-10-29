@@ -12,6 +12,8 @@ import { keyboardsAllQueryOptions } from '@/queries/keysets/query-keyboards-all'
 import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { KeySetExtended } from '@/types/keyset/extended';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/keysets/import')({
   beforeLoad: ({ context, params }) => {
     if (!context.folderHandleContext.isInitialized) {
@@ -43,7 +45,7 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/import
   loader: ({ context }) => {
     const { Group, Individual, CleanHandle } = context;
 
-    const fetchAllKeysets = context.queryClient.fetchQuery(keyboardsAllQueryOptions(CleanHandle, Group, Individual));
+    const fetchAllKeysets = trackSettlement(context.queryClient.fetchQuery(keyboardsAllQueryOptions(CleanHandle, Group, Individual)));
 
     return {
       Group,

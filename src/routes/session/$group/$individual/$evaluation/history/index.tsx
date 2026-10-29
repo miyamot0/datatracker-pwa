@@ -11,6 +11,8 @@ import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-ou
 import { ModifiedSessionResult } from '@/types/storage';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/')({
   beforeLoad: ({ context, params }) => {
     if (!context.folderHandleContext.isInitialized) {
@@ -44,8 +46,8 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
   loader: ({ context }) => {
     const { Group, Individual, Evaluation, CleanHandle, Settings } = context;
 
-    const fetchSessionOutcomes = context.queryClient.fetchQuery(
-      sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
+    const fetchSessionOutcomes = trackSettlement(
+      context.queryClient.fetchQuery(sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation)),
     );
 
     return {

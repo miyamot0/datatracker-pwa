@@ -12,6 +12,8 @@ import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { sessionQueryOptions } from '@/queries/session/query-session-params';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/')({
   beforeLoad: ({ context, params }) => {
     if (!context.folderHandleContext.isInitialized) {
@@ -54,7 +56,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/')
       sessionQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const totalQuery = Promise.all([fetchConditions, fetchKeyboards, fetchSessionParams]);
+    const totalQuery = trackSettlement(Promise.all([fetchConditions, fetchKeyboards, fetchSessionParams]));
 
     return {
       Group: Group,

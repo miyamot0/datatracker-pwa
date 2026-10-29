@@ -20,6 +20,8 @@ import { ModifiedSessionResult } from '@/types/storage';
 import { filteredSessionScoringOptions } from '@/types/schedules';
 import { conditionQueryOptions } from '@/queries/conditions/query-conditions';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/rate')({
   beforeLoad: ({ context, params }) => {
     if (!context.folderHandleContext.isInitialized) {
@@ -63,7 +65,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
       conditionQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const totalQuery = Promise.all([fetchKeyboards, fetchSessionOutcomes, fetchConditions]);
+    const totalQuery = trackSettlement(Promise.all([fetchKeyboards, fetchSessionOutcomes, fetchConditions]));
 
     return {
       Group,

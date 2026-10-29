@@ -6,6 +6,8 @@ import { CleanUpString } from '@/lib/strings';
 import { evaluationQueryOptions } from '@/queries/evaluations/query-evaluations';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/')({
   beforeLoad: ({ context, params }) => {
     if (!context.folderHandleContext.isInitialized) {
@@ -37,7 +39,7 @@ export const Route = createFileRoute('/session/$group/$individual/')({
   loader: ({ context }) => {
     const { Group, Individual, CleanHandle } = context;
 
-    const fetchEvaluations = context.queryClient.fetchQuery(evaluationQueryOptions(CleanHandle, Group, Individual));
+    const fetchEvaluations = trackSettlement(context.queryClient.fetchQuery(evaluationQueryOptions(CleanHandle, Group, Individual)));
 
     return {
       Group,

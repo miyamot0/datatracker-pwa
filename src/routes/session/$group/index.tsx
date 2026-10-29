@@ -6,6 +6,8 @@ import { BuildGroupBreadcrumb } from '@/components/ui/breadcrumb-entries';
 import { clientQueryOptions } from '@/queries/individuals/query-individuals';
 import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/')({
   beforeLoad: ({ context, params }) => {
     if (!context.folderHandleContext.isInitialized) {
@@ -36,7 +38,7 @@ export const Route = createFileRoute('/session/$group/')({
   loader: ({ params, context }) => {
     const { Group, CleanHandle } = context;
 
-    const fetchClients = context.queryClient.fetchQuery(clientQueryOptions(CleanHandle, Group));
+    const fetchClients = trackSettlement(context.queryClient.fetchQuery(clientQueryOptions(CleanHandle, Group)));
 
     return {
       Group: params.group,

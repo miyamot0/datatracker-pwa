@@ -19,6 +19,8 @@ import ResultsViewerContent from '@/components/pages/summary-outcomes/results-vi
 import ResultsViewerBlank from '@/components/pages/summary-outcomes/views/results-viewer-blank';
 import { filteredSessionScoringOptions } from '@/types/schedules';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/view')({
   beforeLoad: ({ context, params }) => {
     if (!context.folderHandleContext.isInitialized) {
@@ -57,7 +59,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/vi
       sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const totalQuery = Promise.all([fetchKeyboards, fetchSessionOutcomes]);
+    const totalQuery = trackSettlement(Promise.all([fetchKeyboards, fetchSessionOutcomes]));
 
     return {
       Group: Group,
