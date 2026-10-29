@@ -70,6 +70,11 @@ describe('SessionRecorderCore', () => {
       expect(core.getUiUpdateInterval()).toBe(10);
     });
 
+    it('should fall back to the course polling interval for an unrecognised value', () => {
+      core.init(mockSettings, mockKeyset, 'unknown' as never);
+      expect(core.getUiUpdateInterval()).toBe(100);
+    });
+
     it('should initialize special key timers when keyset has SpecialDurationKeys', () => {
       const keysetWithSpecial: KeySet = {
         ...mockKeyset,
