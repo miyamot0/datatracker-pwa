@@ -100,15 +100,15 @@ export default defineConfig(({ command, mode }) => {
       clean: true,
       reportsDirectory: './coverage',
       include: [
-        'src/lib/**/*.{ts,tsx}',
-        'src/workers/**/*.ts',
-        'src/calculations/**/*.ts',
-        'src/analytics/**/*.ts',
-        'src/components/elements/**/*.{ts,tsx}',
-        'src/components/pages/**/*.{ts,tsx}',
-        'src/components/dialogs/**/*.{ts,tsx}',
+        'src/**/*.{ts,tsx}'
       ],
-      exclude: ['**/__tests__/**/*', '**/types/**/*', 'src/lib/utils.ts', 'src/components/ui/**'],
+      exclude: [
+        '**/__tests__/**/*',
+        '**/types/**/*',
+        'src/routes/**/*',
+        'src/config/*',
+        'src/*',
+        'src/lib/utils.ts'],
     };
 
   return {

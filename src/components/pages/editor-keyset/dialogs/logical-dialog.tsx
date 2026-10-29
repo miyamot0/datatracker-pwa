@@ -19,7 +19,7 @@ import { KeySet } from '@/types/keyset/core';
 import { KeySetLogical } from '@/types/keyset/serialization';
 import { PlusIcon, Trash } from 'lucide-react';
 import { createRef, useContext, useEffect, useState } from 'react';
-import { v4 as uuidv4 } from '@/lib/uuid';
+import { v4 } from '@/lib/uuid';
 
 type Props = {
   KeySet: KeySet;
@@ -45,7 +45,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit,
     })) as KeySetLogical[],
     value: 0,
     name: '',
-    id: uuidv4(),
+    id: v4(),
   } satisfies LogicState;
 
   const [logicState, setLogicState] = useState<LogicState>(logicToEdit ? {
@@ -153,7 +153,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit,
               Value: 0,
               Tag: 'field.' + key.KeyDescription,
             })),
-            id: uuidv4(),
+            id: v4(),
           });
         }
       }}
@@ -378,7 +378,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit,
                   Value: 0,
                   Tag: 'field.' + key.KeyDescription,
                 })),
-                id: uuidv4(),
+                id: v4(),
               });
             }}
           >
