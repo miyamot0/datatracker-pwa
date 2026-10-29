@@ -71,19 +71,19 @@ export const mutateKeyboardsAllWorker = async ({
     allKeySets: AllKeySets,
   } satisfies MutateKeysetsAllRequest;
 
-  return new Promise<KeySet[]>((resolve) => {
+  return new Promise<KeySet[]>((resolve, reject) => {
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
         const keySets = response.data;
         resolve(keySets);
       } else {
-        throw new Error(`Worker error: ${response.error}\nStack: ${response.stack}`);
+        reject(new Error(`Worker error: ${response.error}\nStack: ${response.stack}`));
       }
     };
     worker.onerror = (error) => {
       console.error('Worker error:', error);
-      throw new Error(`Worker error: ${error.message}`);
+      reject(new Error(`Worker error: ${error.message}`));
     };
     worker.postMessage(request);
   });

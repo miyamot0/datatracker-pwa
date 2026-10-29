@@ -82,19 +82,19 @@ export const mutationEvaluationsAllWorker = async ({
     action: Action,
   } satisfies MutateEvaluationsAllRequest;
 
-  return new Promise<EvaluationRecord[]>((resolve) => {
+  return new Promise<EvaluationRecord[]>((resolve, reject) => {
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
         const settings = response.data;
         resolve(settings);
       } else {
-        throw new Error(`Worker error: ${response.error}\nStack: ${response.stack}`);
+        reject(new Error(`Worker error: ${response.error}\nStack: ${response.stack}`));
       }
     };
     worker.onerror = (error) => {
       console.error('Worker error:', error);
-      throw new Error(`Worker error: ${error.message}`);
+      reject(new Error(`Worker error: ${error.message}`));
     };
     worker.postMessage(request);
   });

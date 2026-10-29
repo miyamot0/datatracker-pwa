@@ -124,19 +124,19 @@ export const mutationKeysetsWorker = async ({
     action: Action,
   } satisfies MutateSessionOutcomesRequest;
 
-  return new Promise<ModifiedSessionResult[]>((resolve) => {
+  return new Promise<ModifiedSessionResult[]>((resolve, reject) => {
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
         const outcomes = response.data;
         resolve(outcomes);
       } else {
-        resolve([]);
+        reject(new Error(response.error));
       }
     };
     worker.onerror = (error) => {
       console.error('Worker error:', error);
-      resolve([]);
+      reject(new Error(error.message || 'Worker failed to complete the mutation'));
     };
     worker.postMessage(request);
   });

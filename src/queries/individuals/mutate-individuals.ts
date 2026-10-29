@@ -53,19 +53,19 @@ export const mutationIndividualsWorker = async ({
     action: Action,
   } satisfies MutateIndividualsRequest;
 
-  return new Promise<string[]>((resolve) => {
+  return new Promise<string[]>((resolve, reject) => {
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
         const directories = response.data;
         resolve(directories);
       } else {
-        resolve([]);
+        reject(new Error(response.error));
       }
     };
     worker.onerror = (error) => {
       console.error('Worker error:', error);
-      resolve([]);
+      reject(new Error(error.message || 'Worker failed to complete the mutation'));
     };
     worker.postMessage(request);
   });
