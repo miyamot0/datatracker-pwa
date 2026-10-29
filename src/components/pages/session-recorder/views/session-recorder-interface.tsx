@@ -1,29 +1,28 @@
 import { useEventListener } from '@/components/elements/behavior/event-listeners';
 import { SavedSettings } from '@/lib/dtos/session-settings';
 import { KeySet } from '@/types/keyset/core';
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { KeyManageType, TimerSetting } from '@/types/timing';
 import SessionRecorderWorker from '@/workers/timing/session-recorder-worker.ts?worker';
 import SessionRecorderInstructions from './ui-instructions';
 import KeyHistoryListing from './ui-key-listing';
 import { displayConditionalNotification } from '@/lib/notifications';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { mutationSettingsParams } from '@/queries/session/mutate-session-params';
-import { queryClient } from '@/App';
 import { useRouter } from '@tanstack/react-router';
 import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outcomes';
 import { TimerUpdatePayload } from '@/workers/timing/types/session-recorder-worker-payloads';
 import { WorkerMessage, WorkerResponse } from '@/workers/timing/types/session-recorder-worker-messaging';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
-import { SessionPollingIntervals } from '@/types/settings/performance-settings';
 import SessionRecorderFrequencyTallies from './ui-counts-frequency';
 import SessionRecorderDurationTallies from './ui-counts-duration';
 import SessionHeaderComponent from '../subpanels/header-component';
-import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { formatTimeOfDay } from '@/lib/time';
 import { handleMessageChannel, handleWorkerMessage, SessionProcessKeypress } from '@/lib/session-keypress';
 import { RunningStateOptions } from '@/types/session';
 import { cn } from '@/lib/utils';
+import { useConfirmDialog } from '@/components/dialogs/use-confirm-dialog';
 
 type Props = {
   Group: string;
@@ -44,10 +43,9 @@ export default function SessionRecorderInterface({
   Handle,
   ApplicationSettings,
 }: Props) {
-  const { history } = useRouter();
   const router = useRouter();
-
-  const UI_POLL_INTERVAL = SessionPollingIntervals[ApplicationSettings.RecorderPolling] || 100;
+  const { history } = router;
+  const queryClient = useQueryClient();
 
   const [keysPressed, setKeysPressed] = useState<KeyManageType[]>([]);
 
@@ -55,7 +53,6 @@ export default function SessionRecorderInterface({
   const messageChannelRef = useRef<MessageChannel | null>(null);
 
   const animationFrameRef = useRef<number | undefined>(undefined);
-  const lastUpdateTimeRef = useRef<number>(0);
 
   const mutateSessionOutcomes = useMutation({
     mutationFn: mutationSettingsOutcomes,
@@ -82,6 +79,26 @@ export default function SessionRecorderInterface({
     },
   });
 
+  const { openConfirmDialog, confirmDialog } = useConfirmDialog();
+
+  // Like this better, cleaner and more predictable dialog (prev instructions were awful)
+  const confirmEndedEarly = useCallback(
+    () =>
+      new Promise<boolean>((resolve) =>
+        openConfirmDialog({
+          title: 'Session ended early',
+          description:
+            'This session was terminated early. Save the results, or discard the session and return to the session overview to re-attempt it.',
+          confirmLabel: 'Save Results',
+          cancelLabel: 'Discard',
+          autoFocusConfirm: true,
+          onConfirm: () => resolve(true),
+          onCancel: () => resolve(false),
+        }),
+      ),
+    [openConfirmDialog],
+  );
+
   // Timer state managed by worker, but we keep refs for UI updates
   const secondsElapsedTotal = useRef<number>(0);
   const secondsElapsedFirst = useRef<number>(0);
@@ -103,36 +120,60 @@ export default function SessionRecorderInterface({
   const [, setStartTime] = useState<Date | null>(null);
   const activeTimerRef = useRef<TimerSetting>('Stopped');
   const [, forceUpdate] = useState({});
-  const [activeDurationKeysCount, setActiveDurationKeysCount] = useState<number>(0);
 
-  // Optimized UI update function using requestAnimationFrame
+  // Experimental: Pool all worker updates, since we only need one update within in frame  
   const scheduleUIUpdate = () => {
     if (animationFrameRef.current) return;
 
-    animationFrameRef.current = requestAnimationFrame((currentTime) => {
+    animationFrameRef.current = requestAnimationFrame(() => {
       animationFrameRef.current = undefined;
 
-      // Throttle to ~60fps maximum
-      if (currentTime - lastUpdateTimeRef.current >= 16.67) {
-        if (pendingTimerUpdate.current) {
-          const update = pendingTimerUpdate.current;
-          secondsElapsedTotal.current = update.total;
-          secondsElapsedFirst.current = update.first;
-          secondsElapsedSecond.current = update.second;
-          secondsElapsedThird.current = update.third;
-          secondsElapsedActive.current = update.active;
-          activeTimerRef.current = update.activeTimer;
+      const update = pendingTimerUpdate.current;
+      if (!update) return;
 
-          pendingTimerUpdate.current = null;
-          forceUpdate({});
-          lastUpdateTimeRef.current = currentTime;
-        }
-      } else {
-        // Re-schedule if we're updating too frequently
-        scheduleUIUpdate();
-      }
+      secondsElapsedTotal.current = update.total;
+      secondsElapsedFirst.current = update.first;
+      secondsElapsedSecond.current = update.second;
+      secondsElapsedThird.current = update.third;
+      secondsElapsedActive.current = update.active;
+      activeTimerRef.current = update.activeTimer;
+
+      pendingTimerUpdate.current = null;
+      forceUpdate({});
     });
   };
+
+  // Per handlers; workers to pull from here to avoid stale props
+  const latestProps = useRef({
+    ApplicationSettings,
+    Group,
+    Individual,
+    Evaluation,
+    Handle,
+    history,
+    mutateSessionOutcomes,
+    mutateSettings,
+    confirmEndedEarly,
+  });
+
+  useEffect(() => {
+    latestProps.current = {
+      ApplicationSettings,
+      Group,
+      Individual,
+      Evaluation,
+      Handle,
+      history,
+      mutateSessionOutcomes,
+      mutateSettings,
+      confirmEndedEarly,
+    };
+  });
+
+  // Lazy load dialogs, probably not even worth it tho
+  useEffect(() => {
+    void import('@/components/dialogs/confirm-dialog');
+  }, []);
 
   // Initialize worker and handle cleanup
   useEffect(() => {
@@ -165,20 +206,13 @@ export default function SessionRecorderInterface({
 
     workerRef.current.onmessage = (event: MessageEvent<WorkerResponse>) =>
       handleWorkerMessage(event, {
-        history,
+        ...latestProps.current,
         displayConditionalNotification,
         setRunningState,
         setStartTime,
-        ApplicationSettings,
         Keyset,
         endingProcessedRef,
         wakelockRef,
-        mutateSessionOutcomes,
-        mutateSettings,
-        Group,
-        Individual,
-        Evaluation,
-        Handle,
         Settings,
         pendingTimerUpdate,
         specialKeyTimers,
@@ -202,7 +236,7 @@ export default function SessionRecorderInterface({
         wakelockRef.current = undefined;
       }
     };
-  }, [Settings, Keyset]);
+  }, [Settings, Keyset, ApplicationSettings.RecorderPolling]);
 
   useEventListener('keydown', (ev: React.KeyboardEvent<HTMLElement>) =>
     SessionProcessKeypress(ev, {
@@ -214,74 +248,39 @@ export default function SessionRecorderInterface({
       Keyset,
       endingProcessedRef,
       wakelockRef,
+      history,
     }),
   );
 
-  // Note: Potentially not worth complexity
-  const keySetSpecialKeys = useMemo(() => {
-    const specialKeys = Keyset.SpecialDurationKeys;
-    return specialKeys;
-  }, [Keyset]);
+  const keySetSpecialKeys = Keyset.SpecialDurationKeys;
 
-  // Note: Potentially not worth complexity
-  const keySetDurationKeys = useMemo(() => {
-    const durationKeys = Keyset.DurationKeys;
-    return durationKeys;
-  }, [Keyset]);
+  const totalDurationKeys = useMemo(
+    () => [...Keyset.DurationKeys, ...Keyset.ScorableDurationKeys],
+    [Keyset],
+  );
 
-  // Note: Potentially not worth complexity
-  const keySetScoredDurationKeys = useMemo(() => {
-    const durationKeys = Keyset.ScorableDurationKeys;
-    return durationKeys;
-  }, [Keyset]);
+  // Count of active duration keys (keys with odd press counts)
+  const activeDurationKeysCount = useMemo(() => {
+    const pressCounts = new Map<number, number>();
+    for (const pressedKey of keysPressed) {
+      pressCounts.set(pressedKey.KeyCode, (pressCounts.get(pressedKey.KeyCode) ?? 0) + 1);
+    }
 
-  // Note: Potentially not worth complexity
-  const totalDurationKeys = useMemo(() => {
-    return [...keySetDurationKeys, ...keySetScoredDurationKeys];
-  }, [keySetDurationKeys, keySetScoredDurationKeys]);
-
-  // Calculate count of active duration keys (keys with odd press counts)
-  const activeDurationKeysCountMemo = useMemo(() => {
-    return totalDurationKeys.filter((key) => {
-      const matchingKeys = keysPressed.filter((pressedKey) => pressedKey.KeyCode === key.KeyCode);
-      return matchingKeys.length % 2 === 1; // Odd count means key is active
-    }).length;
+    return totalDurationKeys.filter((key) => (pressCounts.get(key.KeyCode) ?? 0) % 2 === 1).length;
   }, [totalDurationKeys, keysPressed]);
-
-  // Update active duration keys count state
-  useEffect(() => {
-    setActiveDurationKeysCount(activeDurationKeysCountMemo);
-  }, [activeDurationKeysCountMemo]);
 
   const HeaderComponent = useMemo(() => {
     return <SessionHeaderComponent Settings={Settings} RunningState={runningState} KeySet={Keyset} />;
   }, [Settings, runningState, Keyset]);
 
-  // Use a timestamp state to force re-renders when duration keys are active
-  const [durationUpdateTimestamp, setDurationUpdateTimestamp] = useState<number>(0);
-
-  // Note: Hate this, but it works
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-
-    if (activeDurationKeysCount > 0 && runningState === 'Started') {
-      intervalId = setInterval(() => {
-        setDurationUpdateTimestamp(Date.now());
-      }, UI_POLL_INTERVAL);
-    }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [activeDurationKeysCount, runningState]);
+  // Active duration keys display a live running time, so the tallies must re-render with each timer update
+  const liveDurationTick = activeDurationKeysCount > 0 ? secondsElapsedTotal.current : null;
 
   const DurationCountsSummary = useMemo(() => {
     if (totalDurationKeys.length === 0) return null;
 
     return <SessionRecorderDurationTallies Keyset={Keyset} KeysPressed={keysPressed} Settings={ApplicationSettings} />;
-  }, [Keyset, keysPressed, ApplicationSettings, activeDurationKeysCount > 0 ? durationUpdateTimestamp : null]);
+  }, [Keyset, keysPressed, ApplicationSettings, liveDurationTick]);
 
   const FrequencyCountsSummary = useMemo(() => {
     return <SessionRecorderFrequencyTallies Keyset={Keyset} KeysPressed={keysPressed} Settings={ApplicationSettings} />;
@@ -316,12 +315,12 @@ export default function SessionRecorderInterface({
                 key={`${key.KeyType}-${key.KeyCode}-${key.TimePressed.toUTCString()}-${index}`}
                 className="text-sm"
               >
-                <TableHead className="h-9">{key.KeyName}</TableHead>
-                <TableHead className="h-9">{key.KeyDescription}</TableHead>
-                <TableHead className="h-9">{key.KeyScheduleRecording}</TableHead>
-                <TableHead className="h-9">
+                <TableCell className="h-9 py-0">{key.KeyName}</TableCell>
+                <TableCell className="h-9 py-0">{key.KeyDescription}</TableCell>
+                <TableCell className="h-9 py-0">{key.KeyScheduleRecording}</TableCell>
+                <TableCell className="h-9 py-0">
                   {formatTimeOfDay(key.TimePressed)} ({key.TimeIntoSession.toFixed(2)}s)
-                </TableHead>
+                </TableCell>
               </TableRow>
             ))}
         </TableBody>
@@ -332,6 +331,7 @@ export default function SessionRecorderInterface({
   return (
     <div className="flex flex-col w-full gap-4">
       {HeaderComponent}
+      {confirmDialog}
 
       <div
         className={cn('grid grid-cols-2 w-full gap-4 select-none', {
