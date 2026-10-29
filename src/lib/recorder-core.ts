@@ -106,7 +106,7 @@ export class SessionRecorderCore {
   init(settings: SavedSettings, keyset: KeySet, uiPollingInterval: SessionRecorderPolling): void {
     this.settings = settings;
     this.keyset = keyset;
-    this.uiUpdateInterval = SessionPollingIntervals[uiPollingInterval];
+    this.uiUpdateInterval = SessionPollingIntervals[uiPollingInterval] ?? SessionPollingIntervals.course;
     this.resetState();
 
     // Initialize special key timers
