@@ -54,7 +54,7 @@ export default function SessionRecorderInterface({
   const workerRef = useRef<Worker | null>(null);
   const messageChannelRef = useRef<MessageChannel | null>(null);
 
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
   const lastUpdateTimeRef = useRef<number>(0);
 
   const mutateSessionOutcomes = useMutation({
@@ -96,7 +96,7 @@ export default function SessionRecorderInterface({
   const specialKeyTimers = useRef<Record<string, number>>({});
   const activeSpecialKey = useRef<string | null>(null);
 
-  const wakelockRef = useRef<WakeLockSentinel>();
+  const wakelockRef = useRef<WakeLockSentinel | undefined>(undefined);
   const endingProcessedRef = useRef<boolean>(false);
 
   const [runningState, setRunningState] = useState<RunningStateOptions>('Not Started');

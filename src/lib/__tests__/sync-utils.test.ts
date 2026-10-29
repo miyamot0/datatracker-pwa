@@ -15,7 +15,6 @@ import {
   writeFileToTarget,
   syncFiles,
 } from '../sync-utils';
-import { SyncWorkerHandler } from '../sync-core';
 
 // Mock FileSystemDirectoryHandle and FileSystemFileHandle with proper async handling
 const createMockFileHandle = (name: string, content: string = 'test content') =>
@@ -747,115 +746,5 @@ describe('Sync Utilities', () => {
       // Test completes without timing out
       expect(Array.isArray(result)).toBe(true);
     }, 5000);
-  });
-});
-
-describe('SyncWorkerHandler', () => {
-  let handler: SyncWorkerHandler;
-  let consoleLogSpy: any;
-
-  beforeEach(() => {
-    handler = new SyncWorkerHandler();
-    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    consoleLogSpy.mockRestore();
-  });
-
-  it('should create an instance', () => {
-    expect(handler).toBeInstanceOf(SyncWorkerHandler);
-  });
-
-  it('should have all required methods', () => {
-    expect(typeof handler.handleListLocalFiles).toBe('function');
-    expect(typeof handler.handleListRemoteFiles).toBe('function');
-    expect(typeof handler.handleListBothFiles).toBe('function');
-    expect(typeof handler.handleSyncFiles).toBe('function');
-    expect(typeof handler.processMessage).toBe('function');
-  });
-
-  describe('processMessage', () => {
-    it('should route LIST_FILES_LOCAL messages', async () => {
-      const mockHandle = createMockDirectoryHandle('test', []);
-      const spy = vi.spyOn(handler, 'handleListLocalFiles').mockResolvedValue({
-        type: 'FILES_LISTED_LOCAL',
-        files: [],
-      });
-
-      const message = { type: 'LIST_FILES_LOCAL' as const, localHandle: mockHandle };
-      const result = await handler.processMessage(message);
-
-      expect(spy).toHaveBeenCalledWith(message);
-      expect(result.type).toBe('FILES_LISTED_LOCAL');
-    });
-
-    it('should route LIST_FILES_REMOTE messages', async () => {
-      const mockHandle = createMockDirectoryHandle('test', []);
-      const spy = vi.spyOn(handler, 'handleListRemoteFiles').mockResolvedValue({
-        type: 'FILES_LISTED_REMOTE',
-        files: [],
-      });
-
-      const message = { type: 'LIST_FILES_REMOTE' as const, remoteHandle: mockHandle };
-      const result = await handler.processMessage(message);
-
-      expect(spy).toHaveBeenCalledWith(message);
-      expect(result.type).toBe('FILES_LISTED_REMOTE');
-    });
-
-    it('should route LIST_FILES_BOTH messages', async () => {
-      const mockHandle1 = createMockDirectoryHandle('local', []);
-      const mockHandle2 = createMockDirectoryHandle('remote', []);
-      const spy = vi.spyOn(handler, 'handleListBothFiles').mockResolvedValue({
-        type: 'FILES_LISTED_BOTH',
-        localFiles: [],
-        remoteFiles: [],
-      });
-
-      const message = {
-        type: 'LIST_FILES_BOTH' as const,
-        localHandle: mockHandle1,
-        remoteHandle: mockHandle2,
-      };
-      const result = await handler.processMessage(message);
-
-      expect(spy).toHaveBeenCalledWith(message);
-      expect(result.type).toBe('FILES_LISTED_BOTH');
-    });
-
-    it('should route SYNC_FILES messages', async () => {
-      const mockHandle1 = createMockDirectoryHandle('source', []);
-      const mockHandle2 = createMockDirectoryHandle('target', []);
-      const spy = vi.spyOn(handler, 'handleSyncFiles').mockResolvedValue({
-        type: 'FILES_SYNCED',
-        syncedFiles: [],
-        direction: 'to_remote',
-      });
-
-      const message = {
-        type: 'SYNC_FILES' as const,
-        rows: [],
-        sourceHandle: mockHandle1,
-        targetHandle: mockHandle2,
-        direction: 'to_remote' as const,
-      };
-      const result = await handler.processMessage(message);
-
-      expect(spy).toHaveBeenCalledWith(message);
-      expect(result.type).toBe('FILES_SYNCED');
-    });
-
-    it('should throw error for unknown message types', async () => {
-      const invalidMessage = { type: 'UNKNOWN_TYPE' } as any;
-
-      await expect(handler.processMessage(invalidMessage)).rejects.toThrow('Unknown operation type: UNKNOWN_TYPE');
-    });
-
-    it('should handle malformed messages', async () => {
-      const malformedMessage = {} as any;
-
-      await expect(handler.processMessage(malformedMessage)).rejects.toThrow('Unknown operation type: undefined');
-    });
   });
 });

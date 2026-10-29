@@ -33,7 +33,7 @@ export const DEFAULT_SESSION_SETTINGS: SavedSettings = {
 
 const TimerOptionSchema = z
   .union([z.enum(Object.values(SessionTerminationOptions)), z.number()])
-  .catch(DEFAULT_SESSION_SETTINGS.TimerOption);
+  .catch(DEFAULT_SESSION_SETTINGS.TimerOption as (typeof SessionTerminationOptions)[keyof typeof SessionTerminationOptions]);
 
 /**
  * Lenient read of settings.json: each field falls back to its default on its own, and unknown keys are kept.

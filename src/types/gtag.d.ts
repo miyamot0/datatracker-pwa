@@ -1,0 +1,18 @@
+export {};
+
+interface GtagConfig {
+  send_page_view?: boolean;
+  anonymize_ip?: boolean;
+  allow_google_signals?: boolean;
+  allow_ad_personalization_signals?: boolean;
+  transport_type?: 'beacon' | 'xhr' | 'image';
+  custom_map?: Record<string, string>;
+  [key: string]: unknown;
+}
+
+declare global {
+  interface Window {
+    gtag: (command: 'config' | 'js' | 'event' | 'set', targetOrDate: string | Date, config?: GtagConfig) => void;
+    dataLayer: unknown[];
+  }
+}

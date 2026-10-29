@@ -22,13 +22,10 @@ import { cn } from '@/lib/utils';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from './dropdown-menu';
 
-export type RowSelectOptions = 'None';
-
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   filterCol?: string;
-  rowSelectOptions?: RowSelectOptions;
   optionalButtons?: React.ReactNode;
   settings: ApplicationSettingsTypes;
   forceShowCheckbox?: boolean;
@@ -51,7 +48,6 @@ export function DataTable<TData, TValue>({
   settings,
   limitCols,
   hiddenCols = {},
-  rowSelectOptions = 'None',
   customCheckboxButton2,
   callback2,
 }: DataTableProps<TData, TValue>) {
@@ -269,7 +265,7 @@ export function DataTable<TData, TValue>({
           )}
         </TableBody>
       </Table>
-      <DataTablePagination table={table} rowSelectOptions={rowSelectOptions} />
+      <DataTablePagination table={table} />
     </div>
   );
 }
