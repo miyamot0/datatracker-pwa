@@ -35,7 +35,23 @@ import { SessionTerminationOptions } from '@/types/terminations';
 import { preparePlotDataCumulative } from '@/lib/summary';
 import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
 import { generateTicks } from '@/lib/graphing/chart-setup';
+import { getCorrespondingSessionPairs } from '@/lib/reli';
+import { filterSessionsByPrimaryRole } from '@/lib/graphing/session-filters';
 import demandTreatmentKeysetJson from '../../../../demo-data/Evaluation Study/Participant 001/FC Treatment Evaluation.json';
+import { DiagnosticsPage } from '../diagnostics/diagnostics-page';
+import { RouteErrorView } from '../error/route-error-view';
+import ReliabilityBlank from '../summary-agreement/views/reli-blank';
+import ResultsViewerBlank from '../summary-outcomes/views/results-viewer-blank';
+import { ConfirmDialog } from '@/components/dialogs/confirm-dialog';
+import { NameDialog } from '@/components/dialogs/name-dialog';
+import { TitlesDialog } from '../visualize-outcomes/shared/dialogs/titles-dialog';
+import { LegendDialog } from '../visualize-outcomes/shared/dialogs/legend-dialog';
+import { SeriesStylesDialog } from '../visualize-outcomes/shared/dialogs/series-styles-dialog';
+import { TextAnnotationsDialog } from '../visualize-outcomes/shared/dialogs/text-annotations-dialog';
+import { AimLinesDialog } from '../visualize-outcomes/shared/dialogs/aim-lines-dialog';
+import { PhaseChangesDialog } from '../visualize-outcomes/shared/dialogs/phase-changes-dialog';
+import { DEFAULT_LEGEND_SETTINGS } from '@/lib/graphing/legend-settings';
+import { EMPTY_SERIES_STYLES } from '@/lib/graphing/series-style';
 
 const demandTreatmentSessionModules = {
   ...import.meta.glob(
@@ -53,6 +69,20 @@ const demandTreatmentSessionModules = {
     },
   ),
 };
+
+vi.mock('@/routes/diagnostics', async () => {
+  const { DEFAULT_APPLICATION_SETTINGS } = await import('@/types/settings/application-settings');
+  return {
+    Route: {
+      useLoaderData: () => ({
+        Settings: DEFAULT_APPLICATION_SETTINGS,
+        queryClient: {
+          getDefaultOptions: () => ({ queries: { staleTime: 0, gcTime: 300000 } }),
+        },
+      }),
+    },
+  };
+});
 
 const mockKeywordArray = AllKeywordsArray;
 
@@ -153,6 +183,9 @@ vi.mock('@tanstack/react-router', () => ({
   useRouterState: () => ({ matches: [{ routeId: '/test' }] }),
   useLocation: () => ({ pathname: '/' }),
   useNavigate: () => vi.fn(),
+  isNotFound: () => false,
+  isRedirect: () => false,
+  redirect: (options: unknown) => options,
   createFileRoute: () => () => ({
     component: null,
     useLoaderData: () => ({
@@ -208,6 +241,8 @@ vi.mock('@/queries/session/mutate-session-params', () => ({
   mutationSettingsParams: vi.fn(),
 }));
 
+// Captures documentation screenshots into public/screenshots. Not part of the default test run.
+// Regenerate with: npm run screenshots
 // ----- Tests -----
 
 // Vite build-time globals not defined in vitest
@@ -518,16 +553,6 @@ const mockSession: import('@/types/storage').ModifiedSessionResult = {
   Comments: 'Participant was cooperative throughout.',
 };
 
-const mockTimerMapping: import('@/types/schedules').ScoringOptionsMapType = {
-  value: 'End on Primary Timer',
-  label: 'Score Total Time',
-};
-
-const mockShowKeys: import('@/types/visuals').ToggleDisplayKey[] = [
-  { KeyName: 'a', KeyDescription: 'Aggression', KeyCode: 65, KeyType: 'Observed', Visible: true },
-  { KeyName: 's', KeyDescription: 'Self-Injury', KeyCode: 83, KeyType: 'Observed', Visible: true },
-];
-
 type ImportedKeySet = Omit<import('@/types/keyset/core').KeySet, 'createdAt' | 'lastModified'> & {
   createdAt: string;
   lastModified: string;
@@ -638,6 +663,24 @@ const demandTreatmentSessionViewerExpandedSession: import('@/lib/dtos/session-re
   YTicks: generateTicks(demandTreatmentSessionViewerMaxY, 0),
   PlottedKeys: combineAndSortKeyPresses(demandTreatmentSessionViewerSession),
 };
+
+const demandTreatmentReliabilityModules = import.meta.glob(
+  '/demo-data/Evaluation Study/Participant 001/Demand Treatment Evaluation/Baseline/*_Reliability.json',
+  {
+    eager: true,
+    import: 'default',
+  },
+);
+
+const demandTreatmentReliabilitySessions = Object.entries(demandTreatmentReliabilityModules).map(([path, session]) => {
+  const filename = path.split('/').pop() ?? 'session.json';
+  return hydrateImportedSession(filename, session as ImportedSessionResult, demandTreatmentKeyset);
+});
+
+const demandTreatmentReliabilityPairs = getCorrespondingSessionPairs(
+  filterSessionsByPrimaryRole(demandTreatmentSessions),
+  demandTreatmentReliabilitySessions,
+);
 
 describe('ViewerEvaluationsPage', () => {
   it('renders with full styles and saves a screenshot', async () => {
@@ -1183,7 +1226,6 @@ describe('ReliabilityViewerPage', () => {
   it('renders with full styles and saves a screenshot', async () => {
     const mockHandle = {} as FileSystemDirectoryHandle;
 
-    const pairedSession: import('@/types/reli').ReliabilityPairType[] = [{ primary: mockSession, reli: mockSession }];
 
     render(
       <ThemeProvider defaultTheme="light" storageKey="test-theme">
@@ -1202,18 +1244,18 @@ describe('ReliabilityViewerPage', () => {
             <PageWrapper
               Settings={DEFAULT_APPLICATION_SETTINGS}
               breadcrumbs={[
-                { label: 'Study Trial A', to: '/session/$group' },
+                { label: 'Evaluation Study', to: '/session/$group' },
                 { label: 'Participant 001', to: '/session/$group/$individual' },
-                { label: 'Functional Analysis', to: '/session/$group/$individual/$evaluation' },
+                { label: 'Demand Treatment Evaluation', to: '/session/$group/$individual/$evaluation' },
                 { label: 'Reliability', to: '/session/$group/$individual/$evaluation/reli' },
               ]}
               label="Reliability Viewer"
             >
               <ReliabilityViewerPage
-                Group="Study Trial A"
+                Group="Evaluation Study"
                 Individual="Participant 001"
-                PairedSession={pairedSession}
-                Keyset={mockKeyset}
+                PairedSession={demandTreatmentReliabilityPairs}
+                Keyset={demandTreatmentKeyset}
               />
             </PageWrapper>
           </TooltipProvider>
@@ -1247,21 +1289,21 @@ describe('ResultsViewerContent', () => {
             <PageWrapper
               Settings={DEFAULT_APPLICATION_SETTINGS}
               breadcrumbs={[
-                { label: 'Study Trial A', to: '/session/$group' },
+                { label: 'Evaluation Study', to: '/session/$group' },
                 { label: 'Participant 001', to: '/session/$group/$individual' },
-                { label: 'Functional Analysis', to: '/session/$group/$individual/$evaluation' },
+                { label: 'Demand Treatment Evaluation', to: '/session/$group/$individual/$evaluation' },
                 { label: 'Results', to: '/session/$group/$individual/$evaluation/outcomes' },
               ]}
               label="Session Results"
             >
               <ResultsViewerContent
-                TimerMapping={mockTimerMapping}
-                Results={[mockSession]}
-                Keyset={mockKeyset}
-                Group="Study Trial A"
+                TimerMapping={demandTreatmentTimerMapping}
+                Results={demandTreatmentSessions}
+                Keyset={demandTreatmentKeyset}
+                Group="Evaluation Study"
                 Individual="Participant 001"
-                Evaluation="Functional Analysis"
-                ShowKeysFreq={mockShowKeys}
+                Evaluation="Demand Treatment Evaluation"
+                ShowKeysFreq={demandTreatmentSessionViewerShowKeys}
                 ShowKeysDuration={[]}
                 Settings={DEFAULT_APPLICATION_SETTINGS}
               />
@@ -1271,6 +1313,7 @@ describe('ResultsViewerContent', () => {
       </ThemeProvider>,
     );
 
+    await page.viewport(1295, 1000);
     await page.screenshot({ path: '../../../../public/screenshots/results_viewer_content_page.png' });
   });
 });
@@ -1377,5 +1420,294 @@ describe('ResultsProportionVisualsPage', () => {
 
     await page.viewport(1295, 1150);
     await page.screenshot({ path: '../../../../public/screenshots/proportion_visuals_page.png' });
+  });
+});
+
+const settleDialogAnimation = () => new Promise((resolve) => setTimeout(resolve, 400));
+
+const demandTreatmentConditions = ['Baseline', 'Intervention'];
+
+const demandTreatmentRateVisuals = (
+  <PageWrapper
+    Settings={DEFAULT_APPLICATION_SETTINGS}
+    breadcrumbs={[
+      { label: 'Evaluation Study', to: '/session/$group' },
+      { label: 'Participant 001', to: '/session/$group/$individual' },
+      { label: 'Demand Treatment Evaluation', to: '/session/$group/$individual/$evaluation' },
+    ]}
+    label="Rate Visualization"
+  >
+    <ResultsRateVisualsPage
+      Group="Evaluation Study"
+      Individual="Participant 001"
+      Evaluation="Demand Treatment Evaluation"
+      Conditions={demandTreatmentConditions}
+      Handle={{} as FileSystemDirectoryHandle}
+      Results={demandTreatmentSessions}
+      ResultsFiltered={demandTreatmentSessions}
+      DynamicKeySet={demandTreatmentKeyset}
+      TimerMapping={demandTreatmentTimerMapping}
+      ShowKeys={demandTreatmentRateShowKeys}
+      MinX={demandTreatmentSessionBounds.min}
+      MaxX={demandTreatmentSessionBounds.max}
+      Settings={DEFAULT_APPLICATION_SETTINGS}
+    />
+  </PageWrapper>
+);
+
+const renderOverRateVisuals = (dialog: React.ReactNode) =>
+  captureProviders(
+    <>
+      {demandTreatmentRateVisuals}
+      {dialog}
+    </>,
+  );
+
+const captureProviders = (node: React.ReactNode) => (
+  <ThemeProvider defaultTheme="light" storageKey="test-theme">
+    <FolderHandleContext.Provider
+      value={{
+        handle: {} as FileSystemDirectoryHandle,
+        setHandle: vi.fn(),
+        settings: DEFAULT_APPLICATION_SETTINGS,
+        setSettings: vi.fn(),
+        saveSettings: vi.fn(),
+        isInitialized: true,
+        setIsInitialized: vi.fn(),
+      }}
+    >
+      <TooltipProvider>{node}</TooltipProvider>
+    </FolderHandleContext.Provider>
+  </ThemeProvider>
+);
+
+describe('DiagnosticsPage', () => {
+  it('renders with full styles and saves a screenshot', async () => {
+    render(captureProviders(<DiagnosticsPage />));
+
+    await page.viewport(1295, 900);
+    await page.screenshot({ path: '../../../../public/screenshots/diagnostics_page.png' });
+  });
+});
+
+describe('RouteErrorView', () => {
+  it('renders with full styles and saves a screenshot', async () => {
+    render(
+      captureProviders(
+        <RouteErrorView
+          payload={{
+            message: 'Unable to load session results. The file may have been moved or renamed.',
+            code: 'SESSION_NOT_FOUND',
+            source: '/session/Study Trial A/Participant 001/Functional Analysis',
+            returnTo: '/session/Study Trial A/Participant 001',
+            occurredAt: '2026-01-15T14:32:00.000Z',
+          }}
+        />,
+      ),
+    );
+
+    await page.viewport(1295, 900);
+    await page.screenshot({ path: '../../../../public/screenshots/route_error_view.png' });
+  });
+});
+
+describe('ReliabilityBlank', () => {
+  it('renders with full styles and saves a screenshot', async () => {
+    render(captureProviders(<ReliabilityBlank />));
+
+    await page.viewport(1295, 900);
+    await page.screenshot({ path: '../../../../public/screenshots/reli_blank_page.png' });
+  });
+});
+
+describe('ResultsViewerBlank', () => {
+  it('renders with full styles and saves a screenshot', async () => {
+    render(captureProviders(<ResultsViewerBlank />));
+
+    await page.viewport(1295, 900);
+    await page.screenshot({ path: '../../../../public/screenshots/results_viewer_blank_page.png' });
+  });
+});
+
+describe('ConfirmDialog', () => {
+  it('renders open with full styles and saves a screenshot', async () => {
+    render(
+      captureProviders(
+        <ConfirmDialog
+          open
+          onOpenChange={vi.fn()}
+          title="Delete this session?"
+          description="This removes the session file from the folder. This cannot be undone."
+          confirmLabel="Delete"
+          destructive
+          onConfirm={vi.fn()}
+        />,
+      ),
+    );
+
+    await page.viewport(1295, 900);
+    await settleDialogAnimation();
+    await page.screenshot({ path: '../../../../public/screenshots/confirm_dialog.png' });
+  });
+});
+
+describe('NameDialog', () => {
+  it('renders open with full styles and saves a screenshot', async () => {
+    render(
+      captureProviders(
+        <NameDialog
+          open
+          onOpenChange={vi.fn()}
+          title="Rename Participant"
+          description="Enter a new name for this participant."
+          entityLabel="Participant name"
+          submitLabel="Save"
+          initialValue="Participant 001"
+          existingNames={['Participant 002']}
+          onSubmit={vi.fn()}
+        />,
+      ),
+    );
+
+    await page.viewport(1295, 900);
+    await settleDialogAnimation();
+    await page.screenshot({ path: '../../../../public/screenshots/name_dialog.png' });
+  });
+});
+
+describe('TitlesDialog', () => {
+  it('renders open with full styles and saves a screenshot', async () => {
+    render(
+      renderOverRateVisuals(
+        <TitlesDialog
+          page="rate"
+          labels={{
+            overrideTitle: false,
+            titleText: '',
+            overrideXAxis: false,
+            xAxisText: '',
+            overrideYAxis: false,
+            yAxisText: '',
+          }}
+          onChange={vi.fn()}
+          showTitle
+          onShowTitleChange={vi.fn()}
+          open
+          onOpenChange={vi.fn()}
+        />,
+      ),
+    );
+
+    await page.viewport(1295, 1150);
+    await settleDialogAnimation();
+    await page.screenshot({ path: '../../../../public/screenshots/titles_dialog.png' });
+  });
+});
+
+describe('LegendDialog', () => {
+  it('renders open with full styles and saves a screenshot', async () => {
+    render(
+      renderOverRateVisuals(
+        <LegendDialog
+          settings={DEFAULT_LEGEND_SETTINGS}
+          onChange={vi.fn()}
+          showConditionLegend
+          onShowConditionLegendChange={vi.fn()}
+          open
+          onOpenChange={vi.fn()}
+        />,
+      ),
+    );
+
+    await page.viewport(1295, 1150);
+    await settleDialogAnimation();
+    await page.screenshot({ path: '../../../../public/screenshots/legend_dialog.png' });
+  });
+});
+
+describe('SeriesStylesDialog', () => {
+  it('renders open with full styles and saves a screenshot', async () => {
+    render(
+      renderOverRateVisuals(
+        <SeriesStylesDialog
+          keys={demandTreatmentRateShowKeys}
+          conditions={demandTreatmentConditions}
+          visibleConditions={demandTreatmentConditions}
+          styles={EMPTY_SERIES_STYLES}
+          onChange={vi.fn()}
+          open
+          onOpenChange={vi.fn()}
+        />,
+      ),
+    );
+
+    await page.viewport(1295, 1150);
+    await settleDialogAnimation();
+    await page.screenshot({ path: '../../../../public/screenshots/series_styles_dialog.png' });
+  });
+});
+
+describe('TextAnnotationsDialog', () => {
+  it('renders open with full styles and saves a screenshot', async () => {
+    render(
+      renderOverRateVisuals(
+        <TextAnnotationsDialog
+          styles={EMPTY_SERIES_STYLES}
+          page="rate"
+          onChange={vi.fn()}
+          open
+          onOpenChange={vi.fn()}
+        />,
+      ),
+    );
+
+    await page.viewport(1295, 1150);
+    await settleDialogAnimation();
+    await page.screenshot({ path: '../../../../public/screenshots/text_annotations_dialog.png' });
+  });
+});
+
+describe('AimLinesDialog', () => {
+  it('renders open with full styles and saves a screenshot', async () => {
+    render(
+      renderOverRateVisuals(
+        <AimLinesDialog
+          styles={{
+            ...EMPTY_SERIES_STYLES,
+            aim_lines: [
+              { x1: 2, x2: 21, y: 2, lineType: 'solid', color: '#dc2626', page: 'rate' },
+              { x1: 13, x2: 21, y: 4, lineType: 'dashed', color: '#2563eb', page: 'rate' },
+            ],
+          }}
+          page="rate"
+          onChange={vi.fn()}
+          open
+          onOpenChange={vi.fn()}
+        />,
+      ),
+    );
+
+    await page.viewport(1295, 1150);
+    await settleDialogAnimation();
+    await page.screenshot({ path: '../../../../public/screenshots/aim_lines_dialog.png' });
+  });
+});
+
+describe('PhaseChangesDialog', () => {
+  it('renders open with full styles and saves a screenshot', async () => {
+    render(
+      renderOverRateVisuals(
+        <PhaseChangesDialog
+          styles={EMPTY_SERIES_STYLES}
+          onChange={vi.fn()}
+          open
+          onOpenChange={vi.fn()}
+        />,
+      ),
+    );
+
+    await page.viewport(1295, 1150);
+    await settleDialogAnimation();
+    await page.screenshot({ path: '../../../../public/screenshots/phase_changes_dialog.png' });
   });
 });

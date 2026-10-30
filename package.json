@@ -54,6 +54,7 @@
     "test": "vitest run --coverage",
     "test-old": "vitest run --coverage",
     "test:watch": "vitest --watch",
+    "screenshots": "CAPTURE_SCREENSHOTS=1 vitest run --project screenshots",
     "knip": "knip"
   },
   "dependencies": {

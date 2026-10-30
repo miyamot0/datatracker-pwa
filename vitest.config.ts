@@ -31,9 +31,20 @@ const componentProj: TestProjectConfiguration = {
     maxConcurrency: 20,
     //maxWorkers: 1,
     include: ['./**/*.spec.tsx'],
-    exclude: [...configDefaults.exclude, '**/*.test.{ts,tsx}'],
+    exclude: [...configDefaults.exclude, '**/*.test.{ts,tsx}', '**/__screenshots__/**'],
     globals: true,
     name: 'browser-tests',
+  },
+};
+
+// On-demand capture of documentation screenshots; enabled via CAPTURE_SCREENSHOTS=1 (see `npm run screenshots`).
+const screenshotProj: TestProjectConfiguration = {
+  ...componentProj,
+  test: {
+    ...componentProj.test,
+    include: ['./src/components/pages/__screenshots__/**/*.spec.tsx'],
+    exclude: [...configDefaults.exclude],
+    name: 'screenshots',
   },
 };
 
@@ -81,9 +92,11 @@ export default defineConfig(({ command, mode }) => {
 
   const isVercel = location === 'vercel';
 
+  const captureScreenshots = process.env.CAPTURE_SCREENSHOTS === '1';
+
   const projects: TestProjectConfiguration[] = isVercel
     ? [logicProj]
-    : [componentProj, logicProj, workerProj];
+    : [componentProj, logicProj, workerProj, ...(captureScreenshots ? [screenshotProj] : [])];
 
   const coverage: CoverageV8Options | undefined = isVercel
     ? {
@@ -104,6 +117,7 @@ export default defineConfig(({ command, mode }) => {
       ],
       exclude: [
         '**/__tests__/**/*',
+        '**/__screenshots__/**/*',
         '**/types/**/*',
         'src/routes/**/*',
         'src/config/*',
