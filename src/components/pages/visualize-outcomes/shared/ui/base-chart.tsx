@@ -38,6 +38,11 @@ import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibil
 import { ExpandedKeySetInstance } from '@/types/keyset/display';
 import { splitAtPoints } from '@/lib/arrays';
 import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
+import {
+  FIGURE_FONT_STACKS,
+  DEFAULT_FIGURE_FONT_FAMILY,
+  type FigureFontFamily,
+} from '@/lib/graphing/figure-text-settings';
 import { calculateSplitPoints } from '@/lib/graphing/data-preparation';
 import { getChartConfiguration, getChartVerticalSpacing } from '@/lib/graphing/chart-setup';
 import {
@@ -82,6 +87,7 @@ type BaseChartProps = {
   showConditionLegend?: boolean;
   legendSettings?: LegendSettings;
   xAxisLabel?: string;
+  fontFamily?: FigureFontFamily;
 };
 
 export function BaseChart({
@@ -106,6 +112,7 @@ export function BaseChart({
   showConditionLegend = true,
   legendSettings = DEFAULT_LEGEND_SETTINGS,
   xAxisLabel = 'Session',
+  fontFamily = DEFAULT_FIGURE_FONT_FAMILY,
 }: BaseChartProps) {
   const { noAnimationProps, chartMargins, xAxisConfig, yAxisStyle, labelStyle } = getChartConfiguration();
   const spacing = getChartVerticalSpacing(figureTextSize, showTitle);
@@ -136,7 +143,7 @@ export function BaseChart({
     <ResponsiveContainer
       width="100%"
       height={spacing.chartHeight}
-      style={{ fontFamily: 'Times New Roman' }}
+      style={{ fontFamily: FIGURE_FONT_STACKS[fontFamily] }}
       className={cn(
         'text-base text-primary bg-white nuke-view-transition [&_.recharts-scatter-symbol]:cursor-pointer [&_*]:outline-none',
         {

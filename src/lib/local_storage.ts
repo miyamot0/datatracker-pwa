@@ -15,6 +15,14 @@ import {
   isValidLegendSettings,
   type LegendSettings,
 } from '@/lib/graphing/legend-settings';
+import {
+  DEFAULT_FIGURE_FONT_FAMILY,
+  EMPTY_FIGURE_AXIS_MAX_SETTINGS,
+  isValidFigureAxisMaxSettings,
+  isValidFigureFontFamily,
+  type FigureAxisMaxSettings,
+  type FigureFontFamily,
+} from '@/lib/graphing/figure-text-settings';
 
 /**
  * This is the type definition for the ReturnLocalStorageCache type
@@ -317,4 +325,86 @@ export function setLocalLegendSettings(
   const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'LegendSettings', Plot].join('_');
 
   localStorage.setItem(dynamic_key, JSON.stringify(Settings));
+}
+
+/**
+ * Retrieve the font family for a plot's figure. Defaults to the app font when nothing valid is saved.
+ */
+export function getLocalFigureFontFamily(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  Plot: 'Rate' | 'Proportion',
+): FigureFontFamily {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'FontFamily', Plot].join('_');
+
+  const cached_information = localStorage.getItem(dynamic_key);
+
+  if (!cached_information) {
+    return DEFAULT_FIGURE_FONT_FAMILY;
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(cached_information);
+
+    return isValidFigureFontFamily(parsed) ? parsed : DEFAULT_FIGURE_FONT_FAMILY;
+  } catch {
+    return DEFAULT_FIGURE_FONT_FAMILY;
+  }
+}
+
+/**
+ * Store the font family for a plot's figure.
+ */
+export function setLocalFigureFontFamily(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  Plot: 'Rate' | 'Proportion',
+  FontFamily: FigureFontFamily,
+) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'FontFamily', Plot].join('_');
+
+  localStorage.setItem(dynamic_key, JSON.stringify(FontFamily));
+}
+
+/**
+ * Retrieve the maximum tick overrides for a plot's figure. Defaults to no overrides when nothing valid is saved.
+ */
+export function getLocalFigureAxisMax(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  Plot: 'Rate' | 'Proportion',
+): FigureAxisMaxSettings {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'AxisMax', Plot].join('_');
+
+  const cached_information = localStorage.getItem(dynamic_key);
+
+  if (!cached_information) {
+    return EMPTY_FIGURE_AXIS_MAX_SETTINGS;
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(cached_information);
+
+    return isValidFigureAxisMaxSettings(parsed) ? parsed : EMPTY_FIGURE_AXIS_MAX_SETTINGS;
+  } catch {
+    return EMPTY_FIGURE_AXIS_MAX_SETTINGS;
+  }
+}
+
+/**
+ * Store the maximum tick overrides for a plot's figure.
+ */
+export function setLocalFigureAxisMax(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  Plot: 'Rate' | 'Proportion',
+  AxisMax: FigureAxisMaxSettings,
+) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'AxisMax', Plot].join('_');
+
+  localStorage.setItem(dynamic_key, JSON.stringify(AxisMax));
 }

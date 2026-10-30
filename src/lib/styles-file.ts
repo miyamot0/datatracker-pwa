@@ -2,6 +2,8 @@ import { CleanUpString } from '@/lib/strings';
 import { RESERVED_STYLES_FILE_NAME } from '@/lib/reserved-names';
 import {
   getLocalConnectSpans,
+  getLocalFigureAxisMax,
+  getLocalFigureFontFamily,
   getLocalFigureLabels,
   getLocalLegendSettings,
   getLocalSeriesStyles,
@@ -10,6 +12,8 @@ import {
   getLocalShowTitle,
   getLocalShowTooltip,
   setLocalConnectSpans,
+  setLocalFigureAxisMax,
+  setLocalFigureFontFamily,
   setLocalFigureLabels,
   setLocalLegendSettings,
   setLocalSeriesStyles,
@@ -21,6 +25,12 @@ import {
 import { type SeriesStyles } from '@/lib/graphing/series-style';
 import { type FigureLabelSettings } from '@/lib/graphing/figure-labels';
 import { type LegendSettings } from '@/lib/graphing/legend-settings';
+import {
+  FIGURE_FONT_FAMILIES,
+  isValidFigureAxisMaxSettings,
+  type FigureAxisMaxSettings,
+  type FigureFontFamily,
+} from '@/lib/graphing/figure-text-settings';
 
 export type StylesPlot = 'Rate' | 'Proportion';
 const PLOTS: StylesPlot[] = ['Rate', 'Proportion'];
@@ -30,6 +40,8 @@ export type StylesPlotSettings = {
   connectSpans?: boolean;
   figureLabels?: FigureLabelSettings;
   legendSettings?: LegendSettings;
+  fontFamily?: FigureFontFamily;
+  axisMax?: FigureAxisMaxSettings;
 };
 
 /**
@@ -116,6 +128,19 @@ export function parseStylesFile(text: string): StylesFile {
           throw new Error(`plots.${plot}.${key} must be an object`);
         }
       }
+
+      if (
+        plotSettings.fontFamily !== undefined &&
+        !FIGURE_FONT_FAMILIES.includes(plotSettings.fontFamily as FigureFontFamily)
+      ) {
+        throw new Error(`plots.${plot}.fontFamily must be one of: ${FIGURE_FONT_FAMILIES.join(', ')}`);
+      }
+
+      if (plotSettings.axisMax !== undefined && !isValidFigureAxisMaxSettings(plotSettings.axisMax)) {
+        throw new Error(
+          `plots.${plot}.axisMax must have overrideXMax and overrideYMax as true or false, and xMax and yMax as positive whole numbers or null`,
+        );
+      }
     }
   }
 
@@ -134,6 +159,8 @@ export function buildStylesFile(group: string, individual: string, evaluation: s
         connectSpans: getLocalConnectSpans(group, individual, evaluation, plot),
         figureLabels: getLocalFigureLabels(group, individual, evaluation, plot),
         legendSettings: getLocalLegendSettings(group, individual, evaluation, plot),
+        fontFamily: getLocalFigureFontFamily(group, individual, evaluation, plot),
+        axisMax: getLocalFigureAxisMax(group, individual, evaluation, plot),
       },
     ]),
   ) as Record<StylesPlot, StylesPlotSettings>;
@@ -219,6 +246,14 @@ export function applyStylesFile(
 
     if (plotSettings.legendSettings) {
       setLocalLegendSettings(group, individual, evaluation, plot, plotSettings.legendSettings);
+    }
+
+    if (plotSettings.fontFamily !== undefined) {
+      setLocalFigureFontFamily(group, individual, evaluation, plot, plotSettings.fontFamily);
+    }
+
+    if (plotSettings.axisMax) {
+      setLocalFigureAxisMax(group, individual, evaluation, plot, plotSettings.axisMax);
     }
   }
 }

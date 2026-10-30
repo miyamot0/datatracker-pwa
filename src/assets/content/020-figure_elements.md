@@ -13,14 +13,15 @@ The purpose of this entry is to provide guidance on how to customize the parts o
 
 The visualization page features a menu bar with a range of various controls that support adjusting the figure displayed. Figure element settings are found in the **Aesthetics** menu of the figure toolbar. These include the following settings:
 
-- **Titles and Labels**: Opens the dialog for editing/hiding the figure title and axis labels.
-- **Legend Settings**: Opens the dialog for the legend and relevant display settings.
+- **Title**: Opens the dialog for showing/hiding and overriding the figure title.
+- **Axes**: A submenu with **Axis Labels** (overriding the X-Axis and Y-Axis labels) and **Axis Limits** (overriding the maximum tick on each axis).
+- **Legend**: Opens the dialog for the legend and relevant display settings.
 
-Both dialogs will apply changes as you make them, so the figure updates while the dialog is open. Click **Done** to close a dialog and review the changes.
+Each dialog will apply changes as you make them, so the figure updates while the dialog is open. Click **Done** to close a dialog and review the changes.
 
-#### Legend Settings
+#### Legend
 
-The legend identifies each series and, when enabled, each condition in the figure. The **Legend Settings** dialog includes the following fields to assist with informing the end user:
+The legend identifies each series and, when enabled, each condition in the figure. The **Legend** dialog includes the following fields to assist with informing the end user:
 
 - **Position:** Represents where the legend is drawn. **Below Figure** places the legend beneath the plotting area. The other options place the legend inside the plotting area, in one of six locations: **Upper Right**, **Lower Right**, **Upper Left**, **Lower Left**, **Middle Left**, or **Middle Right**. Inside positions can cover part of the data, so check the figure after changing this setting.
 - **Layout:** The **Horizontal** setting runs the legend entries across and **Vertical** stacks them one under another. Vertical is often easier to read when the legend is placed beside the plot, while Horizontal suits a legend placed below the figure.
@@ -28,17 +29,35 @@ The legend identifies each series and, when enabled, each condition in the figur
 
 Various settings are available and users can click **Reset to Defaults** to return Position to **Below Figure** and Layout to **Horizontal**. This button does not change the **Conditions in Legend** checkbox.
 
-#### Titles and Axis Label Settings
+#### Title
 
-The **Titles and Labels** dialog controls three elements: the figure **Title**, the **X-Axis** label, and the **Y-Axis** label. Each element has the following fields to support flexible display:
+The **Title** dialog controls the figure title. It includes the following fields:
 
-- **Override:** Users may select this option to use custom text for the element. When it is off, the default text is used and text box entry is disabled.
+- **Hide Title:** When checked, the figure title is not drawn. Hiding the title is useful when the report or presentation already has a caption that describes the figure. Hide Title applies only to the title, so the axis labels remain in the figure.
+- **Override Title:** Users may select this option to use custom text for the title. When it is off, the default title is used and the text box entry is disabled.
+- **Title Text:** The text to show when the override is on. The text box is disabled until the override is turned on.
+- **Default:** The default title for this page is shown below the text box.
+
+Users may click **Reset to Defaults** to turn off the title override and clear its text. This button does not change the **Hide Title** checkbox. If the title is hidden and you want it back, uncheck **Hide Title** directly.
+
+#### Axis Labels
+
+The **Axis Labels** dialog controls the **X-Axis** and **Y-Axis** labels. Each axis has the following fields:
+
+- **Override:** Users may select this option to use custom text for the axis label. When it is off, the default text is used and text box entry is disabled.
 - **Text:** The text to show when the override is on. The text box is disabled until the override is turned on.
-- **Default:** The default text for the element on this page is shown below each text box. For example, the rate page's X-Axis label defaults to **Session**, and its Y-Axis label defaults to **Responses per Min**.
+- **Default:** The default label for the axis on this page is shown below each text box. For example, the rate page's X-Axis label defaults to **Session**, and its Y-Axis label defaults to **Responses per Min**.
 
-**Hide Title** appears beside the Title override. When checked, the figure title is not drawn. Hide Title applies only to the title, so the X-Axis and Y-Axis labels remain in the figure. Hiding the title is useful when the report or presentation already has a caption that describes the figure.
+Users may click **Reset to Defaults** to turn off both axis label overrides and clear their text.
 
-Users may click **Reset to Defaults** to turn off all three overrides and clear their text. This button does not change the **Hide Title** checkbox. If the title is hidden and you want it back, uncheck **Hide Title** directly.
+#### Axis Limits
+
+The **Axis Limits** dialog lets users set the maximum tick on an axis. The data still determines the minimum. Each axis has the following fields:
+
+- **Override Max:** Users may select this option to set the maximum tick themselves. When it is off, the maximum is taken from the data.
+- **Max:** A whole number above zero. The input is disabled until the override is turned on.
+
+The **Y-Axis Max** option is available for the rate figure. The proportion figure's Y-Axis always runs from 0 to 100. Users may click **Reset to Defaults** to turn off both overrides.
 
 ### Exporting Figures
 

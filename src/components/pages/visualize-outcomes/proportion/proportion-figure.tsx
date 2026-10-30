@@ -19,6 +19,13 @@ import {
   type FigureLabelSettings,
 } from '@/lib/graphing/figure-labels';
 import { DEFAULT_LEGEND_SETTINGS, type LegendSettings } from '@/lib/graphing/legend-settings';
+import {
+  DEFAULT_FIGURE_FONT_FAMILY,
+  EMPTY_FIGURE_AXIS_MAX_SETTINGS,
+  resolveAxisMax,
+  type FigureAxisMaxSettings,
+  type FigureFontFamily,
+} from '@/lib/graphing/figure-text-settings';
 
 type Props = {
   Group: string;
@@ -38,6 +45,8 @@ type Props = {
   ShowConditionLegend?: boolean;
   LegendSettings?: LegendSettings;
   FigureLabels?: FigureLabelSettings;
+  FontFamily?: FigureFontFamily;
+  AxisMax?: FigureAxisMaxSettings;
   divRef: RefObject<HTMLDivElement | null>;
 };
 
@@ -59,6 +68,8 @@ export default function ProportionFigureVisualization({
   ShowConditionLegend = true,
   LegendSettings = DEFAULT_LEGEND_SETTINGS,
   FigureLabels = EMPTY_FIGURE_LABEL_SETTINGS,
+  FontFamily = DEFAULT_FIGURE_FONT_FAMILY,
+  AxisMax = EMPTY_FIGURE_AXIS_MAX_SETTINGS,
   divRef,
 }: Props) {
   const navigate = useNavigate({
@@ -68,7 +79,8 @@ export default function ProportionFigureVisualization({
   //const { preparedData } = prepareProportionData(FilteredSessions, ScheduleOption);
 
   const labels = resolveFigureLabels(FigureLabels, FIGURE_LABEL_DEFAULTS.proportion);
-  const x_ticks = generateTicks(MaxX, MinX);
+  const effectiveMaxX = resolveAxisMax(AxisMax.overrideXMax, AxisMax.xMax, MinX, MaxX);
+  const x_ticks = generateTicks(effectiveMaxX, MinX);
   const legends = createChartLegends(FilteredSessions, KeySetFull, SeriesStyles);
   const onNavigate = createNavigationHandler(navigate, Group, Individual, Evaluation);
 
@@ -111,8 +123,9 @@ export default function ProportionFigureVisualization({
         figureTextSize={FigureTextSize}
         connectSpans={ConnectSpans}
         minX={MinX}
-        maxX={MaxX}
+        maxX={effectiveMaxX}
         xTicks={x_ticks}
+        fontFamily={FontFamily}
         legends={legends}
         yAxisConfig={yAxisConfig}
         customTooltip={ProportionTooltip}

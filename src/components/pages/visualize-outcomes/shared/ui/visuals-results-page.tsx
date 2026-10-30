@@ -243,29 +243,33 @@ export function VisualsResultsPage({
 
         {DynamicKeySet && (
           <Suspense fallback={<div className="h-[500px] w-full" aria-busy="true" />}>
-          <Figure
-            FilteredSessions={ResultsFiltered.filter((result) => {
-              const conditionMatch = settings.conditions.find((c) => c.Condition === result.SessionSettings.Condition);
-              return conditionMatch ? conditionMatch.Visible : true;
-            })}
-            ScheduleOption={settings.schedule.value}
-            KeySetFull={settings.keys}
-            DynamicKeySet={DynamicKeySet}
-            Group={Group}
-            Individual={Individual}
-            Evaluation={Evaluation}
-            FigureTextSize={settings.figureTextSize}
-            ConnectSpans={settings.connectSpans}
-            ShowTitle={settings.showTitle}
-            ShowTooltip={settings.showTooltip}
-            ShowConditionLegend={settings.showConditionLegend}
-            LegendSettings={settings.legendSettings}
-            FigureLabels={settings.figureLabels}
-            MinX={MinX}
-            MaxX={MaxX}
-            SeriesStyles={settings.seriesStyles}
-            divRef={figureRef}
-          />
+            <Figure
+              FilteredSessions={ResultsFiltered.filter((result) => {
+                const conditionMatch = settings.conditions.find(
+                  (c) => c.Condition === result.SessionSettings.Condition,
+                );
+                return conditionMatch ? conditionMatch.Visible : true;
+              })}
+              ScheduleOption={settings.schedule.value}
+              KeySetFull={settings.keys}
+              DynamicKeySet={DynamicKeySet}
+              Group={Group}
+              Individual={Individual}
+              Evaluation={Evaluation}
+              FigureTextSize={settings.figureTextSize}
+              ConnectSpans={settings.connectSpans}
+              ShowTitle={settings.showTitle}
+              ShowTooltip={settings.showTooltip}
+              ShowConditionLegend={settings.showConditionLegend}
+              LegendSettings={settings.legendSettings}
+              FigureLabels={settings.figureLabels}
+              FontFamily={settings.fontFamily}
+              AxisMax={settings.axisMax}
+              MinX={MinX}
+              MaxX={MaxX}
+              SeriesStyles={settings.seriesStyles}
+              divRef={figureRef}
+            />
           </Suspense>
         )}
       </CardContent>

@@ -1,6 +1,8 @@
 import { useEffect, useReducer, useRef } from 'react';
 import {
   getLocalConnectSpans,
+  getLocalFigureAxisMax,
+  getLocalFigureFontFamily,
   getLocalFigureLabels,
   getLocalLegendSettings,
   getLocalSeriesStyles,
@@ -10,6 +12,8 @@ import {
   getLocalShowTooltip,
   setLocalCachedPrefs,
   setLocalConnectSpans,
+  setLocalFigureAxisMax,
+  setLocalFigureFontFamily,
   setLocalFigureLabels,
   setLocalLegendSettings,
   setLocalSeriesStyles,
@@ -51,6 +55,8 @@ export function readPersistedVisualsSettings(
     figureLabels: getLocalFigureLabels(group, individual, evaluation, plot),
     legendSettings: getLocalLegendSettings(group, individual, evaluation, plot),
     seriesStyles: getLocalSeriesStyles(group, individual, evaluation),
+    fontFamily: getLocalFigureFontFamily(group, individual, evaluation, plot),
+    axisMax: getLocalFigureAxisMax(group, individual, evaluation, plot),
   };
 }
 
@@ -101,6 +107,10 @@ export function useVisualsSettings(options: VisualsSettingsOptions) {
     setLocalLegendSettings(group, individual, evaluation, plot, settings),
   );
   usePersistOnChange(state.seriesStyles, (styles) => setLocalSeriesStyles(group, individual, evaluation, styles));
+  usePersistOnChange(state.fontFamily, (fontFamily) =>
+    setLocalFigureFontFamily(group, individual, evaluation, plot, fontFamily),
+  );
+  usePersistOnChange(state.axisMax, (axisMax) => setLocalFigureAxisMax(group, individual, evaluation, plot, axisMax));
   const persistCachedPrefs = (keys: ToggleDisplayKey[], schedule: string) =>
     setLocalCachedPrefs(group, individual, evaluation, prefsType, {
       KeyDescription: keys.filter((key) => key.Visible === false).map((key) => key.KeyDescription),

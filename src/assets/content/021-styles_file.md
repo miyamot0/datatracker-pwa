@@ -17,6 +17,8 @@ The file holds the settings that are otherwise kept in the browser for each eval
 
 - Series styles for keys and conditions, such as marker shapes, marker fills, line colors, and hidden series.
 - Titles, axis labels, and whether the title is hidden.
+- Maximum tick overrides for the X axis, and for the Y axis on Rate figures.
+- Font family, either Default or Times New Roman.
 - Legend position, layout, and whether conditions appear in the legend.
 - Phase change lines, aim lines, and text annotations.
 - Display options such as tooltips, descriptions, and connected spans.

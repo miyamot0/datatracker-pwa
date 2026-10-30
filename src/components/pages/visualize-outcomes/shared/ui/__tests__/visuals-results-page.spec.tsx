@@ -10,6 +10,10 @@ const mockGetLocalShowDescription = vi.hoisted(() => vi.fn(() => true));
 
 vi.mock('@/lib/local_storage', () => ({
   setLocalCachedPrefs: vi.fn(),
+  getLocalFigureFontFamily: vi.fn(() => 'default'),
+  setLocalFigureFontFamily: vi.fn(),
+  getLocalFigureAxisMax: vi.fn(() => ({ overrideXMax: false, xMax: null, overrideYMax: false, yMax: null })),
+  setLocalFigureAxisMax: vi.fn(),
   getLocalConnectSpans: vi.fn(() => false),
   setLocalConnectSpans: vi.fn(),
   getLocalFigureLabels: vi.fn(() => ({
@@ -142,10 +146,7 @@ const makeProps = (override?: Record<string, unknown>) =>
       SpecialDurationKeys: [],
       ScorableDurationKeys: [],
     },
-    ResultsFiltered: [
-      { SessionSettings: { Condition: 'Treatment' } },
-      { SessionSettings: { Condition: 'Baseline' } },
-    ],
+    ResultsFiltered: [{ SessionSettings: { Condition: 'Treatment' } }, { SessionSettings: { Condition: 'Baseline' } }],
     TimerMapping: { value: 'End on Primary Timer', label: 'Score Total Time' },
     MinX: 1,
     MaxX: 10,

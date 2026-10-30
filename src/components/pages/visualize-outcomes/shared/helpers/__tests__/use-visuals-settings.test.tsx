@@ -5,6 +5,10 @@ import { type ToggleDisplayKey } from '@/types/visuals';
 import { useVisualsSettings, type VisualsSettingsOptions } from '../use-visuals-settings';
 
 vi.mock('@/lib/local_storage', () => ({
+  getLocalFigureFontFamily: vi.fn(() => 'default'),
+  setLocalFigureFontFamily: vi.fn(),
+  getLocalFigureAxisMax: vi.fn(() => ({ overrideXMax: false, xMax: null, overrideYMax: false, yMax: null })),
+  setLocalFigureAxisMax: vi.fn(),
   getLocalConnectSpans: vi.fn(() => false),
   getLocalFigureLabels: vi.fn(() => ({ xAxis: 'X', yAxis: 'Y' })),
   getLocalLegendSettings: vi.fn(() => ({ position: 'bottom' })),

@@ -6,6 +6,7 @@ import { VisualsMenubar } from '../visuals-menubar';
 import { EMPTY_SERIES_STYLES } from '@/lib/graphing/series-style';
 import { EMPTY_FIGURE_LABEL_SETTINGS } from '@/lib/graphing/figure-labels';
 import { DEFAULT_LEGEND_SETTINGS } from '@/lib/graphing/legend-settings';
+import { EMPTY_FIGURE_AXIS_MAX_SETTINGS } from '@/lib/graphing/figure-text-settings';
 import type { ToggleDisplayCondition, ToggleDisplayKey } from '@/types/visuals';
 import type { ChartImageFormat } from '@/components/pages/visualize-outcomes/shared/helpers/chart-export';
 import type { VisualsSettingsState } from '../../helpers/visuals-settings-reducer';
@@ -32,6 +33,8 @@ function makeSettings(overrides: Partial<VisualsSettingsState> = {}): VisualsSet
     showConditionLegend: true,
     showDescription: true,
     figureLabels: EMPTY_FIGURE_LABEL_SETTINGS,
+    fontFamily: 'default',
+    axisMax: EMPTY_FIGURE_AXIS_MAX_SETTINGS,
     legendSettings: DEFAULT_LEGEND_SETTINGS,
     seriesStyles: EMPTY_SERIES_STYLES,
     ...overrides,
@@ -178,12 +181,12 @@ describe('VisualsMenubar', () => {
     await expect.element(page.getByRole('dialog', { name: 'Aim Lines' })).toBeInTheDocument();
   });
 
-  it('opens the Titles and Labels dialog and dispatches a hidden title', async () => {
+  it('opens the Title dialog and dispatches a hidden title', async () => {
     const { dispatch } = renderMenubar();
 
     await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
-    await page.getByRole('menuitem', { name: 'Titles and Labels' }).click();
-    await expect.element(page.getByRole('dialog', { name: 'Titles and Labels' })).toBeInTheDocument();
+    await page.getByRole('menuitem', { name: 'Title', exact: true }).click();
+    await expect.element(page.getByRole('dialog', { name: 'Title' })).toBeInTheDocument();
 
     await page.getByRole('checkbox', { name: 'Hide Title' }).click();
 
@@ -194,14 +197,39 @@ describe('VisualsMenubar', () => {
     expect(dispatch).toHaveBeenCalledWith({ type: 'figureLabelsChanged', labels: EMPTY_FIGURE_LABEL_SETTINGS });
 
     await page.getByRole('button', { name: 'Done' }).click();
-    await expect.element(page.getByRole('dialog', { name: 'Titles and Labels' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('dialog', { name: 'Title' })).not.toBeInTheDocument();
+  });
+
+  it('opens Axis Labels from the Axes submenu', async () => {
+    renderMenubar();
+
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Axes' }).hover();
+    await page.getByRole('menuitem', { name: 'Axis Labels' }).click();
+
+    await expect.element(page.getByRole('dialog', { name: 'Axis Labels' })).toBeInTheDocument();
+  });
+
+  it('opens Axis Limits from the Axes submenu and dispatches an X max override', async () => {
+    const { dispatch } = renderMenubar();
+
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Axes' }).hover();
+    await page.getByRole('menuitem', { name: 'Axis Limits' }).click();
+    await expect.element(page.getByRole('dialog', { name: 'Axis Limits' })).toBeInTheDocument();
+
+    await page.getByRole('checkbox', { name: 'Override X-Axis Max', exact: true }).click();
+
+    expect(dispatch).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'axisMaxChanged' }),
+    );
   });
 
   it('dispatches a legend layout chosen in the Legend Position and Layout dialog', async () => {
     const { dispatch } = renderMenubar();
 
     await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
-    await page.getByRole('menuitem', { name: 'Legend Settings' }).click();
+    await page.getByRole('menuitem', { name: 'Legend', exact: true }).click();
     await page.getByRole('combobox', { name: 'Legend layout' }).click();
     await page.getByRole('option', { name: 'Vertical' }).click();
 
@@ -255,7 +283,7 @@ describe('VisualsMenubar', () => {
     renderMenubar();
 
     await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
-    await page.getByRole('menuitem', { name: 'Legend Settings' }).click();
+    await page.getByRole('menuitem', { name: 'Legend', exact: true }).click();
 
     await expect.element(page.getByRole('dialog', { name: 'Legend Position and Layout' })).toBeInTheDocument();
   });
@@ -264,7 +292,7 @@ describe('VisualsMenubar', () => {
     const { dispatch } = renderMenubar();
 
     await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
-    await page.getByRole('menuitem', { name: 'Legend Settings' }).click();
+    await page.getByRole('menuitem', { name: 'Legend', exact: true }).click();
     await page.getByRole('checkbox', { name: 'Conditions in Legend' }).click();
 
     expect(dispatch).toHaveBeenLastCalledWith({ type: 'showConditionLegendChanged', show: false });
@@ -274,10 +302,20 @@ describe('VisualsMenubar', () => {
     const { dispatch } = renderMenubar();
 
     await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
-    await page.getByRole('menuitem', { name: 'Element Sizing' }).hover();
+    await page.getByRole('menuitem', { name: 'Sizing Level' }).hover();
     await page.getByRole('menuitemradio', { name: 'Large', exact: true }).click();
 
     expect(dispatch).toHaveBeenCalledWith({ type: 'figureTextSizeChanged', size: 'large' });
+  });
+
+  it('dispatches a figure font family from Aesthetics', async () => {
+    const { dispatch } = renderMenubar();
+
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Font Type' }).hover();
+    await page.getByRole('menuitemradio', { name: 'Times New Roman', exact: true }).click();
+
+    expect(dispatch).toHaveBeenCalledWith({ type: 'fontFamilyChanged', fontFamily: 'timesNewRoman' });
   });
 
   it('dispatches Connect All Spans toggled on from Data', async () => {

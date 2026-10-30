@@ -1,13 +1,13 @@
 import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 import { vi, describe, it, expect } from 'vitest';
-import { TitlesDialog } from '../titles-dialog';
+import { TitleDialog } from '../title-dialog';
 import { EMPTY_FIGURE_LABEL_SETTINGS } from '@/lib/graphing/figure-labels';
 
-describe('TitlesDialog', () => {
-  it('shows the rate defaults as placeholders with inputs disabled until overridden', async () => {
+describe('TitleDialog', () => {
+  it('shows the rate default as placeholder with input disabled until overridden', async () => {
     await render(
-      <TitlesDialog
+      <TitleDialog
         page="rate"
         labels={EMPTY_FIGURE_LABEL_SETTINGS}
         onChange={vi.fn()}
@@ -18,18 +18,17 @@ describe('TitlesDialog', () => {
       />,
     );
 
-    await expect.element(page.getByRole('dialog', { name: 'Titles and Labels' })).toBeInTheDocument();
+    await expect.element(page.getByRole('dialog', { name: 'Title' })).toBeInTheDocument();
     await expect.element(page.getByLabelText('Title Text')).toBeDisabled();
     await expect
       .element(page.getByLabelText('Title Text'))
       .toHaveAttribute('placeholder', 'Visualization of Data as Rates');
-    await expect.element(page.getByLabelText('Y-Axis Text')).toHaveAttribute('placeholder', 'Responses per Min');
   });
 
-  it('reports hiding the title from the top toggle', async () => {
+  it('reports hiding the title from the Hide Title toggle', async () => {
     const onShowTitleChange = vi.fn();
     await render(
-      <TitlesDialog
+      <TitleDialog
         page="rate"
         labels={EMPTY_FIGURE_LABEL_SETTINGS}
         onChange={vi.fn()}
@@ -45,10 +44,10 @@ describe('TitlesDialog', () => {
     expect(onShowTitleChange).toHaveBeenLastCalledWith(false);
   });
 
-  it('enables an input and reports the override flag when its checkbox is checked', async () => {
+  it('reports the override flag when the title override is checked', async () => {
     const onChange = vi.fn();
     await render(
-      <TitlesDialog
+      <TitleDialog
         page="proportion"
         labels={EMPTY_FIGURE_LABEL_SETTINGS}
         onChange={onChange}
@@ -59,15 +58,15 @@ describe('TitlesDialog', () => {
       />,
     );
 
-    await page.getByRole('checkbox', { name: 'Override X-Axis' }).click();
+    await page.getByRole('checkbox', { name: 'Override Title', exact: true }).click();
 
-    expect(onChange).toHaveBeenLastCalledWith({ ...EMPTY_FIGURE_LABEL_SETTINGS, overrideXAxis: true });
+    expect(onChange).toHaveBeenLastCalledWith({ ...EMPTY_FIGURE_LABEL_SETTINGS, overrideTitle: true });
   });
 
-  it('reports typed text alongside the current settings', async () => {
+  it('reports typed title text alongside the current settings', async () => {
     const onChange = vi.fn();
     await render(
-      <TitlesDialog
+      <TitleDialog
         page="rate"
         labels={{ ...EMPTY_FIGURE_LABEL_SETTINGS, overrideTitle: true }}
         onChange={onChange}
@@ -87,12 +86,12 @@ describe('TitlesDialog', () => {
     });
   });
 
-  it('resets every override and text to the defaults', async () => {
+  it('resets the title override and text without touching axis labels', async () => {
     const onChange = vi.fn();
     await render(
-      <TitlesDialog
+      <TitleDialog
         page="rate"
-        labels={{ ...EMPTY_FIGURE_LABEL_SETTINGS, overrideYAxis: true, yAxisText: 'Custom' }}
+        labels={{ ...EMPTY_FIGURE_LABEL_SETTINGS, overrideTitle: true, titleText: 'Custom', overrideXAxis: true }}
         onChange={onChange}
         showTitle
         onShowTitleChange={vi.fn()}
@@ -103,13 +102,16 @@ describe('TitlesDialog', () => {
 
     await page.getByRole('button', { name: 'Reset to Defaults' }).click();
 
-    expect(onChange).toHaveBeenLastCalledWith(EMPTY_FIGURE_LABEL_SETTINGS);
+    expect(onChange).toHaveBeenLastCalledWith({
+      ...EMPTY_FIGURE_LABEL_SETTINGS,
+      overrideXAxis: true,
+    });
   });
 
   it('closes the dialog from Done', async () => {
     const onOpenChange = vi.fn();
     await render(
-      <TitlesDialog
+      <TitleDialog
         page="rate"
         labels={EMPTY_FIGURE_LABEL_SETTINGS}
         onChange={vi.fn()}

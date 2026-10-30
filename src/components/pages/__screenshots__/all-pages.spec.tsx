@@ -44,7 +44,9 @@ import ReliabilityBlank from '../summary-agreement/views/reli-blank';
 import ResultsViewerBlank from '../summary-outcomes/views/results-viewer-blank';
 import { ConfirmDialog } from '@/components/dialogs/confirm-dialog';
 import { NameDialog } from '@/components/dialogs/name-dialog';
-import { TitlesDialog } from '../visualize-outcomes/shared/dialogs/titles-dialog';
+import { TitleDialog } from '../visualize-outcomes/shared/dialogs/title-dialog';
+import { AxisLabelsDialog } from '../visualize-outcomes/shared/dialogs/axis-labels-dialog';
+import { AxisLimitsDialog } from '../visualize-outcomes/shared/dialogs/axis-limits-dialog';
 import { LegendDialog } from '../visualize-outcomes/shared/dialogs/legend-dialog';
 import { SeriesStylesDialog } from '../visualize-outcomes/shared/dialogs/series-styles-dialog';
 import { TextAnnotationsDialog } from '../visualize-outcomes/shared/dialogs/text-annotations-dialog';
@@ -1575,11 +1577,11 @@ describe('NameDialog', () => {
   });
 });
 
-describe('TitlesDialog', () => {
+describe('TitleDialog', () => {
   it('renders open with full styles and saves a screenshot', async () => {
     render(
       renderOverRateVisuals(
-        <TitlesDialog
+        <TitleDialog
           page="rate"
           labels={{
             overrideTitle: false,
@@ -1600,7 +1602,54 @@ describe('TitlesDialog', () => {
 
     await page.viewport(1295, 1150);
     await settleDialogAnimation();
-    await page.screenshot({ path: '../../../../public/screenshots/titles_dialog.png' });
+    await page.screenshot({ path: '../../../../public/screenshots/title_dialog.png' });
+  });
+});
+
+describe('AxisLabelsDialog', () => {
+  it('renders open with full styles and saves a screenshot', async () => {
+    render(
+      renderOverRateVisuals(
+        <AxisLabelsDialog
+          page="rate"
+          labels={{
+            overrideTitle: false,
+            titleText: '',
+            overrideXAxis: false,
+            xAxisText: '',
+            overrideYAxis: false,
+            yAxisText: '',
+          }}
+          onChange={vi.fn()}
+          open
+          onOpenChange={vi.fn()}
+        />,
+      ),
+    );
+
+    await page.viewport(1295, 1150);
+    await settleDialogAnimation();
+    await page.screenshot({ path: '../../../../public/screenshots/axis_labels_dialog.png' });
+  });
+});
+
+describe('AxisLimitsDialog', () => {
+  it('renders open with full styles and saves a screenshot', async () => {
+    render(
+      renderOverRateVisuals(
+        <AxisLimitsDialog
+          page="rate"
+          axisMax={{ overrideXMax: false, xMax: null, overrideYMax: false, yMax: null }}
+          onAxisMaxChange={vi.fn()}
+          open
+          onOpenChange={vi.fn()}
+        />,
+      ),
+    );
+
+    await page.viewport(1295, 1150);
+    await settleDialogAnimation();
+    await page.screenshot({ path: '../../../../public/screenshots/axis_limits_dialog.png' });
   });
 });
 

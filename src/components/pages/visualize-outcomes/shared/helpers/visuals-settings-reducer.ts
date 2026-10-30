@@ -1,5 +1,6 @@
 import { type SeriesStyles } from '@/lib/graphing/series-style';
 import { type FigureLabelSettings } from '@/lib/graphing/figure-labels';
+import { type FigureAxisMaxSettings, type FigureFontFamily } from '@/lib/graphing/figure-text-settings';
 import { type LegendSettings } from '@/lib/graphing/legend-settings';
 import { type FigureVisualSizing } from '@/types/accessibility';
 import { type ToggleDisplayCondition, type ToggleDisplayKey } from '@/types/visuals';
@@ -17,6 +18,8 @@ export type PersistedVisualsSettings = Pick<
   | 'figureLabels'
   | 'legendSettings'
   | 'seriesStyles'
+  | 'fontFamily'
+  | 'axisMax'
 >;
 
 export type VisualsSettingsState = {
@@ -32,6 +35,8 @@ export type VisualsSettingsState = {
   figureLabels: FigureLabelSettings;
   legendSettings: LegendSettings;
   seriesStyles: SeriesStyles;
+  fontFamily: FigureFontFamily;
+  axisMax: FigureAxisMaxSettings;
 };
 
 export type VisualsSettingsAction =
@@ -47,6 +52,8 @@ export type VisualsSettingsAction =
   | { type: 'figureLabelsChanged'; labels: FigureLabelSettings }
   | { type: 'legendSettingsChanged'; settings: LegendSettings }
   | { type: 'seriesStylesChanged'; styles: SeriesStyles }
+  | { type: 'fontFamilyChanged'; fontFamily: FigureFontFamily }
+  | { type: 'axisMaxChanged'; axisMax: FigureAxisMaxSettings }
   | { type: 'settingsReloaded'; settings: PersistedVisualsSettings };
 
 /**
@@ -91,6 +98,10 @@ export function visualsSettingsReducer(
       return { ...state, legendSettings: action.settings };
     case 'seriesStylesChanged':
       return { ...state, seriesStyles: action.styles };
+    case 'fontFamilyChanged':
+      return { ...state, fontFamily: action.fontFamily };
+    case 'axisMaxChanged':
+      return { ...state, axisMax: action.axisMax };
     case 'settingsReloaded':
       return { ...state, ...action.settings };
   }

@@ -124,6 +124,23 @@ describe('RateFigureVisualization', () => {
     await expect.element(page.getByTestId('chart-connect')).toHaveTextContent('false');
   });
 
+  it('sets the Y domain from the max override when enabled', async () => {
+    await render(
+      <RateFigureVisualization
+        {...defaultProps}
+        AxisMax={{ overrideXMax: false, xMax: null, overrideYMax: true, yMax: 25 }}
+      />,
+    );
+
+    const passedProps = mockBaseChart.mock.calls[0][0];
+    expect(passedProps.yAxisConfig).toEqual({
+      min: 0,
+      domain: [0, 25],
+      label: 'Responses per Min',
+      padding: { bottom: 10 },
+    });
+  });
+
   it('wires graphing and calculation utilities with expected arguments', async () => {
     await render(<RateFigureVisualization {...defaultProps} />);
 

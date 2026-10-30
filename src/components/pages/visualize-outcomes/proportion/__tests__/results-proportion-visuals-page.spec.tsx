@@ -7,6 +7,10 @@ const mockFilteredSessionScoringOptions = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/local_storage', () => ({
   setLocalCachedPrefs: mockSetLocalCachedPrefs,
+  getLocalFigureFontFamily: vi.fn(() => 'default'),
+  setLocalFigureFontFamily: vi.fn(),
+  getLocalFigureAxisMax: vi.fn(() => ({ overrideXMax: false, xMax: null, overrideYMax: false, yMax: null })),
+  setLocalFigureAxisMax: vi.fn(),
   getLocalSeriesStyles: vi.fn(() => ({ KeyStyles: {}, ConditionStyles: {} })),
   setLocalSeriesStyles: vi.fn(),
   getLocalShowTitle: vi.fn(() => true),
@@ -210,7 +214,7 @@ describe('ResultsProportionVisualsPage', () => {
     await renderPage();
 
     await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
-    await page.getByRole('menuitem', { name: 'Element Sizing' }).hover();
+    await page.getByRole('menuitem', { name: 'Sizing Level' }).hover();
     await page.getByRole('menuitemradio', { name: 'Large', exact: true }).click();
     await page.getByRole('menuitem', { name: 'Data' }).click();
     await page.getByRole('menuitemcheckbox', { name: 'Connect All Spans' }).click();

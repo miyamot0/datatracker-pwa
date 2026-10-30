@@ -3,6 +3,7 @@ import { visualsSettingsReducer, type VisualsSettingsState } from '../visuals-se
 import { EMPTY_SERIES_STYLES } from '@/lib/graphing/series-style';
 import { EMPTY_FIGURE_LABEL_SETTINGS } from '@/lib/graphing/figure-labels';
 import { DEFAULT_LEGEND_SETTINGS } from '@/lib/graphing/legend-settings';
+import { EMPTY_FIGURE_AXIS_MAX_SETTINGS } from '@/lib/graphing/figure-text-settings';
 
 function makeState(overrides: Partial<VisualsSettingsState> = {}): VisualsSettingsState {
   return {
@@ -66,8 +67,16 @@ describe('visualsSettingsReducer', () => {
     let state = makeState();
     state = visualsSettingsReducer(state, { type: 'keyVisibilityChanged', keyDescription: 'Key A', visible: false });
     state = visualsSettingsReducer(state, { type: 'keyVisibilityChanged', keyDescription: 'Key B', visible: true });
-    state = visualsSettingsReducer(state, { type: 'conditionVisibilityChanged', condition: 'Baseline', visible: false });
-    state = visualsSettingsReducer(state, { type: 'conditionVisibilityChanged', condition: 'Treatment', visible: false });
+    state = visualsSettingsReducer(state, {
+      type: 'conditionVisibilityChanged',
+      condition: 'Baseline',
+      visible: false,
+    });
+    state = visualsSettingsReducer(state, {
+      type: 'conditionVisibilityChanged',
+      condition: 'Treatment',
+      visible: false,
+    });
 
     expect(state.keys.map((k) => [k.KeyDescription, k.Visible])).toEqual([
       ['Key A', false],
@@ -110,7 +119,19 @@ describe('visualsSettingsReducer', () => {
     const state = makeState();
 
     expect(visualsSettingsReducer(state, { type: 'figureLabelsChanged', labels }).figureLabels).toBe(labels);
-    expect(visualsSettingsReducer(state, { type: 'legendSettingsChanged', settings: legend }).legendSettings).toBe(legend);
+    expect(visualsSettingsReducer(state, { type: 'legendSettingsChanged', settings: legend }).legendSettings).toBe(
+      legend,
+    );
     expect(visualsSettingsReducer(state, { type: 'seriesStylesChanged', styles }).seriesStyles).toBe(styles);
+  });
+
+  it('updates the font family and axis max overrides', () => {
+    const state = makeState();
+    const axisMax = { ...EMPTY_FIGURE_AXIS_MAX_SETTINGS, overrideXMax: true, xMax: 40 };
+
+    expect(visualsSettingsReducer(state, { type: 'fontFamilyChanged', fontFamily: 'timesNewRoman' }).fontFamily).toBe(
+      'timesNewRoman',
+    );
+    expect(visualsSettingsReducer(state, { type: 'axisMaxChanged', axisMax }).axisMax).toBe(axisMax);
   });
 });

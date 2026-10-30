@@ -274,6 +274,25 @@ describe('applyStylesFile branches', () => {
     expect(rate.legendSettings).toMatchObject(legendSettings);
   });
 
+  it('parses and applies fontFamily and axisMax, rejecting invalid values', () => {
+    const axisMax = { overrideXMax: true, xMax: 40, overrideYMax: false, yMax: null };
+    applyStylesFile('G', 'I', 'E', {
+      version: 1,
+      plots: { Rate: { fontFamily: 'timesNewRoman', axisMax } },
+    } as StylesFile);
+
+    const rate = buildStylesFile('G', 'I', 'E').plots.Rate;
+    expect(rate.fontFamily).toBe('timesNewRoman');
+    expect(rate.axisMax).toEqual(axisMax);
+
+    expect(() => parseStylesFile('{"version":1,"plots":{"Rate":{"fontFamily":"comic"}}}')).toThrow(/fontFamily/);
+    expect(() =>
+      parseStylesFile(
+        '{"version":1,"plots":{"Rate":{"axisMax":{"overrideXMax":true,"xMax":-1,"overrideYMax":false,"yMax":null}}}}',
+      ),
+    ).toThrow(/axisMax/);
+  });
+
   it('leaves plot fields untouched when they are not in the file', () => {
     applyStylesFile('G', 'I', 'E', { version: 1, plots: { Rate: {} } } as StylesFile);
     expect(buildStylesFile('G', 'I', 'E').plots.Rate.showTitle).toBe(true);

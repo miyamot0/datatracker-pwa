@@ -45,11 +45,30 @@ const TextAnnotationsDialog = lazy(() =>
   import('../dialogs/text-annotations-dialog').then((m) => ({ default: m.TextAnnotationsDialog })),
 );
 const AimLinesDialog = lazy(() => import('../dialogs/aim-lines-dialog').then((m) => ({ default: m.AimLinesDialog })));
-const TitlesDialog = lazy(() => import('../dialogs/titles-dialog').then((m) => ({ default: m.TitlesDialog })));
+const TitleDialog = lazy(() => import('../dialogs/title-dialog').then((m) => ({ default: m.TitleDialog })));
+const AxisLabelsDialog = lazy(() =>
+  import('../dialogs/axis-labels-dialog').then((m) => ({ default: m.AxisLabelsDialog })),
+);
+const AxisLimitsDialog = lazy(() =>
+  import('../dialogs/axis-limits-dialog').then((m) => ({ default: m.AxisLimitsDialog })),
+);
 import { type FigureLabelSettings } from '@/lib/graphing/figure-labels';
 import { type LegendSettings } from '@/lib/graphing/legend-settings';
+import {
+  FIGURE_FONT_OPTIONS,
+  type FigureAxisMaxSettings,
+  type FigureFontFamily,
+} from '@/lib/graphing/figure-text-settings';
 
-type AnnotationDialog = 'series-styles' | 'phase-changes' | 'text-annotations' | 'aim-lines' | 'titles' | 'legend';
+type AnnotationDialog =
+  | 'series-styles'
+  | 'phase-changes'
+  | 'text-annotations'
+  | 'aim-lines'
+  | 'title'
+  | 'axis-labels'
+  | 'axis-limits'
+  | 'legend';
 
 type Props = {
   page: TextPage;
@@ -88,6 +107,8 @@ export function VisualsMenubar({
     connectSpans,
     showTitle,
     figureLabels,
+    fontFamily,
+    axisMax,
     legendSettings,
     showTooltip,
     showConditionLegend,
@@ -98,6 +119,7 @@ export function VisualsMenubar({
   const closeDialog = () => setActiveDialog(null);
   const onStylesChange = (next: SeriesStyles) => dispatch({ type: 'seriesStylesChanged', styles: next });
   const onFigureLabelsChange = (labels: FigureLabelSettings) => dispatch({ type: 'figureLabelsChanged', labels });
+  const onAxisMaxChange = (next: FigureAxisMaxSettings) => dispatch({ type: 'axisMaxChanged', axisMax: next });
   const onLegendSettingsChange = (next: LegendSettings) => dispatch({ type: 'legendSettingsChanged', settings: next });
   const onShowTitleChange = (show: boolean) => dispatch({ type: 'showTitleChanged', show });
   const onShowConditionLegendChange = (show: boolean) => dispatch({ type: 'showConditionLegendChanged', show });
@@ -213,14 +235,31 @@ export function VisualsMenubar({
       <MenubarMenu>
         <MenubarTrigger>Aesthetics</MenubarTrigger>
         <MenubarContent onCloseAutoFocus={(event) => event.preventDefault()}>
-          <MenubarItem onSelect={() => setActiveDialog('titles')}>
+          <MenubarItem onSelect={() => setActiveDialog('title')}>
             <CaseSensitiveIcon className="mr-2 h-4 w-4" />
-            Titles and Labels
+            Title
           </MenubarItem>
+
+          <MenubarSub>
+            <MenubarSubTrigger>
+              <RulerIcon className="mr-2 h-4 w-4" />
+              Axes
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              <MenubarItem onSelect={() => setActiveDialog('axis-labels')}>
+                <TypeIcon className="mr-2 h-4 w-4" />
+                Axis Labels
+              </MenubarItem>
+              <MenubarItem onSelect={() => setActiveDialog('axis-limits')}>
+                <ZoomInIcon className="mr-2 h-4 w-4" />
+                Axis Limits
+              </MenubarItem>
+            </MenubarSubContent>
+          </MenubarSub>
 
           <MenubarItem onSelect={() => setActiveDialog('legend')}>
             <PanelBottomIcon className="mr-2 h-4 w-4" />
-            Legend Settings
+            Legend
           </MenubarItem>
 
           <MenubarItem onSelect={() => setActiveDialog('series-styles')}>
@@ -252,7 +291,7 @@ export function VisualsMenubar({
           <MenubarSub>
             <MenubarSubTrigger>
               <ZoomInIcon className="mr-2 h-4 w-4" />
-              Element Sizing
+              Sizing Level
             </MenubarSubTrigger>
             <MenubarSubContent>
               <MenubarRadioGroup
@@ -262,6 +301,27 @@ export function VisualsMenubar({
                 }
               >
                 {FIGURE_TEXT_OPTIONS.map((opt) => (
+                  <MenubarRadioItem key={opt.value} value={opt.value} onSelect={(event) => event.preventDefault()}>
+                    {opt.label}
+                  </MenubarRadioItem>
+                ))}
+              </MenubarRadioGroup>
+            </MenubarSubContent>
+          </MenubarSub>
+
+          <MenubarSub>
+            <MenubarSubTrigger>
+              <CaseSensitiveIcon className="mr-2 h-4 w-4" />
+              Font Type
+            </MenubarSubTrigger>
+            <MenubarSubContent>
+              <MenubarRadioGroup
+                value={fontFamily}
+                onValueChange={(value) =>
+                  dispatch({ type: 'fontFamilyChanged', fontFamily: value as FigureFontFamily })
+                }
+              >
+                {FIGURE_FONT_OPTIONS.map((opt) => (
                   <MenubarRadioItem key={opt.value} value={opt.value} onSelect={(event) => event.preventDefault()}>
                     {opt.label}
                   </MenubarRadioItem>
@@ -332,14 +392,32 @@ export function VisualsMenubar({
             onOpenChange={closeDialog}
           />
         )}
-        {activeDialog === 'titles' && (
-          <TitlesDialog
+        {activeDialog === 'title' && (
+          <TitleDialog
             page={page}
             labels={figureLabels}
             onChange={onFigureLabelsChange}
             showTitle={showTitle}
             onShowTitleChange={onShowTitleChange}
-            open={activeDialog === 'titles'}
+            open={activeDialog === 'title'}
+            onOpenChange={closeDialog}
+          />
+        )}
+        {activeDialog === 'axis-labels' && (
+          <AxisLabelsDialog
+            page={page}
+            labels={figureLabels}
+            onChange={onFigureLabelsChange}
+            open={activeDialog === 'axis-labels'}
+            onOpenChange={closeDialog}
+          />
+        )}
+        {activeDialog === 'axis-limits' && (
+          <AxisLimitsDialog
+            page={page}
+            axisMax={axisMax}
+            onAxisMaxChange={onAxisMaxChange}
+            open={activeDialog === 'axis-limits'}
             onOpenChange={closeDialog}
           />
         )}
