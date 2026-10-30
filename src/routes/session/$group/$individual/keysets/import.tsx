@@ -1,5 +1,6 @@
 import { CleanUpString } from '@/lib/strings';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
+import { routeGuard } from '@/lib/routing';
 import ViewerKeysetPage from '@/components/pages/dashboard-keysets-import/viewer-keysets-page';
 import {
   BuildEvaluationsBreadcrumb,
@@ -16,17 +17,7 @@ import { trackSettlement } from '@/lib/settle-tracking';
 
 export const Route = createFileRoute('/session/$group/$individual/keysets/import')({
   beforeLoad: ({ context, params }) => {
-    if (!context.folderHandleContext.isInitialized) {
-      throw redirect({
-        href: '/',
-      });
-    }
-
-    if (!context.folderHandleContext.handle) {
-      throw redirect({
-        to: '/dashboard',
-      });
-    }
+    const guarded = routeGuard({ context });
 
     const { group, individual } = params;
 
@@ -39,7 +30,8 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/import
     return {
       Group: CleanUpString(group),
       Individual: CleanUpString(individual),
-      CleanHandle: context.folderHandleContext.handle,
+      CleanHandle: guarded.handle,
+      Settings: guarded.settings,
     };
   },
   loader: ({ context }) => {
@@ -51,7 +43,7 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/import
       Group,
       Individual,
       CleanHandle,
-      Settings: context.folderHandleContext.settings,
+      Settings: context.Settings,
       fetchAllKeysets,
     };
   },

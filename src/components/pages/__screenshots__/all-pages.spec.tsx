@@ -108,8 +108,6 @@ vi.mock('@/routes/index', async () => {
     Route: {
       useLoaderData: () => ({
         Settings: { ...DEFAULT_APPLICATION_SETTINGS, EnableFileDeletion: true },
-        SaveSettings: vi.fn(),
-        SetSettings: vi.fn(),
       }),
     },
   };
@@ -194,8 +192,6 @@ vi.mock('@tanstack/react-router', () => ({
       FrontMatter: [],
       KeywordArray: [],
       Settings: { TransitionBehavior: 'none' },
-      SaveSettings: vi.fn(),
-      SetSettings: vi.fn(),
     }),
   }),
   Outlet: () => <div data-testid="outlet">Outlet</div>,

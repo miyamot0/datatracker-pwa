@@ -20,9 +20,11 @@ import { toast } from 'sonner';
 import { Link, useNavigate, useRouter } from '@tanstack/react-router';
 import PageWrapper from '@/components/elements/page-wrapper';
 import { Route } from '@/routes/index';
+import { useFolderHandleContext } from '@/hooks/use-folder-context';
 
 export default function HomePage() {
-  const { Settings, SaveSettings, SetSettings } = Route.useLoaderData();
+  const { Settings } = Route.useLoaderData();
+  const { saveSettings, setSettings } = useFolderHandleContext();
 
   const install = usePWAInstall();
   const router = useRouter();
@@ -47,14 +49,14 @@ export default function HomePage() {
             IsReturningUser: true,
           } satisfies ApplicationSettingsTypes;
 
-          SetSettings(newSettings);
-          SaveSettings(newSettings);
+          setSettings(newSettings);
+          saveSettings(newSettings);
 
           await router.invalidate();
         },
       });
     }
-  }, [navigate, SaveSettings, SetSettings, Settings]);
+  }, [navigate, saveSettings, setSettings, Settings]);
 
   return (
     <PageWrapper className="flex flex-col gap-6 select-none" Settings={Settings}>

@@ -1,4 +1,5 @@
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
+import { routeGuard } from '@/lib/routing';
 import { CleanUpString } from '@/lib/strings';
 import KeySetsPage from '@/components/pages/dashboard-keysets/keysets-page';
 import PageWrapper from '@/components/elements/page-wrapper';
@@ -15,17 +16,7 @@ import { trackSettlement } from '@/lib/settle-tracking';
 
 export const Route = createFileRoute('/session/$group/$individual/keysets/')({
   beforeLoad: ({ context, params }) => {
-    if (!context.folderHandleContext.isInitialized) {
-      throw redirect({
-        href: '/',
-      });
-    }
-
-    if (!context.folderHandleContext.handle) {
-      throw redirect({
-        to: '/dashboard',
-      });
-    }
+    const guarded = routeGuard({ context });
 
     const { group, individual } = params;
 
@@ -36,7 +27,8 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/')({
     }
 
     return {
-      CleanHandle: context.folderHandleContext.handle,
+      CleanHandle: guarded.handle,
+      Settings: guarded.settings,
       Group: CleanUpString(group),
       Individual: CleanUpString(individual),
     };
@@ -50,7 +42,7 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/')({
       Group,
       Individual,
       CleanHandle,
-      Settings: context.folderHandleContext.settings,
+      Settings: context.Settings,
       fetchKeySets,
     };
   },

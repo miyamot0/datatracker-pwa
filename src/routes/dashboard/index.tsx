@@ -6,24 +6,26 @@ import { trackSettlement } from '@/lib/settle-tracking';
 
 export const Route = createFileRoute('/dashboard/')({
   loader: ({ context }) => {
-    const isAuthorized = context.folderHandleContext.handle !== null;
+    const handle = context.folderHandleContext.handle;
+    const isAuthorized = Boolean(handle);
 
-    if (!isAuthorized || !context.folderHandleContext.handle) {
+    const Settings = context.folderHandleContext.settings;
+
+    if (!handle) {
       return {
         handle: null,
         isAuthorized,
+        Settings,
       };
     }
 
-    const fetchGroups = trackSettlement(
-      context.queryClient.query(groupQueryOptions(context.folderHandleContext.handle)),
-    );
+    const fetchGroups = trackSettlement(context.queryClient.query(groupQueryOptions(handle)));
 
     return {
-      handle: context.folderHandleContext.handle,
+      handle,
       isAuthorized,
       fetchGroups,
-      Settings: context.folderHandleContext.settings,
+      Settings,
     };
   },
   component: DashboardGate,

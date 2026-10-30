@@ -10,6 +10,7 @@ import {
 import { CleanUpString } from '@/lib/strings';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
+import { routeGuard } from '@/lib/routing';
 import { type KeySet } from '@/types/keyset/core';
 import { RouteErrorRedirect } from '@/components/pages/error/route-error-view';
 
@@ -17,17 +18,7 @@ import { trackSettlement } from '@/lib/settle-tracking';
 
 export const Route = createFileRoute('/session/$group/$individual/keysets/$keyset/')({
   beforeLoad: ({ params, context }) => {
-    if (!context.folderHandleContext.isInitialized) {
-      throw redirect({
-        href: '/',
-      });
-    }
-
-    if (!context.folderHandleContext.handle) {
-      throw redirect({
-        to: '/dashboard',
-      });
-    }
+    const guarded = routeGuard({ context });
 
     const { group, individual, keyset } = params;
 
@@ -41,7 +32,8 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/$keyse
       Group: CleanUpString(group),
       Individual: CleanUpString(individual),
       KeySet: CleanUpString(keyset),
-      CleanHandle: context.folderHandleContext.handle,
+      CleanHandle: guarded.handle,
+      Settings: guarded.settings,
     };
   },
   loader: ({ context }) => {
@@ -54,7 +46,7 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/$keyse
       Individual: Individual,
       KeySet: KeySet,
       CleanHandle: CleanHandle,
-      Settings: context.folderHandleContext.settings,
+      Settings: context.Settings,
       fetchKeyboards,
     };
   },
@@ -62,7 +54,7 @@ export const Route = createFileRoute('/session/$group/$individual/keysets/$keyse
 });
 
 function RouteComponent() {
-  const { Group, Individual, KeySet, CleanHandle, fetchKeyboards } = Route.useLoaderData();
+  const { Group, Individual, KeySet, CleanHandle, fetchKeyboards, Settings } = Route.useLoaderData();
 
   return (
     <PageWrapper
@@ -74,6 +66,7 @@ function RouteComponent() {
       ]}
       label={CleanUpString(KeySet)}
       className="select-none"
+      Settings={Settings}
     >
       <Await promise={fetchKeyboards} fallback={<LoadingDisplay />}>
         {(keysets: KeySet[]) => {

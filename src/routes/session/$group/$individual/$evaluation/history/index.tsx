@@ -10,22 +10,13 @@ import { CleanUpString } from '@/lib/strings';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { ModifiedSessionResult } from '@/types/storage';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
+import { routeGuard } from '@/lib/routing';
 
 import { trackSettlement } from '@/lib/settle-tracking';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/')({
   beforeLoad: ({ context, params }) => {
-    if (!context.folderHandleContext.isInitialized) {
-      throw redirect({
-        href: '/',
-      });
-    }
-
-    if (!context.folderHandleContext.handle) {
-      throw redirect({
-        to: '/dashboard',
-      });
-    }
+    const guarded = routeGuard({ context });
 
     const { group, individual, evaluation } = params;
 
@@ -39,8 +30,8 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
       Group: CleanUpString(group),
       Individual: CleanUpString(individual),
       Evaluation: CleanUpString(evaluation),
-      CleanHandle: context.folderHandleContext.handle,
-      Settings: context.folderHandleContext.settings,
+      CleanHandle: guarded.handle,
+      Settings: guarded.settings,
     };
   },
   loader: ({ context }) => {

@@ -1,5 +1,6 @@
 import { CleanUpString } from '@/lib/strings';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
+import { routeGuard } from '@/lib/routing';
 import { KeySet } from '@/types/keyset/core';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
@@ -24,17 +25,7 @@ import { trackSettlement } from '@/lib/settle-tracking';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/rate')({
   beforeLoad: ({ context, params }) => {
-    if (!context.folderHandleContext.isInitialized) {
-      throw redirect({
-        href: '/',
-      });
-    }
-
-    if (!context.folderHandleContext.handle) {
-      throw redirect({
-        to: '/dashboard',
-      });
-    }
+    const guarded = routeGuard({ context });
 
     const { group, individual, evaluation } = params;
 
@@ -48,8 +39,8 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ra
       Group: CleanUpString(group),
       Individual: CleanUpString(individual),
       Evaluation: CleanUpString(evaluation),
-      CleanHandle: context.folderHandleContext.handle,
-      Settings: context.folderHandleContext.settings,
+      CleanHandle: guarded.handle,
+      Settings: guarded.settings,
     };
   },
   loader: async ({ context }) => {
@@ -91,6 +82,7 @@ function RouteComponent() {
       ]}
       label={`${Evaluation}: Target Rates`}
       className="select-none"
+      Settings={Settings}
     >
       <Await promise={totalQuery} fallback={<LoadingDisplay />}>
         {

@@ -9,11 +9,19 @@ export interface FolderHandleContextType {
   getHandle: () => FileSystemDirectoryHandle | undefined;
   setHandle: Dispatch<SetStateAction<FileSystemDirectoryHandle | undefined>>;
   settings: ApplicationSettingsTypes;
+  getSettings: () => ApplicationSettingsTypes;
   setSettings: Dispatch<SetStateAction<ApplicationSettingsTypes>>;
   saveSettings: (_settings: ApplicationSettingsTypes) => void;
   isInitialized: boolean;
+  getIsInitialized: () => boolean;
   setIsInitialized: Dispatch<SetStateAction<boolean>>;
 }
+
+// Router-facing folder state is read-only: loaders and guards read values, components update through the hook
+export type RouterFolderHandleContext = Pick<
+  FolderHandleContextType,
+  'handle' | 'settings' | 'isInitialized' | 'getHandle' | 'getSettings' | 'getIsInitialized'
+>;
 
 // Context for folder handle
 export const FolderHandleContext = createContext({
@@ -21,10 +29,12 @@ export const FolderHandleContext = createContext({
   getHandle: () => undefined as FileSystemDirectoryHandle | undefined,
   setHandle: undefined as unknown as Dispatch<SetStateAction<FileSystemDirectoryHandle | undefined>>,
   settings: DEFAULT_APPLICATION_SETTINGS,
+  getSettings: () => DEFAULT_APPLICATION_SETTINGS as ApplicationSettingsTypes,
   setSettings: undefined as unknown as Dispatch<SetStateAction<ApplicationSettingsTypes>>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   saveSettings: (_: ApplicationSettingsTypes) => {},
   isInitialized: undefined as unknown as boolean,
+  getIsInitialized: () => undefined as unknown as boolean,
   setIsInitialized: undefined as unknown as Dispatch<SetStateAction<boolean>>,
 });
 
@@ -47,8 +57,28 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
 
   const getHandle = useCallback(() => handleRef.current, []);
 
-  const [settings, setSettings] = useState<ApplicationSettingsTypes>(DEFAULT_APPLICATION_SETTINGS);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [settings, setSettingsState] = useState<ApplicationSettingsTypes>(DEFAULT_APPLICATION_SETTINGS);
+  const settingsRef = useRef<ApplicationSettingsTypes>(DEFAULT_APPLICATION_SETTINGS);
+
+  // Mirrors setHandle so loaders invalidated right after a settings change read the new value
+  const setSettings = useCallback<Dispatch<SetStateAction<ApplicationSettingsTypes>>>((action) => {
+    const next = typeof action === 'function' ? action(settingsRef.current) : action;
+    settingsRef.current = next;
+    setSettingsState(next);
+  }, []);
+
+  const getSettings = useCallback(() => settingsRef.current, []);
+
+  const [isInitialized, setIsInitializedState] = useState(false);
+  const isInitializedRef = useRef(false);
+
+  const setIsInitialized = useCallback<Dispatch<SetStateAction<boolean>>>((action) => {
+    const next = typeof action === 'function' ? action(isInitializedRef.current) : action;
+    isInitializedRef.current = next;
+    setIsInitializedState(next);
+  }, []);
+
+  const getIsInitialized = useCallback(() => isInitializedRef.current, []);
 
   const staleTimeAggressive = 1000 * 60 * 15; // 15 minutes
   const gcTimeAggressive = 1000 * 60 * 30; // 30 minutes
@@ -61,7 +91,7 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
    *
    * @param _settings The application settings to be saved. This function saves the provided settings to local storage and updates the query client's default options based on the cache behavior specified in the settings. If the cache behavior is set to 'aggressive', it sets longer stale time and garbage collection time for queries; otherwise, it sets them to default values. It also includes commented-out code for setting view transition behavior based on the settings, which can be implemented as needed.
    */
-  const saveSettings = (_settings: ApplicationSettingsTypes) => {
+  const saveSettings = useCallback((_settings: ApplicationSettingsTypes) => {
     localStorage.setItem('data_tracker_settings', JSON.stringify(_settings));
 
     if (_settings.CacheBehavior === 'aggressive') {
@@ -79,7 +109,7 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
         },
       });
     }
-  };
+  }, []);
 
   useEffect(() => {
     const settings = localStorage.getItem('data_tracker_settings');
@@ -122,9 +152,11 @@ export function FolderContextProvider({ children }: { children: ReactNode }) {
           getHandle,
           setHandle,
           settings,
+          getSettings,
           setSettings,
           saveSettings,
           isInitialized,
+          getIsInitialized,
           setIsInitialized,
         }}
       >

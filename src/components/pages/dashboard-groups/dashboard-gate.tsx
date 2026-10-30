@@ -10,7 +10,7 @@ export function DashboardGate() {
 
   if (!isAuthorized || !handle) {
     return (
-      <PageWrapper label={'Folder Authorization'} className="select-none">
+      <PageWrapper label={'Folder Authorization'} className="select-none" Settings={Settings}>
         <UnauthorizedDisplay />
       </PageWrapper>
     );

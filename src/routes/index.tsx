@@ -5,8 +5,6 @@ export const Route = createFileRoute('/')({
   loader: ({ context }) => {
     return {
       Settings: context.folderHandleContext.settings,
-      SaveSettings: context.folderHandleContext.saveSettings,
-      SetSettings: context.folderHandleContext.setSettings,
     };
   },
   component: HomePage,

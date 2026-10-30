@@ -116,11 +116,11 @@ describe('DashboardGate', () => {
       await expect.element(unauthorizedDisplay).toBeInTheDocument();
     });
 
-    it('does not pass Settings to PageWrapper in unauthorized state', async () => {
+    it('passes Settings to PageWrapper in unauthorized state', async () => {
       await renderDashboardGate(createMockLoaderData({ isAuthorized: false }));
 
-      const settingsElements = page.getByTestId('settings').elements();
-      expect(settingsElements).toHaveLength(0);
+      const settingsElement = page.getByTestId('settings');
+      await expect.element(settingsElement).toBeInTheDocument();
     });
   });
 

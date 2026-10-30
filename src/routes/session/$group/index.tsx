@@ -1,4 +1,5 @@
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
+import { routeGuard } from '@/lib/routing';
 import { CleanUpString } from '@/lib/strings';
 import ClientsPage from '@/components/pages/dashboard-participants/clients-page';
 import PageWrapper from '@/components/elements/page-wrapper';
@@ -10,17 +11,7 @@ import { trackSettlement } from '@/lib/settle-tracking';
 
 export const Route = createFileRoute('/session/$group/')({
   beforeLoad: ({ context, params }) => {
-    if (!context.folderHandleContext.isInitialized) {
-      throw redirect({
-        href: '/',
-      });
-    }
-
-    if (!context.folderHandleContext.handle) {
-      throw redirect({
-        to: '/dashboard',
-      });
-    }
+    const guarded = routeGuard({ context });
 
     const { group } = params;
 
@@ -32,7 +23,8 @@ export const Route = createFileRoute('/session/$group/')({
 
     return {
       Group: CleanUpString(group),
-      CleanHandle: context.folderHandleContext.handle,
+      CleanHandle: guarded.handle,
+      Settings: guarded.settings,
     };
   },
   loader: ({ params, context }) => {
@@ -42,7 +34,7 @@ export const Route = createFileRoute('/session/$group/')({
 
     return {
       Group: params.group,
-      Settings: context.folderHandleContext.settings,
+      Settings: context.Settings,
       CleanHandle,
       fetchClients,
     };
