@@ -111,6 +111,31 @@ describe('keyset-utils', () => {
       expect(out.scorableDurationKeys).toEqual([]);
     });
 
+    it('ignores results that have no attached keyset', () => {
+      const results = [
+        { Keyset: undefined } as unknown as ModifiedSessionResult,
+        makeResult({ FrequencyKeys: [key(1)] }),
+        { Keyset: null } as unknown as ModifiedSessionResult,
+      ];
+      const latest = makeKeyset({ FrequencyKeys: [key(2)], DurationKeys: [key(3)] });
+
+      const out = extractAndDeduplicateKeysets(results, latest);
+
+      expect(out.frequencyKeys.map((k) => k.KeyCode)).toEqual([1, 2]);
+      expect(out.durationKeys.map((k) => k.KeyCode)).toEqual([3]);
+    });
+
+    it('returns empty collections when no results have keysets and the latest is empty', () => {
+      const out = extractAndDeduplicateKeysets(
+        [{ Keyset: undefined } as unknown as ModifiedSessionResult],
+        makeKeyset(),
+      );
+
+      expect(out.frequencyKeys).toEqual([]);
+      expect(out.durationKeys).toEqual([]);
+      expect(out.derivedKeys).toEqual([]);
+    });
+
     it('returns only the latest keyset when there are no results', () => {
       const latest = makeKeyset({ FrequencyKeys: [key(5)], DurationKeys: [key(6)] });
 

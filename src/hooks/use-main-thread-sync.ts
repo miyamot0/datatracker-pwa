@@ -171,10 +171,14 @@ async function writeFileToTarget(
   sourceDirectory: FileSystemDirectoryHandle,
   filePath: string,
 ): Promise<void> {
-  if (!targetDirectory || !sourceDirectory) return;
+  if (!targetDirectory || !sourceDirectory) {
+    throw new Error(`Missing directory handle for: ${filePath}`);
+  }
 
   const pathParts = filePath.split('/').filter((part) => part.trim().length > 0);
-  if (pathParts.length === 0) return;
+  if (pathParts.length === 0) {
+    throw new Error(`Invalid file path: ${filePath}`);
+  }
 
   try {
     // Get existing file from source (don't create)

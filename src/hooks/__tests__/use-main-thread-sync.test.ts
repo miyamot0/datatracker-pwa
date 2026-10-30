@@ -325,15 +325,33 @@ describe('useMainThreadSync', () => {
       expect(synced).toEqual([]);
     });
 
-    it('treats rows with an empty path as already synced without writing', async () => {
+    it('does not report rows with an empty path as synced', async () => {
       const source = makeDir('source');
       const target = makeDir('target');
 
       const { result } = renderHook(() => useMainThreadSync());
       const synced = await act(() => result.current.syncFiles([row('/')], toDirHandle(source), toDirHandle(target)));
 
-      expect(synced).toEqual(['/']);
+      expect(synced).toEqual([]);
       expect(target.entries.size).toBe(0);
+    });
+
+    it('does not report rows as synced when a directory handle is missing', async () => {
+      const source = makeDir('source', [makeFile('a.json', 'x')]);
+      const target = makeDir('target');
+
+      const { result } = renderHook(() => useMainThreadSync());
+      const synced = await act(() =>
+        result.current.syncFiles(
+          [row('/a.json')],
+          null as unknown as FileSystemDirectoryHandle,
+          toDirHandle(target),
+        ),
+      );
+
+      expect(synced).toEqual([]);
+      expect(target.entries.size).toBe(0);
+      expect(source.entries.size).toBe(1);
     });
 
     it('returns an empty list for no rows', async () => {

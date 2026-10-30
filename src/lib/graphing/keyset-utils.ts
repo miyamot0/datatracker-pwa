@@ -10,7 +10,7 @@ import { ReturnLocalStorageCache } from '../local_storage';
  * @returns An object containing deduplicated frequency and duration keys for use in visualizations
  */
 export function extractAndDeduplicateKeysets(results: ModifiedSessionResult[], latestKeyset: KeySet) {
-  const allKeysets = results.map((result) => result.Keyset);
+  const allKeysets = results.map((result) => result.Keyset).filter((keyset): keyset is KeySet => Boolean(keyset));
 
   const allFKeys = [...allKeysets, latestKeyset].map((keyset) => keyset.FrequencyKeys).flat();
   const allDKeys = [...allKeysets, latestKeyset].map((keyset) => keyset.DurationKeys).flat();
