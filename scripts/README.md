@@ -37,10 +37,17 @@ Features include the following:
 
 ### Changelog
 
+#### 0.5.16 (2026-06-30):
+
+- Experimental release of visual editor for data
+- Updates to React 19, bumps for deps
+- Streamlined loading and sync fixes for races/global state quirks
+
 #### 0.5.15 (2026-06-27):
 
 - Round out visual package (i.e., annotations)
 - Improvements to error reporting
+- Expansion of source coverage (nearly all components)
 
 #### 0.5.14 (2026-06-26):
 
