@@ -2,10 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
 import { CleanUpString } from '@/lib/strings';
 import { KeySet } from '@/types/keyset/core';
+import { toast } from 'sonner';
 import * as importKeysetsModule from '../import-keysets';
 
 vi.mock('@/lib/keyset');
 vi.mock('@/lib/strings');
+vi.mock('sonner', () => ({
+  toast: { error: vi.fn() },
+}));
 
 type MockEntry = {
   kind: 'file' | 'directory';
@@ -67,7 +71,7 @@ describe('import-keysets', () => {
   let individualHandle: MockDirectoryHandle;
   let keysetFileHandle: MockFileHandle;
   let writable: MockWritable;
-  let alertSpy: ReturnType<typeof vi.spyOn>;
+  const mockedToastError = vi.mocked(toast.error);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -101,7 +105,7 @@ describe('import-keysets', () => {
       values: vi.fn(),
     };
 
-    alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    mockedToastError.mockClear();
   });
 
   it('imports a keyset when no duplicate exists', async () => {
@@ -127,7 +131,7 @@ describe('import-keysets', () => {
     expect(mockedSerializeKeySet).toHaveBeenCalledTimes(1);
     expect(writable.write).toHaveBeenCalledWith('{"Name":"Alpha"}');
     expect(writable.close).toHaveBeenCalledTimes(1);
-    expect(alertSpy).not.toHaveBeenCalled();
+    expect(mockedToastError).not.toHaveBeenCalled();
     expect(result).toEqual({
       ...generated,
       FrequencyKeys: input.FrequencyKeys,
@@ -135,20 +139,20 @@ describe('import-keysets', () => {
     });
   });
 
-  it('returns null and alerts when a duplicate keyset exists', async () => {
+  it('shows an error toast and returns null when a duplicate keyset exists', async () => {
     const input = createKeySet('Alpha');
 
     individualHandle.values.mockReturnValue(createAsyncIterator<MockEntry>([{ kind: 'file', name: 'Alpha.json' }]));
 
     const result = await importKeysetsModule.importExistingKeyset(rootHandle as any, 'Group A', 'Person A', input);
 
-    expect(alertSpy).toHaveBeenCalledWith('Keyset already exists');
+    expect(mockedToastError).toHaveBeenCalledWith('Keyset already exists');
     expect(result).toBeNull();
     expect(mockedCreateNewKeySet).not.toHaveBeenCalled();
     expect(individualHandle.getFileHandle).not.toHaveBeenCalled();
   });
 
-  it('alerts and returns null for a reserved keyset name', async () => {
+  it('shows an error toast and returns null for a reserved keyset name', async () => {
     individualHandle.values.mockReturnValue(createAsyncIterator<MockEntry>([]));
 
     const result = await importKeysetsModule.importExistingKeyset(
@@ -158,7 +162,9 @@ describe('import-keysets', () => {
       createKeySet('styles.json'),
     );
 
-    expect(alertSpy).toHaveBeenCalled();
+    expect(mockedToastError).toHaveBeenCalledWith(
+      '"styles.json" is a reserved name and cannot be used for a keyset',
+    );
     expect(result).toBeNull();
     expect(mockedCreateNewKeySet).not.toHaveBeenCalled();
     expect(individualHandle.getFileHandle).not.toHaveBeenCalled();
@@ -183,7 +189,7 @@ describe('import-keysets', () => {
 
     expect(individualHandle.getFileHandle).toHaveBeenCalledTimes(1);
     expect(individualHandle.getFileHandle).toHaveBeenCalledWith('One.json', { create: true });
-    expect(alertSpy).toHaveBeenCalledWith('Keyset already exists');
+    expect(mockedToastError).toHaveBeenCalledWith('Keyset already exists');
     expect(result).toEqual([
       {
         ...generatedA,

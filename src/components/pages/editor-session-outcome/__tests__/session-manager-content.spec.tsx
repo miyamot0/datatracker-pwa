@@ -5,8 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockMutateAsync = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const mockSetQueryData = vi.hoisted(() => vi.fn());
 const mockInvalidate = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
-const mockPrompt = vi.hoisted(() => vi.fn());
-const mockAlert = vi.hoisted(() => vi.fn());
 const mockToastPromise = vi.hoisted(() => vi.fn(async (fn: () => Promise<unknown>) => await fn()));
 
 vi.mock('@/App', () => ({
@@ -123,12 +121,7 @@ describe('SessionManagerContent', () => {
     mockMutateAsync.mockReset();
     mockSetQueryData.mockReset();
     mockInvalidate.mockReset();
-    mockPrompt.mockReset();
-    mockAlert.mockReset();
     mockToastPromise.mockClear();
-
-    vi.stubGlobal('prompt', mockPrompt);
-    vi.stubGlobal('alert', mockAlert);
   });
 
   it('renders metadata and action controls', async () => {
@@ -177,31 +170,36 @@ describe('SessionManagerContent', () => {
     expect(keyLabels.length).toBe(0);
   });
 
-  it('handles replace key prompt cancellation', async () => {
-    mockPrompt.mockReturnValue(null);
+  it('does not replace the key when the dialog is canceled', async () => {
     await renderSessionManager();
 
     await page.getByRole('button', { name: 'Replace Key' }).nth(1).click();
+    await clickDialogButton('Cancel');
 
     await expect.element(page.getByText('FREQ_A')).toBeInTheDocument();
   });
 
-  it('alerts for invalid replacement key', async () => {
-    mockPrompt.mockReturnValue('NOT_A_KEY');
+  it('offers only other keys as replacement options', async () => {
     await renderSessionManager();
 
     await page.getByRole('button', { name: 'Replace Key' }).nth(1).click();
+    await page.getByRole('dialog').getByRole('combobox', { name: 'Key' }).click();
 
-    expect(mockAlert).toHaveBeenCalledWith('Invalid key name entered. No changes made.');
+    await expect.element(page.getByRole('option', { name: 'FREQ_B (Freq B)' })).toBeInTheDocument();
+    await expect.element(page.getByRole('option', { name: 'DUR_A (Dur A)' })).toBeInTheDocument();
+    expect(await page.getByRole('option', { name: 'FREQ_A (Freq A)' }).query()).toBeNull();
   });
 
-  it('replaces a key when a valid key name is entered', async () => {
-    mockPrompt.mockReturnValue('FREQ_B');
+  it('replaces a key when a valid key is selected', async () => {
     await renderSessionManager();
 
     await page.getByRole('button', { name: 'Replace Key' }).nth(1).click();
+    await page.getByRole('dialog').getByRole('combobox', { name: 'Key' }).click();
+    await page.getByRole('option', { name: 'FREQ_B (Freq B)' }).click();
+    await clickDialogButton('Replace Key');
 
     await expect.element(page.getByText('FREQ_B')).toBeInTheDocument();
+    expect(await page.getByText('Freq A', { exact: true }).query()).toBeNull();
   });
 
   it('does not save when update confirmation is canceled', async () => {

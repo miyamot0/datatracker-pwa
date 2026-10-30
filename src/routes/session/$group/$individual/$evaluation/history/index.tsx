@@ -7,6 +7,7 @@ import {
   BuildEvaluationsBreadcrumb,
 } from '@/components/ui/breadcrumb-entries';
 import { CleanUpString } from '@/lib/strings';
+import { conditionQueryOptions } from '@/queries/conditions/query-conditions';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { ModifiedSessionResult } from '@/types/storage';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
@@ -37,9 +38,15 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
   loader: ({ context }) => {
     const { Group, Individual, Evaluation, CleanHandle, Settings } = context;
 
-    const fetchSessionOutcomes = trackSettlement(
-      context.queryClient.query(sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation)),
+    const fetchSessionOutcomes = context.queryClient.query(
+      sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
+
+    const fetchConditions = context.queryClient.query(
+      conditionQueryOptions(CleanHandle, Group, Individual, Evaluation),
+    );
+
+    const fetchHistory = trackSettlement(Promise.all([fetchSessionOutcomes, fetchConditions]));
 
     return {
       Group,
@@ -47,14 +54,14 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
       Evaluation,
       Settings,
       CleanHandle,
-      fetchSessionOutcomes,
+      fetchHistory,
     };
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { Group, Individual, Evaluation, Settings, CleanHandle, fetchSessionOutcomes } = Route.useLoaderData();
+  const { Group, Individual, Evaluation, Settings, CleanHandle, fetchHistory } = Route.useLoaderData();
 
   return (
     <PageWrapper
@@ -67,8 +74,8 @@ function RouteComponent() {
       className="select-none"
       Settings={Settings}
     >
-      <Await promise={fetchSessionOutcomes} fallback={<LoadingDisplay />}>
-        {(sessions: ModifiedSessionResult[]) => {
+      <Await promise={fetchHistory} fallback={<LoadingDisplay />}>
+        {([sessions, conditions]: [ModifiedSessionResult[], string[]]) => {
           return (
             <DashboardHistoryPage
               Group={Group}
@@ -77,6 +84,7 @@ function RouteComponent() {
               Settings={Settings}
               Handle={CleanHandle}
               Sessions={sessions}
+              Conditions={conditions}
             />
           );
         }}

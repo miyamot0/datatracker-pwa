@@ -881,6 +881,7 @@ describe('DashboardHistoryPage', () => {
                 Evaluation="Functional Analysis"
                 Handle={mockHandle}
                 Settings={DEFAULT_APPLICATION_SETTINGS}
+                Conditions={['Baseline', 'Treatment']}
                 Sessions={[
                   mockSession,
                   {

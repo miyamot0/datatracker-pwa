@@ -16,6 +16,7 @@ import { queryClient } from '@/App';
 import { KeyManageType } from '@/types/timing';
 import { useRouter, useRouterState } from '@tanstack/react-router';
 import { useConfirmDialog } from '@/components/dialogs/use-confirm-dialog';
+import { useKeySelectDialog } from '@/components/dialogs/use-key-select-dialog';
 
 function ColoredDot({ KeyObject }: { KeyObject: KeyManageType }) {
   let key_color = '#fff';
@@ -71,6 +72,7 @@ export default function SessionManagerContent({
   const [currentKeys, setCurrentKeys] = useState(SavedKeys);
   const textareaRef = useRef(null);
   const { openConfirmDialog, confirmDialog } = useConfirmDialog();
+  const { openKeySelectDialog, keySelectDialog } = useKeySelectDialog();
 
   const mutateSessionOutcomes = useMutation({
     mutationFn: mutationSettingsOutcomes,
@@ -214,36 +216,31 @@ export default function SessionManagerContent({
                         className="text-primary flex flex-row gap-1 items-center"
                         disabled={!(key.KeyType === 'Frequency' || key.KeyType === 'Duration')}
                         onClick={() => {
-                          const allKeysString = allKeys
-                            .filter((k) => k.KeyDescription !== key.KeyDescription)
-                            .map((k) => `${k.KeyName} (${k.KeyDescription})`)
-                            .join(', ');
+                          openKeySelectDialog({
+                            title: 'Replace Key',
+                            description: `Current Key: "${key.KeyName} (${key.KeyDescription})"`,
+                            submitLabel: 'Replace Key',
+                            options: allKeys.filter((k) => k.KeyDescription !== key.KeyDescription),
+                            onSubmit: (new_key_name) => {
+                              const replacement = allKeys.find((k) => k.KeyName === new_key_name);
 
-                          const prompt_message = `Current Key: "${key.KeyName} (${key.KeyDescription})"\n\nAvailable Keys: ${allKeysString}\n\nPlease enter the Key you want to replace it with:`;
-                          const new_key_name = window.prompt(prompt_message);
+                              if (!replacement) return;
 
-                          if (!new_key_name) return;
-
-                          const check_if_valid = allKeys.find((k) => k.KeyName === new_key_name);
-
-                          if (!new_key_name || !check_if_valid) {
-                            window.alert('Invalid key name entered. No changes made.');
-                            return;
-                          }
-
-                          setCurrentKeys((prevKeys) =>
-                            prevKeys.map((k, i) => {
-                              if (i === index) {
-                                return {
-                                  ...k,
-                                  KeyName: new_key_name,
-                                  KeyDescription: check_if_valid.KeyDescription,
-                                  KeyCode: check_if_valid.KeyCode,
-                                };
-                              }
-                              return k;
-                            }),
-                          );
+                              setCurrentKeys((prevKeys) =>
+                                prevKeys.map((k, i) => {
+                                  if (i === index) {
+                                    return {
+                                      ...k,
+                                      KeyName: replacement.KeyName,
+                                      KeyDescription: replacement.KeyDescription,
+                                      KeyCode: replacement.KeyCode,
+                                    };
+                                  }
+                                  return k;
+                                }),
+                              );
+                            },
+                          });
                         }}
                       >
                         <PencilIcon className="h-4 w-4" />
@@ -268,6 +265,7 @@ export default function SessionManagerContent({
         </div>
       </CardContent>
       {confirmDialog}
+      {keySelectDialog}
     </Card>
   );
 }
