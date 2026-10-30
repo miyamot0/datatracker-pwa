@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GenerateSavedFileName } from '../writer';
-import { SavedSettings } from '../dtos';
+import { SavedSettings } from '../dtos/session-settings';
 
 describe('GenerateSavedFileName', () => {
   it('should generate a file name based on the settings', () => {

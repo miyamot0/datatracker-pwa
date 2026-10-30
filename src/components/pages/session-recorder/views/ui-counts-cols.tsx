@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ReactNode } from 'react';
-import { KeySetInstance } from '@/types/keyset';
+import { KeySetInstance } from '@/types/keyset/core';
 import { cn } from '@/lib/utils';
 import { KeyManageType } from '@/types/timing';
 
@@ -23,8 +23,6 @@ export function GenerateTableCols({
 }: Props): ReactNode {
   const isNarrow = NumCols > 1;
   const KeyLabel = KeyType === 'Duration' ? (isNarrow ? '(D)' : '(Duration)') : isNarrow ? '(F)' : '(Frequency)';
-
-  console.log('KeyType:', KeyType, 'Is Skinny:', IsSkinny, 'NumCols:', NumCols);
 
   return (
     <Table
@@ -83,7 +81,7 @@ export function GenerateTableCols({
                 <TableCell className={cn('text-primary', { 'py-2': IsSkinny })}>{key.KeyName}</TableCell>
                 <TableCell className={cn('text-primary', { 'py-2': IsSkinny })}>{key.KeyDescription}</TableCell>
                 <TableCell className={cn('text-primary', { 'py-2': IsSkinny })}>{rounds}</TableCell>
-                <TableCell className={cn('w-[150px] flex flex-row items-center text-primary', { 'py-2': IsSkinny })}>
+                <TableCell className={cn('w-37.5 flex flex-row items-center text-primary', { 'py-2': IsSkinny })}>
                   <div
                     className={cn('transition-colors bg-transparent rounded-full px-2', {
                       'bg-green-500 text-white': is_odd,

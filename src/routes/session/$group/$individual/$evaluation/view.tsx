@@ -1,10 +1,11 @@
 import { CleanUpString } from '@/lib/strings';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
+import { routeGuard } from '@/lib/routing';
 import { sessionOutcomesQueryOptions } from '@/queries/outcomes/query-session-outcomes';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { pullMostRecentSession } from '@/lib/keyset';
 import { extractAndDeduplicateKeysets, mapKeysWithStoragePreference } from '@/lib/graphing/keyset-utils';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { ToggleDisplayKey } from '@/types/visuals';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
 import PageWrapper from '@/components/elements/page-wrapper';
@@ -19,19 +20,11 @@ import ResultsViewerContent from '@/components/pages/summary-outcomes/results-vi
 import ResultsViewerBlank from '@/components/pages/summary-outcomes/views/results-viewer-blank';
 import { filteredSessionScoringOptions } from '@/types/schedules';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/view')({
   beforeLoad: ({ context, params }) => {
-    if (!context.folderHandleContext.isInitialized) {
-      throw redirect({
-        href: '/',
-      });
-    }
-
-    if (!context.folderHandleContext.handle) {
-      throw redirect({
-        to: '/dashboard',
-      });
-    }
+    const guarded = routeGuard({ context });
 
     const { group, individual, evaluation } = params;
 
@@ -45,19 +38,19 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/vi
       Group: CleanUpString(group),
       Individual: CleanUpString(individual),
       Evaluation: CleanUpString(evaluation),
-      CleanHandle: context.folderHandleContext.handle,
-      Settings: context.folderHandleContext.settings,
+      CleanHandle: guarded.handle,
+      Settings: guarded.settings,
     };
   },
   loader: async ({ context }) => {
     const { CleanHandle, Group, Individual, Evaluation, Settings } = context;
 
-    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
-    const fetchSessionOutcomes = context.queryClient.fetchQuery(
+    const fetchKeyboards = context.queryClient.query(keyboardQueryOptions(CleanHandle, Group, Individual));
+    const fetchSessionOutcomes = context.queryClient.query(
       sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const totalQuery = Promise.all([fetchKeyboards, fetchSessionOutcomes]);
+    const totalQuery = trackSettlement(Promise.all([fetchKeyboards, fetchSessionOutcomes]));
 
     return {
       Group: Group,

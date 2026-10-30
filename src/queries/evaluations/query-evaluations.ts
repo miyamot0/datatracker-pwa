@@ -1,6 +1,6 @@
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
 import { FetchEvaluationsRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 
 /**
  * Queries the evaluations for a specific group and individual by accessing the file system and retrieving the names of evaluation directories within the individual's folder. It returns an array of evaluation names that are found, or an empty array if no evaluations are found or if there is an error during the file system operations.
@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 export const evaluationQueryOptions = (Handle: FileSystemDirectoryHandle, Group: string, Individual: string) => ({
   queryKey: ['/', Group, Individual],
   queryFn: () => fetchEvaluationsWorker(Handle, Group, Individual),
+  staleTime: 'static' as const,
 });
 
 /**
@@ -25,7 +26,7 @@ export const evaluationQueryOptions = (Handle: FileSystemDirectoryHandle, Group:
 export const fetchEvaluationsWorker = async (Handle: FileSystemDirectoryHandle, Group: string, Individual: string) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'FETCH_EVALUATIONS',
     handle: Handle,
     groupName: Group,

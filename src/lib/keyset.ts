@@ -1,7 +1,23 @@
-import { KeySet, KeySetSerialize } from '@/types/keyset';
-import { v4 as uuidv4 } from 'uuid';
-import { SavedSessionResult } from './dtos';
+import { KeySet } from '@/types/keyset/core';
+import { KeySetSerialize } from '@/types/keyset/serialization';
+import { v4 } from '@/lib/uuid';
+import { z } from 'zod';
+import { SavedSessionResult } from './dtos/session-results';
 import { ModifiedSessionResult } from '@/types/storage';
+import { KeySetInstanceSchema, LogicStateSchema, parseKeepingUnmatchedList, parseLenientList } from '@/lib/lenient-schemas';
+
+// Only id and Name are required. Other fields are optional, and bad entries are dropped by parseLenientList.
+const KeySetFileSchema = z.looseObject({
+  id: z.string(),
+  Name: z.string(),
+  FrequencyKeys: z.unknown().optional(),
+  DurationKeys: z.unknown().optional(),
+  createdAt: z.string().optional(),
+  lastModified: z.string().optional(),
+  DerivedKeys: z.unknown().optional(),
+  SpecialDurationKeys: z.unknown().optional(),
+  ScorableDurationKeys: z.unknown().optional(),
+});
 
 /**
  * Create a new key set
@@ -14,7 +30,7 @@ export function createNewKeySet(Name: string): KeySet {
     Name,
     FrequencyKeys: [],
     DurationKeys: [],
-    id: uuidv4(),
+    id: v4(),
     createdAt: new Date(),
     lastModified: new Date(),
     DerivedKeys: [],
@@ -52,18 +68,18 @@ export function serializeKeySet(keyset: KeySet): string {
  * @returns deserialized key set object
  */
 export function deserializeKeySet(json: string): KeySet {
-  const keyset_json = JSON.parse(json) as KeySetSerialize;
+  const keyset_json = KeySetFileSchema.parse(JSON.parse(json));
 
   return {
     id: keyset_json.id,
     Name: keyset_json.Name,
-    FrequencyKeys: keyset_json.FrequencyKeys,
-    DurationKeys: keyset_json.DurationKeys,
-    createdAt: new Date(keyset_json.createdAt),
-    lastModified: new Date(keyset_json.lastModified),
-    DerivedKeys: keyset_json.DerivedKeys || [],
-    SpecialDurationKeys: keyset_json.SpecialDurationKeys || [],
-    ScorableDurationKeys: keyset_json.ScorableDurationKeys || [],
+    FrequencyKeys: parseLenientList(keyset_json.FrequencyKeys, KeySetInstanceSchema),
+    DurationKeys: parseLenientList(keyset_json.DurationKeys, KeySetInstanceSchema),
+    createdAt: new Date(keyset_json.createdAt ?? ''),
+    lastModified: new Date(keyset_json.lastModified ?? ''),
+    DerivedKeys: parseKeepingUnmatchedList(keyset_json.DerivedKeys, LogicStateSchema),
+    SpecialDurationKeys: parseLenientList(keyset_json.SpecialDurationKeys, KeySetInstanceSchema),
+    ScorableDurationKeys: parseLenientList(keyset_json.ScorableDurationKeys, KeySetInstanceSchema),
   };
 }
 
@@ -78,16 +94,4 @@ export function pullMostRecentSession(
 ): SavedSessionResult | ModifiedSessionResult {
   const latest = data.sort((a, b) => a.SessionSettings.Session - b.SessionSettings.Session).slice(-1)[0];
   return latest;
-}
-
-/**
- * Pull the most recent key set from an array of session results
- *
- * @param data - An array of session results, which can be either SavedSessionResult or ModifiedSessionResult, both containing a Keyset property
- * @returns The KeySet object from the most recent session result, determined by the highest SessionSettings.Session value in the input array
- * @deprecated Need to pull from session params for latest
- */
-export function pullMostRecentKeySet(data: SavedSessionResult[] | ModifiedSessionResult[]): KeySet {
-  const latest = pullMostRecentSession(data);
-  return latest.Keyset;
 }

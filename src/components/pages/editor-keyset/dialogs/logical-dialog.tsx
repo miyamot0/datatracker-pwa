@@ -15,10 +15,11 @@ import { FolderHandleContext } from '@/context/folder-context';
 import { LogicalStep, LogicState, Operation, OperationTypes, ValueSource, ValueSourceField } from '@/lib/logic';
 import { displayConditionalNotification } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
-import { KeySet, KeySetLogical } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
+import { KeySetLogical } from '@/types/keyset/serialization';
 import { PlusIcon, Trash } from 'lucide-react';
 import { createRef, useContext, useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 
 type Props = {
   KeySet: KeySet;
@@ -44,7 +45,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit,
     })) as KeySetLogical[],
     value: 0,
     name: '',
-    id: uuidv4(),
+    id: v4(),
   } satisfies LogicState;
 
   const [logicState, setLogicState] = useState<LogicState>(logicToEdit ? {
@@ -66,8 +67,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit,
       })) as KeySetLogical[];
 
       // Helper to find field by KeyCode or Tag
-      const findField = (fieldObj: any) => {
-        if (!fieldObj) return undefined;
+      const findField = (fieldObj: KeySetLogical) => {
         return fields.find(f => f.KeyCode === fieldObj.KeyCode || f.Tag === fieldObj.Tag);
       };
 
@@ -153,7 +153,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit,
               Value: 0,
               Tag: 'field.' + key.KeyDescription,
             })),
-            id: uuidv4(),
+            id: v4(),
           });
         }
       }}
@@ -202,16 +202,14 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit,
                       initial: { type: 'constant', value: 0 },
                     }));
                   } else {
-                    const selectedField = logicState.fields.find((field) => field.Tag === value);
-                    if (selectedField) {
-                      const valueSource: ValueSourceField = { type: 'field', field: selectedField };
-                      const updatedState: LogicState = {
-                        ...logicState,
-                        value: valueSource.field.Value,
-                        initial: valueSource,
-                      };
-                      setLogicState(updatedState);
-                    }
+                    const selectedField = logicState.fields.find((field) => field.Tag === value) as KeySetLogical;
+                    const valueSource: ValueSourceField = { type: 'field', field: selectedField };
+                    const updatedState: LogicState = {
+                      ...logicState,
+                      value: valueSource.field.Value,
+                      initial: valueSource,
+                    };
+                    setLogicState(updatedState);
                   }
                 }}
               >
@@ -281,15 +279,11 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit,
                       updatedSteps[index] = { ...updatedSteps[index], operand: { type: 'constant', value: 0 } };
                       setLogicState((prev) => ({ ...prev, steps: updatedSteps }));
                     } else {
-                      const selectedField = logicState.fields.find((field) => field.Tag === value);
-                      if (selectedField) {
-                        const valueSource: ValueSourceField = { type: 'field', field: selectedField };
-                        const updatedSteps = [...logicState.steps];
-                        updatedSteps[index] = { ...updatedSteps[index], operand: valueSource };
-                        setLogicState((prev) => ({ ...prev, steps: updatedSteps }));
-                      } else {
-                        console.error('Selected field not found for operand:', value);
-                      }
+                      const selectedField = logicState.fields.find((field) => field.Tag === value) as KeySetLogical;
+                      const valueSource: ValueSourceField = { type: 'field', field: selectedField };
+                      const updatedSteps = [...logicState.steps];
+                      updatedSteps[index] = { ...updatedSteps[index], operand: valueSource };
+                      setLogicState((prev) => ({ ...prev, steps: updatedSteps }));
                     }
                   }}
                 >
@@ -384,7 +378,7 @@ export default function LogicalDialogKeyCreator({ KeySet, Callback, logicToEdit,
                   Value: 0,
                   Tag: 'field.' + key.KeyDescription,
                 })),
-                id: uuidv4(),
+                id: v4(),
               });
             }}
           >

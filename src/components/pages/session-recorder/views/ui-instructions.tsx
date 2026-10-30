@@ -1,6 +1,6 @@
 import { SavedSettings } from '@/lib/dtos/session-settings';
 import { PaddedRow } from './padded-row';
-import { KeySetInstance } from '@/types/keyset';
+import { KeySetInstance } from '@/types/keyset/core';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 
 type Props = {

@@ -1,9 +1,13 @@
 import { render, screen } from '@testing-library/react';
+import { cloneElement, ComponentProps } from 'react';
 import { vi, describe, it, expect } from 'vitest';
-import PageWrapper from '../page-wrapper';
+import PageWrapperBase from '../page-wrapper';
 import { DEFAULT_APPLICATION_SETTINGS } from '@/types/settings/application-settings';
 import { FolderHandleContext } from '@/context/folder-context';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
+
+// Tests rely on renderWithContext to inject Settings when omitted, so expose Settings as optional here.
+const PageWrapper = PageWrapperBase as unknown as React.FC<Partial<ComponentProps<typeof PageWrapperBase>>>;
 
 vi.mock('../header/navigation-bar', () => ({
   default: ({
@@ -39,23 +43,27 @@ vi.mock('@tanstack/react-router', async (importOriginal) => {
 const makeHandle = (name: string) => ({ name }) as FileSystemDirectoryHandle;
 
 function renderWithContext(
-  ui: React.ReactElement,
+  ui: React.ReactElement<{ Settings?: ApplicationSettingsTypes }>,
   { handle, settings }: { handle?: FileSystemDirectoryHandle; settings?: Partial<ApplicationSettingsTypes> } = {},
 ) {
-  const contextSettings = { ...DEFAULT_APPLICATION_SETTINGS, ...settings };
+  const resolvedSettings = { ...DEFAULT_APPLICATION_SETTINGS, ...settings };
+  const element = ui.props.Settings ? ui : cloneElement(ui, { Settings: resolvedSettings });
   return render(
     <FolderHandleContext.Provider
       value={{
         handle,
+        getHandle: () => handle,
         setHandle: vi.fn(),
-        settings: contextSettings,
+        settings: resolvedSettings,
+        getSettings: () => resolvedSettings,
         setSettings: vi.fn(),
         saveSettings: vi.fn(),
         isInitialized: true,
+        getIsInitialized: () => true,
         setIsInitialized: vi.fn(),
       }}
     >
-      {ui}
+      {element}
     </FolderHandleContext.Provider>,
   );
 }
@@ -136,13 +144,6 @@ describe('PageWrapper', () => {
         settings: { ApplicationFooterDisplay: 'Standard' },
       });
       expect(screen.queryByTestId('layout-footer')).toBeNull();
-    });
-
-    it('falls back to context settings when Settings prop is undefined', () => {
-      renderWithContext(<PageWrapper>content</PageWrapper>, {
-        settings: { ApplicationFooterDisplay: 'Standard' },
-      });
-      expect(screen.getByTestId('layout-footer')).not.toBeNull();
     });
   });
 

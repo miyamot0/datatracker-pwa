@@ -25,20 +25,3 @@ export const buildDeIdentifySchema = (existingNames: string[]) =>
   });
 
 export type DeIdentifySchemaType = z.infer<ReturnType<typeof buildDeIdentifySchema>>;
-
-/**
- * Validate a new client name against the existing roster; returns an error message, or null if valid
- */
-export function validateNewClientName(name: string, existingClients: string[]): string | null {
-  const trimmed = name.trim();
-
-  if (existingClients.includes(trimmed)) {
-    return 'Client already exists.';
-  }
-
-  if (trimmed.length < MIN_CLIENT_NAME_LENGTH) {
-    return 'Client name must be at least 4 characters long.';
-  }
-
-  return null;
-}

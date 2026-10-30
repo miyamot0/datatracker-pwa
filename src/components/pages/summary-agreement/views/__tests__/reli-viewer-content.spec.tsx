@@ -19,8 +19,6 @@ const mockPrepareDurationReliTable = vi.hoisted(() =>
   })),
 );
 
-const mockPreventDefault = vi.hoisted(() => vi.fn());
-
 // ----- Module mocks -----
 
 vi.mock('@/App', () => ({
@@ -42,39 +40,6 @@ vi.mock('@tanstack/react-hotkeys', () => ({
 
 vi.mock('@/components/ui/back-button', () => ({
   default: () => null,
-}));
-
-vi.mock('react-spreadsheet', () => ({
-  default: ({
-    data,
-    columnLabels,
-    onKeyDown,
-  }: {
-    data: unknown[][];
-    columnLabels: string[];
-    onKeyDown?: (ev: { key: string; preventDefault: () => void }) => void;
-  }) => (
-    <div data-testid="spreadsheet">
-      {columnLabels?.map((label, i) => (
-        <span key={i}>{label}</span>
-      ))}
-      <span data-testid="row-count">{data.length}</span>
-      <button
-        onClick={() => {
-          onKeyDown?.({ key: 'v', preventDefault: mockPreventDefault });
-        }}
-      >
-        Trigger V
-      </button>
-      <button
-        onClick={() => {
-          onKeyDown?.({ key: 'x', preventDefault: mockPreventDefault });
-        }}
-      >
-        Trigger X
-      </button>
-    </div>
-  ),
 }));
 
 vi.mock('@/lib/reli', () => ({
@@ -132,11 +97,11 @@ describe('ReliabilityViewerContent', () => {
     expect(descs).toHaveLength(2);
   });
 
-  it('renders two spreadsheets', async () => {
+  it('renders two tables', async () => {
     await render(<ReliabilityViewerContent {...defaultProps} />);
     await expect.element(page.getByText('Reliability Estimates: Frequency')).toBeInTheDocument();
-    const sheets = await page.getByTestId('spreadsheet').all();
-    expect(sheets).toHaveLength(2);
+    const tables = await page.getByRole('table').all();
+    expect(tables).toHaveLength(2);
   });
 
   it('renders both reliability sections', async () => {
@@ -145,12 +110,12 @@ describe('ReliabilityViewerContent', () => {
     await expect.element(page.getByText('Reliability Estimates: Duration')).toBeInTheDocument();
   });
 
-  it('frequency spreadsheet shows column labels', async () => {
+  it('frequency table shows column labels', async () => {
     await render(<ReliabilityViewerContent {...defaultProps} />);
     await expect.element(page.getByText('IOA', { exact: true }).first()).toBeInTheDocument();
   });
 
-  it('duration spreadsheet shows column labels', async () => {
+  it('duration table shows column labels', async () => {
     await render(<ReliabilityViewerContent {...defaultProps} />);
     await expect.element(page.getByText('Duration IOA')).toBeInTheDocument();
   });
@@ -160,27 +125,5 @@ describe('ReliabilityViewerContent', () => {
 
     expect(mockPrepareFrequencyReliTable).toHaveBeenCalledWith(defaultProps.Paired, defaultProps.Keyset);
     expect(mockPrepareDurationReliTable).toHaveBeenCalledWith(defaultProps.Paired, defaultProps.Keyset);
-  });
-
-  it('prevents default when keydown is v (case-insensitive)', async () => {
-    mockPreventDefault.mockClear();
-    await render(<ReliabilityViewerContent {...defaultProps} />);
-
-    const vTriggers = await page.getByRole('button', { name: 'Trigger V' }).all();
-    await vTriggers[0].click();
-    await vTriggers[1].click();
-
-    expect(mockPreventDefault).toHaveBeenCalledTimes(2);
-  });
-
-  it('does not prevent default when keydown is not v', async () => {
-    mockPreventDefault.mockClear();
-    await render(<ReliabilityViewerContent {...defaultProps} />);
-
-    const xTriggers = await page.getByRole('button', { name: 'Trigger X' }).all();
-    await xTriggers[0].click();
-    await xTriggers[1].click();
-
-    expect(mockPreventDefault).not.toHaveBeenCalled();
   });
 });

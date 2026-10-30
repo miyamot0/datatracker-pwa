@@ -4,7 +4,7 @@ import { queryClient } from '@/App';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { MutateSessionOutcomesRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 
 /**
  * Mutates the session outcomes based on the specified action (Delete, EditCondition, Modify, Add) for a given group, individual, and evaluation. It interacts with the file system to delete, copy and rename, modify, or add session outcome files accordingly and returns the updated list of ModifiedSessionResult objects.
@@ -44,7 +44,7 @@ export const mutationSettingsOutcomes = async ({
   Handle: FileSystemDirectoryHandle;
   Action: 'Delete' | 'EditCondition' | 'Modify' | 'Add';
 }): Promise<ModifiedSessionResult[]> => {
-  const sessionOutcomes: ModifiedSessionResult[] = await queryClient.fetchQuery(
+  const sessionOutcomes: ModifiedSessionResult[] = await queryClient.query(
     sessionOutcomesQueryOptions(Handle, Group, Individual, Evaluation),
   );
 
@@ -109,7 +109,7 @@ export const mutationKeysetsWorker = async ({
 }) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'MUTATE_SESSION_OUTCOMES',
     handle: Handle,
     groupName: Group,
@@ -124,19 +124,19 @@ export const mutationKeysetsWorker = async ({
     action: Action,
   } satisfies MutateSessionOutcomesRequest;
 
-  return new Promise<ModifiedSessionResult[]>((resolve) => {
+  return new Promise<ModifiedSessionResult[]>((resolve, reject) => {
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
         const outcomes = response.data;
         resolve(outcomes);
       } else {
-        resolve([]);
+        reject(new Error(response.error));
       }
     };
     worker.onerror = (error) => {
       console.error('Worker error:', error);
-      resolve([]);
+      reject(new Error(error.message || 'Worker failed to complete the mutation'));
     };
     worker.postMessage(request);
   });

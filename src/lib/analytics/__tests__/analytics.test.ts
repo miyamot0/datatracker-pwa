@@ -23,24 +23,51 @@ Object.defineProperty(globalThis, 'crypto', {
   },
 });
 
-// Mock IndexedDB with idb
+// Minimal IndexedDB fake: the real queue code runs against it, and store operations are forwarded
+// to the mockDB spies so assertions stay at the store-operation level
 const mockDB = {
   add: vi.fn(),
   getAll: vi.fn(),
   clear: vi.fn(),
-  transaction: vi.fn(() => ({
-    objectStore: vi.fn(() => ({ clear: vi.fn() })),
-    done: Promise.resolve(),
-  })),
+  transaction: vi.fn(() => createFakeTransaction()),
   objectStoreNames: {
     contains: vi.fn(() => false),
   },
   createObjectStore: vi.fn(),
 };
 
-vi.mock('idb', () => ({
-  openDB: vi.fn(() => Promise.resolve(mockDB)),
-}));
+function createFakeTransaction() {
+  const tx: any = { error: null, oncomplete: null, onerror: null, onabort: null };
+
+  const run = (op: () => unknown) => {
+    const request: any = { result: undefined, error: null };
+    Promise.resolve(op()).then((result) => {
+      request.result = result;
+      tx.oncomplete?.();
+    });
+    return request;
+  };
+
+  tx.objectStore = vi.fn(() => ({
+    add: (event: unknown) => run(() => mockDB.add('events', event)),
+    getAll: () => run(() => mockDB.getAll('events')),
+    clear: () => run(() => mockDB.clear('events')),
+  }));
+
+  return tx;
+}
+
+function createFakeOpenRequest() {
+  const request: any = { result: mockDB, error: null, onupgradeneeded: null, onsuccess: null, onerror: null };
+  queueMicrotask(() => {
+    request.onupgradeneeded?.();
+    request.onsuccess?.();
+  });
+  return request;
+}
+
+const mockIndexedDB = { open: vi.fn(createFakeOpenRequest) };
+vi.stubGlobal('indexedDB', mockIndexedDB);
 
 // Mock navigator.onLine
 Object.defineProperty(navigator, 'onLine', {
@@ -90,6 +117,107 @@ describe('Analytics Module Full Coverage', () => {
       const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
       expect(analyticsConfig.enabled).toBe(false);
     });
+
+    it('should leave the measurement ID empty when none is configured', async () => {
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', '');
+      vi.stubEnv('DEV', true);
+
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
+
+      expect(analyticsConfig.measurementId).toBe('');
+      expect(analyticsConfig.enabled).toBe(false);
+      expect(analyticsConfig.hasClientTracking).toBe(false);
+    });
+
+    it('should reject a malformed measurement ID outside the test environment', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'G-bad');
+      vi.stubEnv('DEV', true);
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
+
+      expect(analyticsConfig.measurementId).toBe('');
+      expect(analyticsConfig.enabled).toBe(false);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('❌ Invalid GA Measurement ID format:', 'G-bad');
+    });
+
+    it('should accept a well-formed measurement ID and secret outside the test environment', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'G-ABCDEFGHIJ');
+      vi.stubEnv('VITE_G4A_SECRET', 'a'.repeat(22));
+      vi.stubEnv('DEV', true);
+      const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
+
+      expect(analyticsConfig.measurementId).toBe('G-ABCDEFGHIJ');
+      expect(analyticsConfig.apiSecret).toBe('a'.repeat(22));
+      expect(analyticsConfig.enabled).toBe(true);
+      expect(analyticsConfig.hasServerTracking).toBe(true);
+      expect(consoleLogSpy).toHaveBeenCalledWith('✅ Valid GA Measurement ID configured');
+    });
+
+    it('should reject a short API secret outside the test environment', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'G-ABCDEFGHIJ');
+      vi.stubEnv('VITE_G4A_SECRET', 'short');
+      vi.stubEnv('DEV', true);
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
+
+      expect(analyticsConfig.apiSecret).toBe('');
+      expect(analyticsConfig.hasServerTracking).toBe(false);
+      expect(analyticsConfig.hasClientTracking).toBe(true);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('❌ GA API Secret appears invalid (too short)');
+    });
+
+    it('should reject a malformed measurement ID silently outside dev', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'G-bad');
+      vi.stubEnv('DEV', false);
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
+
+      expect(analyticsConfig.measurementId).toBe('');
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
+
+    it('should reject a short API secret silently outside dev', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'G-ABCDEFGHIJ');
+      vi.stubEnv('VITE_G4A_SECRET', 'short');
+      vi.stubEnv('DEV', false);
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
+
+      expect(analyticsConfig.apiSecret).toBe('');
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
+
+    it('should warn and skip server tracking when the API secret is missing', async () => {
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'test-measurement-id');
+      vi.stubEnv('VITE_G4A_SECRET', '');
+      vi.stubEnv('DEV', true);
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const { analyticsConfig } = await import('@/lib/analytics/analytics-config');
+
+      expect(analyticsConfig.apiSecret).toBe('');
+      expect(analyticsConfig.hasServerTracking).toBe(false);
+      expect(consoleWarnSpy).toHaveBeenCalledWith('⚠️ GA API Secret not provided. Server-side events disabled.');
+    });
   });
 
   describe('analytics-consent.ts', () => {
@@ -133,49 +261,52 @@ describe('Analytics Module Full Coverage', () => {
   });
 
   describe('analytics-queue.ts', () => {
-    it('should initialize database with correct structure', async () => {
-      const { openDB } = await import('idb');
+    const mockEvent: EventPayload = {
+      name: 'page_view',
+      params: { path: '/test' },
+      timestamp: Date.now(),
+    };
+
+    it('should not open the database until first use', async () => {
       await import('@/lib/analytics/analytics-queue');
 
-      expect(openDB).toHaveBeenCalledWith('analytics-db', 1, {
-        upgrade: expect.any(Function),
-      });
+      expect(mockIndexedDB.open).not.toHaveBeenCalled();
+    });
+
+    it('should open the database with the correct name and version, once', async () => {
+      const { queueEvent } = await import('@/lib/analytics/analytics-queue');
+      await queueEvent(mockEvent);
+      await queueEvent(mockEvent);
+
+      expect(mockIndexedDB.open).toHaveBeenCalledTimes(1);
+      expect(mockIndexedDB.open).toHaveBeenCalledWith('analytics-db', 1);
     });
 
     it('should create object store in upgrade when store does not exist', async () => {
-      const { openDB } = await import('idb');
-      await import('@/lib/analytics/analytics-queue');
-
-      const options = vi.mocked(openDB).mock.calls[0]?.[2] as { upgrade: (db: typeof mockDB) => void };
       mockDB.objectStoreNames.contains.mockReturnValue(false);
-      options.upgrade(mockDB as any);
+
+      const { queueEvent } = await import('@/lib/analytics/analytics-queue');
+      await queueEvent(mockEvent);
 
       expect(mockDB.objectStoreNames.contains).toHaveBeenCalledWith('events');
       expect(mockDB.createObjectStore).toHaveBeenCalledWith('events', { autoIncrement: true });
     });
 
     it('should not create object store in upgrade when store already exists', async () => {
-      const { openDB } = await import('idb');
-      await import('@/lib/analytics/analytics-queue');
-
-      const options = vi.mocked(openDB).mock.calls[0]?.[2] as { upgrade: (db: typeof mockDB) => void };
       mockDB.objectStoreNames.contains.mockReturnValue(true);
-      options.upgrade(mockDB as any);
+
+      const { queueEvent } = await import('@/lib/analytics/analytics-queue');
+      await queueEvent(mockEvent);
 
       expect(mockDB.objectStoreNames.contains).toHaveBeenCalledWith('events');
       expect(mockDB.createObjectStore).not.toHaveBeenCalled();
     });
 
     it('should queue an event', async () => {
-      const mockEvent: EventPayload = {
-        name: 'page_view',
-        params: { path: '/test' },
-        timestamp: Date.now(),
-      };
-
       const { queueEvent } = await import('@/lib/analytics/analytics-queue');
       await queueEvent(mockEvent);
 
+      expect(mockDB.transaction).toHaveBeenCalledWith('events', 'readwrite');
       expect(mockDB.add).toHaveBeenCalledWith('events', mockEvent);
     });
 
@@ -186,22 +317,17 @@ describe('Analytics Module Full Coverage', () => {
       const { getQueuedEvents } = await import('@/lib/analytics/analytics-queue');
       const result = await getQueuedEvents();
 
+      expect(mockDB.transaction).toHaveBeenCalledWith('events', 'readonly');
       expect(mockDB.getAll).toHaveBeenCalledWith('events');
       expect(result).toEqual(mockEvents);
     });
 
     it('should clear queued events', async () => {
-      const mockTx = {
-        objectStore: vi.fn(() => ({ clear: vi.fn() })),
-        done: Promise.resolve(),
-      };
-      mockDB.transaction.mockReturnValue(mockTx);
-
       const { clearQueuedEvents } = await import('@/lib/analytics/analytics-queue');
       await clearQueuedEvents();
 
       expect(mockDB.transaction).toHaveBeenCalledWith('events', 'readwrite');
-      expect(mockTx.objectStore).toHaveBeenCalledWith('events');
+      expect(mockDB.clear).toHaveBeenCalledWith('events');
     });
 
     it('should delete all events', async () => {
@@ -209,6 +335,39 @@ describe('Analytics Module Full Coverage', () => {
       await deleteAllEvents();
 
       expect(mockDB.clear).toHaveBeenCalledWith('events');
+    });
+
+    it('should reject when the database fails to open, then retry on the next call', async () => {
+      mockIndexedDB.open.mockImplementationOnce(() => {
+        const request: any = { error: new Error('open failed') };
+        queueMicrotask(() => request.onerror?.());
+        return request;
+      });
+
+      const { queueEvent } = await import('@/lib/analytics/analytics-queue');
+
+      await expect(queueEvent(mockEvent)).rejects.toThrow('open failed');
+
+      await queueEvent(mockEvent);
+      expect(mockIndexedDB.open).toHaveBeenCalledTimes(2);
+      expect(mockDB.add).toHaveBeenCalledWith('events', mockEvent);
+    });
+
+    it('should reject when the transaction fails', async () => {
+      mockDB.transaction.mockImplementationOnce(() => {
+        const tx: any = { error: new Error('tx failed') };
+        tx.objectStore = () => ({
+          add: () => {
+            queueMicrotask(() => tx.onerror?.());
+            return { error: null };
+          },
+        });
+        return tx;
+      });
+
+      const { queueEvent } = await import('@/lib/analytics/analytics-queue');
+
+      await expect(queueEvent(mockEvent)).rejects.toThrow('tx failed');
     });
   });
 
@@ -500,6 +659,79 @@ describe('Analytics Module Full Coverage', () => {
       expect(result).toEqual([]);
     });
 
+    it('should configure gtag when it is loaded and a measurement ID is set', async () => {
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'G-ABCDEFGHIJ');
+      vi.stubEnv('DEV', true);
+      const gtagSpy = vi.fn();
+      window.gtag = gtagSpy;
+      const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      try {
+        const { startAnalyticsSync } = await import('../analytics-sync');
+        startAnalyticsSync();
+
+        expect(gtagSpy).toHaveBeenCalledWith('config', 'G-ABCDEFGHIJ', {
+          send_page_view: false,
+          anonymize_ip: true,
+          allow_google_signals: false,
+          allow_ad_personalization_signals: false,
+          transport_type: 'beacon',
+        });
+        expect(consoleLogSpy).toHaveBeenCalledWith('✅ Google Analytics initialized:', 'G-ABCDEFGHIJ');
+      } finally {
+        delete (window as { gtag?: unknown }).gtag;
+      }
+    });
+
+    it('should warn in dev when gtag is not loaded', async () => {
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'true');
+      vi.stubEnv('VITE_G4A_MEASUREMENT_ID', 'G-ABCDEFGHIJ');
+      vi.stubEnv('DEV', true);
+      delete (window as { gtag?: unknown }).gtag;
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      const { startAnalyticsSync } = await import('../analytics-sync');
+      startAnalyticsSync();
+
+      expect(consoleWarnSpy).toHaveBeenCalledWith('gtag not available - Google Analytics not loaded');
+    });
+
+
+
+    it('should configure gtag without dev logging outside dev', async () => {
+      vi.resetModules();
+      vi.doMock('@/lib/analytics/analytics-config', () => ({
+        analyticsConfig: { enabled: true, measurementId: 'G-ABCDEFGHIJ', isDev: false, isProd: false },
+      }));
+      const gtagSpy = vi.fn();
+      window.gtag = gtagSpy;
+      const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      try {
+        const { startAnalyticsSync } = await import('../analytics-sync');
+        startAnalyticsSync();
+
+        expect(gtagSpy).toHaveBeenCalledWith('config', 'G-ABCDEFGHIJ', expect.any(Object));
+        expect(consoleLogSpy).not.toHaveBeenCalledWith('✅ Google Analytics initialized:', 'G-ABCDEFGHIJ');
+      } finally {
+        delete (window as { gtag?: unknown }).gtag;
+        vi.doUnmock('@/lib/analytics/analytics-config');
+      }
+    });
+
+    it('should return early without listeners when analytics is disabled outside dev', async () => {
+      vi.stubEnv('VITE_ANALYTICS_ENABLED', 'false');
+      vi.stubEnv('DEV', false);
+      const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
+
+      const { startAnalyticsSync } = await import('../analytics-sync');
+      startAnalyticsSync();
+
+      expect(addEventListenerSpy).not.toHaveBeenCalledWith('online', expect.any(Function));
+    });
+
     it('should not flush when offline', async () => {
       Object.defineProperty(navigator, 'onLine', { value: false, writable: true });
 
@@ -535,7 +767,8 @@ describe('Analytics Module Full Coverage', () => {
       await flushEvents();
 
       expect(mockFetch).toHaveBeenCalledTimes(2);
-      expect(mockDB.transaction).toHaveBeenCalled();
+      expect(mockDB.transaction).toHaveBeenCalledWith('events', 'readwrite');
+      expect(mockDB.clear).toHaveBeenCalledWith('events');
     });
 
     it('should stop flushing on batch failure', async () => {
@@ -561,7 +794,7 @@ describe('Analytics Module Full Coverage', () => {
       await flushEvents();
 
       expect(consoleWarnSpy).toHaveBeenCalledWith('[Analytics] Batch failed, retrying later');
-      expect(mockDB.transaction).not.toHaveBeenCalled();
+      expect(mockDB.clear).not.toHaveBeenCalled();
     });
 
     it('should set up sync when analytics enabled', async () => {

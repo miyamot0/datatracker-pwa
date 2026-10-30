@@ -50,7 +50,7 @@ export default function DocumentationEntryPage() {
           <BackButton />
         </CardHeader>
         <CardContent className="doc-content">
-          <MdViewerLite source={Entry.value} />
+          <MdViewerLite html={Entry.value} />
         </CardContent>
         <CardFooter className="flex flex-row justify-between">
           <Link

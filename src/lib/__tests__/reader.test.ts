@@ -48,6 +48,17 @@ describe('File Reading Functions', () => {
       expect(result).toBeUndefined();
     });
 
+    it('should return undefined if the file content does not deserialize to a keyset', async () => {
+      (deserializeKeySet as Mock).mockReturnValue(null);
+      mockGetFile.mockResolvedValue({
+        text: mockText.mockResolvedValue('{"not":"a keyset"}'),
+      } as unknown as File);
+
+      const result = await readKeyboardParameters(mockFileHandle);
+
+      expect(result).toBeUndefined();
+    });
+
     it('should return undefined if handle is not a file or does not end with .json', async () => {
       const mockDirectoryHandle = {
         kind: 'directory',

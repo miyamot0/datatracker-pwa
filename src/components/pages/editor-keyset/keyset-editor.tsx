@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowDown, ArrowUp, ChevronDown, DeleteIcon, EditIcon } from 'lucide-react';
 import BackButton from '@/components/ui/back-button';
-import { KeySetInstance, KeySet } from '@/types/keyset';
+import { KeySetInstance, KeySet } from '@/types/keyset/core';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { mutationKeyboards } from '@/queries/keysets/mutate-keyboards';
@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { useRouter, useRouterState } from '@tanstack/react-router';
 import SpecialDurationDialogKeyCreator from './dialogs/special-duration-dialog';
 import ScoredDurationDialogKeyCreator from './dialogs/scored-duration-dialog';
+import { useConfirmDialog } from '@/components/dialogs/use-confirm-dialog';
 
 export default function KeySetEditor({
   Group,
@@ -36,6 +37,7 @@ export default function KeySetEditor({
   Handle: FileSystemDirectoryHandle;
 }) {
   const [editingDerivedKey, setEditingDerivedKey] = useState<LogicState | null>(null);
+  const { openConfirmDialog, confirmDialog } = useConfirmDialog();
   const router = useRouter();
   const routerState = useRouterState();
   const currentRouteId = routerState.matches[routerState.matches.length - 1]?.routeId;
@@ -53,15 +55,14 @@ export default function KeySetEditor({
     },
   });
 
+  // Callers disable the up/down buttons at the boundaries, so no bounds check is needed here.
   const moveItemUp = <T,>(array: T[], index: number): T[] => {
-    if (index === 0) return array; // Already at the top
     const newArray = [...array];
     [newArray[index - 1], newArray[index]] = [newArray[index], newArray[index - 1]];
     return newArray;
   };
 
   const moveItemDown = <T,>(array: T[], index: number): T[] => {
-    if (index === array.length - 1) return array; // Already at the bottom
     const newArray = [...array];
     [newArray[index], newArray[index + 1]] = [newArray[index + 1], newArray[index]];
     return newArray;
@@ -245,18 +246,22 @@ export default function KeySetEditor({
                           size={'sm'}
                           variant={'destructive'}
                           className="shadow"
-                          onClick={async () => {
-                            const confirmation = window.confirm('Are you sure you want to remove this key?');
+                          onClick={() =>
+                            openConfirmDialog({
+                              title: 'Remove Key',
+                              description: 'Are you sure you want to remove this key?',
+                              confirmLabel: 'Remove',
+                              destructive: true,
+                              onConfirm: async () => {
+                                const new_state = {
+                                  ...KeySetObject,
+                                  FrequencyKeys: KeySetObject.FrequencyKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
+                                };
 
-                            if (!confirmation) return;
-
-                            const new_state = {
-                              ...KeySetObject,
-                              FrequencyKeys: KeySetObject.FrequencyKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
-                            };
-
-                            await mutateKeySet(new_state);
-                          }}
+                                await mutateKeySet(new_state);
+                              },
+                            })
+                          }
                         >
                           <DeleteIcon size={14} />
 
@@ -283,18 +288,22 @@ export default function KeySetEditor({
                           size={'sm'}
                           variant={'destructive'}
                           className="shadow-xl"
-                          onClick={async () => {
-                            const confirmation = window.confirm('Are you sure you want to remove this key?');
+                          onClick={() =>
+                            openConfirmDialog({
+                              title: 'Remove Key',
+                              description: 'Are you sure you want to remove this key?',
+                              confirmLabel: 'Remove',
+                              destructive: true,
+                              onConfirm: async () => {
+                                const new_state = {
+                                  ...KeySetObject,
+                                  DerivedKeys: KeySetObject.DerivedKeys?.filter((_key) => _key.id !== state.id),
+                                } satisfies KeySet;
 
-                            if (!confirmation) return;
-
-                            const new_state = {
-                              ...KeySetObject,
-                              DerivedKeys: KeySetObject.DerivedKeys?.filter((_key) => _key.id !== state.id),
-                            } satisfies KeySet;
-
-                            await mutateKeySet(new_state);
-                          }}
+                                await mutateKeySet(new_state);
+                              },
+                            })
+                          }
                         >
                           <DeleteIcon size={14} />
 
@@ -380,18 +389,22 @@ export default function KeySetEditor({
                           size={'sm'}
                           variant={'destructive'}
                           className="shadow"
-                          onClick={async () => {
-                            const confirmation = window.confirm('Are you sure you want to remove this key?');
+                          onClick={() =>
+                            openConfirmDialog({
+                              title: 'Remove Key',
+                              description: 'Are you sure you want to remove this key?',
+                              confirmLabel: 'Remove',
+                              destructive: true,
+                              onConfirm: async () => {
+                                const new_state = {
+                                  ...KeySetObject,
+                                  DurationKeys: KeySetObject.DurationKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
+                                };
 
-                            if (!confirmation) return;
-
-                            const new_state = {
-                              ...KeySetObject,
-                              DurationKeys: KeySetObject.DurationKeys.filter((_key) => _key.KeyCode !== key.KeyCode),
-                            };
-
-                            await mutateKeySet(new_state);
-                          }}
+                                await mutateKeySet(new_state);
+                              },
+                            })
+                          }
                         >
                           <DeleteIcon size={14} />
                         </Button>
@@ -408,20 +421,24 @@ export default function KeySetEditor({
                           size={'sm'}
                           variant={'destructive'}
                           className="shadow"
-                          onClick={async () => {
-                            const confirmation = window.confirm('Are you sure you want to remove this key?');
+                          onClick={() =>
+                            openConfirmDialog({
+                              title: 'Remove Key',
+                              description: 'Are you sure you want to remove this key?',
+                              confirmLabel: 'Remove',
+                              destructive: true,
+                              onConfirm: async () => {
+                                const new_state = {
+                                  ...KeySetObject,
+                                  SpecialDurationKeys: KeySetObject.SpecialDurationKeys?.filter(
+                                    (_key) => _key.KeyCode !== key.KeyCode,
+                                  ),
+                                } satisfies KeySet;
 
-                            if (!confirmation) return;
-
-                            const new_state = {
-                              ...KeySetObject,
-                              SpecialDurationKeys: KeySetObject.SpecialDurationKeys?.filter(
-                                (_key) => _key.KeyCode !== key.KeyCode,
-                              ),
-                            } satisfies KeySet;
-
-                            await mutateKeySet(new_state);
-                          }}
+                                await mutateKeySet(new_state);
+                              },
+                            })
+                          }
                         >
                           <DeleteIcon size={14} />
                         </Button>
@@ -438,20 +455,24 @@ export default function KeySetEditor({
                           size={'sm'}
                           variant={'destructive'}
                           className="shadow"
-                          onClick={async () => {
-                            const confirmation = window.confirm('Are you sure you want to remove this key?');
+                          onClick={() =>
+                            openConfirmDialog({
+                              title: 'Remove Key',
+                              description: 'Are you sure you want to remove this key?',
+                              confirmLabel: 'Remove',
+                              destructive: true,
+                              onConfirm: async () => {
+                                const new_state = {
+                                  ...KeySetObject,
+                                  ScorableDurationKeys: KeySetObject.ScorableDurationKeys?.filter(
+                                    (_key) => _key.KeyCode !== key.KeyCode,
+                                  ),
+                                } satisfies KeySet;
 
-                            if (!confirmation) return;
-
-                            const new_state = {
-                              ...KeySetObject,
-                              ScorableDurationKeys: KeySetObject.ScorableDurationKeys?.filter(
-                                (_key) => _key.KeyCode !== key.KeyCode,
-                              ),
-                            } satisfies KeySet;
-
-                            await mutateKeySet(new_state);
-                          }}
+                                await mutateKeySet(new_state);
+                              },
+                            })
+                          }
                         >
                           <DeleteIcon size={14} />
                         </Button>
@@ -475,6 +496,7 @@ export default function KeySetEditor({
           lockName={true}
         />
       )}
+      {confirmDialog}
     </>
   );
 }

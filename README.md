@@ -1,6 +1,6 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-95.46_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-91.26_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-95.16_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-98.94_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-95.97_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-99.57_Percent-green>)
 
-![Static Badge Version](https://img.shields.io/badge/Version-0.5.15-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
+![Static Badge Version](https://img.shields.io/badge/Version-0.5.16-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
 [![GitHub Bug Tracker](https://img.shields.io/badge/GitHub-Issues-181717?logo=github&logoColor=fff)](https://github.com/miyamot0/datatracker-pwa/issues) [![Slack Support Channel](https://img.shields.io/badge/Slack-4A154B?logo=slack&logoColor=fff)](https://datatrackerworkspace.slack.com/)
 
@@ -37,10 +37,17 @@ Features include the following:
 
 ### Changelog
 
+#### 0.5.16 (2026-06-30):
+
+- Experimental release of visual editor for data
+- Updates to React 19, bumps for deps
+- Streamlined loading and sync fixes for races/global state quirks
+
 #### 0.5.15 (2026-06-27):
 
 - Round out visual package (i.e., annotations)
 - Improvements to error reporting
+- Expansion of source coverage (nearly all components)
 
 #### 0.5.14 (2026-06-26):
 
@@ -128,33 +135,19 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
 
 ## Open Source Licenses
 
-@base-ui/react (1.9.0). Copyright MUI Team -- MIT Licensed: [Repo](https://github.com/mui/base-ui.git) 
- 
-@hookform/resolvers (3.10.0). Copyright bluebill1049 <bluebill1049@hotmail.com> -- MIT Licensed: [Repo](https://github.com/react-hook-form/resolvers.git) 
- 
 @radix-ui/react-checkbox (1.4.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
 @radix-ui/react-dialog (1.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
 @radix-ui/react-dropdown-menu (2.2.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
-@radix-ui/react-icons (1.3.2). Copyright n/a -- MIT Licensed: [Repo](https://registry.npmjs.org/@radix-ui/react-icons/-/react-icons-1.3.2.tgz) 
- 
-@radix-ui/react-label (2.1.17). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
- 
 @radix-ui/react-menubar (1.2.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
- 
-@radix-ui/react-popover (1.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
 @radix-ui/react-scroll-area (1.4.0). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
 @radix-ui/react-select (2.4.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
-@radix-ui/react-separator (1.2.0). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
- 
 @radix-ui/react-slot (1.5.0). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
- 
-@radix-ui/react-switch (1.4.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
 @radix-ui/react-tabs (1.2.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
@@ -172,41 +165,23 @@ class-variance-authority (0.7.1). Copyright Joe Bell (https://joebell.co.uk) -- 
  
 clsx (2.1.1). Copyright Luke Edwards luke.edwards05@gmail.com https://lukeed.com -- MIT Licensed: [Repo](https://github.com/lukeed/clsx.git) 
  
-cmdk (1.1.1). Copyright Paco https://github.com/pacocoursey -- MIT Licensed: [Repo](https://github.com/pacocoursey/cmdk.git) 
- 
-embla-carousel-react (8.6.0). Copyright David Jerleke -- MIT Licensed: [Repo](https://github.com/davidjerleke/embla-carousel) 
- 
-idb (8.0.4). Copyright Jake Archibald -- ISC Licensed: [Repo](git://github.com/jakearchibald/idb.git) 
+fflate (0.8.3). Copyright Arjun Barrett <arjunbarrett@gmail.com> -- MIT Licensed: [Repo](https://github.com/101arrowz/fflate.git) 
  
 lucide-react (0.577.0). Copyright Eric Fennis -- ISC Licensed: [Repo](https://github.com/lucide-icons/lucide.git) 
  
-react (18.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/facebook/react.git) 
+react (19.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/react/react.git) 
  
-react-dom (18.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/facebook/react.git) 
+react-dom (19.3.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/react/react.git) 
  
-react-hook-form (7.90.0). Copyright Beier(Bill) Luo <bluebill1049@hotmail.com> -- MIT Licensed: [Repo](https://github.com/react-hook-form/react-hook-form.git) 
- 
-react-markdown (10.1.0). Copyright Espen Hovlandsdal <espen@hovlandsdal.com> -- MIT Licensed: [Repo](https://github.com/remarkjs/react-markdown.git) 
- 
-react-spreadsheet (0.10.1). Copyright Iddan Aaronsohn <mail@aniddan.com> (https://aniddan.com) -- MIT Licensed: [Repo](https://github.com/iddan/react-spreadsheet.git) 
+react-hook-form (7.91.0). Copyright Beier(Bill) Luo <bluebill1049@hotmail.com> -- MIT Licensed: [Repo](https://github.com/react-hook-form/react-hook-form.git) 
  
 react-use-pwa-install (1.0.3). Copyright Filip Chalupa chalupa.filip@gmail.com https://www.npmjs.com/~onset -- ISC Licensed: [Repo](https://github.com/FilipChalupa/react-use-pwa-install.git) 
  
 recharts (3.10.1). Copyright recharts group -- MIT Licensed: [Repo](https://github.com/recharts/recharts.git) 
  
-recharts-to-png (3.0.2). Copyright Brandon M. Mitchell -- MIT Licensed: [Repo](https://github.com/brammitch/recharts-to-png.git) 
- 
-rehype-highlight (7.0.2). Copyright Titus Wormer <tituswormer@gmail.com> (https://wooorm.com) -- MIT Licensed: [Repo](https://github.com/rehypejs/rehype-highlight.git) 
- 
-scheduler (0.23.2). Copyright n/a -- MIT Licensed: [Repo](https://github.com/facebook/react.git) 
- 
 sonner (2.0.8). Copyright Emil Kowalski <e@emilkowal.ski> -- MIT Licensed: [Repo](https://github.com/emilkowalski/sonner.git) 
  
 tailwind-merge (2.6.1). Copyright Dany Castillo -- MIT Licensed: [Repo](https://github.com/dcastil/tailwind-merge.git) 
- 
-typescript (7.0.2). Copyright Microsoft Corp. -- Apache-2.0 Licensed: [Repo](https://github.com/microsoft/TypeScript.git) 
- 
-uuid (14.0.3). Copyright n/a -- MIT Licensed: [Repo](https://github.com/uuidjs/uuid.git) 
  
 zod (4.6.7). Copyright Colin McDonnell <zod@colinhacks.com> -- MIT Licensed: [Repo](https://github.com/colinhacks/zod.git) 
 
@@ -216,4 +191,4 @@ Apache 2.0 - Shawn Gilroy, Louisiana State University
 
 ## Current Version
 
-0.5.15
+0.5.16

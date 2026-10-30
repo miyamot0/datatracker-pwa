@@ -1,4 +1,4 @@
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 
 // This is the type definition for the HumanReadableResults type
 export const DEFAULT_ENTRY = {

@@ -13,7 +13,6 @@ const mockToastPromise = vi.hoisted(() =>
     return result;
   }),
 );
-const mockAlert = vi.hoisted(() => vi.fn());
 
 vi.mock('@tanstack/react-query', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@tanstack/react-query')>();
@@ -107,9 +106,6 @@ describe('AuthorizedDisplayContent', () => {
       options?.filter?.({ routeId: '/other' });
     });
     mockToastPromise.mockClear();
-    mockAlert.mockReset();
-
-    vi.stubGlobal('alert', mockAlert);
   });
 
   it('renders headings and group action links', async () => {
@@ -122,26 +118,20 @@ describe('AuthorizedDisplayContent', () => {
     await expect.element(page.getByText('Group Folder Actions')).toBeInTheDocument();
   });
 
-  it('delete callback returns when confirmation is false', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => false),
-    );
+  it('delete callback returns when confirmation is canceled', async () => {
     await renderPage();
 
     await page.getByRole('button', { name: 'Trigger Delete Callback' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  it('delete callback mutates when confirmation is true', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => true),
-    );
+  it('delete callback mutates when confirmation is accepted', async () => {
     await renderPage();
 
     await page.getByRole('button', { name: 'Trigger Delete Callback' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
 
     expect(mockMutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({ Action: 'Delete', Group: ['Group1', 'Group2'] }),
@@ -151,13 +141,10 @@ describe('AuthorizedDisplayContent', () => {
   });
 
   it('extract example folder creates demo data when confirmed', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => true),
-    );
     await renderPage();
 
     await page.getByRole('button', { name: 'Extract Example Folder' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Extract', exact: true }).click();
 
     expect(mockMutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({ Action: 'Demo', Group: [DemoDataFolderName] }),
@@ -165,57 +152,46 @@ describe('AuthorizedDisplayContent', () => {
   });
 
   it('extract example folder canceled path does not mutate', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => false),
-    );
-    const unhandled = (event: PromiseRejectionEvent) => {
-      event.preventDefault();
-    };
-    window.addEventListener('unhandledrejection', unhandled);
-
     await renderPage();
+
     await page.getByRole('button', { name: 'Extract Example Folder' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(mockMutateAsync).not.toHaveBeenCalledWith(expect.objectContaining({ Action: 'Demo' }));
-
-    window.removeEventListener('unhandledrejection', unhandled);
   });
 
-  it('create button returns early on null prompt', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => null),
-    );
+  it('create button does not submit when the dialog is canceled', async () => {
     await renderPage();
 
-    await page.getByRole('button', { name: 'Create' }).click();
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    await page.getByRole('button', { name: 'Cancel' }).click();
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  it('create button blocks duplicate and too-short names', async () => {
-    vi.stubGlobal('prompt', vi.fn().mockReturnValueOnce('Group1').mockReturnValueOnce('abc'));
-
+  it('create button blocks duplicate and too-short names inline', async () => {
     await renderPage();
 
-    await page.getByRole('button', { name: 'Create' }).click();
-    await page.getByRole('button', { name: 'Create' }).click();
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    const submit = page.getByRole('button', { name: 'Create group', exact: true });
 
-    expect(mockAlert).toHaveBeenNthCalledWith(1, 'Group already exists.');
-    expect(mockAlert).toHaveBeenNthCalledWith(2, 'Group name must be at least 4 characters long.');
+    await page.getByLabelText('Group name').fill('abc');
+    await expect.element(page.getByRole('alert')).toHaveTextContent('Group name must be at least 4 characters long.');
+    await expect.element(submit).toBeDisabled();
+
+    await page.getByLabelText('Group name').fill('Group1');
+    await expect.element(page.getByRole('alert')).toHaveTextContent('Group already exists.');
+    await expect.element(submit).toBeDisabled();
+
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
   it('create button adds group with trimmed input', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => '  Group3  '),
-    );
     await renderPage();
 
-    await page.getByRole('button', { name: 'Create' }).click();
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    await page.getByLabelText('Group name').fill('  Group3  ');
+    await page.getByRole('button', { name: 'Create group', exact: true }).click();
 
     expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ Action: 'Add', Group: ['Group3'] }));
   });

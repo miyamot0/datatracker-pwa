@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 import { queryClient } from '@/App';
 import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
+import { useConfirmDialog } from '@/components/dialogs/use-confirm-dialog';
+import { useNameDialog } from '@/components/dialogs/use-name-dialog';
 
 export default function DashboardHistoryPage({
   Group,
@@ -21,6 +23,7 @@ export default function DashboardHistoryPage({
   Sessions,
   Settings,
   Handle,
+  Conditions,
 }: {
   Group: string;
   Individual: string;
@@ -28,10 +31,13 @@ export default function DashboardHistoryPage({
   Sessions: ModifiedSessionResult[];
   Settings: ApplicationSettingsTypes;
   Handle: FileSystemDirectoryHandle;
+  Conditions: string[];
 }) {
   const router = useRouter();
   const routerState = useRouterState();
   const currentRouteId = routerState.matches[routerState.matches.length - 1]?.routeId;
+  const { openConfirmDialog, confirmDialog } = useConfirmDialog();
+  const { openNameDialog, nameDialog } = useNameDialog();
 
   const mutateSessionOutcomes = useMutation({
     mutationFn: mutationSettingsOutcomes,
@@ -158,70 +164,72 @@ export default function DashboardHistoryPage({
           columns={columns}
           data={Sessions}
           callback={async (rows) => {
-            const confirm_delete = window.confirm(
-              `Are you sure you want to delete ${rows.length} sessions? This CANNOT be undone.`,
-            );
-
-            if (!confirm_delete) {
-              return;
-            }
-
-            toast.promise(
-              async () =>
-                await mutateSessionOutcomes.mutateAsync({
-                  Handle,
-                  Group,
-                  Individual,
-                  Evaluation,
-                  Outcomes: rows,
-                  Action: 'Delete',
-                }),
-              {
-                loading: 'Deleting specific session files...',
-                success: () => {
-                  return 'Session files have been deleted successfully!';
-                },
-                error: () => {
-                  return 'An error occurred while deleting specific session files.';
-                },
+            openConfirmDialog({
+              title: 'Delete Sessions',
+              description: `Are you sure you want to delete ${rows.length} sessions? This CANNOT be undone.`,
+              confirmLabel: 'Delete',
+              destructive: true,
+              onConfirm: () => {
+                toast.promise(
+                  async () =>
+                    await mutateSessionOutcomes.mutateAsync({
+                      Handle,
+                      Group,
+                      Individual,
+                      Evaluation,
+                      Outcomes: rows,
+                      Action: 'Delete',
+                    }),
+                  {
+                    loading: 'Deleting specific session files...',
+                    success: () => {
+                      return 'Session files have been deleted successfully!';
+                    },
+                    error: () => {
+                      return 'An error occurred while deleting specific session files.';
+                    },
+                  },
+                );
               },
-            );
+            });
           }}
           customCheckboxButton2={<>Rename Conditions</>}
-          callback2={async (rows) => {
-            const new_condition = prompt('Enter new condition name for selected sessions:');
-            if (!new_condition) {
-              return;
-            }
-
-            if (new_condition.trim().length < 3) {
-              return;
-            }
-
-            toast.promise(
-              async () =>
-                await mutateSessionOutcomes.mutateAsync({
-                  Handle,
-                  Group,
-                  Individual,
-                  Evaluation,
-                  Outcomes: rows,
-                  Action: 'EditCondition',
-                  ConditionRename: new_condition,
-                }),
-              {
-                loading: 'Renaming conditions for selected session files...',
-                success: () => {
-                  return 'Session files have been renamed successfully!';
-                },
-                error: () => {
-                  return 'An error occurred while renaming conditions for selected session files.';
-                },
+          callback2={(rows) => {
+            openNameDialog({
+              title: 'Rename Conditions',
+              description: 'Enter new condition name for selected sessions.',
+              entityLabel: 'Condition',
+              submitLabel: 'Rename',
+              existingNames: Conditions,
+              onSubmit: (new_condition) => {
+                toast.promise(
+                  async () =>
+                    await mutateSessionOutcomes.mutateAsync({
+                      Handle,
+                      Group,
+                      Individual,
+                      Evaluation,
+                      Outcomes: rows,
+                      Action: 'EditCondition',
+                      ConditionRename: new_condition,
+                    }),
+                  {
+                    loading: 'Renaming conditions for selected session files...',
+                    success: () => {
+                      return 'Session files have been renamed successfully!';
+                    },
+                    error: () => {
+                      return 'An error occurred while renaming conditions for selected session files.';
+                    },
+                  },
+                );
               },
-            );
+            });
           }}
         />
       </CardContent>
+      {confirmDialog}
+      {nameDialog}
     </Card>
   );
 }

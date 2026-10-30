@@ -1,95 +1,41 @@
+import { lazy } from 'react';
 import { SavedSessionResult } from '@/lib/dtos/session-results';
-import { KeySet } from '@/types/keyset';
-import { useState } from 'react';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { KeyboardIcon, LineChartIcon, ScatterChartIcon } from 'lucide-react';
-import RateFigureVisualization from './rate-figure';
-import { getLocalSeriesStyles, setLocalCachedPrefs, setLocalSeriesStyles } from '@/lib/local_storage';
-import { SeriesStylesDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/series-styles-dialog';
-import { PhaseChangesDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/phase-changes-dialog';
-import { TextAnnotationsDialog } from '@/components/pages/visualize-outcomes/shared/dialogs/text-annotations-dialog';
-import { type SeriesStyles } from '@/lib/graphing/series-style';
-import { getUniqueSessionConditions } from '@/lib/graphing/session-filters';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScatterChartIcon } from 'lucide-react';
 import BackButton from '@/components/ui/back-button';
-import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import { Link } from '@tanstack/react-router';
-import { Switch } from '@/components/ui/switch';
-import { SessionTerminationOptionsType } from '@/types/terminations';
-import { ToggleDisplayCondition, ToggleDisplayKey } from '@/types/visuals';
-import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 import {
-  filteredSessionScoringOptions,
-  ScheduleMappingOptions,
-  ScheduleMappingOptionsType,
-  ScoringOptionsMapType,
-} from '@/types/schedules';
+  VisualsResultsPage,
+  type VisualsPageConfig,
+  type VisualsResultsPageProps,
+} from '@/components/pages/visualize-outcomes/shared/ui/visuals-results-page';
+
+const RATE_CONFIG: VisualsPageConfig = {
+  page: 'rate',
+  plot: 'Rate',
+  prefsType: 'Rate',
+  title: 'Visualization of Behavioral Rates',
+  includeScoringInSchedule: true,
+  Figure: lazy(() => import('./rate-figure')),
+};
 
 export default function ResultsRateVisualsPage({
   Group,
   Individual,
   Evaluation,
-  Conditions,
-  ShowKeys,
-  DynamicKeySet,
-  ResultsFiltered,
-  TimerMapping,
-  MinX,
-  MaxX,
-  Settings,
-}: {
-  Group: string;
-  Individual: string;
-  Evaluation: string;
-  Conditions: string[];
-  Handle: FileSystemHandle;
+  ...props
+}: VisualsResultsPageProps & {
   Results: SavedSessionResult[];
-  ResultsFiltered: SavedSessionResult[];
-  DynamicKeySet: KeySet;
-  TimerMapping: ScoringOptionsMapType;
-  ShowKeys: ToggleDisplayKey[];
-  MinX: number;
-  MaxX: number;
-  Settings: ApplicationSettingsTypes;
 }) {
-  const [filteredKeys, setFilteredKeys] = useState(ShowKeys.sort((a, b) => b.KeyType.localeCompare(a.KeyType)));
-  const [filteredConditions, setFilteredConditions] = useState<ToggleDisplayCondition[]>(
-    Conditions.map((condition) => ({ Condition: condition, Visible: true })),
-  );
-
-  const [connectAllPoints, setConnectAllPoints] = useState(false);
-  // Matches the legend order (first appearance in results), so dialog rows and default colours line up with the chart
-  const legendConditionOrder = getUniqueSessionConditions(ResultsFiltered);
-  const styleConditions = [...legendConditionOrder, ...Conditions.filter((c) => !legendConditionOrder.includes(c))];
-  const [schedule, setSchedule] = useState<ScheduleMappingOptionsType | { value: string; label: string }>(TimerMapping);
-  const [seriesStyles, setSeriesStyles] = useState<SeriesStyles>(() =>
-    getLocalSeriesStyles(Group, Individual, Evaluation),
-  );
-
-  const updateSeriesStyles = (next: SeriesStyles) => {
-    setSeriesStyles(next);
-    setLocalSeriesStyles(Group, Individual, Evaluation, next);
-  };
-  const [figureTextSize, setFigureTextSize] = useState<FigureVisualSizing>('base');
-
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row justify-between">
-        <div className="flex flex-col gap-1.5 grow">
-          <CardTitle>Visualization of Behavioral Rates</CardTitle>
-          <CardDescription>Options for Visualizing Data Provided Below</CardDescription>
-        </div>
-
-        <div className="flex flex-row gap-2">
+    <VisualsResultsPage
+      {...props}
+      Group={Group}
+      Individual={Individual}
+      Evaluation={Evaluation}
+      config={RATE_CONFIG}
+      actions={
+        <>
           <Link
             to={'/session/$group/$individual/$evaluation/proportion'}
             params={{
@@ -105,211 +51,16 @@ export default function ResultsRateVisualsPage({
           </Link>
 
           <BackButton />
-        </div>
-      </CardHeader>
-
-      <CardContent className="flex flex-col gap-4">
-        <div className="w-full flex flex-row justify-between">
-          <div className="flex flex-row gap-2">
-            <div className="flex flex-row gap-4">
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-fit" aria-label="Edit Keys Displayed">
-                    <KeyboardIcon className="md:mr-2 w-4 h-4" />
-                    <span className="hidden md:inline">Keys</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {filteredKeys.map((key, index) => (
-                    <DropdownMenuCheckboxItem
-                      className="flex flex-row justify-between"
-                      key={`key-${index}`}
-                      checked={key.Visible}
-                      onCheckedChange={(checked) => {
-                        const updatedKeys = filteredKeys.map((k) => {
-                          if (k.KeyDescription === key.KeyDescription) {
-                            return {
-                              ...k,
-                              Visible: checked,
-                            };
-                          }
-
-                          return k;
-                        });
-
-                        setFilteredKeys(updatedKeys);
-
-                        const hidden_keys = updatedKeys.filter((k) => k.Visible === false).map((k) => k.KeyDescription);
-
-                        setLocalCachedPrefs(Group, Individual, Evaluation, 'Rate', {
-                          KeyDescription: hidden_keys,
-                          Schedule: schedule.value,
-                        });
-                      }}
-                    >
-                      <p>{key.KeyDescription}</p>
-                      {key.KeyType === 'Derived' && <p className="text-xs text-muted-foreground">({key.KeyType})</p>}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            <div className="flex flex-row gap-2">
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-fit" aria-label="Edit Conditions Displayed">
-                    <LineChartIcon className="md:mr-2 w-4 h-4" />
-                    <span className="hidden md:inline">Conditions</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  <DropdownMenuLabel>Toggle Visibility</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {filteredConditions.map((condition, index) => (
-                    <DropdownMenuCheckboxItem
-                      className="flex flex-row justify-between"
-                      key={`condition-${index}`}
-                      checked={condition.Visible}
-                      onCheckedChange={(checked) => {
-                        const updatedConditions = filteredConditions.map((c) => {
-                          if (c.Condition === condition.Condition) {
-                            return {
-                              ...c,
-                              Visible: checked,
-                            };
-                          }
-
-                          return c;
-                        });
-
-                        setFilteredConditions(updatedConditions);
-                      }}
-                    >
-                      <p>{condition.Condition}</p>
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <SeriesStylesDialog
-                keys={filteredKeys}
-                conditions={styleConditions}
-                visibleConditions={styleConditions.filter((c) =>
-                  filteredConditions.some((f) => f.Condition === c && f.Visible),
-                )}
-                styles={seriesStyles}
-                onChange={updateSeriesStyles}
-              />
-
-              <PhaseChangesDialog styles={seriesStyles} onChange={updateSeriesStyles} />
-
-              <TextAnnotationsDialog page="rate" styles={seriesStyles} onChange={updateSeriesStyles} />
-            </div>
-          </div>
-
-          <div className="flex flex-row gap-2">
-            <div className="flex flex-row items-center gap-2 w-fit">
-              <p>Timer to Reference:</p>
-              <Select
-                value={schedule.value}
-                onValueChange={(value: SessionTerminationOptionsType) => {
-                  const selectedOptionFixed = ScheduleMappingOptions.find((option) => option.value === value);
-
-                  if (selectedOptionFixed) {
-                    // Note: A pre-made but filter option
-                    setSchedule(selectedOptionFixed);
-                  }
-
-                  const specialKeyOption = filteredSessionScoringOptions(Settings, DynamicKeySet, false, true).find(
-                    (option) => option.value === value,
-                  );
-
-                  if (specialKeyOption) {
-                    // Note: A special key option
-                    setSchedule({
-                      value: specialKeyOption.value,
-                      label: specialKeyOption.label,
-                    });
-                  }
-                }}
-              >
-                <SelectTrigger className="w-fit">
-                  <SelectValue placeholder="Timer to Reference" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {filteredSessionScoringOptions(Settings, DynamicKeySet, true, true).map((option) => (
-                      <SelectItem key={option.value} value={option.value as SessionTerminationOptionsType}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-row items-center gap-2 justify-between">
-          <div className="flex flex-row items-center gap-2 w-fit my-0 py-0">
-            <p className="whitespace-nowrap">Element Magnification:</p>
-            <Select
-              value={figureTextSize}
-              onValueChange={(value: FigureVisualSizing) => {
-                setFigureTextSize(value);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Text Size" className="" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {FIGURE_TEXT_OPTIONS.map((opt) => (
-                    <SelectItem value={opt.value} key={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex flex-row items-center gap-2 w-fit my-0 py-0">
-            <p className="whitespace-nowrap">Connect All Spans:</p>
-            <Switch checked={connectAllPoints} onCheckedChange={(checked) => setConnectAllPoints(checked)} />
-          </div>
-        </div>
-
-        <p>
+        </>
+      }
+      description={
+        <>
           This page provides a visual of the available data regarding <i>rate</i>. For convenience, series of data can
           be enabled or disabled for viewing. Similarly, an omnibus measure of behavior can be calculated by selecting
           which types of events to combine together using the optional logic builder. Options set here will persist for
           future visits.
-        </p>
-
-        {DynamicKeySet && (
-          <RateFigureVisualization
-            FilteredSessions={ResultsFiltered.filter((result) => {
-              const conditionMatch = filteredConditions.find((c) => c.Condition === result.SessionSettings.Condition);
-              return conditionMatch ? conditionMatch.Visible : true;
-            })}
-            ScheduleOption={schedule.value}
-            KeySetFull={filteredKeys}
-            DynamicKeySet={DynamicKeySet}
-            Group={Group}
-            Individual={Individual}
-            Evaluation={Evaluation}
-            FigureTextSize={figureTextSize}
-            ConnectSpans={connectAllPoints}
-            MinX={MinX}
-            MaxX={MaxX}
-            SeriesStyles={seriesStyles}
-          />
-        )}
-      </CardContent>
-    </Card>
+        </>
+      }
+    />
   );
 }

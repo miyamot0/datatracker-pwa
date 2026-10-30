@@ -1,4 +1,4 @@
-import { SavedSessionResult } from '../dtos';
+import { SavedSessionResult } from '../dtos/session-results';
 import { FIGURE_PATH_COLORS } from '../colors';
 import { getShape } from '../shapes';
 import { getUniqueSessionConditions } from './session-filters';
@@ -108,10 +108,20 @@ const VERTICAL_SPACING_BY_TEXT_SIZE: Record<FigureVisualSizing, ChartVerticalSpa
 };
 
 /**
- * Returns the vertical spacing (title, top margin, x-axis band, chart height) for a figure text size
+ * Top margin used when the title is hidden. The title's space is given back to the plot area.
  */
-export function getChartVerticalSpacing(figureTextSize: FigureVisualSizing): ChartVerticalSpacing {
-  return { ...VERTICAL_SPACING_BY_TEXT_SIZE[figureTextSize] };
+const UNTITLED_CHART_MARGIN_TOP = 12;
+
+/**
+ * Returns the vertical spacing (title, top margin, x-axis band, chart height) for a figure text size.
+ * With the title hidden, the top margin shrinks so the plot area reclaims the title's space.
+ */
+export function getChartVerticalSpacing(figureTextSize: FigureVisualSizing, showTitle = true): ChartVerticalSpacing {
+  const spacing = { ...VERTICAL_SPACING_BY_TEXT_SIZE[figureTextSize] };
+  if (!showTitle) {
+    spacing.chartMarginTop = UNTITLED_CHART_MARGIN_TOP;
+  }
+  return spacing;
 }
 
 /**

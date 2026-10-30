@@ -1,14 +1,16 @@
 import '@vitest/web-worker';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, afterAll, vi } from 'vitest';
 import SessionRecorderWorker from '../timing/session-recorder-worker?worker';
 import type { WorkerMessage, WorkerResponse } from '../timing/types/session-recorder-worker-messaging';
 import type { SavedSettings } from '@/lib/dtos/session-settings';
 import type { KeySet } from '@/types/keyset/core';
 
+const WAIT_OPTIONS = { timeout: 3000, interval: 10 };
+
 describe('SessionRecorderWorker Actual Integration', () => {
   let worker: Worker;
-  let receivedMessages: WorkerResponse[];
-  let messageHandler: (event: MessageEvent<WorkerResponse>) => void;
+  let received: WorkerResponse[];
+  let listener: (event: MessageEvent<WorkerResponse>) => void;
 
   const mockSettings: SavedSettings = {
     Therapist: 'Test Therapist',
@@ -18,7 +20,7 @@ describe('SessionRecorderWorker Actual Integration', () => {
     Initials: 'TT',
     Role: 'Primary',
     Session: 1,
-    DurationS: 10, // Short duration for testing
+    DurationS: 10,
   };
 
   const mockKeyset: KeySet = {
@@ -34,25 +36,58 @@ describe('SessionRecorderWorker Actual Integration', () => {
     ],
     DerivedKeys: [],
     SpecialDurationKeys: [{ KeyName: 'Special1', KeyCode: 191, KeyDescription: 'Special Duration Key 1' }],
+    ScorableDurationKeys: [],
     createdAt: new Date(),
     lastModified: new Date(),
   };
 
-  beforeEach(() => {
-    worker = new SessionRecorderWorker();
-    receivedMessages = [];
-
-    messageHandler = (event: MessageEvent<WorkerResponse>) => {
-      receivedMessages.push(event.data);
-    };
-
-    worker.addEventListener('message', messageHandler);
+  const initMessage = (uiPollingInterval: 'normal' | 'precise' | 'extreme' = 'normal'): WorkerMessage => ({
+    type: 'INIT',
+    payload: { settings: mockSettings, keyset: mockKeyset, uiPollingInterval },
   });
 
-  afterEach(() => {
-    worker.removeEventListener('message', messageHandler);
+  const send = (message: unknown, transfer: Transferable[] = []) => worker.postMessage(message, transfer);
+
+  // Index into the received log; used to scope waits to messages sent after a point
+  const mark = () => received.length;
+
+  // Waits for the first response of the given type received at or after `from`
+  const nextOf = (type: WorkerResponse['type'], from: number) =>
+    vi.waitFor(() => {
+      const found = received.slice(from).find((msg) => msg.type === type);
+      expect(found, `expected ${type} after message index ${from}`).toBeDefined();
+      return found as WorkerResponse;
+    }, WAIT_OPTIONS);
+
+  const startSession = async () => {
+    const from = mark();
+    send({ type: 'START_SESSION' });
+    return nextOf('SYSTEM_EVENT', from);
+  };
+
+  // The worker processes messages in order, so a reply to a later message proves earlier ones were handled
+  beforeAll(() => {
+    worker = new SessionRecorderWorker();
+    received = [];
+    listener = (event) => {
+      received.push(event.data);
+    };
+    worker.addEventListener('message', listener);
+  });
+
+  afterAll(() => {
+    worker.removeEventListener('message', listener);
     worker.terminate();
-    vi.clearAllTimers();
+  });
+
+  beforeEach(async () => {
+    send({ type: 'STOP_SESSION', payload: { reason: 'Cancelled' } });
+    send(initMessage());
+    await startSession();
+    const stopFrom = mark();
+    send({ type: 'STOP_SESSION', payload: { reason: 'Cancelled' } });
+    await nextOf('SESSION_ENDED', stopFrom);
+    received.length = 0;
   });
 
   describe('Worker Instantiation', () => {
@@ -60,276 +95,242 @@ describe('SessionRecorderWorker Actual Integration', () => {
       expect(worker).toBeInstanceOf(Worker);
     });
 
-    it('should be able to receive messages', async () => {
-      const message: WorkerMessage = {
-        type: 'INIT',
-        payload: {
-          settings: mockSettings,
-          keyset: mockKeyset,
-          uiPollingInterval: 'normal',
-        },
-      };
-
-      worker.postMessage(message);
-
-      // Wait for potential async processing
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      // Should not throw or crash
-      expect(worker).toBeInstanceOf(Worker);
+    it('should respond to messages after startup', async () => {
+      const sys = await startSession();
+      expect(sys.payload?.isRunning).toBe(true);
     });
   });
 
   describe('Initialization', () => {
-    it('should handle INIT message with valid payload', async () => {
-      const message: WorkerMessage = {
-        type: 'INIT',
-        payload: {
-          settings: mockSettings,
-          keyset: mockKeyset,
-          uiPollingInterval: 'normal',
-        },
-      };
+    it('should not respond to a valid INIT on its own', async () => {
+      const from = mark();
+      send(initMessage());
+      await startSession();
 
-      worker.postMessage(message);
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      // Initialization should not produce immediate responses
-      expect(receivedMessages).toHaveLength(0);
+      expect(received.slice(from).map((msg) => msg.type)).toEqual(['SYSTEM_EVENT']);
     });
 
-    it('should ignore INIT message with incomplete payload', async () => {
-      const messages: WorkerMessage[] = [
-        { type: 'INIT', payload: { settings: mockSettings } }, // Missing keyset
-        { type: 'INIT', payload: { keyset: mockKeyset } }, // Missing settings
-        { type: 'INIT' }, // No payload
-      ];
+    it('should ignore INIT messages with incomplete payloads', async () => {
+      const from = mark();
+      send({ type: 'INIT', payload: { settings: mockSettings } });
+      send({ type: 'INIT', payload: { keyset: mockKeyset } });
+      send({ type: 'INIT' });
+      await startSession();
 
-      for (const message of messages) {
-        worker.postMessage(message);
-        await new Promise((resolve) => setTimeout(resolve, 10));
-      }
-
-      expect(receivedMessages).toHaveLength(0);
+      expect(received.slice(from).map((msg) => msg.type)).toEqual(['SYSTEM_EVENT']);
     });
   });
 
   describe('Session Lifecycle', () => {
-    beforeEach(async () => {
-      // Initialize worker
-      const initMessage: WorkerMessage = {
-        type: 'INIT',
-        payload: {
-          settings: mockSettings,
-          keyset: mockKeyset,
-          uiPollingInterval: 'normal',
-        },
-      };
-      worker.postMessage(initMessage);
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      receivedMessages.length = 0; // Clear init messages
+    it('should emit SYSTEM_EVENT with session state on start', async () => {
+      const sys = await startSession();
+
+      expect(sys.payload?.isRunning).toBe(true);
+      expect(Array.isArray(sys.payload?.events)).toBe(true);
+      expect(sys.payload?.activeTimer).toBeDefined();
+      expect(typeof sys.timestamp).toBe('number');
     });
 
-    it('should handle session start and system events', async () => {
-      const message: WorkerMessage = { type: 'START_SESSION' };
+    it('should send timer updates while the session runs', async () => {
+      await startSession();
+      const from = mark();
 
-      worker.postMessage(message);
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      const update = await vi.waitFor(() => {
+        const found = received
+          .slice(from)
+          .find((msg) => msg.type === 'TIMER_UPDATE' || msg.type === 'HIGH_FREQ_UPDATE');
+        expect(found).toBeDefined();
+        return found as WorkerResponse;
+      }, WAIT_OPTIONS);
 
-      expect(receivedMessages.length).toBeGreaterThan(0);
-
-      const systemEvent = receivedMessages.find((msg) => msg.type === 'SYSTEM_EVENT');
-      expect(systemEvent).toBeDefined();
-      expect(systemEvent?.payload?.events).toBeDefined();
-      expect(systemEvent?.payload?.isRunning).toBe(true);
-      expect(systemEvent?.payload?.activeTimer).toBeDefined();
-    });
-
-    it('should send timer updates during session', async () => {
-      vi.useFakeTimers();
-
-      const message: WorkerMessage = { type: 'START_SESSION' };
-      worker.postMessage(message);
-
-      // Let the session start
-      await vi.advanceTimersByTimeAsync(100);
-
-      const timerUpdates = receivedMessages.filter(
-        (msg) => msg.type === 'TIMER_UPDATE' || msg.type === 'HIGH_FREQ_UPDATE',
-      );
-
-      expect(timerUpdates.length).toBeGreaterThan(0);
-
-      const update = timerUpdates[0];
-      expect(update.payload).toBeDefined();
       expect(typeof update.payload?.total).toBe('number');
       expect(update.payload?.activeTimer).toBeDefined();
-
-      vi.useRealTimers();
     });
 
-    it('should handle session stop', async () => {
-      // Start session first
-      worker.postMessage({ type: 'START_SESSION' });
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      receivedMessages.length = 0; // Clear start messages
+    it('should end the session and report the reason on STOP', async () => {
+      await startSession();
+      const from = mark();
+      send({ type: 'STOP_SESSION', payload: { reason: 'Cancelled' } });
 
-      // Stop session
-      const stopMessage: WorkerMessage = {
-        type: 'STOP_SESSION',
-        payload: { reason: 'Cancelled' },
-      };
-
-      worker.postMessage(stopMessage);
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      const sessionEndEvent = receivedMessages.find((msg) => msg.type === 'SESSION_ENDED');
-      expect(sessionEndEvent).toBeDefined();
-      expect(sessionEndEvent?.payload?.reason).toBe('Cancelled');
+      const ended = await nextOf('SESSION_ENDED', from);
+      expect(ended.payload?.reason).toBe('Cancelled');
     });
 
-    it('should ignore stop message without reason', async () => {
-      const message: WorkerMessage = { type: 'STOP_SESSION' };
+    it('should ignore STOP without a reason', async () => {
+      await startSession();
+      const from = mark();
+      send({ type: 'STOP_SESSION' });
+      send({ type: 'STOP_SESSION', payload: { reason: 'Cancelled' } });
 
-      worker.postMessage(message);
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      const sessionEndEvent = receivedMessages.find((msg) => msg.type === 'SESSION_ENDED');
-      expect(sessionEndEvent).toBeUndefined();
+      const ended = await nextOf('SESSION_ENDED', from);
+      expect(ended.payload?.reason).toBe('Cancelled');
+      expect(received.slice(from).filter((msg) => msg.type === 'SESSION_ENDED')).toHaveLength(1);
     });
   });
 
   describe('Timer Switching', () => {
     beforeEach(async () => {
-      // Initialize and start session
-      const initMessage: WorkerMessage = {
-        type: 'INIT',
-        payload: {
-          settings: mockSettings,
-          keyset: mockKeyset,
-          uiPollingInterval: 'normal',
-        },
-      };
-      worker.postMessage(initMessage);
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      worker.postMessage({ type: 'START_SESSION' });
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      receivedMessages.length = 0; // Clear initialization messages
+      send(initMessage());
+      await startSession();
     });
 
-    it('should handle timer switching', async () => {
-      const switchMessage: WorkerMessage = {
-        type: 'SWITCH_TIMER',
-        payload: { timer: 'Secondary' },
-      };
+    it('should switch the active timer', async () => {
+      const from = mark();
+      send({ type: 'SWITCH_TIMER', payload: { timer: 'Secondary' } });
 
-      worker.postMessage(switchMessage);
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      const systemEvent = receivedMessages.find((msg) => msg.type === 'SYSTEM_EVENT');
-      expect(systemEvent).toBeDefined();
-      expect(systemEvent?.payload?.activeTimer).toBe('Secondary');
+      const sys = await nextOf('SYSTEM_EVENT', from);
+      expect(sys.payload?.activeTimer).toBe('Secondary');
     });
 
-    it('should handle special key switching', async () => {
-      const switchMessage: WorkerMessage = {
-        type: 'SWITCH_SPECIAL_KEY',
-        payload: { specialKeyName: 'Special1' },
-      };
+    it('should switch the active special key', async () => {
+      const from = mark();
+      send({ type: 'SWITCH_SPECIAL_KEY', payload: { specialKeyName: 'Special1' } });
 
-      worker.postMessage(switchMessage);
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      const systemEvent = receivedMessages.find((msg) => msg.type === 'SYSTEM_EVENT');
-      expect(systemEvent).toBeDefined();
-      expect(systemEvent?.payload?.activeSpecialKey).toBe('Special1');
+      const sys = await nextOf('SYSTEM_EVENT', from);
+      expect(sys.payload?.activeSpecialKey).toBe('Special1');
     });
 
     it('should ignore switch messages without required payload', async () => {
-      const messages: WorkerMessage[] = [
-        { type: 'SWITCH_TIMER' }, // Missing timer
-        { type: 'SWITCH_SPECIAL_KEY' }, // Missing specialKeyName
-      ];
+      const from = mark();
+      send({ type: 'SWITCH_TIMER' });
+      send({ type: 'SWITCH_SPECIAL_KEY' });
+      send({ type: 'SWITCH_TIMER', payload: { timer: 'Secondary' } });
 
-      for (const message of messages) {
-        worker.postMessage(message);
-        await new Promise((resolve) => setTimeout(resolve, 20));
-      }
-
-      const systemEvents = receivedMessages.filter((msg) => msg.type === 'SYSTEM_EVENT');
-      expect(systemEvents).toHaveLength(0);
+      await nextOf('SYSTEM_EVENT', from);
+      expect(received.slice(from).filter((msg) => msg.type === 'SYSTEM_EVENT')).toHaveLength(1);
     });
   });
 
   describe('Key Processing', () => {
     beforeEach(async () => {
-      // Initialize and start session
-      const initMessage: WorkerMessage = {
-        type: 'INIT',
-        payload: {
-          settings: mockSettings,
-          keyset: mockKeyset,
-          uiPollingInterval: 'normal',
-        },
-      };
-      worker.postMessage(initMessage);
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      worker.postMessage({ type: 'START_SESSION' });
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      receivedMessages.length = 0; // Clear initialization messages
+      send(initMessage());
+      await startSession();
     });
 
     it('should process key events', async () => {
-      const keyMessage: WorkerMessage = {
-        type: 'PROCESS_KEY',
-        payload: { keyName: 'A', keyCode: 65 },
-      };
+      const from = mark();
+      send({ type: 'PROCESS_KEY', payload: { keyName: 'A', keyCode: 65 } });
 
-      worker.postMessage(keyMessage);
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      const keyProcessedEvent = receivedMessages.find((msg) => msg.type === 'KEY_PROCESSED');
-      expect(keyProcessedEvent).toBeDefined();
-      expect(keyProcessedEvent?.payload?.key).toBeDefined();
-      expect(keyProcessedEvent?.payload?.totalKeys).toBe(1);
+      const processed = await nextOf('KEY_PROCESSED', from);
+      expect(processed.payload?.key).toMatchObject({ KeyName: 'A' });
+      expect(processed.payload?.totalKeys).toBe(1);
     });
 
-    it('should handle key deletion', async () => {
-      // First process a key
-      worker.postMessage({
-        type: 'PROCESS_KEY',
-        payload: { keyName: 'A', keyCode: 65 },
-      });
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      receivedMessages.length = 0; // Clear process messages
+    it('should delete the last processed key', async () => {
+      const from = mark();
+      send({ type: 'PROCESS_KEY', payload: { keyName: 'A', keyCode: 65 } });
+      await nextOf('KEY_PROCESSED', from);
 
-      // Then delete it
-      const deleteMessage: WorkerMessage = { type: 'DELETE_LAST_KEY' };
-      worker.postMessage(deleteMessage);
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      const deleteFrom = mark();
+      send({ type: 'DELETE_LAST_KEY' });
+      const deleted = await nextOf('KEY_DELETED', deleteFrom);
+      expect(deleted.payload?.deletedKey).toMatchObject({ KeyName: 'A' });
+      expect(deleted.payload?.totalKeys).toBe(0);
+    });
 
-      const keyDeletedEvent = receivedMessages.find((msg) => msg.type === 'KEY_DELETED');
-      expect(keyDeletedEvent).toBeDefined();
-      expect(keyDeletedEvent?.payload?.deletedKey).toBeDefined();
-      expect(keyDeletedEvent?.payload?.totalKeys).toBe(0);
+    it('should not report a deletion when there are no keys', async () => {
+      const from = mark();
+      send({ type: 'DELETE_LAST_KEY' });
+      send({ type: 'PROCESS_KEY', payload: { keyName: 'A', keyCode: 65 } });
+
+      await nextOf('KEY_PROCESSED', from);
+      expect(received.slice(from).some((msg) => msg.type === 'KEY_DELETED')).toBe(false);
     });
 
     it('should ignore incomplete key processing messages', async () => {
-      const messages: WorkerMessage[] = [
-        { type: 'PROCESS_KEY', payload: { keyName: 'A' } }, // Missing keyCode
-        { type: 'PROCESS_KEY', payload: { keyCode: 65 } }, // Missing keyName
-        { type: 'PROCESS_KEY' }, // No payload
-      ];
+      const from = mark();
+      send({ type: 'PROCESS_KEY', payload: { keyName: 'A' } });
+      send({ type: 'PROCESS_KEY', payload: { keyCode: 65 } });
+      send({ type: 'PROCESS_KEY' });
+      send({ type: 'PROCESS_KEY', payload: { keyName: 'A', keyCode: 65 } });
 
-      for (const message of messages) {
-        worker.postMessage(message);
-        await new Promise((resolve) => setTimeout(resolve, 20));
+      await nextOf('KEY_PROCESSED', from);
+      expect(received.slice(from).filter((msg) => msg.type === 'KEY_PROCESSED')).toHaveLength(1);
+    });
+  });
+
+  describe('Error Handling and Edge Cases', () => {
+    it('should survive malformed messages and keep responding', async () => {
+      const from = mark();
+      const malformed = [null, undefined, {}, { type: 'UNKNOWN_TYPE' }, { type: '', payload: {} }];
+
+      for (const message of malformed) {
+        expect(() => send(message)).not.toThrow();
       }
 
-      const keyProcessedEvents = receivedMessages.filter((msg) => msg.type === 'KEY_PROCESSED');
-      expect(keyProcessedEvents).toHaveLength(0);
+      await startSession();
+      expect(received.slice(from).map((msg) => msg.type)).toEqual(['SYSTEM_EVENT']);
+    });
+
+    it('should not respond to session messages before initialization', async () => {
+      const fresh = new SessionRecorderWorker();
+      const freshMessages: WorkerResponse[] = [];
+      const freshListener = (event: MessageEvent<WorkerResponse>) => {
+        freshMessages.push(event.data);
+      };
+      fresh.addEventListener('message', freshListener);
+
+      try {
+        fresh.postMessage({ type: 'START_SESSION' });
+        fresh.postMessage({ type: 'SWITCH_TIMER', payload: { timer: 'Secondary' } });
+        fresh.postMessage({ type: 'PROCESS_KEY', payload: { keyName: 'A', keyCode: 65 } });
+        fresh.postMessage({ type: 'DELETE_LAST_KEY' });
+
+        // Give the uninitialized worker time to process; asserting absence needs a fixed window
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        expect(freshMessages).toEqual([]);
+      } finally {
+        fresh.removeEventListener('message', freshListener);
+        fresh.terminate();
+      }
+    });
+
+    it('should handle rapid message sequences in order', async () => {
+      const from = mark();
+      send(initMessage('extreme'));
+      send({ type: 'START_SESSION' });
+      send({ type: 'PROCESS_KEY', payload: { keyName: 'A', keyCode: 65 } });
+      send({ type: 'PROCESS_KEY', payload: { keyName: 'B', keyCode: 66 } });
+      send({ type: 'SWITCH_TIMER', payload: { timer: 'Secondary' } });
+      send({ type: 'DELETE_LAST_KEY' });
+      send({ type: 'STOP_SESSION', payload: { reason: 'Completed' } });
+
+      const ended = await nextOf('SESSION_ENDED', from);
+      const sliced = received.slice(from);
+
+      expect(ended.payload?.reason).toBe('Completed');
+      const systemEvents = sliced.filter((msg) => msg.type === 'SYSTEM_EVENT');
+      expect(systemEvents).toHaveLength(2);
+      expect(systemEvents[1].payload?.activeTimer).toBe('Secondary');
+      expect(sliced.filter((msg) => msg.type === 'KEY_PROCESSED')).toHaveLength(2);
+      expect(sliced.filter((msg) => msg.type === 'KEY_DELETED')).toHaveLength(1);
+    });
+  });
+
+  describe('Performance and Timing', () => {
+    it('should send timer updates with the precise polling setting', async () => {
+      send(initMessage('precise'));
+      await startSession();
+      const from = mark();
+
+      const update = await vi.waitFor(() => {
+        const found = received
+          .slice(from)
+          .find((msg) => msg.type === 'TIMER_UPDATE' || msg.type === 'HIGH_FREQ_UPDATE');
+        expect(found).toBeDefined();
+        return found as WorkerResponse;
+      }, WAIT_OPTIONS);
+
+      expect(typeof update.payload?.total).toBe('number');
+    });
+
+    it('should complete a full start and completion lifecycle', async () => {
+      await startSession();
+      const from = mark();
+      send({ type: 'STOP_SESSION', payload: { reason: 'Completed' } });
+
+      const ended = await nextOf('SESSION_ENDED', from);
+      expect(ended.payload?.reason).toBe('Completed');
     });
   });
 
@@ -340,183 +341,34 @@ describe('SessionRecorderWorker Actual Integration', () => {
     beforeEach(async () => {
       channel = new MessageChannel();
       channelMessages = [];
-
-      channel.port1.onmessage = (event) => {
+      channel.port1.onmessage = (event: MessageEvent<WorkerResponse>) => {
         channelMessages.push(event.data);
       };
 
-      // Setup channel
-      const setupMessage: WorkerMessage = {
-        type: 'SETUP_CHANNEL',
-        ports: [channel.port2],
-      };
-      worker.postMessage(setupMessage, [channel.port2]);
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      // Initialize worker
-      const initMessage: WorkerMessage = {
-        type: 'INIT',
-        payload: {
-          settings: mockSettings,
-          keyset: mockKeyset,
-          uiPollingInterval: 'normal',
-        },
-      };
-      worker.postMessage(initMessage);
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      receivedMessages.length = 0; // Clear init messages
-    }, 15000);
+      send({ type: 'SETUP_CHANNEL', ports: [channel.port2] }, [channel.port2]);
+      send(initMessage());
+      await startSession();
+    });
 
     afterEach(() => {
       channel.port1.close();
     });
 
-    it('should send high-frequency updates via MessageChannel', async () => {
-      vi.useFakeTimers();
+    it('should send high-frequency updates over the channel instead of postMessage', async () => {
+      await vi.waitFor(() => {
+        expect(channelMessages.some((msg) => msg.type === 'HIGH_FREQ_UPDATE')).toBe(true);
+      }, WAIT_OPTIONS);
 
-      // Start session
-      worker.postMessage({ type: 'START_SESSION' });
+      const update = channelMessages.find((msg) => msg.type === 'HIGH_FREQ_UPDATE');
+      expect(typeof update?.payload?.total).toBe('number');
+      expect(received.some((msg) => msg.type === 'TIMER_UPDATE')).toBe(false);
+    });
 
-      // Advance timers to trigger updates
-      await vi.advanceTimersByTimeAsync(200);
-
-      // Check both regular and channel messages - worker might fall back to regular postMessage
-      const highFreqUpdates = channelMessages.filter((msg) => msg.type === 'HIGH_FREQ_UPDATE');
-      const regularUpdates = receivedMessages.filter((msg) => msg.type === 'TIMER_UPDATE');
-
-      // At least one type of update should be present
-      expect(highFreqUpdates.length + regularUpdates.length).toBeGreaterThan(0);
-
-      vi.useRealTimers();
-    }, 10000);
-
-    it('should handle channel setup without ports', async () => {
-      const setupMessage: WorkerMessage = {
-        type: 'SETUP_CHANNEL',
-      };
-
-      // Should not throw
-      expect(() => worker.postMessage(setupMessage)).not.toThrow();
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    }, 5000);
-  });
-
-  describe('Error Handling and Edge Cases', () => {
-    it('should handle malformed messages gracefully', async () => {
-      const malformedMessages = [null, undefined, {}, { type: 'UNKNOWN_TYPE' }, { type: '', payload: {} }];
-
-      for (const message of malformedMessages) {
-        expect(() => worker.postMessage(message as any)).not.toThrow();
-        await new Promise((resolve) => setTimeout(resolve, 10));
-      }
-
-      // Worker should still be responsive
-      expect(worker).toBeInstanceOf(Worker);
-    }, 5000);
-
-    it('should handle operations without initialization', async () => {
-      const operations: WorkerMessage[] = [
-        { type: 'START_SESSION' },
-        { type: 'SWITCH_TIMER', payload: { timer: 'Secondary' } },
-        { type: 'PROCESS_KEY', payload: { keyName: 'A', keyCode: 65 } },
-        { type: 'DELETE_LAST_KEY' },
-      ];
-
-      for (const message of operations) {
-        worker.postMessage(message);
-        await new Promise((resolve) => setTimeout(resolve, 20));
-      }
-
-      // Should handle gracefully without responses (since not initialized)
-      // Just verify it doesn't crash
-      expect(worker).toBeInstanceOf(Worker);
-    }, 5000);
-
-    it('should handle rapid message sequences', async () => {
-      // Initialize first
-      const initMessage: WorkerMessage = {
-        type: 'INIT',
-        payload: {
-          settings: mockSettings,
-          keyset: mockKeyset,
-          uiPollingInterval: 'extreme', // Fastest polling
-        },
-      };
-      worker.postMessage(initMessage);
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Send rapid sequence
-      const rapidMessages: WorkerMessage[] = [
-        { type: 'START_SESSION' },
-        { type: 'PROCESS_KEY', payload: { keyName: 'A', keyCode: 65 } },
-        { type: 'PROCESS_KEY', payload: { keyName: 'B', keyCode: 66 } },
-        { type: 'SWITCH_TIMER', payload: { timer: 'Secondary' } },
-        { type: 'DELETE_LAST_KEY' },
-        { type: 'STOP_SESSION', payload: { reason: 'Completed' } },
-      ];
-
-      for (const message of rapidMessages) {
-        worker.postMessage(message);
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      // Should handle all messages without crashing
-      expect(receivedMessages.length).toBeGreaterThanOrEqual(0); // May or may not receive responses
-      expect(worker).toBeInstanceOf(Worker);
-    }, 10000);
-  });
-
-  describe('Performance and Timing', () => {
-    beforeEach(async () => {
-      // Initialize with different polling intervals
-      const initMessage: WorkerMessage = {
-        type: 'INIT',
-        payload: {
-          settings: mockSettings,
-          keyset: mockKeyset,
-          uiPollingInterval: 'precise', // 25ms polling
-        },
-      };
-      worker.postMessage(initMessage);
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      receivedMessages.length = 0;
-    }, 15000);
-
-    it('should respect polling interval settings', async () => {
-      vi.useFakeTimers();
-
-      worker.postMessage({ type: 'START_SESSION' });
-
-      // Advance by precise polling interval
-      await vi.advanceTimersByTimeAsync(200); // Should trigger multiple updates
-
-      const timerUpdates = receivedMessages.filter(
-        (msg) => msg.type === 'TIMER_UPDATE' || msg.type === 'HIGH_FREQ_UPDATE',
-      );
-
-      // Accept that timer updates might not work in test environment
-      // Just verify the worker doesn't crash
-      expect(worker).toBeInstanceOf(Worker);
-      expect(timerUpdates.length).toBeGreaterThanOrEqual(0);
-
-      vi.useRealTimers();
-    }, 15000);
-
-    it('should handle session lifecycle without crashes', async () => {
-      // Test basic message handling instead of complex timing
-      const messages: WorkerMessage[] = [
-        { type: 'START_SESSION' },
-        { type: 'STOP_SESSION', payload: { reason: 'Completed' } },
-      ];
-
-      for (const message of messages) {
-        worker.postMessage(message);
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      }
-
-      // Verify worker remains stable
-      expect(worker).toBeInstanceOf(Worker);
-    }, 10000);
+    it('should keep the channel when SETUP_CHANNEL arrives without ports', async () => {
+      send({ type: 'SETUP_CHANNEL' });
+      await vi.waitFor(() => {
+        expect(channelMessages.some((msg) => msg.type === 'HIGH_FREQ_UPDATE')).toBe(true);
+      }, WAIT_OPTIONS);
+    });
   });
 });

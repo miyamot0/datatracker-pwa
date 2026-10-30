@@ -1,5 +1,5 @@
 import SessionRecorderInterface from './views/session-recorder-interface';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { SavedSettings } from '@/lib/dtos/session-settings';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
 

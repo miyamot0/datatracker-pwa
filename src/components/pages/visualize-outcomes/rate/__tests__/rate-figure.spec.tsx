@@ -4,7 +4,6 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // ----- Hoisted mocks -----
 
-const mockGetDivPng = vi.hoisted(() => vi.fn());
 const mockDivRef = vi.hoisted(() => ({ current: null }));
 const mockNavigate = vi.hoisted(() => vi.fn());
 const mockUseNavigate = vi.hoisted(() => vi.fn(() => mockNavigate));
@@ -21,7 +20,7 @@ const mockBaseChart = vi.hoisted(() => vi.fn());
 
 // ----- Module mocks -----
 
-vi.mock('@/components/pages/visualize-outcomes/shared/base-chart', () => ({
+vi.mock('@/components/pages/visualize-outcomes/shared/ui/base-chart', () => ({
   BaseChart: (props: any) => {
     mockBaseChart(props);
     return (
@@ -32,10 +31,6 @@ vi.mock('@/components/pages/visualize-outcomes/shared/base-chart', () => ({
       </div>
     );
   },
-}));
-
-vi.mock('recharts-to-png', () => ({
-  useGenerateImage: () => [mockGetDivPng, { ref: mockDivRef }],
 }));
 
 vi.mock('@tanstack/react-router', () => ({
@@ -88,6 +83,7 @@ const defaultProps = {
   ConnectSpans: false,
   MinX: 1,
   MaxX: 10,
+  divRef: mockDivRef,
 };
 
 // ----- Tests -----
@@ -128,9 +124,21 @@ describe('RateFigureVisualization', () => {
     await expect.element(page.getByTestId('chart-connect')).toHaveTextContent('false');
   });
 
-  it('renders the Download button', async () => {
-    await render(<RateFigureVisualization {...defaultProps} />);
-    await expect.element(page.getByText('Download Figure as PNG')).toBeInTheDocument();
+  it('sets the Y domain from the max override when enabled', async () => {
+    await render(
+      <RateFigureVisualization
+        {...defaultProps}
+        AxisMax={{ overrideXMax: false, xMax: null, overrideYMax: true, yMax: 25 }}
+      />,
+    );
+
+    const passedProps = mockBaseChart.mock.calls[0][0];
+    expect(passedProps.yAxisConfig).toEqual({
+      min: 0,
+      domain: [0, 25],
+      label: 'Responses per Min',
+      padding: { bottom: 10 },
+    });
   });
 
   it('wires graphing and calculation utilities with expected arguments', async () => {
@@ -176,42 +184,5 @@ describe('RateFigureVisualization', () => {
       padding: { bottom: 10 },
     });
     expect(passedProps.divRef).toBe(mockDivRef);
-  });
-
-  it('downloads a PNG when image generation succeeds', async () => {
-    const anchorMock = {
-      href: '',
-      download: '',
-      click: vi.fn(),
-    };
-    const realCreateElement = document.createElement.bind(document);
-    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation(((tagName: string) => {
-      if (tagName.toLowerCase() === 'a') {
-        return anchorMock as any;
-      }
-
-      return realCreateElement(tagName);
-    }) as any);
-    mockGetDivPng.mockResolvedValueOnce('data:image/png;base64,abc');
-
-    await render(<RateFigureVisualization {...defaultProps} />);
-    await page.getByText('Download Figure as PNG').click();
-
-    await expect.poll(() => mockGetDivPng.mock.calls.length).toBe(1);
-    expect(createElementSpy).toHaveBeenCalledWith('a');
-    expect(anchorMock.href).toBe('data:image/png;base64,abc');
-    expect(anchorMock.download).toBe('figure.png');
-    expect(anchorMock.click).toHaveBeenCalledTimes(1);
-  });
-
-  it('does not trigger a download when image generation returns nothing', async () => {
-    const createElementSpy = vi.spyOn(document, 'createElement');
-    mockGetDivPng.mockResolvedValueOnce(undefined);
-
-    await render(<RateFigureVisualization {...defaultProps} />);
-    await page.getByText('Download Figure as PNG').click();
-
-    await expect.poll(() => mockGetDivPng.mock.calls.length).toBe(1);
-    expect(createElementSpy.mock.calls.some(([tagName]) => tagName === 'a')).toBe(false);
   });
 });

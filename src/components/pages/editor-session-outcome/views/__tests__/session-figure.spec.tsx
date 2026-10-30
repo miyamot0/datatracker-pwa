@@ -69,10 +69,6 @@ vi.mock('@/components/pages/visualize-outcomes/shared/legends/chart-legend-conte
   ),
 }));
 
-vi.mock('@/lib/graphing', () => ({
-  generateTicks: () => [0, 1, 2, 3],
-}));
-
 vi.mock('@/lib/colors', () => ({
   FIGURE_PATH_COLORS: ['#ff0000', '#00ff00'],
 }));

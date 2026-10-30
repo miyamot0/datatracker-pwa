@@ -7,10 +7,13 @@ import { SettingsTabIO } from './views/settings-tab-io';
 import { SettingsTabNotifications } from './views/settings-tab-notifications';
 import { SettingsTabAdministrative } from './views/settings-tab-admin';
 import { SettingsDisplayEnum } from '@/types/settings/application-settings';
+import { useFolderHandleContext } from '@/hooks/use-folder-context';
 
 export default function SettingsPage() {
+  const { settings } = useFolderHandleContext();
+
   return (
-    <PageWrapper label="Settings" className="select-none">
+    <PageWrapper label="Settings" className="select-none" Settings={settings}>
       <Card className="w-full">
         <CardHeader className="flex flex-row justify-between">
           <div className="flex flex-col gap-1.5 grow">

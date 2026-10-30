@@ -2,7 +2,6 @@
 import { page } from 'vitest/browser';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
-const mockPreventDefaultFrequency = vi.hoisted(() => vi.fn());
 const mockProcessFrequency = vi.hoisted(() => vi.fn(() => []));
 
 // ----- Module mocks -----
@@ -30,42 +29,6 @@ vi.mock('@/components/ui/back-button', () => ({
 
 vi.mock('@/components/ui/sonner', () => ({
   Toaster: () => null,
-}));
-
-vi.mock('react-spreadsheet', () => ({
-  default: ({
-    columnLabels,
-    onKeyDown,
-  }: {
-    columnLabels: string[];
-    onKeyDown?: (ev: { key: string; preventDefault: () => void }) => void;
-  }) => (
-    <div data-testid="spreadsheet">
-      {columnLabels?.map((label, i) => (
-        <span key={i}>{label}</span>
-      ))}
-      <button
-        onClick={() =>
-          onKeyDown?.({
-            key: 'v',
-            preventDefault: mockPreventDefaultFrequency,
-          })
-        }
-      >
-        Trigger V Key
-      </button>
-      <button
-        onClick={() =>
-          onKeyDown?.({
-            key: 'x',
-            preventDefault: mockPreventDefaultFrequency,
-          })
-        }
-      >
-        Trigger X Key
-      </button>
-    </div>
-  ),
 }));
 
 vi.mock('@/lib/calculations', () => ({
@@ -163,12 +126,12 @@ describe('ViewFrequencyResults', () => {
     expect(downloads.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('renders the spreadsheet', async () => {
+  it('renders the data table', async () => {
     await renderFreq();
-    await expect.element(page.getByTestId('spreadsheet')).toBeInTheDocument();
+    await expect.element(page.getByRole('table')).toBeInTheDocument();
   });
 
-  it('renders spreadsheet column labels from matrix[0]', async () => {
+  it('renders table column labels from matrix[0]', async () => {
     await renderFreq();
     await expect.element(page.getByText('Session', { exact: true }).first()).toBeInTheDocument();
     await expect.element(page.getByText('Condition')).toBeInTheDocument();
@@ -183,7 +146,6 @@ describe('ViewFrequencyResults', () => {
     beforeEach(() => {
       mockSetLocalCachedPrefs.mockReset();
       mockProcessFrequency.mockClear();
-      mockPreventDefaultFrequency.mockReset();
       vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-frequency');
       vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
     });
@@ -219,15 +181,6 @@ describe('ViewFrequencyResults', () => {
       await page.getByRole('button', { name: /edit keys displayed/i }).click();
       await page.getByRole('menuitemcheckbox', { name: 'Hitting' }).click();
       expect(mockSetLocalCachedPrefs).toHaveBeenCalled();
-    });
-
-    it('pressing v on spreadsheet prevents default and non-v does not', async () => {
-      await renderFreq();
-      await page.getByRole('button', { name: 'Trigger V Key' }).click();
-      expect(mockPreventDefaultFrequency).toHaveBeenCalledTimes(1);
-
-      await page.getByRole('button', { name: 'Trigger X Key' }).click();
-      expect(mockPreventDefaultFrequency).toHaveBeenCalledTimes(1);
     });
 
     it('retains untouched key entries when toggling one frequency key', async () => {

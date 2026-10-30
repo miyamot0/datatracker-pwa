@@ -1,5 +1,6 @@
 import { CleanUpString } from '@/lib/strings';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
+import { routeGuard } from '@/lib/routing';
 import PageWrapper from '@/components/elements/page-wrapper';
 import {
   BuildGroupBreadcrumb,
@@ -18,26 +19,18 @@ import { generateTicks } from '@/lib/graphing/chart-setup';
 import { combineAndSortKeyPresses } from '@/lib/schedule-parser';
 import { preparePlotDataCumulative } from '@/lib/summary';
 import { GenerateSavedFileName } from '@/lib/writer';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { getLocalCachedPrefs } from '@/lib/local_storage';
 import SessionViewerContent from '@/components/pages/editor-session-outcome/views/session-viewer-content';
 import { ToggleDisplayKey } from '@/types/visuals';
 import { sessionQueryOptions } from '@/queries/session/query-session-params';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 
+import { trackSettlement } from '@/lib/settle-tracking';
+
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/history/view/$file/')({
   beforeLoad: ({ context, params }) => {
-    if (!context.folderHandleContext.isInitialized) {
-      throw redirect({
-        href: '/',
-      });
-    }
-
-    if (!context.folderHandleContext.handle) {
-      throw redirect({
-        to: '/dashboard',
-      });
-    }
+    const guarded = routeGuard({ context });
 
     const { group, individual, evaluation, file } = params;
 
@@ -52,24 +45,24 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/hi
       Individual: CleanUpString(individual),
       Evaluation: CleanUpString(evaluation),
       FileString: CleanUpString(file),
-      CleanHandle: context.folderHandleContext.handle,
-      Settings: context.folderHandleContext.settings,
+      CleanHandle: guarded.handle,
+      Settings: guarded.settings,
     };
   },
   loader: async ({ context }) => {
     const { Group, Individual, Evaluation, FileString, CleanHandle, Settings } = context;
 
-    const fetchSessionOutcomes = context.queryClient.fetchQuery(
+    const fetchSessionOutcomes = context.queryClient.query(
       sessionOutcomesQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const fetchSessionParams = context.queryClient.fetchQuery(
+    const fetchSessionParams = context.queryClient.query(
       sessionQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
+    const fetchKeyboards = context.queryClient.query(keyboardQueryOptions(CleanHandle, Group, Individual));
 
-    const totalQuery = Promise.all([fetchSessionOutcomes, fetchSessionParams, fetchKeyboards]);
+    const totalQuery = trackSettlement(Promise.all([fetchSessionOutcomes, fetchSessionParams, fetchKeyboards]));
 
     return {
       Group,

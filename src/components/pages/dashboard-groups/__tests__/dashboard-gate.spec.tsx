@@ -27,9 +27,6 @@ vi.mock('../unauthorized-display', () => ({
   default: () => <div data-testid="unauthorized-display">Unauthorized Display</div>,
 }));
 
-vi.mock('@/components/elements/suspense/loading-display', () => ({
-  LoadingDisplay: () => <div data-testid="loading-display">Loading...</div>,
-}));
 
 vi.mock('../authorized-display-content', () => ({
   default: ({ Groups, Settings, Handle }: any) => (
@@ -119,11 +116,11 @@ describe('DashboardGate', () => {
       await expect.element(unauthorizedDisplay).toBeInTheDocument();
     });
 
-    it('does not pass Settings to PageWrapper in unauthorized state', async () => {
+    it('passes Settings to PageWrapper in unauthorized state', async () => {
       await renderDashboardGate(createMockLoaderData({ isAuthorized: false }));
 
-      const settingsElements = page.getByTestId('settings').elements();
-      expect(settingsElements).toHaveLength(0);
+      const settingsElement = page.getByTestId('settings');
+      await expect.element(settingsElement).toBeInTheDocument();
     });
   });
 

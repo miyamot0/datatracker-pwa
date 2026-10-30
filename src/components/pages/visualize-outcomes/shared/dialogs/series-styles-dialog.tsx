@@ -28,6 +28,7 @@ import {
   type SeriesStyles,
 } from '@/lib/graphing/series-style';
 import { getShape } from '@/lib/shapes';
+import { useDialogOpenState } from './use-dialog-open-state';
 
 const DEFAULT_VALUE = 'default';
 const CONTROL_WIDTH = 'w-48';
@@ -44,6 +45,9 @@ type Props = {
   visibleConditions: string[];
   styles: SeriesStyles;
   onChange: (styles: SeriesStyles) => void;
+  /** Controlled open state, for opening the dialog from elsewhere (e.g. a menu) */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 /**
@@ -67,7 +71,7 @@ function ShapeGlyph({ shape }: { shape: SymbolType }) {
 /**
  * Shows the marker as it will render for the selected shape and fill, with the standard black border
  * A hidden fill is drawn as a dashed outline so the preview still shows where the marker sits.
- * 
+ *
  * @param shape - Marker shape to draw
  * @param fill - Resolved fill colour, or the transparent sentinel for a hidden marker
  */
@@ -108,7 +112,7 @@ function StyleRow({ label, children }: { label: string; children: ReactNode }) {
  *
  * The palette is always offered. Hidden is offered only when allowTransparent is set, because it applies to
  * per-condition fills and lines and not to condition-level fills.
- * 
+ *
  * @param value - Stored colour, or undefined when using the default
  * @param defaultColor - Colour shown next to the Default option
  * @param onChange - Receives the chosen colour, or undefined for Default
@@ -168,7 +172,7 @@ function ColorSelect({
 
 /**
  * Returns a copy of a record with one entry set, or removed when the value is undefined
- * 
+ *
  * @param record - Source record, which is not mutated
  * @param key - Entry to set or remove
  * @param value - New value, or undefined to remove the entry
@@ -192,15 +196,23 @@ function setOrDelete<T>(record: Record<string, T>, key: string, value: T | undef
  * Condition fills are edited at the top. Key-specific settings (shape, per-condition fill, and per-condition line)
  * are edited one key at a time. Anything left at Default falls back to the standard figure style. Only visible
  * keys can be selected. Changes are reported through onChange as a complete SeriesStyles object.
- * 
+ *
  * @param props.keys - Keys in the chart, with their visibility
  * @param props.conditions - All conditions, used for the per-condition rows
  * @param props.visibleConditions - Conditions currently shown, used to derive default colours
  * @param props.styles - Current saved styles
  * @param props.onChange - Receives the updated styles after each edit
  */
-export function SeriesStylesDialog({ keys, conditions, visibleConditions, styles, onChange }: Props) {
-  const [open, setOpen] = useState(false);
+export function SeriesStylesDialog({
+  keys,
+  conditions,
+  visibleConditions,
+  styles,
+  onChange,
+  open: openProp,
+  onOpenChange,
+}: Props) {
+  const [open, setOpen] = useDialogOpenState(openProp, onOpenChange);
   const [selectedKey, setSelectedKey] = useState<string | undefined>(undefined);
 
   // Hidden keys are subsumed or not drawn, so they are not offered for styling
@@ -252,12 +264,14 @@ export function SeriesStylesDialog({ keys, conditions, visibleConditions, styles
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="w-fit" aria-label="Edit Series Styles">
-          <PaintbrushIcon className="md:mr-2 w-4 h-4" />
-          <span className="hidden md:inline">Styles</span>
-        </Button>
-      </DialogTrigger>
+      {openProp === undefined && (
+        <DialogTrigger asChild>
+          <Button variant="outline" className="w-fit" aria-label="Edit Series Styles">
+            <PaintbrushIcon className="lg:mr-2 w-4 h-4" />
+            <span className="hidden lg:inline">Styles</span>
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto data-[state=open]:slide-in-from-left-0! data-[state=open]:slide-in-from-top-0! data-[state=closed]:slide-out-to-left-0! data-[state=closed]:slide-out-to-top-0! data-[state=open]:zoom-in-100! data-[state=closed]:zoom-out-100!">
         <DialogHeader>
           <DialogTitle>Series Styles</DialogTitle>
@@ -322,7 +336,7 @@ export function SeriesStylesDialog({ keys, conditions, visibleConditions, styles
                         <SelectGroup>
                           <SelectItem value={DEFAULT_VALUE}>
                             <span className="flex flex-row items-center gap-2">
-                              <ShapeGlyph shape={defaultShape ?? effectiveShape} />
+                              <ShapeGlyph shape={defaultShapeForKey(activeKey)} />
                               Default ({defaultShape})
                             </span>
                           </SelectItem>
@@ -377,11 +391,13 @@ export function SeriesStylesDialog({ keys, conditions, visibleConditions, styles
         <DialogFooter className="flex flex-row justify-between sm:justify-between">
           <Button
             variant="outline"
-            onClick={() => onChange({
-                    ...EMPTY_SERIES_STYLES,
-                    phase_changes: styles.phase_changes,
-                    text_annotations: styles.text_annotations,
-                })}
+            onClick={() =>
+              onChange({
+                ...EMPTY_SERIES_STYLES,
+                phase_changes: styles.phase_changes,
+                text_annotations: styles.text_annotations,
+              })
+            }
           >
             Reset All to Defaults
           </Button>

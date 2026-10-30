@@ -9,7 +9,7 @@ import {
   SessionProcessKeypress,
 } from '../session-keypress';
 
-vi.mock('sonner', () => ({ toast: vi.fn() }));
+vi.mock('sonner', () => ({ toast: Object.assign(vi.fn(), { error: vi.fn() }) }));
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -120,6 +120,7 @@ const makeSessionEndedArgs = (overrides: Record<string, unknown> = {}) => {
     mutateSettings,
     history: { go: vi.fn() },
     displayConditionalNotification: vi.fn(),
+    confirmEndedEarly: vi.fn().mockResolvedValue(true),
     setRunningState: vi.fn(),
     setStartTime: vi.fn(),
     wakelockRef: makeRef<WakeLockSentinel | undefined>(undefined),
@@ -142,6 +143,7 @@ const makeWorkerMessageArgs = (overrides: Record<string, unknown> = {}) => {
     mutateSettings,
     history: { go: vi.fn() },
     displayConditionalNotification: vi.fn(),
+    confirmEndedEarly: vi.fn().mockResolvedValue(true),
     setRunningState: vi.fn(),
     setStartTime: vi.fn(),
     wakelockRef: makeRef<WakeLockSentinel | undefined>(undefined),
@@ -665,17 +667,22 @@ describe('session-keypress.ts', () => {
       expect(args.setStartTime).toHaveBeenCalledWith(new Date(isoTime));
     });
 
-    it('Cancelled: shows confirm dialog', async () => {
-      vi.spyOn(window, 'confirm').mockReturnValue(false);
-      const args = makeSessionEndedArgs();
+    it('Cancelled: asks whether to save the early-ended session', async () => {
+      const args = makeSessionEndedArgs({ confirmEndedEarly: vi.fn().mockResolvedValue(false) });
       await handleSessionEnded(makeSessionEndedPayload({ reason: 'Cancelled' }), args);
       await flushPromises();
-      expect(window.confirm).toHaveBeenCalled();
+      expect(args.confirmEndedEarly).toHaveBeenCalledOnce();
+    });
+
+    it('Completed: does not ask for confirmation', async () => {
+      const args = makeSessionEndedArgs();
+      await handleSessionEnded(makeSessionEndedPayload({ reason: 'Completed' }), args);
+      await flushPromises();
+      expect(args.confirmEndedEarly).not.toHaveBeenCalled();
     });
 
     it('Cancelled + user declines: navigates back and skips save', async () => {
-      vi.spyOn(window, 'confirm').mockReturnValue(false);
-      const args = makeSessionEndedArgs();
+      const args = makeSessionEndedArgs({ confirmEndedEarly: vi.fn().mockResolvedValue(false) });
       await handleSessionEnded(makeSessionEndedPayload({ reason: 'Cancelled' }), args);
       await flushPromises();
       expect(args.history.go).toHaveBeenCalledWith(-1);
@@ -683,13 +690,35 @@ describe('session-keypress.ts', () => {
     });
 
     it('Cancelled + user confirms: saves session with EndedEarly=true', async () => {
-      vi.spyOn(window, 'confirm').mockReturnValue(true);
-      const args = makeSessionEndedArgs();
+      const args = makeSessionEndedArgs({ confirmEndedEarly: vi.fn().mockResolvedValue(true) });
       await handleSessionEnded(makeSessionEndedPayload({ reason: 'Cancelled' }), args);
       await flushPromises();
       expect(args.mutateSessionOutcomes.mutateAsync).toHaveBeenCalledOnce();
       const call = (args.mutateSessionOutcomes.mutateAsync as ReturnType<typeof vi.fn>).mock.calls[0][0];
       expect(call.NewOutcome.EndedEarly).toBe(true);
+    });
+
+    it('Cancelled: SessionEnd excludes the time spent deciding', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+
+      try {
+        const endTime = new Date('2024-06-15T12:00:00.000Z');
+        vi.setSystemTime(endTime);
+
+        const confirmEndedEarly = vi.fn(async () => {
+          vi.setSystemTime(new Date('2024-06-15T12:05:00.000Z'));
+          return true;
+        });
+        const args = makeSessionEndedArgs({ confirmEndedEarly });
+
+        await handleSessionEnded(makeSessionEndedPayload({ reason: 'Cancelled' }), args);
+        await flushPromises();
+
+        const call = (args.mutateSessionOutcomes.mutateAsync as ReturnType<typeof vi.fn>).mock.calls[0][0];
+        expect(call.NewOutcome.SessionEnd).toBe(endTime.toJSON());
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('releases wakelock when one is held', async () => {
@@ -785,12 +814,56 @@ describe('session-keypress.ts', () => {
       expect(args.history.go).toHaveBeenCalledWith(-1);
     });
 
-    it('calls displayConditionalNotification when mutation throws', async () => {
+    it('shows a persistent error toast with a retry action when saving the outcome fails', async () => {
       const args = makeSessionEndedArgs();
       (args.mutateSessionOutcomes.mutateAsync as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('save error'));
       await handleSessionEnded(makeSessionEndedPayload(), args);
       await flushPromises();
-      expect(args.displayConditionalNotification).toHaveBeenCalled();
+
+      expect(toast.error).toHaveBeenCalledWith(
+        'Error Saving Results',
+        expect.objectContaining({
+          duration: Infinity,
+          action: expect.objectContaining({ label: 'Retry save' }),
+        }),
+      );
+      expect(args.mutateSettings.mutateAsync).not.toHaveBeenCalled();
+      expect(args.history.go).not.toHaveBeenCalled();
+    });
+
+    it('retry after an outcome failure saves the outcome again and then continues', async () => {
+      const args = makeSessionEndedArgs({
+        ApplicationSettings: makeAppSettings({ PostSessionBx: 'AutoAdvance' }),
+      });
+      const saveOutcome = args.mutateSessionOutcomes.mutateAsync as ReturnType<typeof vi.fn>;
+      saveOutcome.mockRejectedValueOnce(new Error('save error'));
+
+      await handleSessionEnded(makeSessionEndedPayload(), args);
+      await flushPromises();
+
+      const retry = (toast.error as ReturnType<typeof vi.fn>).mock.calls[0][1].action.onClick;
+      retry();
+      await flushPromises();
+
+      expect(saveOutcome).toHaveBeenCalledTimes(2);
+      expect(args.mutateSettings.mutateAsync).toHaveBeenCalledOnce();
+      expect(args.history.go).toHaveBeenCalledWith(-1);
+    });
+
+    it('retry after a settings failure does not write the outcome a second time', async () => {
+      const args = makeSessionEndedArgs();
+      const saveSettings = args.mutateSettings.mutateAsync as ReturnType<typeof vi.fn>;
+      saveSettings.mockRejectedValueOnce(new Error('settings error'));
+
+      await handleSessionEnded(makeSessionEndedPayload(), args);
+      await flushPromises();
+
+      const retry = (toast.error as ReturnType<typeof vi.fn>).mock.calls[0][1].action.onClick;
+      retry();
+      await flushPromises();
+
+      expect(args.mutateSessionOutcomes.mutateAsync).toHaveBeenCalledOnce();
+      expect(saveSettings).toHaveBeenCalledTimes(2);
     });
 
     it('calls displayConditionalNotification when session start time is missing', async () => {
@@ -855,7 +928,7 @@ describe('session-keypress.ts', () => {
   describe('SessionProcessKeypress', () => {
     let postMessage: ReturnType<typeof vi.fn>;
     let workerRef: { current: Worker | null };
-    let historyGoSpy: ReturnType<typeof vi.spyOn>;
+    let historyGoSpy: ReturnType<typeof vi.fn>;
 
     const keypressArgs = (overrides: Record<string, unknown> = {}) => ({
       ApplicationSettings: makeAppSettings(),
@@ -866,13 +939,14 @@ describe('session-keypress.ts', () => {
       wakelockRef: makeRef<WakeLockSentinel | undefined>(undefined),
       setStartTime: vi.fn(),
       keysPressed: [] as any[],
+      history: { go: historyGoSpy } as any,
       ...overrides,
     });
 
     beforeEach(() => {
       postMessage = vi.fn();
       workerRef = makeRef<Worker | null>({ postMessage } as unknown as Worker);
-      historyGoSpy = vi.spyOn(window.history, 'go').mockImplementation(() => {});
+      historyGoSpy = vi.fn();
     });
 
     it('returns early when ev.repeat is true', () => {
@@ -880,14 +954,17 @@ describe('session-keypress.ts', () => {
       expect(postMessage).not.toHaveBeenCalled();
     });
 
-    it('calls preventDefault when key is the space character', () => {
-      const ev = makeKeyEvent(' ');
-      SessionProcessKeypress(ev, keypressArgs());
-      expect(ev.preventDefault).toHaveBeenCalled();
+    it('ignores all keys while a cancelled session awaits a save decision', () => {
+      const ev = makeKeyEvent('Escape');
+      SessionProcessKeypress(ev, keypressArgs({ runningState: 'Cancelled' }));
+      SessionProcessKeypress(makeKeyEvent(' '), keypressArgs({ runningState: 'Cancelled' }));
+      expect(postMessage).not.toHaveBeenCalled();
+      expect(historyGoSpy).not.toHaveBeenCalled();
+      expect(ev.preventDefault).not.toHaveBeenCalled();
     });
 
-    it('calls preventDefault when key is the string "Space"', () => {
-      const ev = makeKeyEvent('Space');
+    it('calls preventDefault when key is the space character', () => {
+      const ev = makeKeyEvent(' ');
       SessionProcessKeypress(ev, keypressArgs());
       expect(ev.preventDefault).toHaveBeenCalled();
     });

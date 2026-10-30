@@ -11,6 +11,7 @@ import { deleteUnnecessaryPlugin } from './scripts/plugins/delete-unnecessary-fi
 import { compressPNGPlugin } from './scripts/plugins/compress-png-files.ts';
 import { scrubIslandHtmlPlugin } from './scripts/plugins/scrub-island-html.ts';
 import { inlineWorkersPlugin } from './scripts/plugins/inline-workers.ts';
+import { prerenderDocsPlugin } from './scripts/plugins/prerender-docs.ts';
 
 const common_screenshot_params = {
   sizes: '1148x969',
@@ -30,6 +31,7 @@ const islandPlugins: PluginOption[] = [
   }),
   react(),
   tailwindcss(),
+  prerenderDocsPlugin,
   inlineWorkersPlugin,
   scrubIslandHtmlPlugin,
   viteSingleFile({
@@ -48,6 +50,7 @@ const basePlugins: PluginOption[] = [
   }),
   react(),
   tailwindcss(),
+  prerenderDocsPlugin,
   compressPNGPlugin,
   csp({
     dev: {
@@ -233,17 +236,6 @@ export default defineConfig(({ mode }) => {
   const assetsInlineLimit = MODALITY === 'island' ? Number.MAX_SAFE_INTEGER : undefined;
   const outDir = MODALITY === 'island' ? ISLAND_OUT_DIR : PROD_OUT_DIR;
 
-  const output =
-    MODALITY === 'island'
-      ? undefined
-      : {
-        manualChunks: (id: string) => {
-          if (id.includes('react-markdown')) {
-            return 'react-markdown';
-          }
-        },
-      };
-
   return {
     plugins,
     base,
@@ -273,7 +265,6 @@ export default defineConfig(({ mode }) => {
       outDir,
       rollupOptions: {
         external: [/\.test\.(js|ts|tsx)$/, '**/__tests__/**/*', '**/*.test.{ts,tsx}', '/docs/*.png'],
-        output,
       },
     },
   };

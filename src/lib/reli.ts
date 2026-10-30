@@ -7,8 +7,8 @@ import {
   ReliabilityPairType,
   ScoredKey,
 } from '@/types/reli';
-import { SavedSessionResult } from './dtos';
-import { KeySet } from '@/types/keyset';
+import { SavedSessionResult } from './dtos/session-results';
+import { KeySet } from '@/types/keyset/core';
 
 /**
  * Generate an empty bin array

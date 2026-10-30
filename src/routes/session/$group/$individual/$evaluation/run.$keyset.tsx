@@ -1,5 +1,6 @@
 import { CleanUpString } from '@/lib/strings';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
+import { routeGuard } from '@/lib/routing';
 import SessionRecorderPage from '@/components/pages/session-recorder/session-recorder-page';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { sessionQueryOptions } from '@/queries/session/query-session-params';
@@ -12,21 +13,13 @@ import {
 } from '@/components/ui/breadcrumb-entries';
 import { LoadingDisplay } from '@/components/elements/suspense/loading-display';
 import { RouteErrorRedirect } from '@/components/pages/error/route-error-view';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
+
+import { trackSettlement } from '@/lib/settle-tracking';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/run/$keyset')({
   beforeLoad: ({ context, params }) => {
-    if (!context.folderHandleContext.isInitialized) {
-      throw redirect({
-        href: '/',
-      });
-    }
-
-    if (!context.folderHandleContext.handle) {
-      throw redirect({
-        to: '/dashboard',
-      });
-    }
+    const guarded = routeGuard({ context });
 
     const { group, individual, evaluation, keyset } = params;
 
@@ -37,23 +30,23 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ru
     }
 
     return {
-      CleanHandle: context.folderHandleContext.handle,
+      CleanHandle: guarded.handle,
+      Settings: guarded.settings,
       Group: CleanUpString(group),
       Individual: CleanUpString(individual),
       Evaluation: CleanUpString(evaluation),
       Keyset: CleanUpString(keyset),
-      Settings: context.folderHandleContext.settings,
     };
   },
   loader: ({ context }) => {
     const { Group, Individual, Evaluation, Keyset, Settings, CleanHandle } = context;
 
-    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
-    const fetchSessionParams = context.queryClient.fetchQuery(
+    const fetchKeyboards = context.queryClient.query(keyboardQueryOptions(CleanHandle, Group, Individual));
+    const fetchSessionParams = context.queryClient.query(
       sessionQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const totalQuery = Promise.all([fetchKeyboards, fetchSessionParams]);
+    const totalQuery = trackSettlement(Promise.all([fetchKeyboards, fetchSessionParams]));
 
     return {
       Group: Group,
@@ -62,7 +55,7 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/ru
       Keyset: Keyset,
       Settings: Settings,
       CleanHandle: CleanHandle,
-      ApplicationSettings: context.folderHandleContext.settings,
+      ApplicationSettings: Settings,
       totalQuery,
     };
   },
@@ -82,6 +75,7 @@ function RouteComponent() {
         BuildSessionDesignerBreadcrumb(Group, Individual, Evaluation),
       ]}
       className="select-none"
+      Settings={Settings}
       HideFooter={Settings.ApplicationFooterDisplay === 'NonSession'}
       HideNavbar={Settings.SessionDisplay === 'FullScreen'}
     >

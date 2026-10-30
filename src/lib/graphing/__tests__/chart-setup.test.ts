@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SavedSessionResult } from '../../dtos';
+import { SavedSessionResult } from '../../dtos/session-results';
 import { KeySet, KeySetInstance } from '@/types/keyset/core';
 import { ExpandedKeySetInstance } from '@/types/keyset/display';
 import { TRANSPARENT_COLOR } from '@/lib/graphing/series-style';
@@ -89,6 +89,11 @@ describe('chart-setup', () => {
 
     it('should return an empty array when maxTick is below minTick', () => {
       expect(generateTicks(2, 98)).toEqual([]);
+    });
+
+    it('should return an empty array for non-finite inputs', () => {
+      expect(generateTicks(Number.NaN, 1)).toEqual([]);
+      expect(generateTicks(5, Number.POSITIVE_INFINITY)).toEqual([]);
     });
 
     it('should handle large ranges', () => {
@@ -307,6 +312,16 @@ describe('chart-setup', () => {
       for (const size of ['base', 'large', 'extraLarge'] as const) {
         const { titleY, titleFontPx, chartMarginTop } = getChartVerticalSpacing(size);
         expect(titleY + titleFontPx / 2).toBeLessThan(chartMarginTop);
+      }
+    });
+
+    it('shrinks the top margin when the title is hidden and keeps the chart height', () => {
+      for (const size of ['base', 'large', 'extraLarge'] as const) {
+        const shown = getChartVerticalSpacing(size);
+        const hidden = getChartVerticalSpacing(size, false);
+        expect(hidden.chartMarginTop).toBeLessThan(shown.chartMarginTop);
+        expect(hidden.chartHeight).toBe(shown.chartHeight);
+        expect(hidden.xAxisHeight).toBe(shown.xAxisHeight);
       }
     });
 

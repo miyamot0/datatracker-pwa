@@ -1,11 +1,11 @@
 import { queryClient } from '@/App';
 import { groupQueryOptions } from './query-groups';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 import { MutateGroupsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**
- * This function is responsible for mutating the groups within the application. It takes in the necessary parameters to identify the target group and the action to be performed (adding, deleting, or loading demo data). The function first retrieves the current list of groups using React Query's `fetchQuery` method. It then performs the specified action by interacting with the file system through the provided directory handle. Finally, it returns the updated list of groups after the mutation is complete.
+ * This function is responsible for mutating the groups within the application. It takes in the necessary parameters to identify the target group and the action to be performed (adding, deleting, or loading demo data). The function first retrieves the current list of groups using React Query's `query` method. It then performs the specified action by interacting with the file system through the provided directory handle. Finally, it returns the updated list of groups after the mutation is complete.
  *
  * @param Group - An array containing the name of the group to be mutated (in this case, the group to be added or deleted).
  * @param Handle - The file system directory handle used to access and manipulate the group records.
@@ -21,7 +21,7 @@ export const mutationGroups = async ({
   Handle: FileSystemDirectoryHandle;
   Action: 'Add' | 'Delete' | 'Demo';
 }): Promise<string[]> => {
-  const groups: string[] = await queryClient.fetchQuery(groupQueryOptions(Handle));
+  const groups: string[] = await queryClient.query(groupQueryOptions(Handle));
 
   if (!groups) {
     throw new Error('Groups not found');
@@ -49,26 +49,26 @@ export const mutationGroupsWorker = async ({
 }) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'MUTATE_GROUPS',
     handle: Handle,
     groupNames: Group,
     action: Action,
   } satisfies MutateGroupsRequest;
 
-  return new Promise<string[]>((resolve) => {
+  return new Promise<string[]>((resolve, reject) => {
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
         const directories = response.data;
         resolve(directories);
       } else {
-        resolve([]);
+        reject(new Error(response.error));
       }
     };
     worker.onerror = (error) => {
       console.error('Worker error:', error);
-      resolve([]);
+      reject(new Error(error.message || 'Worker failed to complete the mutation'));
     };
     worker.postMessage(request);
   });

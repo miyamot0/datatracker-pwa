@@ -2,8 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Pencil1Icon } from '@radix-ui/react-icons';
-import { DeleteIcon, SaveIcon } from 'lucide-react';
+import { DeleteIcon, PencilIcon, SaveIcon } from 'lucide-react';
 import BackButton from '@/components/ui/back-button';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import { toast } from 'sonner';
@@ -16,6 +15,8 @@ import { mutationSettingsOutcomes } from '@/queries/outcomes/mutate-session-outc
 import { queryClient } from '@/App';
 import { KeyManageType } from '@/types/timing';
 import { useRouter, useRouterState } from '@tanstack/react-router';
+import { useConfirmDialog } from '@/components/dialogs/use-confirm-dialog';
+import { useKeySelectDialog } from '@/components/dialogs/use-key-select-dialog';
 
 function ColoredDot({ KeyObject }: { KeyObject: KeyManageType }) {
   let key_color = '#fff';
@@ -70,6 +71,8 @@ export default function SessionManagerContent({
 
   const [currentKeys, setCurrentKeys] = useState(SavedKeys);
   const textareaRef = useRef(null);
+  const { openConfirmDialog, confirmDialog } = useConfirmDialog();
+  const { openKeySelectDialog, keySelectDialog } = useKeySelectDialog();
 
   const mutateSessionOutcomes = useMutation({
     mutationFn: mutationSettingsOutcomes,
@@ -119,25 +122,24 @@ export default function SessionManagerContent({
               variant={'outline'}
               className="shadow"
               size={'sm'}
-              onClick={() => {
-                const confirm_save = window.confirm(
-                  'Are you sure you want to save the changes made to this session file?',
-                );
-
-                if (!confirm_save) {
-                  return;
-                }
-
-                toast.promise(async () => await saveUpdatedSession(), {
-                  loading: 'Saving updated session...',
-                  success: () => {
-                    return 'Session file has been updated successfully!';
+              onClick={() =>
+                openConfirmDialog({
+                  title: 'Save Session Changes',
+                  description: 'Are you sure you want to save the changes made to this session file?',
+                  confirmLabel: 'Save',
+                  onConfirm: () => {
+                    toast.promise(async () => await saveUpdatedSession(), {
+                      loading: 'Saving updated session...',
+                      success: () => {
+                        return 'Session file has been updated successfully!';
+                      },
+                      error: (e: Error) => {
+                        return `An error occurred while saving the session file: ${e.message}.`;
+                      },
+                    });
                   },
-                  error: (e: Error) => {
-                    return `An error occurred while saving the session file: ${e.message}.`;
-                  },
-                });
-              }}
+                })
+              }
             >
               <SaveIcon className="mr-2 h-4 w-4" />
               Update File
@@ -194,17 +196,17 @@ export default function SessionManagerContent({
                         variant={'destructive'}
                         className="text-primary flex flex-row gap-1 items-center text-white"
                         disabled={!(key.KeyType === 'Frequency' || key.KeyType === 'Duration')}
-                        onClick={() => {
-                          const confirm_delete = window.confirm(
-                            `Are you sure you want to delete the key press of "${
+                        onClick={() =>
+                          openConfirmDialog({
+                            title: 'Delete Key Press',
+                            description: `Are you sure you want to delete the key press of "${
                               key.KeyDescription
                             }" recorded at ${key.TimeIntoSession.toFixed(2)} seconds? This action cannot be undone.`,
-                          );
-
-                          if (!confirm_delete) return;
-
-                          setCurrentKeys((prevKeys) => prevKeys.filter((_, i) => i !== index));
-                        }}
+                            confirmLabel: 'Delete',
+                            destructive: true,
+                            onConfirm: () => setCurrentKeys((prevKeys) => prevKeys.filter((_, i) => i !== index)),
+                          })
+                        }
                       >
                         <DeleteIcon className="h-4 w-4" />
                         Delete Key
@@ -214,39 +216,34 @@ export default function SessionManagerContent({
                         className="text-primary flex flex-row gap-1 items-center"
                         disabled={!(key.KeyType === 'Frequency' || key.KeyType === 'Duration')}
                         onClick={() => {
-                          const allKeysString = allKeys
-                            .filter((k) => k.KeyDescription !== key.KeyDescription)
-                            .map((k) => `${k.KeyName} (${k.KeyDescription})`)
-                            .join(', ');
+                          openKeySelectDialog({
+                            title: 'Replace Key',
+                            description: `Current Key: "${key.KeyName} (${key.KeyDescription})"`,
+                            submitLabel: 'Replace Key',
+                            options: allKeys.filter((k) => k.KeyDescription !== key.KeyDescription),
+                            onSubmit: (new_key_name) => {
+                              const replacement = allKeys.find((k) => k.KeyName === new_key_name);
 
-                          const prompt_message = `Current Key: "${key.KeyName} (${key.KeyDescription})"\n\nAvailable Keys: ${allKeysString}\n\nPlease enter the Key you want to replace it with:`;
-                          const new_key_name = window.prompt(prompt_message);
+                              if (!replacement) return;
 
-                          if (!new_key_name) return;
-
-                          const check_if_valid = allKeys.find((k) => k.KeyName === new_key_name);
-
-                          if (!new_key_name || !check_if_valid) {
-                            window.alert('Invalid key name entered. No changes made.');
-                            return;
-                          }
-
-                          setCurrentKeys((prevKeys) =>
-                            prevKeys.map((k, i) => {
-                              if (i === index) {
-                                return {
-                                  ...k,
-                                  KeyName: new_key_name,
-                                  KeyDescription: check_if_valid.KeyDescription,
-                                  KeyCode: check_if_valid.KeyCode,
-                                };
-                              }
-                              return k;
-                            }),
-                          );
+                              setCurrentKeys((prevKeys) =>
+                                prevKeys.map((k, i) => {
+                                  if (i === index) {
+                                    return {
+                                      ...k,
+                                      KeyName: replacement.KeyName,
+                                      KeyDescription: replacement.KeyDescription,
+                                      KeyCode: replacement.KeyCode,
+                                    };
+                                  }
+                                  return k;
+                                }),
+                              );
+                            },
+                          });
                         }}
                       >
-                        <Pencil1Icon className="h-4 w-4" />
+                        <PencilIcon className="h-4 w-4" />
                         Replace Key
                       </Button>
                     </div>
@@ -267,6 +264,8 @@ export default function SessionManagerContent({
           <Textarea ref={textareaRef} minLength={3} defaultValue={Session.Comments} />
         </div>
       </CardContent>
+      {confirmDialog}
+      {keySelectDialog}
     </Card>
   );
 }

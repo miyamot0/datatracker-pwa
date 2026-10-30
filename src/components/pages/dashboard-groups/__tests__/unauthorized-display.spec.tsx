@@ -33,11 +33,14 @@ const renderPage = (enforce = false) =>
     <FolderHandleContext.Provider
       value={{
         handle: undefined,
+        getHandle: () => undefined,
         setHandle: mockSetHandle,
         settings: { ...DEFAULT_APPLICATION_SETTINGS, EnforceDataFolderName: enforce },
+        getSettings: () => ({ ...DEFAULT_APPLICATION_SETTINGS, EnforceDataFolderName: enforce }),
         setSettings: vi.fn(),
         saveSettings: vi.fn(),
         isInitialized: true,
+        getIsInitialized: () => true,
         setIsInitialized: vi.fn(),
       }}
     >

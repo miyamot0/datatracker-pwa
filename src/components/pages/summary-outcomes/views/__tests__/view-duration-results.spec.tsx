@@ -2,7 +2,6 @@
 import { page } from 'vitest/browser';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
-const mockPreventDefaultDuration = vi.hoisted(() => vi.fn());
 const mockProcessDuration = vi.hoisted(() => vi.fn(() => []));
 
 // ----- Module mocks -----
@@ -30,42 +29,6 @@ vi.mock('@/components/ui/back-button', () => ({
 
 vi.mock('@/components/ui/sonner', () => ({
   Toaster: () => null,
-}));
-
-vi.mock('react-spreadsheet', () => ({
-  default: ({
-    columnLabels,
-    onKeyDown,
-  }: {
-    columnLabels: string[];
-    onKeyDown?: (ev: { key: string; preventDefault: () => void }) => void;
-  }) => (
-    <div data-testid="spreadsheet">
-      {columnLabels?.map((label, i) => (
-        <span key={i}>{label}</span>
-      ))}
-      <button
-        onClick={() =>
-          onKeyDown?.({
-            key: 'v',
-            preventDefault: mockPreventDefaultDuration,
-          })
-        }
-      >
-        Trigger V Key
-      </button>
-      <button
-        onClick={() =>
-          onKeyDown?.({
-            key: 'x',
-            preventDefault: mockPreventDefaultDuration,
-          })
-        }
-      >
-        Trigger X Key
-      </button>
-    </div>
-  ),
 }));
 
 vi.mock('@/lib/calculations', () => ({
@@ -162,12 +125,12 @@ describe('ViewDurationResults', () => {
     expect(downloads.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders the spreadsheet', async () => {
+  it('renders the data table', async () => {
     await renderDur();
-    await expect.element(page.getByTestId('spreadsheet')).toBeInTheDocument();
+    await expect.element(page.getByRole('table')).toBeInTheDocument();
   });
 
-  it('renders spreadsheet column labels from matrix[0]', async () => {
+  it('renders table column labels from matrix[0]', async () => {
     await renderDur();
     await expect.element(page.getByText('Session', { exact: true }).first()).toBeInTheDocument();
     await expect.element(page.getByText('Condition')).toBeInTheDocument();
@@ -182,7 +145,6 @@ describe('ViewDurationResults', () => {
     beforeEach(() => {
       mockSetLocalCachedPrefs.mockReset();
       mockProcessDuration.mockClear();
-      mockPreventDefaultDuration.mockReset();
       vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-duration');
       vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
     });
@@ -218,15 +180,6 @@ describe('ViewDurationResults', () => {
       await page.getByRole('button', { name: /edit keys displayed/i }).click();
       await page.getByRole('menuitemcheckbox', { name: 'Crying' }).click();
       expect(mockSetLocalCachedPrefs).toHaveBeenCalled();
-    });
-
-    it('pressing v on spreadsheet prevents default and non-v does not', async () => {
-      await renderDur();
-      await page.getByRole('button', { name: 'Trigger V Key' }).click();
-      expect(mockPreventDefaultDuration).toHaveBeenCalledTimes(1);
-
-      await page.getByRole('button', { name: 'Trigger X Key' }).click();
-      expect(mockPreventDefaultDuration).toHaveBeenCalledTimes(1);
     });
 
     it('retains untouched key entries when toggling one duration key', async () => {

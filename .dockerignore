@@ -1,5 +1,7 @@
 node_modules
 dist
+dev-dist
+dist-island
 .git
 .vscode
 .DS_Store

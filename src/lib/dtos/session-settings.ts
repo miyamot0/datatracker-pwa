@@ -1,6 +1,7 @@
 import { SessionDesignerSchemaType } from '@/components/pages/editor-session/session-designer-schema';
-import { DataCollectorRolesType } from '@/types/roles';
+import { DataCollectorRoles, DataCollectorRolesType } from '@/types/roles';
 import { SessionTerminationOptions, SessionTerminationOptionsType } from '@/types/terminations';
+import { z } from 'zod';
 
 /**
  * This is the type definition for the HumanReadableResults type
@@ -29,6 +30,24 @@ export const DEFAULT_SESSION_SETTINGS: SavedSettings = {
   KeySet: '',
   Therapist: '',
 };
+
+const TimerOptionSchema = z
+  .union([z.enum(Object.values(SessionTerminationOptions)), z.number()])
+  .catch(DEFAULT_SESSION_SETTINGS.TimerOption as (typeof SessionTerminationOptions)[keyof typeof SessionTerminationOptions]);
+
+/**
+ * Lenient read of settings.json: each field falls back to its default on its own, and unknown keys are kept.
+ */
+export const SavedSettingsSchema = z.looseObject({
+  Therapist: z.string().catch(DEFAULT_SESSION_SETTINGS.Therapist),
+  Condition: z.string().catch(DEFAULT_SESSION_SETTINGS.Condition),
+  KeySet: z.string().catch(DEFAULT_SESSION_SETTINGS.KeySet),
+  TimerOption: TimerOptionSchema,
+  Initials: z.string().catch(DEFAULT_SESSION_SETTINGS.Initials),
+  Role: z.enum(Object.values(DataCollectorRoles)).catch(DEFAULT_SESSION_SETTINGS.Role),
+  Session: z.number().catch(DEFAULT_SESSION_SETTINGS.Session),
+  DurationS: z.number().catch(DEFAULT_SESSION_SETTINGS.DurationS),
+});
 
 /**
  * Convert the session designer schema to the saved settings type

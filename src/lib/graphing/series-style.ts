@@ -77,11 +77,23 @@ export type TextAnnotation = {
   page?: TextPage;
 };
 
+/** A horizontal line drawn at a constant y position spanning from x1 to x2 on the figure */
+export type AimLine = {
+  x1: number;
+  x2: number;
+  y: number;
+  lineType: PhaseLineType;
+  color: string;
+  /** Page the aim line was added on. Aim lines saved before this option have no page and appear on both pages. */
+  page?: TextPage;
+};
+
 export type SeriesStyles = {
   KeyStyles: Record<string, KeySeriesStyle>;
   ConditionStyles: Record<string, ConditionSeriesStyle>;
   phase_changes: PhaseChange[];
   text_annotations: TextAnnotation[];
+  aim_lines: AimLine[];
 };
 
 export const EMPTY_SERIES_STYLES: SeriesStyles = {
@@ -89,6 +101,7 @@ export const EMPTY_SERIES_STYLES: SeriesStyles = {
   ConditionStyles: {},
   phase_changes: [],
   text_annotations: [],
+  aim_lines: [],
 };
 
 /** Text annotations are always drawn black */
@@ -159,6 +172,37 @@ export function isValidTextAnnotation(value: unknown): value is TextAnnotation {
  */
 export function getPageTextAnnotations(annotations: TextAnnotation[], page: TextPage): TextAnnotation[] {
   return annotations.filter((annotation) => annotation.page === undefined || annotation.page === page);
+}
+
+/**
+ * Checks a saved aim line for finite coordinates, a known line type, and a non-empty color
+ */
+export function isValidAimLine(value: unknown): value is AimLine {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const { x1, x2, y, lineType, color, page } = value as Partial<AimLine>;
+
+  return (
+    typeof x1 === 'number' &&
+    Number.isFinite(x1) &&
+    typeof x2 === 'number' &&
+    Number.isFinite(x2) &&
+    typeof y === 'number' &&
+    Number.isFinite(y) &&
+    PHASE_LINE_TYPES.includes(lineType as PhaseLineType) &&
+    typeof color === 'string' &&
+    color.trim() !== '' &&
+    (page === undefined || TEXT_PAGES.includes(page as TextPage))
+  );
+}
+
+/**
+ * Returns the aim lines that belong on a page. Aim lines saved before pages existed have no page and show on every page.
+ */
+export function getPageAimLines(aimLines: AimLine[] | undefined, page: TextPage): AimLine[] {
+  return (aimLines ?? []).filter((aimLine) => aimLine.page === undefined || aimLine.page === page);
 }
 
 export const SERIES_COLOR_PALETTE: string[] = [...FIGURE_PATH_COLORS, '#000000', '#FFFFFF'];

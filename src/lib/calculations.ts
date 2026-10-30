@@ -1,5 +1,5 @@
-import { SavedSessionResult } from './dtos';
-import { KeySet, KeySetInstance } from '@/types/keyset';
+import { SavedSessionResult } from './dtos/session-results';
+import { KeySet, KeySetInstance } from '@/types/keyset/core';
 import { LogicState } from './logic';
 import {
   CalculationTemplate,

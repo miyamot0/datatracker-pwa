@@ -74,4 +74,55 @@ describe('PhaseChangesDialog', () => {
 
     expect(onChange).toHaveBeenLastCalledWith({ ...EMPTY_SERIES_STYLES, phase_changes: [] });
   });
+
+  it('does not save an infinite or negative position', async () => {
+    const onChange = vi.fn();
+    await render(<PhaseChangesDialog styles={EMPTY_SERIES_STYLES} onChange={onChange} />);
+
+    await page.getByRole('button', { name: 'Edit Phase Changes' }).click();
+    await page.getByRole('button', { name: 'Add Line' }).click();
+    await page.getByLabelText('Position for line 1').fill('1e999');
+
+    expect(onChange).toHaveBeenLastCalledWith({ ...EMPTY_SERIES_STYLES, phase_changes: [] });
+
+    await page.getByLabelText('Position for line 1').fill('-2');
+
+    expect(onChange).toHaveBeenLastCalledWith({ ...EMPTY_SERIES_STYLES, phase_changes: [] });
+  });
+
+  it('edits only the chosen line when several lines are saved', async () => {
+    const onChange = vi.fn();
+    await render(<PhaseChangesDialog styles={withLines} onChange={onChange} />);
+
+    await page.getByRole('button', { name: 'Edit Phase Changes' }).click();
+    await page.getByLabelText('Position for line 2').fill('9');
+
+    expect(onChange).toHaveBeenLastCalledWith({
+      ...withLines,
+      phase_changes: [withLines.phase_changes[0], { ...withLines.phase_changes[1], position: 9 }],
+    });
+  });
+
+  it('saves a new line type picked for a line', async () => {
+    const onChange = vi.fn();
+    await render(<PhaseChangesDialog styles={withLines} onChange={onChange} />);
+
+    await page.getByRole('button', { name: 'Edit Phase Changes' }).click();
+    await page.getByRole('combobox', { name: 'Line type for line 1' }).click();
+    await page.getByRole('option', { name: 'Dashed' }).click();
+
+    expect(onChange).toHaveBeenLastCalledWith({
+      ...withLines,
+      phase_changes: [{ ...withLines.phase_changes[0], lineType: 'dashed' }, withLines.phase_changes[1]],
+    });
+  });
+
+  it('closes the dialog when Done is pressed', async () => {
+    await render(<PhaseChangesDialog styles={withLines} onChange={vi.fn()} />);
+
+    await page.getByRole('button', { name: 'Edit Phase Changes' }).click();
+    await page.getByRole('button', { name: 'Done' }).click();
+
+    await expect.element(page.getByRole('button', { name: 'Done' })).not.toBeInTheDocument();
+  });
 });

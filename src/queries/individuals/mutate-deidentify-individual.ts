@@ -1,7 +1,7 @@
 import { clientQueryOptions } from './query-individuals';
 import { queryClient } from '@/App';
 import DeIdentifyIndividualWorker from '@/workers/mutations/deidentify-individual-worker.ts?worker';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 import {
   DeIdentifyIndividualRequest,
   DeIdentifyIndividualResponse,
@@ -35,7 +35,7 @@ export const mutationDeIdentifyIndividual = async ({
   RedactComments: boolean;
   Handle: FileSystemDirectoryHandle;
 }): Promise<string[]> => {
-  const individuals: string[] = await queryClient.fetchQuery(clientQueryOptions(Handle, Group));
+  const individuals: string[] = await queryClient.query(clientQueryOptions(Handle, Group));
 
   if (!individuals) {
     throw new Error('Individuals not found');
@@ -68,7 +68,7 @@ export const mutationDeIdentifyIndividualWorker = async ({
 }) => {
   const worker = new DeIdentifyIndividualWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     handle: Handle,
     groupName: Group,
     sourceIndividualName: SourceIndividual,

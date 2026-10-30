@@ -1,13 +1,13 @@
 ---
-title: Annotating Figures with Phase Lines and Text
-description: This entry explains how to add phase change lines and text annotations to figures. Instructions are provided to support users in using annotations to aid in performing visual analysis.
+title: Annotating Figures with Phase Lines, Aim Lines, and Text
+description: This entry explains how to add phase change lines, aim lines, and text annotations to figures. Instructions are provided to support users in using annotations to aid in performing visual analysis.
 date: 10/27/2026
-keywords: 'Phase Change Lines, Text Annotations'
+keywords: 'Phase Change Lines, Aim Lines, Text Annotations'
 author: 'Shawn Gilroy'
 index: 19
 ---
 
-The purpose of this entry is to provide guidance on how to annotate the proportion and rate figures with phase change lines and text. Annotations help a reader interpret a figure without leaving it. For example, a vertical line can mark where an intervention begins, and a short label can name the phase or describe an event that caused a change in responding. Both features are designed to make the figure easier to read for others, including people who did not collect the data.
+The purpose of this entry is to provide guidance on how to annotate the proportion and rate figures with phase change lines, aim lines, and text. Annotations help a reader interpret a figure without leaving it. For example, a vertical line can mark where an intervention begins, a horizontal aim line can show a target level of responding, and a short label can name the phase or describe an event that caused a change in responding. Both features are designed to make the figure easier to read for others, including people who did not collect the data.
 
 Annotations only change how the figure is drawn. They are stored with the other series styles for an evaluation, and they **do not alter the underlying session data**. You can add, edit, or remove them at any time without affecting any recorded sessions or calculated values.
 
@@ -15,7 +15,9 @@ Annotations only change how the figure is drawn. They are stored with the other 
 
 Both the Rate and Proportion sections of an evaluation each provide annotation controls in the toolbar above the figure and include: **Phase Changes** and **Text**. On narrow screens these show only their icons, so hover over one to see its full name. Clicking either control opens a dialog where *each row* represents *one annotation*.
 
-Phase change lines are shared annotations that persist across *both* Rate and Proportion figures. Text annotations are scoped to a single page, given that each has a respective Y axis that is not often meaningful across pages. The sections below describe each annotation type in detail.
+Aim lines do not have a toolbar control. They are opened from the **Aesthetics** menu, under **Annotations**, then **Aim Lines**. The Annotations submenu also lists **Text Labels** and **Phase Change Lines**, which open the same dialogs as the toolbar controls.
+
+Phase change lines are shared annotations that persist across *both* Rate and Proportion figures. Aim lines and text annotations are scoped to a single page, given that each page has a respective Y axis that is not often meaningful across pages. The sections below describe each annotation type in detail.
 
 #### Phase Change Lines
 
@@ -30,6 +32,23 @@ Clicking **Phase Changes** opens a dialog where you can add, edit, and delete li
 Adding a new phase change line requires specifying its position and line type. Users can click **Add Line** to create a new row. A row with an invalid position is shown with a message and is not saved until its position is corrected. If you enter a position that is not a number, or zero or less, the line is not saved, so it does not appear in the figure.
 
 **Example:** You have a Baseline phase that runs from session 1 to session 6, and an intervention that begins at session 7. You can add a line at position 6.5 with a solid style, so it falls between the last baseline session and the first intervention session (i.e., a solid line indicating a change in contingency). You may add a second line at a later position if a second change occurred, using a dashed style or alternative to highlight other relevant changes (e.g., change of implementer, rather than change in terms of procedure).
+
+#### Aim Lines
+
+Aim lines are horizontal reference lines that show a target or criterion level, such as a goal rate or a level of responding that the intervention is expected to reach. Each line is drawn from an X1 value to an X2 value at a constant Y value. Unlike phase change lines, aim lines are not limited to the full height of the plot, so they can cover only the sessions that matter (e.g., only the intervention phase).
+
+Aim lines are opened from **Aesthetics**, then **Annotations**, then **Aim Lines**. Each line is shown on its own row with the following fields:
+
+- **X1:** The X-Axis value where the line starts. This must be a number.
+- **X2:** The X-Axis value where the line ends. This must be a number. Enter a value greater than X1 so the line runs from left to right.
+- **Y:** The Y-Axis value of the line. This must be a number, and it uses the units of the figure's vertical axis (percentage on the proportion page, rate units on the rate page).
+- **Line:** Options are solid, dashed, or dotted. Dashed is the default for a new line.
+- **Color:** A color from the series palette, so an aim line can be distinguished from the data and from other aim lines.
+- **Delete:** Removes that aim line only. The delete button is shown at the end of the row.
+
+Users can click **Add Aim Line** to create a new row. A row with a missing or non-numeric X1, X2, or Y value is shown with a message and is not saved until it is corrected. Aim lines are scoped to the page they are added on. The Rate and Proportion pages each keep their own list, and an aim line added on one page does not appear on the other.
+
+**Example:** On the rate page, a therapist sets a goal of 4 responses per minute for the final phase. They add an aim line with X1 set to the first session of the intervention, X2 set to the last session, Y set to 4, Line set to dashed, and a color that stands out from the data series. The line then shows the goal across only the intervention sessions.
 
 #### Text Annotations
 
@@ -55,9 +74,9 @@ Text size affects only how annotation text is drawn. It does not change the posi
 
 ### Saving, Reset, and Persistence
 
-Phase change lines and text annotations are saved with the other series styles for the evaluation, and they persist in the same way as those styles. They are kept on the local machine, so they remain when you return to the evaluation, and they carry over as more data and conditions are added to the data set.
+Phase change lines, aim lines, and text annotations are saved with the other series styles for the evaluation, and they persist in the same way as those styles. They are kept on the local machine, so they remain when you return to the evaluation, and they carry over as more data and conditions are added to the data set.
 
-Clicking **Reset All to Defaults** in the **Styles** dialog does not remove phase change lines or text annotations. To remove annotations, delete them in their own respective dialogs.
+Clicking **Reset All to Defaults** in the **Styles** dialog does not remove phase change lines or text annotations. It does remove aim lines, because that reset clears the aim line list along with the series and condition styles. To remove other annotations, delete them in their own respective dialogs.
 
 ### Closing Notes and Tips
 

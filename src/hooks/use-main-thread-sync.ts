@@ -36,6 +36,7 @@ async function iterativeRead(
   pathArray: string[],
   processedCount: { count: number },
 ): Promise<void> {
+  if (entry.name === '.DS_Store') return;
   if (entry.kind === 'file') {
     pathArray.push(path);
   } else if (entry.kind === 'directory') {
@@ -63,6 +64,7 @@ async function listFilesInDirectory(handle: FileSystemDirectoryHandle): Promise<
     const entries = handle.values();
 
     for await (const entry of entries) {
+      if (entry.name === '.DS_Store') continue;
       if (entry.kind === 'file') {
         // Handle root-level files
         pathArray.push(`/${entry.name}`);
@@ -169,10 +171,14 @@ async function writeFileToTarget(
   sourceDirectory: FileSystemDirectoryHandle,
   filePath: string,
 ): Promise<void> {
-  if (!targetDirectory || !sourceDirectory) return;
+  if (!targetDirectory || !sourceDirectory) {
+    throw new Error(`Missing directory handle for: ${filePath}`);
+  }
 
   const pathParts = filePath.split('/').filter((part) => part.trim().length > 0);
-  if (pathParts.length === 0) return;
+  if (pathParts.length === 0) {
+    throw new Error(`Invalid file path: ${filePath}`);
+  }
 
   try {
     // Get existing file from source (don't create)

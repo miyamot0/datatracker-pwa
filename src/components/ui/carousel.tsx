@@ -1,32 +1,32 @@
 import * as React from 'react';
-import useEmblaCarousel, { type UseEmblaCarouselType } from 'embla-carousel-react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
-const autoplayDefaultInterval = 3000; //ms
+const AUTOPLAY_INTERVAL = 3000; // ms
 
-type CarouselApi = UseEmblaCarouselType[1];
-type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
-type CarouselOptions = UseCarouselParameters[0];
-type CarouselPlugin = UseCarouselParameters[1];
+type CarouselOptions = {
+  loop?: boolean;
+  autoplay?: boolean;
+};
 
 type CarouselProps = {
   opts?: CarouselOptions;
-  plugins?: CarouselPlugin;
   orientation?: 'horizontal' | 'vertical';
-  setApi?: (api: CarouselApi) => void;
 };
 
 type CarouselContextProps = {
-  carouselRef: ReturnType<typeof useEmblaCarousel>[0];
-  api: ReturnType<typeof useEmblaCarousel>[1];
+  viewportRef: React.RefObject<HTMLDivElement | null>;
+  orientation: 'horizontal' | 'vertical';
+  selectedIndex: number;
+  count: number;
+  scrollTo: (index: number) => void;
   scrollPrev: () => void;
   scrollNext: () => void;
   canScrollPrev: boolean;
   canScrollNext: boolean;
-} & CarouselProps;
+};
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null);
 
@@ -40,34 +40,61 @@ function useCarousel() {
   return context;
 }
 
+// Slides are scroll-snap children of the viewport; the active index is derived from scroll position.
+function slidesOf(viewport: HTMLDivElement | null): HTMLElement[] {
+  return viewport ? (Array.from(viewport.children) as HTMLElement[]) : [];
+}
+
 const Carousel = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement> & CarouselProps>(
-  ({ orientation = 'horizontal', opts, setApi, plugins, className, children, ...props }, ref) => {
-    const [carouselRef, api] = useEmblaCarousel(
-      {
-        ...opts,
-        axis: orientation === 'horizontal' ? 'x' : 'y',
-      },
-      plugins
-    );
-    const [canScrollPrev, setCanScrollPrev] = React.useState(false);
-    const [canScrollNext, setCanScrollNext] = React.useState(false);
+  ({ orientation = 'horizontal', opts, className, children, onMouseEnter, onMouseLeave, onFocus, onBlur, ...props }, ref) => {
+    const loop = opts?.loop ?? false;
+    const autoplayEnabled = opts?.autoplay ?? true;
+    const viewportRef = React.useRef<HTMLDivElement | null>(null);
+    const [selectedIndex, setSelectedIndex] = React.useState(0);
+    const [count, setCount] = React.useState(0);
+    const [paused, setPaused] = React.useState(false);
+    const [reducedMotion, setReducedMotion] = React.useState(false);
 
-    const onSelect = React.useCallback((api: CarouselApi) => {
-      if (!api) {
-        return;
-      }
-
-      setCanScrollPrev(api.canScrollPrev());
-      setCanScrollNext(api.canScrollNext());
+    React.useEffect(() => {
+      const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+      setReducedMotion(mql.matches);
+      const onChange = (event: MediaQueryListEvent) => setReducedMotion(event.matches);
+      mql.addEventListener('change', onChange);
+      return () => mql.removeEventListener('change', onChange);
     }, []);
 
+    const scrollTo = React.useCallback(
+      (index: number) => {
+        const viewport = viewportRef.current;
+        const slide = slidesOf(viewport)[index];
+        if (!viewport || !slide) {
+          return;
+        }
+        const behavior: ScrollBehavior = reducedMotion ? 'auto' : 'smooth';
+        if (orientation === 'horizontal') {
+          viewport.scrollTo({ left: slide.offsetLeft, behavior });
+        } else {
+          viewport.scrollTo({ top: slide.offsetTop, behavior });
+        }
+      },
+      [orientation, reducedMotion]
+    );
+
     const scrollPrev = React.useCallback(() => {
-      api?.scrollPrev();
-    }, [api]);
+      if (selectedIndex === 0) {
+        if (loop) scrollTo(count - 1);
+        return;
+      }
+      scrollTo(selectedIndex - 1);
+    }, [count, loop, scrollTo, selectedIndex]);
 
     const scrollNext = React.useCallback(() => {
-      api?.scrollNext();
-    }, [api]);
+      if (selectedIndex >= count - 1) {
+        if (loop) scrollTo(0);
+        return;
+      }
+      scrollTo(selectedIndex + 1);
+    }, [count, loop, scrollTo, selectedIndex]);
 
     const handleKeyDown = React.useCallback(
       (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -82,61 +109,85 @@ const Carousel = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
       [scrollPrev, scrollNext]
     );
 
+    // Track the active slide (and slide count) from the viewport's scroll position.
     React.useEffect(() => {
-      if (!api || !setApi) {
+      const viewport = viewportRef.current;
+      if (!viewport) {
         return;
       }
-
-      setApi(api);
-    }, [api, setApi]);
-
-    React.useEffect(() => {
-      if (!api) {
-        return;
-      }
-
-      onSelect(api);
-      api.on('reInit', onSelect);
-      api.on('select', onSelect);
-
-      return () => {
-        api?.off('select', onSelect);
+      const update = () => {
+        const slides = slidesOf(viewport);
+        setCount(slides.length);
+        const horizontal = orientation === 'horizontal';
+        const pos = horizontal ? viewport.scrollLeft : viewport.scrollTop;
+        let nearest = 0;
+        let best = Infinity;
+        slides.forEach((slide, i) => {
+          const distance = Math.abs((horizontal ? slide.offsetLeft : slide.offsetTop) - pos);
+          if (distance < best) {
+            best = distance;
+            nearest = i;
+          }
+        });
+        setSelectedIndex(nearest);
       };
-    }, [api, onSelect]);
+      update();
+      viewport.addEventListener('scroll', update, { passive: true });
+      const resizeObserver = new ResizeObserver(update);
+      resizeObserver.observe(viewport);
+      return () => {
+        viewport.removeEventListener('scroll', update);
+        resizeObserver.disconnect();
+      };
+    }, [orientation, children]);
 
+    // Autoplay advances every few seconds and pauses on hover, focus, or reduced motion.
+    const autoplayActive = autoplayEnabled && !paused && !reducedMotion && count > 1;
     React.useEffect(() => {
-      if (!api) {
+      if (!autoplayActive) {
         return;
       }
-
       const intervalId = setInterval(() => {
-        api.scrollNext();
-        if (api.selectedScrollSnap() === api.scrollSnapList().length - 1) {
-          api.scrollTo(0);
-        }
-      }, autoplayDefaultInterval); // Use the autoplayInterval prop
-
-      return () => {
-        clearInterval(intervalId);
-      };
-    }, [api]);
+        scrollTo(selectedIndex >= count - 1 ? 0 : selectedIndex + 1);
+      }, AUTOPLAY_INTERVAL);
+      return () => clearInterval(intervalId);
+    }, [autoplayActive, count, scrollTo, selectedIndex]);
 
     return (
       <CarouselContext.Provider
         value={{
-          carouselRef,
-          api: api,
-          opts,
-          orientation: orientation || (opts?.axis === 'y' ? 'vertical' : 'horizontal'),
+          viewportRef,
+          orientation,
+          selectedIndex,
+          count,
+          scrollTo,
           scrollPrev,
           scrollNext,
-          canScrollPrev,
-          canScrollNext,
+          canScrollPrev: loop ? count > 1 : selectedIndex > 0,
+          canScrollNext: loop ? count > 1 : selectedIndex < count - 1,
         }}
       >
         <div
           ref={ref}
           onKeyDownCapture={handleKeyDown}
+          onMouseEnter={(e) => {
+            setPaused(true);
+            onMouseEnter?.(e);
+          }}
+          onMouseLeave={(e) => {
+            setPaused(false);
+            onMouseLeave?.(e);
+          }}
+          onFocus={(e) => {
+            setPaused(true);
+            onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+              setPaused(false);
+            }
+            onBlur?.(e);
+          }}
           className={cn('relative', className)}
           role="region"
           aria-roledescription="carousel"
@@ -152,16 +203,22 @@ Carousel.displayName = 'Carousel';
 
 const CarouselContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => {
-    const { carouselRef, orientation } = useCarousel();
+    const { viewportRef, orientation } = useCarousel();
 
     return (
-      <div ref={carouselRef} className="overflow-hidden">
-        <div
-          ref={ref}
-          className={cn('flex', orientation === 'horizontal' ? '-ml-4' : '-mt-4 flex-col', className)}
-          {...props}
-        />
-      </div>
+      <div
+        ref={(node) => {
+          viewportRef.current = node;
+          if (typeof ref === 'function') ref(node);
+          else if (ref) ref.current = node;
+        }}
+        className={cn(
+          'flex overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+          orientation === 'vertical' && 'flex-col overflow-x-hidden overflow-y-auto snap-y',
+          className
+        )}
+        {...props}
+      />
     );
   }
 );
@@ -176,7 +233,11 @@ const CarouselItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLD
         ref={ref}
         role="group"
         aria-roledescription="slide"
-        className={cn('min-w-0 shrink-0 grow-0 basis-full', orientation === 'horizontal' ? 'pl-4' : 'pt-4', className)}
+        className={cn(
+          'min-w-0 shrink-0 grow-0 basis-full',
+          orientation === 'horizontal' ? 'snap-center' : 'snap-start',
+          className
+        )}
         {...props}
       />
     );
@@ -194,7 +255,7 @@ const CarouselPrevious = React.forwardRef<HTMLButtonElement, React.ComponentProp
         variant={variant}
         size={size}
         className={cn(
-          'absolute  h-8 w-8 rounded-full',
+          'absolute h-8 w-8 rounded-full',
           orientation === 'horizontal'
             ? '-left-12 top-1/2 -translate-y-1/2'
             : '-top-12 left-1/2 -translate-x-1/2 rotate-90',
@@ -240,4 +301,29 @@ const CarouselNext = React.forwardRef<HTMLButtonElement, React.ComponentProps<ty
 );
 CarouselNext.displayName = 'CarouselNext';
 
-export { type CarouselApi, Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext };
+const CarouselDots = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => {
+    const { count, selectedIndex, scrollTo } = useCarousel();
+
+    return (
+      <div ref={ref} className={cn('flex justify-center gap-2 pt-4', className)} {...props}>
+        {Array.from({ length: count }, (_, index) => (
+          <button
+            key={index}
+            type="button"
+            aria-label={`Go to slide ${index + 1}`}
+            aria-current={index === selectedIndex ? 'true' : undefined}
+            onClick={() => scrollTo(index)}
+            className={cn(
+              'h-2 w-2 rounded-full transition-colors',
+              index === selectedIndex ? 'bg-foreground' : 'bg-muted-foreground/40 hover:bg-muted-foreground'
+            )}
+          />
+        ))}
+      </div>
+    );
+  }
+);
+CarouselDots.displayName = 'CarouselDots';
+
+export { type CarouselOptions, Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, CarouselDots };

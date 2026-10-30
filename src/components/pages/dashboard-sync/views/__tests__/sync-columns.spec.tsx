@@ -248,6 +248,13 @@ describe('syncColumns', () => {
       await expect.element(page.getByTestId('badge')).toHaveClass('bg-amber-600');
     });
 
+    it('cell renders "Figure Styles" badge for figure_styles', async () => {
+      const CellFn = col.cell;
+      render(<CellFn getValue={() => 'figure_styles'} />);
+      await expect.element(page.getByText('Figure Styles')).toBeInTheDocument();
+      await expect.element(page.getByTestId('badge')).toHaveClass('bg-purple-600');
+    });
+
     it('cell renders nothing when value is a filename', async () => {
       const CellFn = col.cell;
       render(

@@ -9,6 +9,12 @@ const mockIsOnMobilePlatform = vi.hoisted(() => vi.fn());
 const mockNavigate = vi.hoisted(() => vi.fn());
 const mockInvalidate = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 
+const mockFolderHandle = vi.hoisted(() => ({ useFolderHandleContext: vi.fn() }));
+
+vi.mock('@/hooks/use-folder-context', () => ({
+  useFolderHandleContext: () => mockFolderHandle.useFolderHandleContext(),
+}));
+
 vi.mock('react-use-pwa-install', () => ({
   usePWAInstall: () => mockUsePWAInstall(),
 }));
@@ -95,9 +101,8 @@ const makeSettings = (isReturningUser: boolean) =>
 const renderHome = (isReturningUser = true, saveSettings = vi.fn(), setSettings = vi.fn()) => {
   mockRoute.useLoaderData.mockReturnValue({
     Settings: makeSettings(isReturningUser),
-    SaveSettings: saveSettings,
-    SetSettings: setSettings,
   });
+  mockFolderHandle.useFolderHandleContext.mockReturnValue({ saveSettings, setSettings });
 
   return render(<HomePage />);
 };

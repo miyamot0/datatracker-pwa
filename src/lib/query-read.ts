@@ -1,8 +1,10 @@
 import { deserializeKeySet } from '@/lib/keyset';
 import { CleanUpString } from '@/lib/strings';
-import { KeySet, KeySetExtended } from '@/types/keyset';
-import { DEFAULT_SESSION_SETTINGS, SavedSettings } from '@/lib/dtos/session-settings';
-import { SavedSessionResult } from '@/lib/dtos/session-results';
+import { isReservedFileName } from '@/lib/reserved-names';
+import { KeySet } from '@/types/keyset/core';
+import { KeySetExtended } from '@/types/keyset/extended';
+import { DEFAULT_SESSION_SETTINGS, SavedSettings, SavedSettingsSchema } from '@/lib/dtos/session-settings';
+import { parseSavedSessionResult } from '@/lib/dtos/session-results';
 import { ModifiedSessionResult } from '@/types/storage';
 import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
 import { readKeyboardParameters } from '@/lib/reader';
@@ -225,17 +227,23 @@ export async function fetchKeysets(
 
     for await (const [name, entry] of keyboards_folder.entries()) {
       if (name === '.DS_Store') continue;
+      if (isReservedFileName(name)) continue;
 
       if (entry.kind === 'file' && name.endsWith('.json')) {
-        const keyset = await entry.getFile();
-        const keyset_text = await keyset.text();
+        try {
+          const keyset = await entry.getFile();
+          const keyset_text = await keyset.text();
 
-        if (keyset_text.length === 0) continue;
+          if (keyset_text.length === 0) continue;
 
-        const keyset_json = deserializeKeySet(keyset_text);
+          const keyset_json = deserializeKeySet(keyset_text);
 
-        if (keyset_json) {
-          keysets.push(keyset_json);
+          if (keyset_json) {
+            keysets.push(keyset_json);
+          }
+        } catch (error) {
+          // One unreadable keyset should not hide the others
+          console.error(`Error reading keyset ${name}:`, error);
         }
       }
     }
@@ -283,6 +291,7 @@ export async function fetchKeysetsAll(
         for await (const [kbName, kb_entry] of keyboards_folder.entries()) {
           if (kb_entry.kind === 'directory') continue;
           if (kbName === '.DS_Store') continue;
+          if (isReservedFileName(kbName)) continue;
 
           if (kbName.includes('.json')) {
             try {
@@ -343,13 +352,23 @@ export async function fetchSessionParams(
       const settings_file = await evaluations.getFileHandle('settings.json');
       const settings = await settings_file.getFile();
       const settings_text = await settings.text();
-      const settings_json = JSON.parse(settings_text) as SavedSettings;
+      const settings_json = JSON.parse(settings_text) as unknown;
 
-      if (!settings_json) throw new Error('Settings file not well-formed');
+      if (!settings_json || typeof settings_json !== 'object' || Array.isArray(settings_json)) {
+        // Malformed settings: fall back to defaults in memory only. Never overwrite the user's file.
+        console.error('Settings file not well-formed; using defaults without overwriting it');
+        return DEFAULT_SESSION_SETTINGS;
+      }
 
-      return settings_json;
-    } catch {
-      // Create default settings file if not found
+      return SavedSettingsSchema.parse(settings_json);
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === 'NotFoundError')) {
+        // Unreadable or unparseable file: report it and leave it untouched
+        console.error('Error reading settings file; using defaults without overwriting it', error);
+        return DEFAULT_SESSION_SETTINGS;
+      }
+
+      // Create default settings file only when none exists
       try {
         const file = await evaluations.getFileHandle('settings.json', { create: true });
         const writer = await file.createWritable();
@@ -392,8 +411,8 @@ export async function fetchSessionOutcomes(
       if (name === '.DS_Store') continue;
 
       if (entry.kind === 'file' && name.endsWith('.json')) {
-        // Skip the settings file
-        if (name === 'settings.json') continue;
+        // Skip the settings file and the reserved styles file
+        if (name === 'settings.json' || isReservedFileName(name)) continue;
         files.push(entry);
       } else if (entry.kind === 'directory') {
         const condition_folder = await evaluations.getDirectoryHandle(name);
@@ -413,22 +432,24 @@ export async function fetchSessionOutcomes(
         const file_data = await file.getFile();
         const file_text = await file_data.text();
 
-        const session_result: ModifiedSessionResult = {
-          ...(JSON.parse(file_text) as SavedSessionResult),
-          Filename: file.name,
-        };
+        const session_result = parseSavedSessionResult(JSON.parse(file_text));
 
-        if (session_result) {
-          session_results.push(session_result);
+        if (!session_result) {
+          console.error(`Skipping malformed session outcome file ${file.name}`);
+          continue;
         }
+
+        session_results.push({
+          ...session_result,
+          Filename: file.name,
+        });
       } catch (error) {
         console.error(`Error parsing session outcome file ${file.name}:`, error);
       }
     }
 
-    return session_results.sort(
-      (a, b) => new Date(b.SessionSettings.Session).valueOf() - new Date(a.SessionSettings.Session).valueOf(),
-    );
+
+    return session_results.sort((a, b) => b.SessionSettings.Session - a.SessionSettings.Session);
   } catch (error) {
     console.error('Error fetching session outcomes:', error);
     return [];

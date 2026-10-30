@@ -1,15 +1,16 @@
-import { FolderContextProvider, FolderHandleContextType } from './context/folder-context';
+import { FolderContextProvider, RouterFolderHandleContext } from './context/folder-context';
 import { ThemeProvider } from './components/ui/theme-provider';
 import { routeTree } from './routeTree.gen';
 import { RouterProvider, createHashHistory, createRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFolderHandleContext } from '@/hooks/use-folder-context';
-import { useMemo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { setupQueryDevTools } from './lib/dev';
 
+// Router-facing folder state is read-only: loaders and guards read values, components update through the hook
 export interface CustomizedRouterContext {
   queryClient: QueryClient;
-  folderHandleContext: FolderHandleContextType;
+  folderHandleContext: RouterFolderHandleContext;
 }
 
 // Create a hash history for the router
@@ -48,17 +49,42 @@ if (import.meta.env.DEV) {
  */
 const InnerApp = () => {
   const folderHandleContext = useFolderHandleContext();
+  const { settings, isInitialized } = folderHandleContext;
+  const lastSettingsRef = useRef(settings);
 
-  const routerContext = useMemo(
-    () => ({
-      queryClient,
-      folderHandleContext,
-    }),
-    [folderHandleContext],
-  );
+  // Loader data copies settings at load time, so re-run loaders whenever settings change after startup
+  useEffect(() => {
+    if (!isInitialized || lastSettingsRef.current === settings) {
+      return;
+    }
+
+    lastSettingsRef.current = settings;
+    void router.invalidate();
+  }, [settings, isInitialized]);
+
+  // Built once from stable callbacks, so every field reads the latest provider state when a loader runs.
+  // Spreading the provider value here would copy settings and isInitialized as of this render and go stale.
+  const [routerContext] = useState<CustomizedRouterContext>(() => ({
+    queryClient,
+    folderHandleContext: {
+      get handle() {
+        return folderHandleContext.getHandle();
+      },
+      get settings() {
+        return folderHandleContext.getSettings();
+      },
+      get isInitialized() {
+        return folderHandleContext.getIsInitialized();
+      },
+      getHandle: folderHandleContext.getHandle,
+      getSettings: folderHandleContext.getSettings,
+      getIsInitialized: folderHandleContext.getIsInitialized,
+    },
+  }));
 
   return <RouterProvider router={router} context={routerContext} />;
 };
+
 
 function App() {
   return (

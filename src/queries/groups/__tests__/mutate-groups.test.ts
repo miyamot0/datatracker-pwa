@@ -1,0 +1,68 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+const workerState = vi.hoisted(() => ({ instance: null as null | { onmessage: any; onerror: any } }));
+
+vi.mock('@/App', () => ({
+  queryClient: { query: vi.fn().mockResolvedValue(['Group A']) },
+}));
+
+vi.mock('@/workers/mutations/file-query-mutate-worker.ts?worker', () => ({
+  default: class {
+    onmessage: any;
+    onerror: any;
+    postMessage = vi.fn();
+    constructor() {
+      workerState.instance = this as any;
+    }
+  },
+}));
+
+import { mutationGroups } from '../mutate-groups';
+
+const handle = {} as FileSystemDirectoryHandle;
+
+describe('mutationGroups', () => {
+  beforeEach(() => {
+    workerState.instance = null;
+  });
+
+  it('resolves with the directories returned by the worker', async () => {
+    const promise = mutationGroups({ Group: ['Group A'], Handle: handle, Action: 'Add' });
+    await vi.waitFor(() => expect(workerState.instance).not.toBeNull());
+
+    workerState.instance!.onmessage({ data: { success: true, data: ['Group A', 'Group B'] } });
+
+    await expect(promise).resolves.toEqual(['Group A', 'Group B']);
+  });
+
+  it('rejects with the worker error message instead of resolving empty', async () => {
+    const promise = mutationGroups({ Group: ['Example DataTracker Group'], Handle: handle, Action: 'Demo' });
+    await vi.waitFor(() => expect(workerState.instance).not.toBeNull());
+
+    workerState.instance!.onmessage({
+      data: { success: false, error: 'The Example DataTracker Group folder already exists.' },
+    });
+
+    await expect(promise).rejects.toThrow('The Example DataTracker Group folder already exists.');
+  });
+
+  it('rejects when the worker itself fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const promise = mutationGroups({ Group: ['Group A'], Handle: handle, Action: 'Add' });
+    await vi.waitFor(() => expect(workerState.instance).not.toBeNull());
+
+    workerState.instance!.onerror({ message: 'boom' });
+
+    await expect(promise).rejects.toThrow('boom');
+  });
+
+  it('rejects with a fallback message when the worker error has no message', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const promise = mutationGroups({ Group: ['Group A'], Handle: handle, Action: 'Add' });
+    await vi.waitFor(() => expect(workerState.instance).not.toBeNull());
+
+    workerState.instance!.onerror({ message: '' });
+
+    await expect(promise).rejects.toThrow('Worker failed to complete the mutation');
+  });
+});

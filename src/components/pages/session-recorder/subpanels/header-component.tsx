@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { SavedSettings } from '@/lib/dtos/session-settings';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { RunningStateOptions } from '@/types/session';
 
 const DataCollectorVisual = ({ Settings }: { Settings: SavedSettings }) => {

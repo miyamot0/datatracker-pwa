@@ -1,11 +1,11 @@
 import { queryClient } from '@/App';
 import { conditionQueryOptions } from './query-conditions';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 import { MutateConditionsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**
- * This function is responsible for mutating the conditions associated with a specific group, individual, and evaluation. It takes in the necessary parameters to identify the target evaluation and the condition to be added. The function first retrieves the current list of conditions using React Query's `fetchQuery` method. It then performs the specified action (in this case, adding a new condition) by interacting with the file system through the provided directory handle. Finally, it returns the updated list of conditions after the mutation is complete.
+ * This function is responsible for mutating the conditions associated with a specific group, individual, and evaluation. It takes in the necessary parameters to identify the target evaluation and the condition to be added. The function first retrieves the current list of conditions using React Query's `query` method. It then performs the specified action (in this case, adding a new condition) by interacting with the file system through the provided directory handle. Finally, it returns the updated list of conditions after the mutation is complete.
  *
  * @param Group - The name of the group associated with the evaluation.
  * @param Individual - The name of the individual associated with the evaluation.
@@ -30,7 +30,7 @@ export const mutationConditions = async ({
   Handle: FileSystemDirectoryHandle;
   Action: 'Add' | 'Clear';
 }): Promise<string[]> => {
-  const conditions: string[] = await queryClient.fetchQuery(
+  const conditions: string[] = await queryClient.query(
     conditionQueryOptions(Handle, Group, Individual, Evaluation),
   );
 
@@ -69,7 +69,7 @@ export const mutationConditionsWorker = async ({
 }) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'MUTATE_CONDITIONS',
     handle: Handle,
     groupName: Group,
@@ -79,19 +79,19 @@ export const mutationConditionsWorker = async ({
     action: Action, // This should also be passed as a parameter based on the desired mutation
   } satisfies MutateConditionsRequest;
 
-  return new Promise<string[]>((resolve) => {
+  return new Promise<string[]>((resolve, reject) => {
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
         const directories = response.data;
         resolve(directories);
       } else {
-        resolve([]);
+        reject(new Error(response.error));
       }
     };
     worker.onerror = (error) => {
       console.error('Worker error:', error);
-      resolve([]);
+      reject(new Error(error.message || 'Worker failed to complete the mutation'));
     };
     worker.postMessage(request);
   });

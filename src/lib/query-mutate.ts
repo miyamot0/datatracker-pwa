@@ -1,11 +1,13 @@
 import { CleanUpString } from '@/lib/strings';
-import { DataExampleFiles } from '@/lib/data';
-import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
-import { v4 as uuidv4 } from 'uuid';
-import { KeySet, KeySetExtended } from '@/types/keyset';
+import { DemoArchiveFile, extractDemoArchive, fetchVerifiedDemoArchive } from '@/lib/demo-archive';
+import { createNewKeySet, deserializeKeySet, serializeKeySet } from '@/lib/keyset';
+import { isReservedKeysetName } from '@/lib/reserved-names';
+import { v4 } from '@/lib/uuid';
+import { KeySet } from '@/types/keyset/core';
+import { KeySetExtended } from '@/types/keyset/extended';
 import { ModifiedSessionResult } from '@/types/storage';
 import { SavedSettings } from '@/lib/dtos/session-settings';
-import { SavedSessionResult } from '@/lib/dtos/session-results';
+import { SavedSessionResult, parseSavedSessionResult } from '@/lib/dtos/session-results';
 import { GenerateSavedFileName } from '@/lib/writer';
 import { EvaluationRecord } from '@/queries/keysets/types/evaluation-record';
 import { importExistingKeysets } from '@/lib/keysets/import-keysets';
@@ -18,9 +20,13 @@ export const DemoDataFolderName = 'Example DataTracker Group';
  * Utility function to copy demo data into user's file system. Checks for existing demo folder to prevent overwriting.
  *
  * @param handle - The FileSystemDirectoryHandle representing the root directory where the demo data should be copied.
+ * @param loadArchive - Returns the verified demo archive bytes. Rejects if the download or integrity check fails.
  * @returns A promise that resolves when the copying is complete, or rejects if the demo folder already exists or if any error occurs during copying.
  */
-export async function copyDemoData(handle: FileSystemDirectoryHandle): Promise<void> {
+export async function copyDemoData(
+  handle: FileSystemDirectoryHandle,
+  loadArchive: () => Promise<Uint8Array> = () => fetchVerifiedDemoArchive(),
+): Promise<void> {
   // Check if demo folder already exists
   const groups: string[] = [];
   for await (const [name, entry] of handle.entries()) {
@@ -35,9 +41,11 @@ export async function copyDemoData(handle: FileSystemDirectoryHandle): Promise<v
     );
   }
 
+  const demoFiles: DemoArchiveFile[] = extractDemoArchive(await loadArchive());
+
   const folder = await handle.getDirectoryHandle(DemoDataFolderName, { create: true });
 
-  for (const file of DataExampleFiles) {
+  for (const file of demoFiles) {
     const participantId = file.path[0];
     const participantFolder = await folder.getDirectoryHandle(participantId, { create: true });
 
@@ -49,9 +57,9 @@ export async function copyDemoData(handle: FileSystemDirectoryHandle): Promise<v
       subfolderHandle = await subfolderHandle.getDirectoryHandle(subfolder, { create: true });
     }
 
-    const fileHandle = await subfolderHandle.getFileHandle(file.filename!, { create: true });
+    const fileHandle = await subfolderHandle.getFileHandle(file.filename, { create: true });
     const writable = await fileHandle.createWritable();
-    await writable.write(file.text);
+    await writable.write(file.bytes as BufferSource);
     await writable.close();
   }
 }
@@ -425,12 +433,19 @@ export async function mutateDeIdentifyIndividual(
           const file = await fileHandle.getFile();
           const text = await file.text();
 
+          const result = parseSavedSessionResult(JSON.parse(text));
+          if (!result) {
+            console.error(`Skipping malformed session file ${filename} during de-identification`);
+            continue;
+          }
+
           collectedEntries.push({
             evaluationName,
             conditionName,
             filename,
-            result: JSON.parse(text) as SavedSessionResult,
+            result,
           });
+
         }
       }
     }
@@ -480,11 +495,18 @@ export async function mutateDeIdentifyIndividual(
       const file = await fileHandle.getFile();
       const text = await file.text();
 
-      const parsedKeySet = JSON.parse(text) as KeySet;
+      let parsedKeySet: KeySet;
+      try {
+        parsedKeySet = deserializeKeySet(text);
+      } catch (error) {
+        console.error(`Skipping malformed keyset file ${filename} during de-identification:`, error);
+        continue;
+      }
+
       const shiftedKeySet: KeySet = {
         ...parsedKeySet,
-        createdAt: shiftDateLike(new Date(parsedKeySet.createdAt), context.offsetMs),
-        lastModified: shiftDateLike(new Date(parsedKeySet.lastModified), context.offsetMs),
+        createdAt: shiftDateLike(parsedKeySet.createdAt, context.offsetMs),
+        lastModified: shiftDateLike(parsedKeySet.lastModified, context.offsetMs),
       };
 
       const targetFileHandle = await target_dir.getFileHandle(filename, { create: true });
@@ -523,6 +545,14 @@ export async function mutateKeysets(
   newKeySet?: KeySet,
 ): Promise<KeySet[]> {
   try {
+    if (action === 'Add' && isReservedKeysetName(keysetNames[0] ?? '')) {
+      throw new Error(`"${keysetNames[0]}" is a reserved name and cannot be used for a keyset`);
+    }
+
+    if ((action === 'Duplicate' || action === 'Rename') && renameTo && isReservedKeysetName(renameTo)) {
+      throw new Error(`"${renameTo}" is a reserved name and cannot be used for a keyset`);
+    }
+
     const group_dir = await handle.getDirectoryHandle(CleanUpString(groupName));
     const individual_dir = await group_dir.getDirectoryHandle(individualName);
 
@@ -535,8 +565,7 @@ export async function mutateKeysets(
           const file = await fileHandle.getFile();
           const text = await file.text();
           if (text.length > 0) {
-            const keysetData = JSON.parse(text) as KeySet;
-            keysets.push(keysetData);
+            keysets.push(deserializeKeySet(text));
           }
         } catch (error) {
           console.error(`Error reading keyset file ${name}:`, error);
@@ -585,7 +614,7 @@ export async function mutateKeysets(
         const key_set = {
           ...keySetMatch,
           Name: renameTo,
-          id: uuidv4(),
+          id: v4(),
           createdAt: new Date(),
           lastModified: new Date(),
         };
@@ -867,9 +896,7 @@ export async function mutateSessionOutcomes(
         cleanedSessionOutcomes = cleanedSessionOutcomes
           .filter((r) => !file_names_to_move.includes(r.Filename))
           .concat(new_session_files)
-          .sort(
-            (a, b) => new Date(b.SessionSettings.Session).valueOf() - new Date(a.SessionSettings.Session).valueOf(),
-          );
+          .sort((a, b) => b.SessionSettings.Session - a.SessionSettings.Session);
         break;
       }
 

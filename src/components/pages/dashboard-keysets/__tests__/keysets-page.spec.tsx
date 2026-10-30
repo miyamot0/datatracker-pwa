@@ -14,7 +14,6 @@ const mockToastPromise = vi.hoisted(() =>
     return result;
   }),
 );
-const mockAlert = vi.hoisted(() => vi.fn());
 
 vi.mock('@/App', () => ({
   queryClient: {
@@ -125,9 +124,6 @@ describe('KeySetsPage', () => {
     mockInvalidateQueries.mockReset();
     mockInvalidateQueries.mockResolvedValue(undefined);
     mockToastPromise.mockClear();
-    mockAlert.mockReset();
-
-    vi.stubGlobal('alert', mockAlert);
   });
 
   it('renders keyset headers, mapped key names, and edit/import links', async () => {
@@ -146,26 +142,20 @@ describe('KeySetsPage', () => {
     await expect.element(page.getByTestId('filter-col')).toHaveTextContent('Name');
   });
 
-  it('delete callback returns early when confirmation is false', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => false),
-    );
+  it('delete callback returns early when confirmation is canceled', async () => {
     await renderPage();
 
     await page.getByRole('button', { name: 'Trigger Delete Callback' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  it('delete callback mutates selected keysets when confirmed', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => true),
-    );
+  it('delete callback mutates selected keysets when accepted', async () => {
     await renderPage();
 
     await page.getByRole('button', { name: 'Trigger Delete Callback' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
 
     expect(mockMutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -180,25 +170,34 @@ describe('KeySetsPage', () => {
     expect(mockRouterInvalidate).toHaveBeenCalled();
   });
 
-  it('duplicate action returns early for null and short names', async () => {
-    vi.stubGlobal('prompt', vi.fn().mockReturnValueOnce(null).mockReturnValueOnce('ab'));
+  it('duplicate action does not submit when the dialog is canceled', async () => {
     await renderPage();
 
-    const duplicate = page.getByRole('button', { name: 'Duplicate' });
-    await duplicate.click();
-    await duplicate.click();
+    await page.getByRole('button', { name: 'Duplicate', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
 
     expect(mockMutateAsync).not.toHaveBeenCalledWith(expect.objectContaining({ Action: 'Duplicate' }));
   });
 
-  it('duplicate action mutates with trimmed rename on valid prompt', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => '  StarterCopy  '),
-    );
+  it('duplicate action blocks short names inline', async () => {
     await renderPage();
 
-    await page.getByRole('button', { name: 'Duplicate' }).click();
+    await page.getByRole('button', { name: 'Duplicate', exact: true }).click();
+    await page.getByLabelText('KeySet name').fill('ab');
+
+    await expect.element(page.getByRole('alert')).toHaveTextContent('KeySet name must be at least 4 characters long.');
+    await expect
+      .element(page.getByRole('dialog').getByRole('button', { name: 'Duplicate', exact: true }))
+      .toBeDisabled();
+    expect(mockMutateAsync).not.toHaveBeenCalledWith(expect.objectContaining({ Action: 'Duplicate' }));
+  });
+
+  it('duplicate action mutates with trimmed rename on valid dialog input', async () => {
+    await renderPage();
+
+    await page.getByRole('button', { name: 'Duplicate', exact: true }).click();
+    await page.getByLabelText('KeySet name').fill('  StarterCopy  ');
+    await page.getByRole('dialog').getByRole('button', { name: 'Duplicate', exact: true }).click();
 
     expect(mockMutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -209,41 +208,50 @@ describe('KeySetsPage', () => {
     );
   });
 
-  it('create action returns early when prompt is canceled', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => null),
-    );
+  it('create action does not submit when the dialog is canceled', async () => {
     await renderPage();
 
-    await page.getByRole('button', { name: 'Create' }).click();
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  it('create action blocks short and duplicate names', async () => {
-    vi.stubGlobal('prompt', vi.fn().mockReturnValueOnce('ab').mockReturnValueOnce('StarterSet'));
+  it('create action blocks short and duplicate names inline', async () => {
     await renderPage();
 
-    await page.getByRole('button', { name: 'Create' }).click();
-    await page.getByRole('button', { name: 'Create' }).click();
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    const submit = page.getByRole('dialog').getByRole('button', { name: 'Create KeySet', exact: true });
 
-    expect(mockAlert).toHaveBeenNthCalledWith(1, 'Keyset name must be at least 4 characters long');
-    expect(mockAlert).toHaveBeenNthCalledWith(
-      2,
-      'A keyset with this name already exists. Please choose a different name.',
-    );
+    await page.getByLabelText('KeySet name').fill('ab');
+    await expect.element(page.getByRole('alert')).toHaveTextContent('KeySet name must be at least 4 characters long.');
+    await expect.element(submit).toBeDisabled();
+
+    await page.getByLabelText('KeySet name').fill('StarterSet');
+    await expect.element(page.getByRole('alert')).toHaveTextContent('KeySet already exists.');
+    await expect.element(submit).toBeDisabled();
+
+    expect(mockMutateAsync).not.toHaveBeenCalledWith(expect.objectContaining({ Action: 'Add' }));
+  });
+
+  it('create action rejects reserved keyset names inline', async () => {
+    await renderPage();
+
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    await page.getByLabelText('KeySet name').fill('styles');
+
+    await expect
+      .element(page.getByRole('alert'))
+      .toHaveTextContent("'styles' is a reserved name. Choose a different name.");
     expect(mockMutateAsync).not.toHaveBeenCalledWith(expect.objectContaining({ Action: 'Add' }));
   });
 
   it('create action adds keyset with trimmed name', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => '  NewSet  '),
-    );
     await renderPage();
 
-    await page.getByRole('button', { name: 'Create' }).click();
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    await page.getByLabelText('KeySet name').fill('  NewSet  ');
+    await page.getByRole('dialog').getByRole('button', { name: 'Create KeySet', exact: true }).click();
 
     expect(mockMutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({

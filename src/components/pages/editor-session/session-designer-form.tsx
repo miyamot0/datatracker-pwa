@@ -16,11 +16,11 @@ import {
 } from '@/components/pages/editor-session/session-designer-schema';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from '@/lib/zod-resolver';
 import { z } from 'zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { SavedSettings, toSavedSettings } from '@/lib/dtos/session-settings';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { displayConditionalNotification } from '@/lib/notifications';
 import { FolderMinus, FolderPlus } from 'lucide-react';
@@ -28,6 +28,9 @@ import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
 import BackButton from '@/components/ui/back-button';
 import { mutationConditions } from '@/queries/conditions/mutate-conditions';
 import { useMutation } from '@tanstack/react-query';
+import { useConfirmDialog } from '@/components/dialogs/use-confirm-dialog';
+import { useNameDialog } from '@/components/dialogs/use-name-dialog';
+import { generateFormula } from '@/lib/logic';
 import { mutationSettingsParams } from '@/queries/session/mutate-session-params';
 import { queryClient } from '@/App';
 import { useNavigate, useRouter, useRouterState } from '@tanstack/react-router';
@@ -112,6 +115,8 @@ export default function SessionDesigner({
   });
 
   const [keySet, setKeySet] = useState<KeySet | undefined>(Keysets.find((k) => k.Name === SessionSettings.KeySet));
+  const { openConfirmDialog, confirmDialog } = useConfirmDialog();
+  const { openNameDialog, nameDialog } = useNameDialog();
 
   async function onSubmit(values: z.infer<typeof SessionDesignerSchema>) {
     const newer_settings = toSavedSettings(values);
@@ -137,46 +142,49 @@ export default function SessionDesigner({
                 variant={'outline'}
                 className="shadow"
                 size={'sm'}
-                onClick={async () => {
-                  const input = window.prompt('Enter the name for the new condition.');
+                onClick={() =>
+                  openNameDialog({
+                    title: 'Add New Condition',
+                    description: 'Enter the name for the new condition.',
+                    entityLabel: 'Condition',
+                    submitLabel: 'Add Condition',
+                    existingNames: Conditions,
+                    onSubmit: (name) => {
+                      if (Conditions.includes(name)) {
+                        displayConditionalNotification(
+                          Settings,
+                          'Error Adding Condition',
+                          'The condition provided already exists',
+                          3000,
+                          true,
+                        );
 
-                  if (!input) return;
+                        return;
+                      }
 
-                  if (Conditions.includes(input.trim())) {
-                    displayConditionalNotification(
-                      Settings,
-                      'Error Adding Condition',
-                      'The condition provided already exists',
-                      3000,
-                      true,
-                    );
-
-                    return;
-                  }
-
-                  if (input.trim().length > 0) {
-                    toast.promise(
-                      async () =>
-                        await mutateConditions.mutateAsync({
-                          Group,
-                          Individual,
-                          Evaluation,
-                          Condition: input.trim(),
-                          Handle,
-                          Action: 'Add',
-                        }),
-                      {
-                        loading: 'Adding condition...',
-                        success: () => {
-                          return 'Condition has been added successfully!';
+                      toast.promise(
+                        async () =>
+                          await mutateConditions.mutateAsync({
+                            Group,
+                            Individual,
+                            Evaluation,
+                            Condition: name,
+                            Handle,
+                            Action: 'Add',
+                          }),
+                        {
+                          loading: 'Adding condition...',
+                          success: () => {
+                            return 'Condition has been added successfully!';
+                          },
+                          error: (e: Error) => {
+                            return `An error occurred while adding the condition: ${e.message}`;
+                          },
                         },
-                        error: (e: Error) => {
-                          return `An error occurred while adding the condition: ${e.message}`;
-                        },
-                      },
-                    );
-                  }
-                }}
+                      );
+                    },
+                  })
+                }
               >
                 <FolderPlus className="mr-2 h-4 w-4" />
                 Add New Condition
@@ -188,34 +196,36 @@ export default function SessionDesigner({
                 variant={'outline'}
                 className="shadow"
                 size={'sm'}
-                onClick={async () => {
-                  const confirm_delete = window.confirm(
-                    `Are you sure you wish to delete empty evaluation conditions? This CANNOT be undone.`,
-                  );
-
-                  if (!confirm_delete) return;
-
-                  toast.promise(
-                    async () =>
-                      await mutateConditions.mutateAsync({
-                        Group,
-                        Individual,
-                        Evaluation,
-                        Condition: '',
-                        Handle,
-                        Action: 'Clear',
-                      }),
-                    {
-                      loading: 'Clearing empty conditions...',
-                      success: () => {
-                        return 'Empty conditions have been cleared successfully!';
-                      },
-                      error: (e: Error) => {
-                        return `An error occurred while clearing empty conditions: ${e.message}`;
-                      },
+                onClick={() =>
+                  openConfirmDialog({
+                    title: 'Clear Empty Conditions',
+                    description: `Are you sure you wish to delete empty evaluation conditions? This CANNOT be undone.`,
+                    confirmLabel: 'Clear',
+                    destructive: true,
+                    onConfirm: () => {
+                      toast.promise(
+                        async () =>
+                          await mutateConditions.mutateAsync({
+                            Group,
+                            Individual,
+                            Evaluation,
+                            Condition: '',
+                            Handle,
+                            Action: 'Clear',
+                          }),
+                        {
+                          loading: 'Clearing empty conditions...',
+                          success: () => {
+                            return 'Empty conditions have been cleared successfully!';
+                          },
+                          error: (e: Error) => {
+                            return `An error occurred while clearing empty conditions: ${e.message}`;
+                          },
+                        },
+                      );
                     },
-                  );
-                }}
+                  })
+                }
               >
                 <FolderMinus className="mr-2 h-4 w-4" />
                 Clear Empty Condition(s)
@@ -451,6 +461,8 @@ export default function SessionDesigner({
             </form>
           </Form>
         </CardContent>
+        {confirmDialog}
+        {nameDialog}
       </Card>
       <div className="flex flex-col gap-2">
         <Card className="w-full">
@@ -472,6 +484,14 @@ export default function SessionDesigner({
                     <TableRow key={index}>
                       <TableCell>{key.KeyDescription}</TableCell>
                       <TableCell>{key.KeyName}</TableCell>
+                    </TableRow>
+                  ))}
+
+                {keySet &&
+                  keySet.DerivedKeys?.map((key) => (
+                    <TableRow key={key.id} className="bg-muted">
+                      <TableCell>{key.name} (Derived Key)</TableCell>
+                      <TableCell>{generateFormula(key)}</TableCell>
                     </TableRow>
                   ))}
               </TableBody>

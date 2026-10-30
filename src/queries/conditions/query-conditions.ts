@@ -1,6 +1,6 @@
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
 import { FetchConditionsRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 
 /**
  * Queries the conditions for a specific group, individual, and evaluation by accessing the file system and retrieving the names of condition directories within the evaluation folder. It returns an array of condition names that are found, or an empty array if no conditions are found or if there is an error during the file system operations.
@@ -19,6 +19,7 @@ export const conditionQueryOptions = (
 ) => ({
   queryKey: ['/', Group, Individual, Evaluation, 'conditions'],
   queryFn: () => fetchConditionsWorker(Handle, Group, Individual, Evaluation),
+  staleTime: 'static' as const,
 });
 
 /**
@@ -38,7 +39,7 @@ export const fetchConditionsWorker = async (
 ) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'FETCH_CONDITIONS',
     handle: Handle,
     groupName: Group,

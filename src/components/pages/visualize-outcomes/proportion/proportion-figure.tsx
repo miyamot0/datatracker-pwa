@@ -1,17 +1,31 @@
 import { SavedSessionResult } from '@/lib/dtos/session-results';
-import { useGenerateImage } from 'recharts-to-png';
-import { Button } from '@/components/ui/button';
+import type { RefObject } from 'react';
 import { FigureVisualSizing } from '@/types/accessibility';
 import { useNavigate } from '@tanstack/react-router';
-import { ExpandedKeySetInstance, KeySet } from '@/types/keyset';
+import { ExpandedKeySetInstance } from '@/types/keyset/display';
+import { KeySet } from '@/types/keyset/core';
 import { generateTicks, createChartLegends, createNavigationHandler } from '@/lib/graphing/chart-setup';
 import { prepareProportionDataUniversal } from '@/lib/graphing/data-preparation';
 import { SessionTerminationOptionsType } from '@/types/terminations';
-import { BaseChart } from '@/components/pages/visualize-outcomes/shared/base-chart';
+import { BaseChart } from '@/components/pages/visualize-outcomes/shared/ui/base-chart';
 import { ProportionTooltip } from './proportion-elements';
 import { processMultipleSessionDataWithKeys } from '@/lib/calculations';
 import { convertLegacyTimerType } from '@/lib/calculations/calculation-helpers';
 import { EMPTY_SERIES_STYLES, type SeriesStyles } from '@/lib/graphing/series-style';
+import {
+  EMPTY_FIGURE_LABEL_SETTINGS,
+  FIGURE_LABEL_DEFAULTS,
+  resolveFigureLabels,
+  type FigureLabelSettings,
+} from '@/lib/graphing/figure-labels';
+import { DEFAULT_LEGEND_SETTINGS, type LegendSettings } from '@/lib/graphing/legend-settings';
+import {
+  DEFAULT_FIGURE_FONT_FAMILY,
+  EMPTY_FIGURE_AXIS_MAX_SETTINGS,
+  resolveAxisMax,
+  type FigureAxisMaxSettings,
+  type FigureFontFamily,
+} from '@/lib/graphing/figure-text-settings';
 
 type Props = {
   Group: string;
@@ -26,6 +40,14 @@ type Props = {
   MinX: number;
   MaxX: number;
   SeriesStyles?: SeriesStyles;
+  ShowTitle?: boolean;
+  ShowTooltip?: boolean;
+  ShowConditionLegend?: boolean;
+  LegendSettings?: LegendSettings;
+  FigureLabels?: FigureLabelSettings;
+  FontFamily?: FigureFontFamily;
+  AxisMax?: FigureAxisMaxSettings;
+  divRef: RefObject<HTMLDivElement | null>;
 };
 
 export default function ProportionFigureVisualization({
@@ -41,15 +63,24 @@ export default function ProportionFigureVisualization({
   MinX,
   MaxX,
   SeriesStyles = EMPTY_SERIES_STYLES,
+  ShowTitle = true,
+  ShowTooltip = true,
+  ShowConditionLegend = true,
+  LegendSettings = DEFAULT_LEGEND_SETTINGS,
+  FigureLabels = EMPTY_FIGURE_LABEL_SETTINGS,
+  FontFamily = DEFAULT_FIGURE_FONT_FAMILY,
+  AxisMax = EMPTY_FIGURE_AXIS_MAX_SETTINGS,
+  divRef,
 }: Props) {
-  const [getDivPng, { ref: divRef }] = useGenerateImage<HTMLDivElement>();
   const navigate = useNavigate({
     from: `/session/$group/$individual/$evaluation/proportion`,
   });
 
   //const { preparedData } = prepareProportionData(FilteredSessions, ScheduleOption);
 
-  const x_ticks = generateTicks(MaxX, MinX);
+  const labels = resolveFigureLabels(FigureLabels, FIGURE_LABEL_DEFAULTS.proportion);
+  const effectiveMaxX = resolveAxisMax(AxisMax.overrideXMax, AxisMax.xMax, MinX, MaxX);
+  const x_ticks = generateTicks(effectiveMaxX, MinX);
   const legends = createChartLegends(FilteredSessions, KeySetFull, SeriesStyles);
   const onNavigate = createNavigationHandler(navigate, Group, Individual, Evaluation);
 
@@ -57,7 +88,7 @@ export default function ProportionFigureVisualization({
     min: 0,
     max: 100,
     domain: [0, 100] as [number, number],
-    label: 'Percentage of Session',
+    label: labels.yAxis,
     padding: { bottom: 10 },
   };
 
@@ -78,36 +109,29 @@ export default function ProportionFigureVisualization({
   return (
     <div className="flex flex-col gap-4 w-full">
       <BaseChart
-        title="Visualization of Data as Proportion of Session"
+        title={labels.title}
         preparedData={preparedData}
         filteredSessions={FilteredSessions}
         keySetFull={KeySetFull}
         seriesStyles={SeriesStyles}
         textPage="proportion"
+        showTitle={ShowTitle}
+        showTooltip={ShowTooltip}
+        showConditionLegend={ShowConditionLegend}
+        legendSettings={LegendSettings}
+        xAxisLabel={labels.xAxis}
         figureTextSize={FigureTextSize}
         connectSpans={ConnectSpans}
         minX={MinX}
-        maxX={MaxX}
+        maxX={effectiveMaxX}
         xTicks={x_ticks}
+        fontFamily={FontFamily}
         legends={legends}
         yAxisConfig={yAxisConfig}
         customTooltip={ProportionTooltip}
         onNavigate={onNavigate}
         divRef={divRef}
       />
-      <Button
-        onClick={async () => {
-          const png = await getDivPng();
-          if (png) {
-            const link = document.createElement('a');
-            link.href = png;
-            link.download = 'figure.png';
-            link.click();
-          }
-        }}
-      >
-        {'Download Figure as PNG'}
-      </Button>
     </div>
   );
 }

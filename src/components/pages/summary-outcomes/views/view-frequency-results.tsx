@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { Code2Icon, KeyboardIcon, TableIcon } from 'lucide-react';
 import ToolTipWrapper from '@/components/ui/tooltip-wrapper';
-import Spreadsheet from 'react-spreadsheet';
+import { DataTable } from '@/components/ui/data-table';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import { setLocalCachedPrefs } from '@/lib/local_storage';
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import BackButton from '@/components/ui/back-button';
 import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';
@@ -167,13 +167,7 @@ export default function ViewFrequencyResults({
         </div>
       </CardHeader>
       <CardContent className="overflow-x-auto">
-        <Spreadsheet
-          data={matrix.slice(1).map((row) => row.map((cell) => ({ value: cell.toString(), readOnly: true })))}
-          columnLabels={matrix[0]}
-          onKeyDown={(ev) => {
-            if (ev.key.toLocaleLowerCase() === 'v') ev.preventDefault();
-          }}
-        />
+        <DataTable headings={matrix[0]} rows={matrix.slice(1)} />
       </CardContent>
     </Card>
   );

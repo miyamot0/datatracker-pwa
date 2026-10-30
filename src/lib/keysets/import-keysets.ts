@@ -1,6 +1,8 @@
 import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
 import { CleanUpString } from '@/lib/strings';
-import { KeySet } from '@/types/keyset';
+import { isReservedKeysetName } from '@/lib/reserved-names';
+import { KeySet } from '@/types/keyset/core';
+import { toast } from 'sonner';
 
 /**
  * Imports an existing keyset into the specified group and individual directory within the file system. It checks if a keyset with the same name already exists, and if not, it creates a new keyset file with the provided keyset data. The function returns the imported KeySet object if successful, or null if a keyset with the same name already exists.
@@ -18,6 +20,11 @@ export async function importExistingKeyset(
   keysetBase: KeySet,
 ): Promise<KeySet | null> {
   const individuals_folder = await Handle.getDirectoryHandle(CleanUpString(Group), { create: true });
+  if (isReservedKeysetName(keysetBase.Name)) {
+    toast.error(`"${keysetBase.Name}" is a reserved name and cannot be used for a keyset`);
+    return null;
+  }
+
   const keyboards_folder = await individuals_folder.getDirectoryHandle(CleanUpString(Individual), { create: true });
 
   let keyboardExists = false;
@@ -25,14 +32,14 @@ export async function importExistingKeyset(
   const entries = await keyboards_folder.values();
 
   for await (const entry of entries) {
-    if (entry.kind !== 'directory' && entry.name === keysetBase.Name) {
+    if (entry.kind !== 'directory' && entry.name === `${keysetBase.Name}.json`) {
       keyboardExists = true;
       break;
     }
   }
 
   if (keyboardExists) {
-    window.alert('Keyset already exists');
+    toast.error('Keyset already exists');
     return null;
   }
 
@@ -58,13 +65,13 @@ export async function importExistingKeyset(
 }
 
 /**
- * Imports multiple existing keysets into the specified group and individual directory within the file system. It iterates through the provided array of keysets and attempts to import each one using the importExistingKeyset function. The function returns an array of successfully imported KeySet objects, while any keysets that already exist will be skipped with an alert notification.
+ * Imports multiple existing keysets into the specified group and individual directory within the file system. It iterates through the provided array of keysets and attempts to import each one using the importExistingKeyset function. The function returns an array of successfully imported KeySet objects, while any keysets that already exist will be skipped with an error toast.
  *
  * @param Handle - The file system directory handle for accessing the storage.
  * @param Group - The group identifier for which the keysets are being imported.
  * @param Individual - The individual identifier for which the keysets are being imported.
  * @param keysets - An array of KeySet objects to be imported.
- * @returns An array of successfully imported KeySet objects. Any keysets that already exist will be skipped with an alert notification.
+ * @returns An array of successfully imported KeySet objects. Any keysets that already exist will be skipped with an error toast.
  */
 export const importExistingKeysets = async (
   Handle: FileSystemDirectoryHandle,

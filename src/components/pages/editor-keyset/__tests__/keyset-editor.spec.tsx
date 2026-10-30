@@ -6,7 +6,6 @@ const mockMutateAsync = vi.hoisted(() => vi.fn());
 const mockInvalidate = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const mockSetQueryData = vi.hoisted(() => vi.fn());
 const mockInvalidateQueries = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
-const mockConfirm = vi.hoisted(() => vi.fn());
 
 vi.mock('@/App', () => ({
   queryClient: {
@@ -28,8 +27,8 @@ vi.mock('@tanstack/react-query', () => ({
 }));
 
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, className }: any) => (
-    <button className={className} onClick={onClick}>
+  Button: ({ children, onClick, className, disabled, title }: any) => (
+    <button className={className} onClick={onClick} disabled={disabled} title={title}>
       {children}
     </button>
   ),
@@ -37,6 +36,7 @@ vi.mock('@/components/ui/button', () => ({
 }));
 
 const mockInvalidateFilter = vi.hoisted(() => ({ fn: null as ((match: { routeId: string }) => boolean) | null }));
+const mockRouterState = vi.hoisted(() => ({ matches: [] as Array<{ routeId: string }> }));
 
 vi.mock('@tanstack/react-router', () => ({
   useRouter: () => ({
@@ -45,7 +45,7 @@ vi.mock('@tanstack/react-router', () => ({
       return mockInvalidate(opts);
     },
   }),
-  useRouterState: () => ({ matches: [{ routeId: '/test' }] }),
+  useRouterState: () => ({ matches: mockRouterState.matches }),
 }));
 
 vi.mock('@/components/ui/back-button', () => ({
@@ -85,8 +85,17 @@ vi.mock('../dialogs/duration-dialog', () => ({
 }));
 
 vi.mock('../dialogs/logical-dialog', () => ({
-  default: ({ Callback }: any) => (
-    <button onClick={() => Callback({ id: 'logic-new', name: 'Derived New' })}>Add Derived</button>
+  default: ({ Callback, logicToEdit, onClose, open, lockName }: any) => (
+    <div>
+      <button onClick={() => Callback({ id: 'logic-new', name: 'Derived New' })}>Add Derived</button>
+      {logicToEdit && open && lockName && (
+        <>
+          <span>Editing Derived</span>
+          <button onClick={() => Callback({ ...logicToEdit, name: 'Derived Edited' })}>Save Derived</button>
+          <button onClick={() => onClose()}>Close Derived</button>
+        </>
+      )}
+    </div>
   ),
 }));
 
@@ -126,15 +135,17 @@ const makeKeyset = () =>
     lastModified: new Date('2024-01-01T00:00:00.000Z'),
   }) as any;
 
-const renderEditor = () =>
+const renderEditor = (keyset: any = makeKeyset()) =>
   render(
-    <KeySetEditor
-      Group="GroupA"
-      Individual="ClientB"
-      KeySetObject={makeKeyset()}
-      Handle={{} as FileSystemDirectoryHandle}
-    />,
+    <KeySetEditor Group="GroupA" Individual="ClientB" KeySetObject={keyset} Handle={{} as FileSystemDirectoryHandle} />,
   );
+
+const payloadKeySet = (call: number) => mockMutateAsync.mock.calls[call][0].NewKeySet;
+
+const removeKeyFromRow = async (rowText: string, index: number) => {
+  await (await page.getByRole('row').filter({ hasText: rowText }).getByRole('button').all())[index].click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Remove', exact: true }).click();
+};
 
 describe('KeySetEditor', () => {
   beforeEach(() => {
@@ -143,9 +154,7 @@ describe('KeySetEditor', () => {
     mockSetQueryData.mockReset();
     mockInvalidateQueries.mockReset();
     mockInvalidate.mockReset();
-    mockConfirm.mockReset();
-    mockConfirm.mockReturnValue(true);
-    vi.stubGlobal('confirm', mockConfirm);
+    mockRouterState.matches = [{ routeId: '/test' }];
   });
 
   it('renders dropdowns for custom key types in both sections', async () => {
@@ -158,21 +167,59 @@ describe('KeySetEditor', () => {
     await expect.element(customKeyTypeLabels[1]).toBeInTheDocument();
   });
 
-  it.skip('edits a derived key using the edit button and dialog', async () => {
+  it('edits a derived key through the edit button and saves it by id', async () => {
     await renderEditor();
 
-    // Click edit on the derived key row
     const derivedRow = page.getByRole('row').filter({ hasText: 'Derived 1 (Derived)' });
     await derivedRow.getByRole('button', { name: 'Edit' }).click();
 
-    // The edit dialog should now be open (LogicalDialogKeyCreator rendered)
-    // Simulate editing and saving
-    await page.getByRole('button', { name: 'Add Derived' }).click();
+    await expect.element(page.getByText('Editing Derived')).toBeInTheDocument();
+    await page.getByRole('button', { name: 'Save Derived' }).click();
 
-    expect(mockMutateAsync).toHaveBeenCalled();
-    const payload = mockMutateAsync.mock.calls[mockMutateAsync.mock.calls.length - 1][0].NewKeySet;
-    expect(payload.DerivedKeys.some((k: any) => k.id === 'logic-new')).toBe(true);
+    expect(mockMutateAsync).toHaveBeenCalledTimes(1);
+    expect(payloadKeySet(0).DerivedKeys).toEqual([expect.objectContaining({ id: 'logic-1', name: 'Derived Edited' })]);
   });
+
+  it('replaces only the edited derived key when several exist', async () => {
+    const keyset = makeKeyset();
+    keyset.DerivedKeys = [
+      { id: 'logic-1', name: 'Derived 1' },
+      { id: 'logic-2', name: 'Derived 2' },
+    ];
+    await renderEditor(keyset);
+
+    const secondRow = page.getByRole('row').filter({ hasText: 'Derived 2 (Derived)' });
+    await secondRow.getByRole('button', { name: 'Edit' }).click();
+    await page.getByRole('button', { name: 'Save Derived' }).click();
+
+    expect(payloadKeySet(0).DerivedKeys).toEqual([
+      expect.objectContaining({ id: 'logic-1', name: 'Derived 1' }),
+      expect.objectContaining({ id: 'logic-2', name: 'Derived Edited' }),
+    ]);
+  });
+
+  it('closes the derived key editor without saving', async () => {
+    await renderEditor();
+
+    const derivedRow = page.getByRole('row').filter({ hasText: 'Derived 1 (Derived)' });
+    await derivedRow.getByRole('button', { name: 'Edit' }).click();
+    await page.getByRole('button', { name: 'Close Derived' }).click();
+
+    await expect.element(page.getByText('Editing Derived')).not.toBeInTheDocument();
+    expect(mockMutateAsync).not.toHaveBeenCalled();
+  });
+
+  it('invalidates with an undefined current route when no router matches exist', async () => {
+    mockRouterState.matches = [];
+    await renderEditor();
+
+    await page.getByRole('button', { name: 'Add Frequency' }).click();
+
+    const filter = mockInvalidateFilter.fn!;
+    expect(filter({ routeId: '/test' })).toBe(false);
+    expect(filter({ routeId: '/session/$group/$individual/keysets/' })).toBe(true);
+  });
+
 
   it('renders keyset tables and labels', async () => {
     await renderEditor();
@@ -207,103 +254,77 @@ describe('KeySetEditor', () => {
     expect(mockInvalidate).toHaveBeenCalled();
   });
 
-  it('moves keys up and down', async () => {
-    await renderEditor();
-
-    const iconButtons = await page.getByRole('button', { name: '' }).all();
-    await iconButtons[1].click();
-    await iconButtons[3].click();
-
-    expect(mockMutateAsync).toHaveBeenCalledTimes(2);
-    expect(mockMutateAsync).toHaveBeenCalledWith(
-      expect.objectContaining({
-        Action: 'Update',
-        NewKeySet: expect.objectContaining({
-          FrequencyKeys: expect.arrayContaining([
-            expect.objectContaining({ KeyName: 'F2' }),
-            expect.objectContaining({ KeyName: 'F1' }),
-          ]),
-        }),
-      }),
-    );
-  });
-
-  it('handles move boundaries for first and last rows', async () => {
-    await renderEditor();
-
-    const iconButtons = await page.getByRole('button', { name: '' }).all();
-    await iconButtons[0].click();
-    await iconButtons[4].click();
-    await iconButtons[11].click();
-
-    expect(mockMutateAsync).toHaveBeenCalledTimes(3);
-  });
-
-  it.skip('keeps order unchanged when moving first item up or last item down', async () => {
+  it('moves frequency keys down via the row ArrowDown button', async () => {
     await renderEditor();
 
     const freq1Row = page.getByRole('row').filter({ hasText: 'Freq 1' });
-    const freq1Buttons = await freq1Row.getByRole('button').all();
-    await freq1Buttons[0].click();
+    await (await freq1Row.getByRole('button').all())[1].click();
 
-    const freq2Row = page.getByRole('row').filter({ hasText: 'Freq 2' });
-    const freq2Buttons = await freq2Row.getByRole('button').all();
-    await freq2Buttons[1].click();
-
-    const payloads = mockMutateAsync.mock.calls.map((c) => c[0].NewKeySet?.FrequencyKeys);
-    expect(payloads[0]).toEqual([
-      expect.objectContaining({ KeyName: 'F1' }),
+    expect(payloadKeySet(0).FrequencyKeys).toEqual([
       expect.objectContaining({ KeyName: 'F2' }),
-    ]);
-    expect(payloads[1]).toEqual([
       expect.objectContaining({ KeyName: 'F1' }),
-      expect.objectContaining({ KeyName: 'F2' }),
     ]);
   });
 
-  it.skip('does not delete when confirmation is canceled', async () => {
-    mockConfirm.mockReturnValue(false);
+  it('disables move-up on the first row and move-down on the last row', async () => {
     await renderEditor();
 
-    await page.getByRole('button', { name: 'Delete' }).first().click();
+    const freq1Buttons = await page.getByRole('row').filter({ hasText: 'Freq 1' }).getByRole('button').all();
+    const freq2Buttons = await page.getByRole('row').filter({ hasText: 'Freq 2' }).getByRole('button').all();
+    const dur2Buttons = await page.getByRole('row').filter({ hasText: 'Dur 2' }).getByRole('button').all();
+
+    await expect.element(freq1Buttons[0]).toBeDisabled();
+    await expect.element(freq1Buttons[1]).toBeEnabled();
+    await expect.element(freq2Buttons[0]).toBeEnabled();
+    await expect.element(freq2Buttons[1]).toBeDisabled();
+    await expect.element(dur2Buttons[1]).toBeDisabled();
+    expect(mockMutateAsync).not.toHaveBeenCalled();
+  });
+
+  it('does not delete any row when confirmation is canceled', async () => {
+    await renderEditor();
+
+    const cancelRowAction = async (rowText: string, index: number) => {
+      await (await page.getByRole('row').filter({ hasText: rowText }).getByRole('button').all())[index].click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
+    };
+
+    await cancelRowAction('Freq 1', 2);
+    await cancelRowAction('Dur 1', 2);
+    await cancelRowAction('Derived 1 (Derived)', 1);
+    await cancelRowAction('Special 1 (Special Timing)', 0);
+    await cancelRowAction('Scored 1 (Scored Duration)', 0);
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  it.skip('does not delete derived, duration, special, and scored rows when confirmation is canceled', async () => {
-    mockConfirm.mockReturnValue(false);
+  it('deletes a frequency key when confirmed', async () => {
     await renderEditor();
 
-    const derivedRow = page.getByRole('row').filter({ hasText: 'Derived 1 (Derived)' });
-    await derivedRow.getByRole('button', { name: 'Delete' }).click();
+    await removeKeyFromRow('Freq 1', 2);
 
-    const durationRow = page.getByRole('row').filter({ hasText: 'Dur 1' });
-    await durationRow.getByRole('button', { name: 'Delete' }).click();
-
-    const specialRow = page.getByRole('row').filter({ hasText: 'Special 1 (Special Timing)' });
-    await specialRow.getByRole('button', { name: 'Delete' }).click();
-
-    const scoredRow = page.getByRole('row').filter({ hasText: 'Scored 1 (Scored Duration)' });
-    await scoredRow.getByRole('button', { name: 'Delete' }).click();
-
-    expect(mockMutateAsync).not.toHaveBeenCalled();
+    expect(payloadKeySet(0).FrequencyKeys).toEqual([expect.objectContaining({ KeyName: 'F2' })]);
   });
 
-  it.skip('deletes key rows across all categories when confirmed', async () => {
+  it('deletes a duration key when confirmed', async () => {
     await renderEditor();
 
-    const deleteButtons = await page.getByRole('button', { name: 'Delete' }).all();
-    for (const btn of deleteButtons) {
-      await btn.click();
-    }
+    await removeKeyFromRow('Dur 2', 2);
 
-    expect(mockMutateAsync).toHaveBeenCalled();
-    const payloads = mockMutateAsync.mock.calls.map((c) => c[0].NewKeySet);
-    expect(payloads.some((p) => p.FrequencyKeys.length === 1)).toBe(true);
-    expect(payloads.some((p) => p.DurationKeys.length === 1)).toBe(true);
-    expect(payloads.some((p) => p.DerivedKeys.length === 0)).toBe(true);
-    expect(payloads.some((p) => p.SpecialDurationKeys.length === 0)).toBe(true);
-    expect(payloads.some((p) => p.ScorableDurationKeys.length === 0)).toBe(true);
+    expect(payloadKeySet(0).DurationKeys).toEqual([expect.objectContaining({ KeyName: 'D1' })]);
+  });
+
+  it('deletes derived, special, and scored keys when confirmed', async () => {
+    await renderEditor();
+
+    await removeKeyFromRow('Derived 1 (Derived)', 1);
+    await removeKeyFromRow('Special 1 (Special Timing)', 0);
+    await removeKeyFromRow('Scored 1 (Scored Duration)', 0);
+
+    expect(mockMutateAsync).toHaveBeenCalledTimes(3);
+    expect(payloadKeySet(0).DerivedKeys).toEqual([]);
+    expect(payloadKeySet(1).SpecialDurationKeys).toEqual([]);
+    expect(payloadKeySet(2).ScorableDurationKeys).toEqual([]);
   });
 
   it('moves frequency keys up via ArrowUp button', async () => {

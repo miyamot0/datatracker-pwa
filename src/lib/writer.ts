@@ -1,4 +1,4 @@
-import { SavedSettings } from './dtos';
+import { SavedSettings } from './dtos/session-settings';
 
 /**
  * Generate a saved file name

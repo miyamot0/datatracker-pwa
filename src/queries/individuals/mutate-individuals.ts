@@ -1,11 +1,11 @@
 import { clientQueryOptions } from './query-individuals';
 import { queryClient } from '@/App';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 import { MutateIndividualsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**
- * This function is responsible for mutating the individuals associated with a specific group. It takes in the necessary parameters to identify the target group and the individuals to be added or deleted. The function first retrieves the current list of individuals using React Query's `fetchQuery` method. It then performs the specified action (adding or deleting individuals) by interacting with the file system through the provided directory handle. Finally, it returns the updated list of individual names after the mutation is complete.
+ * This function is responsible for mutating the individuals associated with a specific group. It takes in the necessary parameters to identify the target group and the individuals to be added or deleted. The function first retrieves the current list of individuals using React Query's `query` method. It then performs the specified action (adding or deleting individuals) by interacting with the file system through the provided directory handle. Finally, it returns the updated list of individual names after the mutation is complete.
  * @param Group - The name of the group associated with the individuals.
  * @param Individuals - An array of individual names that are relevant to the mutation action (in this case, the individuals to be added or deleted).
  * @param Handle - The file system directory handle used to access and manipulate the individual records.
@@ -23,7 +23,7 @@ export const mutationIndividuals = async ({
   Handle: FileSystemDirectoryHandle;
   Action: 'Add' | 'Delete';
 }): Promise<string[]> => {
-  const individuals: string[] = await queryClient.fetchQuery(clientQueryOptions(Handle, Group));
+  const individuals: string[] = await queryClient.query(clientQueryOptions(Handle, Group));
 
   if (!individuals) {
     throw new Error('Individuals not found');
@@ -45,7 +45,7 @@ export const mutationIndividualsWorker = async ({
 }) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'MUTATE_INDIVIDUALS',
     handle: Handle,
     groupName: Group,
@@ -53,19 +53,19 @@ export const mutationIndividualsWorker = async ({
     action: Action,
   } satisfies MutateIndividualsRequest;
 
-  return new Promise<string[]>((resolve) => {
+  return new Promise<string[]>((resolve, reject) => {
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
         const directories = response.data;
         resolve(directories);
       } else {
-        resolve([]);
+        reject(new Error(response.error));
       }
     };
     worker.onerror = (error) => {
       console.error('Worker error:', error);
-      resolve([]);
+      reject(new Error(error.message || 'Worker failed to complete the mutation'));
     };
     worker.postMessage(request);
   });

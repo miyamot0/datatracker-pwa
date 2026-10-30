@@ -13,7 +13,7 @@ type Props = {
   className?: string;
   HideNavbar?: boolean;
   HideFooter?: boolean;
-  Settings?: ApplicationSettingsTypes;
+  Settings: ApplicationSettingsTypes;
 };
 
 export default function PageWrapper({
@@ -25,9 +25,9 @@ export default function PageWrapper({
   HideFooter,
   Settings,
 }: Props) {
-  const { settings: preSettings, handle } = useContext(FolderHandleContext);
+  const { handle } = useContext(FolderHandleContext);
 
-  const settings = Settings ?? preSettings;
+  const settings = Settings;
 
   const hideFooter = HideFooter === true || settings.ApplicationFooterDisplay === 'Disabled';
 

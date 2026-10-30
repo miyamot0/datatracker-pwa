@@ -3,7 +3,7 @@ import { SavedSettings } from '@/lib/dtos/session-settings';
 import { queryClient } from '@/App';
 import { MutateSessionParamsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 
 /**
  * Mutates the session parameters by updating the settings for a specific group, individual, and evaluation. It interacts with the file system to write the new settings to a 'settings.json' file within the appropriate evaluation directory and returns the updated settings after the mutation is complete.
@@ -29,7 +29,7 @@ export const mutationSettingsParams = async ({
   Settings: SavedSettings;
   Handle: FileSystemDirectoryHandle;
 }): Promise<SavedSettings> => {
-  const savedSettings: SavedSettings = await queryClient.fetchQuery(
+  const savedSettings: SavedSettings = await queryClient.query(
     sessionQueryOptions(Handle, Group, Individual, Evaluation),
   );
 
@@ -71,7 +71,7 @@ export const mutationSessionParamsWorker = async ({
 }) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'MUTATE_SESSION_PARAMS',
     handle: Handle,
     groupName: Group,
@@ -80,19 +80,19 @@ export const mutationSessionParamsWorker = async ({
     settings: Settings,
   } satisfies MutateSessionParamsRequest;
 
-  return new Promise<SavedSettings>((resolve) => {
+  return new Promise<SavedSettings>((resolve, reject) => {
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
         const settings = response.data;
         resolve(settings);
       } else {
-        throw new Error(`Worker error: ${response.error}\nStack: ${response.stack}`);
+        reject(new Error(`Worker error: ${response.error}\nStack: ${response.stack}`));
       }
     };
     worker.onerror = (error) => {
       console.error('Worker error:', error);
-      throw new Error(`Worker error: ${error.message}`);
+      reject(new Error(`Worker error: ${error.message}`));
     };
     worker.postMessage(request);
   });

@@ -16,9 +16,9 @@ import {
   DemoDataFolderName,
 } from '../query-mutate';
 import { CleanUpString } from '@/lib/strings';
-import { DataExampleFiles } from '@/lib/data';
-import { createNewKeySet, serializeKeySet } from '@/lib/keyset';
-import { v4 as uuidv4 } from 'uuid';
+import { extractDemoArchive, fetchVerifiedDemoArchive } from '@/lib/demo-archive';
+import { createNewKeySet, deserializeKeySet, serializeKeySet } from '@/lib/keyset';
+import { v4 } from '@/lib/uuid';
 import { KeySet } from '@/types/keyset/core';
 import { KeySetExtended } from '@/types/keyset/extended';
 import { ModifiedSessionResult } from '@/types/storage';
@@ -28,19 +28,21 @@ import { importExistingKeysets } from '@/lib/keysets/import-keysets';
 
 // Mock all dependencies
 vi.mock('@/lib/strings');
-vi.mock('@/lib/data', () => ({
-  DataExampleFiles: [],
+vi.mock('@/lib/demo-archive', () => ({
+  extractDemoArchive: vi.fn(() => []),
+  fetchVerifiedDemoArchive: vi.fn(async () => new Uint8Array()),
 }));
 vi.mock('@/lib/keyset');
-vi.mock('uuid');
+vi.mock('@/lib/uuid');
 vi.mock('@/lib/writer');
 vi.mock('@/lib/keysets/import-keysets');
 
 const mockedCleanUpString = vi.mocked(CleanUpString);
-const mockedDataExampleFiles = vi.mocked(DataExampleFiles);
+const mockedExtractDemoArchive = vi.mocked(extractDemoArchive);
+const mockedFetchVerifiedDemoArchive = vi.mocked(fetchVerifiedDemoArchive);
 const mockedCreateNewKeySet = vi.mocked(createNewKeySet);
 const mockedSerializeKeySet = vi.mocked(serializeKeySet);
-const mockedUuidv4 = vi.mocked(uuidv4);
+const mockedV4 = vi.mocked(v4);
 const mockedGenerateSavedFileName = vi.mocked(GenerateSavedFileName);
 const mockedImportExistingKeysets = vi.mocked(importExistingKeysets);
 
@@ -149,6 +151,7 @@ describe('file-query-mutate-actions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockedCleanUpString.mockImplementation((str: string) => str.trim());
+    vi.mocked(deserializeKeySet).mockImplementation((text: string) => JSON.parse(text));
   });
 
   describe('copyDemoData', () => {
@@ -178,19 +181,43 @@ describe('file-query-mutate-actions', () => {
       mockSubFolder.getFileHandle.mockResolvedValue(mockFileHandle);
       mockFileHandle.createWritable.mockResolvedValue(mockWritable);
 
-      // Mock DataExampleFiles
-      mockedDataExampleFiles.length = 0;
-      mockedDataExampleFiles.push({
-        path: ['participant1', 'subfolder'],
-        filename: 'test.json',
-        text: 'test content',
-      } as any);
+      const bytes = new TextEncoder().encode('test content');
+      mockedExtractDemoArchive.mockReturnValue([
+        {
+          path: ['participant1', 'subfolder'],
+          filename: 'test.json',
+          bytes,
+        },
+      ]);
+      const loadArchive = vi.fn().mockResolvedValue(new Uint8Array());
+
+      await copyDemoData(mockHandle as any, loadArchive);
+
+      expect(loadArchive).toHaveBeenCalled();
+      expect(mockHandle.getDirectoryHandle).toHaveBeenCalledWith(DemoDataFolderName, { create: true });
+      expect(mockWritable.write).toHaveBeenCalledWith(bytes);
+      expect(mockWritable.close).toHaveBeenCalled();
+    });
+
+    it('should use the verified network loader by default', async () => {
+      const mockHandle = createMockDirectoryHandle();
+      mockHandle.entries.mockReturnValue(createEntriesIterator([]));
+      mockHandle.getDirectoryHandle.mockResolvedValue(createMockDirectoryHandle(DemoDataFolderName));
+      mockedExtractDemoArchive.mockReturnValue([]);
 
       await copyDemoData(mockHandle as any);
 
-      expect(mockHandle.getDirectoryHandle).toHaveBeenCalledWith(DemoDataFolderName, { create: true });
-      expect(mockWritable.write).toHaveBeenCalledWith('test content');
-      expect(mockWritable.close).toHaveBeenCalled();
+      expect(mockedFetchVerifiedDemoArchive).toHaveBeenCalled();
+      expect(mockedExtractDemoArchive).toHaveBeenCalled();
+    });
+
+    it('should propagate loader failures without writing files', async () => {
+      const mockHandle = createMockDirectoryHandle();
+      mockHandle.entries.mockReturnValue(createEntriesIterator([]));
+      const loadArchive = vi.fn().mockRejectedValue(new Error('integrity failure'));
+
+      await expect(copyDemoData(mockHandle as any, loadArchive)).rejects.toThrow('integrity failure');
+      expect(mockHandle.getDirectoryHandle).not.toHaveBeenCalled();
     });
 
     it('should throw error when demo folder already exists', async () => {
@@ -199,10 +226,12 @@ describe('file-query-mutate-actions', () => {
 
       // Mock entries to return existing demo folder
       mockHandle.entries.mockReturnValue(createEntriesIterator([[DemoDataFolderName, mockDemoFolder]]));
+      const loadArchive = vi.fn();
 
-      await expect(copyDemoData(mockHandle as any)).rejects.toThrow(
+      await expect(copyDemoData(mockHandle as any, loadArchive)).rejects.toThrow(
         `The ${DemoDataFolderName} folder already exists. Delete it if you'd like to re-load example data.`,
       );
+      expect(loadArchive).not.toHaveBeenCalled();
     });
 
     it('should skip .DS_Store files during checking', async () => {
@@ -218,9 +247,9 @@ describe('file-query-mutate-actions', () => {
       );
 
       mockHandle.getDirectoryHandle.mockResolvedValue(mockDemoFolder);
-      mockedDataExampleFiles.length = 0;
+      mockedExtractDemoArchive.mockReturnValue([]);
 
-      await copyDemoData(mockHandle as any);
+      await copyDemoData(mockHandle as any, async () => new Uint8Array());
 
       expect(mockHandle.getDirectoryHandle).toHaveBeenCalledWith(DemoDataFolderName, { create: true });
     });
@@ -680,7 +709,7 @@ describe('file-query-mutate-actions', () => {
     it('should add demo data', async () => {
       // Mock the demo data copying to succeed
       mockRootHandle.getDirectoryHandle.mockResolvedValue(createMockDirectoryHandle(DemoDataFolderName));
-      mockedDataExampleFiles.length = 0;
+      mockedExtractDemoArchive.mockReturnValue([]);
 
       const result = await mutateGroups(mockRootHandle as any, [], 'Demo');
 
@@ -695,7 +724,7 @@ describe('file-query-mutate-actions', () => {
         ]),
       );
       mockRootHandle.getDirectoryHandle.mockResolvedValue(createMockDirectoryHandle(DemoDataFolderName));
-      mockedDataExampleFiles.length = 0;
+      mockedExtractDemoArchive.mockReturnValue([]);
 
       const result = await mutateGroups(mockRootHandle as any, [], 'Demo');
 
@@ -1059,6 +1088,61 @@ describe('file-query-mutate-actions', () => {
       expect(mockGroupDir.getDirectoryHandle).not.toHaveBeenCalledWith('New Individual', { create: true });
     });
 
+    it('skips session files that are not valid saved results and de-identifies the rest', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { mockRootHandle, mockConditionDir, sessionWritable } = setupMocks({
+        existingIndividuals: ['Source Individual'],
+      });
+      const validHandle = await mockConditionDir.getFileHandle('1_Baseline_Primary.json');
+      const malformedHandle = createMockFileHandle('broken.json');
+      malformedHandle.getFile.mockResolvedValue(createMockFile('{"unexpected":true}'));
+
+      mockConditionDir.entries.mockImplementation(() =>
+        createEntriesIterator([
+          ['1_Baseline_Primary.json', validHandle],
+          ['broken.json', malformedHandle],
+        ]),
+      );
+      mockConditionDir.getFileHandle.mockImplementation((name: string) => {
+        if (name === '1_Baseline_Primary.json') return Promise.resolve(validHandle);
+        if (name === 'broken.json') return Promise.resolve(malformedHandle);
+        throw new Error(`Unexpected condition getFileHandle(${name})`);
+      });
+
+      const result = await mutateDeIdentifyIndividual(
+        mockRootHandle as any,
+        'group',
+        'Source Individual',
+        'New Individual',
+        2000,
+      );
+
+      expect(consoleSpy).toHaveBeenCalledWith('Skipping malformed session file broken.json during de-identification');
+      expect(sessionWritable.write).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(['Source Individual', 'New Individual']);
+      consoleSpy.mockRestore();
+    });
+
+    it('skips keyset files that cannot be parsed and still copies session results', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const { mockRootHandle, sessionWritable, keySetWritable } = setupMocks({
+        existingIndividuals: ['Source Individual'],
+      });
+      vi.mocked(deserializeKeySet).mockImplementation(() => {
+        throw new SyntaxError('Unexpected token');
+      });
+
+      await mutateDeIdentifyIndividual(mockRootHandle as any, 'group', 'Source Individual', 'New Individual', 2000);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Skipping malformed keyset file KeySet1.json during de-identification:',
+        expect.any(SyntaxError),
+      );
+      expect(keySetWritable.write).not.toHaveBeenCalled();
+      expect(sessionWritable.write).toHaveBeenCalledTimes(1);
+      consoleSpy.mockRestore();
+    });
+
     it('throws when the new individual name already exists', async () => {
       const { mockRootHandle } = setupMocks({ existingIndividuals: ['Source Individual', 'New Individual'] });
 
@@ -1185,7 +1269,7 @@ describe('file-query-mutate-actions', () => {
         throw new Error('Not found');
       });
 
-      mockedUuidv4.mockReturnValue('789');
+      mockedV4.mockReturnValue('789');
       mockedSerializeKeySet.mockReturnValue(JSON.stringify(mockDuplicatedKeyset));
       mockFileHandle.createWritable.mockResolvedValue(mockWritable);
 
@@ -1403,6 +1487,23 @@ describe('file-query-mutate-actions', () => {
       await expect(
         mutateKeysets(mockRootHandle as any, 'group', 'individual', ['missing'], 'Rename', 'new-name'),
       ).rejects.toThrow('No matching KeySet found.');
+    });
+
+    it('should reject reserved keyset names on Add, Duplicate, and Rename', async () => {
+      mockIndividualDir.entries.mockReturnValue(createEntriesIterator([]));
+
+      await expect(mutateKeysets(mockRootHandle as any, 'group', 'individual', ['styles'], 'Add')).rejects.toThrow(
+        'reserved name',
+      );
+      await expect(mutateKeysets(mockRootHandle as any, 'group', 'individual', ['styles.json'], 'Add')).rejects.toThrow(
+        'reserved name',
+      );
+      await expect(
+        mutateKeysets(mockRootHandle as any, 'group', 'individual', ['source'], 'Duplicate', 'styles.json'),
+      ).rejects.toThrow('reserved name');
+      await expect(
+        mutateKeysets(mockRootHandle as any, 'group', 'individual', ['source'], 'Rename', 'styles'),
+      ).rejects.toThrow('reserved name');
     });
 
     it('should skip invalid JSON files', async () => {
@@ -1805,11 +1906,11 @@ describe('file-query-mutate-actions', () => {
 
       const first = {
         Filename: 'session-a.json',
-        SessionSettings: { Condition: 'old-condition', Session: '2024-01-01T00:00:00.000Z' },
+        SessionSettings: { Condition: 'old-condition', Session: 1 },
       } as unknown as ModifiedSessionResult;
       const second = {
         Filename: 'session-b.json',
-        SessionSettings: { Condition: 'old-condition', Session: '2024-02-01T00:00:00.000Z' },
+        SessionSettings: { Condition: 'old-condition', Session: 2 },
       } as unknown as ModifiedSessionResult;
 
       mockedGenerateSavedFileName.mockReturnValueOnce('generated-a.json').mockReturnValueOnce('generated-b.json');
@@ -1838,9 +1939,8 @@ describe('file-query-mutate-actions', () => {
       );
 
       expect(result).toHaveLength(2);
-      expect(new Date(result[0].SessionSettings.Session).valueOf()).toBeGreaterThan(
-        new Date(result[1].SessionSettings.Session).valueOf(),
-      );
+      expect(result[0].SessionSettings.Session).toBe(2);
+      expect(result[1].SessionSettings.Session).toBe(1);
     });
 
     it('should skip non-directory entries and non-matching files during EditCondition', async () => {

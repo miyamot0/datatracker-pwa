@@ -3,7 +3,7 @@ import { KeySetExtended } from '@/types/keyset/extended';
 import { keyboardsAllQueryOptions } from './query-keyboards-all';
 import { queryClient } from '@/App';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 import { MutateKeysetsAllRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**
@@ -26,7 +26,7 @@ export const mutateKeyboardsAll = async ({
   Individual: string;
   KeySets: KeySet[];
 }) => {
-  const keysets = await queryClient.fetchQuery(keyboardsAllQueryOptions(Handle, Group, Individual));
+  const keysets = await queryClient.query(keyboardsAllQueryOptions(Handle, Group, Individual));
 
   return await mutateKeyboardsAllWorker({
     Handle,
@@ -62,7 +62,7 @@ export const mutateKeyboardsAllWorker = async ({
 }) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'MUTATE_KEYSETS_ALL',
     handle: Handle,
     groupName: Group,
@@ -71,19 +71,19 @@ export const mutateKeyboardsAllWorker = async ({
     allKeySets: AllKeySets,
   } satisfies MutateKeysetsAllRequest;
 
-  return new Promise<KeySet[]>((resolve) => {
+  return new Promise<KeySet[]>((resolve, reject) => {
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
         const keySets = response.data;
         resolve(keySets);
       } else {
-        throw new Error(`Worker error: ${response.error}\nStack: ${response.stack}`);
+        reject(new Error(`Worker error: ${response.error}\nStack: ${response.stack}`));
       }
     };
     worker.onerror = (error) => {
       console.error('Worker error:', error);
-      throw new Error(`Worker error: ${error.message}`);
+      reject(new Error(`Worker error: ${error.message}`));
     };
     worker.postMessage(request);
   });

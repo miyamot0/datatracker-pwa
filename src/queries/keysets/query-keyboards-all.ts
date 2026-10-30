@@ -1,7 +1,7 @@
 import { KeySetExtended } from '@/types/keyset/extended';
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
 import { FetchKeysetsAllRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 
 /**
  * Queries all keyboards by accessing the file system and retrieving the relevant information about groups, individuals, and their associated keyboards. It returns an array of KeySetExtended objects that contain the details of each keyboard found within the file system structure, or an empty array if no keyboards are found or if there is an error during the file system operations.
@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 export const keyboardsAllQueryOptions = (Handle: FileSystemDirectoryHandle, Group: string, Individual: string) => ({
   queryKey: ['/', Group, 'metaKeyboards'],
   queryFn: () => fetchKeyboardsAllWorker(Handle, Group, Individual),
+  staleTime: 'static' as const,
 });
 
 /**
@@ -27,7 +28,7 @@ export const keyboardsAllQueryOptions = (Handle: FileSystemDirectoryHandle, Grou
 export const fetchKeyboardsAllWorker = async (Handle: FileSystemDirectoryHandle, Group: string, Individual: string) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'FETCH_KEYSETS_ALL',
     handle: Handle,
     groupName: Group,

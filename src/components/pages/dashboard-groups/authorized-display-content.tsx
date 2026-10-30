@@ -11,6 +11,8 @@ import { Link, useRouter, useRouterState } from '@tanstack/react-router';
 import { DataTable } from '@/components/ui/data-table-common';
 import { DemoDataFolderName } from '@/lib/query-mutate';
 import { ApplicationSettingsTypes } from '@/types/settings/application-settings';
+import { useNameDialog } from '@/components/dialogs/use-name-dialog';
+import { useConfirmDialog } from '@/components/dialogs/use-confirm-dialog';
 
 type Props = {
   Groups: string[];
@@ -39,6 +41,9 @@ export default function AuthorizedDisplayContent({ Groups, Settings, Handle }: P
       });
     },
   });
+
+  const { openNameDialog, nameDialog } = useNameDialog();
+  const { openConfirmDialog, confirmDialog } = useConfirmDialog();
 
   const columns: ColumnDef<GroupTableRow>[] = [
     {
@@ -94,31 +99,31 @@ export default function AuthorizedDisplayContent({ Groups, Settings, Handle }: P
           callback={(rows) => {
             const groupNames = rows.map((row) => row.Group);
 
-            const confirm_delete = window.confirm(
-              `Are you sure you want to delete ${groupNames.length} groups? This CANNOT be undone.`,
-            );
-
-            if (!confirm_delete) {
-              return;
-            }
-
-            toast.promise(
-              async () =>
-                await mutateGroups.mutateAsync({
-                  Group: groupNames,
-                  Handle: Handle,
-                  Action: 'Delete',
-                }),
-              {
-                loading: 'Removing group folders...',
-                success: () => {
-                  return 'Group folders removed.';
-                },
-                error: (e: Error) => {
-                  return `Group folders were not removed: ${e.message}`;
-                },
+            openConfirmDialog({
+              title: 'Delete Groups',
+              description: `Are you sure you want to delete ${groupNames.length} groups? This CANNOT be undone.`,
+              confirmLabel: 'Delete',
+              destructive: true,
+              onConfirm: () => {
+                toast.promise(
+                  async () =>
+                    await mutateGroups.mutateAsync({
+                      Group: groupNames,
+                      Handle: Handle,
+                      Action: 'Delete',
+                    }),
+                  {
+                    loading: 'Removing group folders...',
+                    success: () => {
+                      return 'Group folders removed.';
+                    },
+                    error: (e: Error) => {
+                      return `Group folders were not removed: ${e.message}`;
+                    },
+                  },
+                );
               },
-            );
+            });
           }}
           filterCol="Group"
           optionalButtons={
@@ -127,33 +132,32 @@ export default function AuthorizedDisplayContent({ Groups, Settings, Handle }: P
                 variant={'outline'}
                 size={'sm'}
                 className="shadow"
-                onClick={async () => {
-                  const input = window.confirm(
-                    `This will create an ${DemoDataFolderName} folder for you. Do you wish to proceed?`,
-                  );
-
-                  if (!input) {
-                    throw new Error('Error: User cancelled action');
-                  }
-
-                  toast.promise(
-                    async () =>
-                      mutateGroups.mutateAsync({
-                        Group: [DemoDataFolderName],
-                        Handle: Handle,
-                        Action: 'Demo',
-                      }),
-                    {
-                      loading: 'Writing example data to disk...',
-                      success: () => {
-                        return 'Example data has been added! Create a separate "DataTracker" folder elsewhere on your disk to explore "Sync" functionality';
-                      },
-                      error: (e: Error) => {
-                        return `Files were not written to disk: ${e.message}`;
-                      },
+                onClick={() =>
+                  openConfirmDialog({
+                    title: 'Extract Example Folder',
+                    description: `This will create an ${DemoDataFolderName} folder for you. Do you wish to proceed?`,
+                    confirmLabel: 'Extract',
+                    onConfirm: () => {
+                      toast.promise(
+                        async () =>
+                          mutateGroups.mutateAsync({
+                            Group: [DemoDataFolderName],
+                            Handle: Handle,
+                            Action: 'Demo',
+                          }),
+                        {
+                          loading: 'Writing example data to disk...',
+                          success: () => {
+                            return 'Example data has been added! Create a separate "DataTracker" folder elsewhere on your disk to explore "Sync" functionality';
+                          },
+                          error: (e: Error) => {
+                            return `Files were not written to disk: ${e.message}`;
+                          },
+                        },
+                      );
                     },
-                  );
-                }}
+                  })
+                }
               >
                 <DatabaseIcon className="mr-2 h-4 w-4" />
                 Extract Example Folder
@@ -163,39 +167,33 @@ export default function AuthorizedDisplayContent({ Groups, Settings, Handle }: P
                 variant={'outline'}
                 size={'sm'}
                 className="shadow"
-                onClick={async () => {
-                  const input = window.prompt('Enter a name for the new group.');
-
-                  if (!input) return;
-
-                  if (Groups.includes(input)) {
-                    alert('Group already exists.');
-                    return;
-                  }
-
-                  if (input.trim().length < 4) {
-                    alert('Group name must be at least 4 characters long.');
-                    return;
-                  }
-
-                  toast.promise(
-                    async () =>
-                      await mutateGroups.mutateAsync({
-                        Group: [input.trim()],
-                        Handle: Handle,
-                        Action: 'Add',
-                      }),
-                    {
-                      loading: 'Creating folders...',
-                      success: () => {
-                        return 'New folder created.';
-                      },
-                      error: (e: Error) => {
-                        return `Folder was not created: ${e.message}.`;
-                      },
+                onClick={() =>
+                  openNameDialog({
+                    title: 'Create a New Group',
+                    entityLabel: 'Group',
+                    submitLabel: 'Create group',
+                    existingNames: Groups,
+                    onSubmit: (name) => {
+                      toast.promise(
+                        async () =>
+                          await mutateGroups.mutateAsync({
+                            Group: [name],
+                            Handle: Handle,
+                            Action: 'Add',
+                          }),
+                        {
+                          loading: 'Creating folders...',
+                          success: () => {
+                            return 'New folder created.';
+                          },
+                          error: (e: Error) => {
+                            return `Folder was not created: ${e.message}.`;
+                          },
+                        },
+                      );
                     },
-                  );
-                }}
+                  })
+                }
               >
                 <FolderPlus className="mr-2 h-4 w-4" />
                 Create
@@ -204,6 +202,8 @@ export default function AuthorizedDisplayContent({ Groups, Settings, Handle }: P
           }
         />
       </CardContent>
+      {nameDialog}
+      {confirmDialog}
     </Card>
   );
 }

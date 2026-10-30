@@ -1,4 +1,4 @@
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { SavedSettings } from '@/lib/dtos/session-settings';
 import { SessionRecorderPolling } from '@/types/settings/performance-settings';
 import { WorkerMessage, WorkerResponse } from './types/session-recorder-worker-messaging';
@@ -40,6 +40,8 @@ class SessionRecorderWorker {
     if (!result) return;
 
     const { systemEvents, startTime } = result;
+
+    uiUpdateCounter = 0;
 
     this.postMessage({
       type: 'SYSTEM_EVENT',
@@ -196,6 +198,7 @@ class SessionRecorderWorker {
 const worker = new SessionRecorderWorker();
 
 self.onmessage = (event: MessageEvent<WorkerMessage>) => {
+  if (!event.data) return;
   const { type, payload, ports } = event.data;
 
   switch (type) {

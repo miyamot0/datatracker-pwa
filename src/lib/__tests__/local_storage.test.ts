@@ -1,10 +1,26 @@
 import {
   getLocalCachedPrefs,
+  getLocalConnectSpans,
+  getLocalFigureLabels,
+  getLocalLegendSettings,
   getLocalSeriesStyles,
+  getLocalShowTitle,
+  getLocalShowTooltip,
+  getLocalShowConditionLegend,
+  getLocalShowDescription,
   ReturnLocalStorageCache,
   setLocalCachedPrefs,
+  setLocalLegendSettings,
+  setLocalShowConditionLegend,
+  setLocalShowDescription,
+  setLocalShowTooltip,
+  setLocalConnectSpans,
+  setLocalFigureLabels,
   setLocalSeriesStyles,
+  setLocalShowTitle,
 } from '../local_storage'; // Adjust the import path
+import { EMPTY_FIGURE_LABEL_SETTINGS } from '../graphing/figure-labels';
+import { DEFAULT_LEGEND_SETTINGS } from '../graphing/legend-settings';
 
 describe('LocalStorage Prefs', () => {
   const group = 'group1';
@@ -79,6 +95,7 @@ describe('LocalStorage Prefs', () => {
         ConditionStyles: {},
         phase_changes: [],
         text_annotations: [],
+        aim_lines: [],
       });
     });
 
@@ -88,6 +105,7 @@ describe('LocalStorage Prefs', () => {
         ConditionStyles: {},
         phase_changes: [],
         text_annotations: [],
+        aim_lines: [],
       };
 
       setLocalSeriesStyles(' group1 ', ' individual1 ', ' evaluation1 ', styles);
@@ -102,6 +120,7 @@ describe('LocalStorage Prefs', () => {
         ConditionStyles: { Baseline: { color: '#FF0000' } },
         phase_changes: [],
         text_annotations: [],
+        aim_lines: [],
       };
 
       setLocalSeriesStyles('group1', 'individual1', 'evaluation1', styles);
@@ -111,12 +130,14 @@ describe('LocalStorage Prefs', () => {
         ConditionStyles: {},
         phase_changes: [],
         text_annotations: [],
+        aim_lines: [],
       });
       expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation2')).toEqual({
         KeyStyles: {},
         ConditionStyles: {},
         phase_changes: [],
         text_annotations: [],
+        aim_lines: [],
       });
     });
 
@@ -131,6 +152,7 @@ describe('LocalStorage Prefs', () => {
         ConditionStyles: {},
         phase_changes: [],
         text_annotations: [],
+        aim_lines: [],
       });
     });
 
@@ -156,6 +178,29 @@ describe('LocalStorage Prefs', () => {
       ]);
     });
 
+    it('keeps only valid aim lines when reading saved styles', () => {
+      localStorage.setItem(
+        'group1_individual1_evaluation1_SeriesStyles',
+        JSON.stringify({
+          KeyStyles: {},
+          ConditionStyles: {},
+          phase_changes: [],
+          text_annotations: [],
+          aim_lines: [
+            { x1: 1, x2: 5, y: 40, lineType: 'dashed', color: '#9061C2', page: 'rate' },
+            { x1: 1, x2: 5, y: 40, lineType: 'wavy', color: '#9061C2' },
+            { x1: '1', x2: 5, y: 40, lineType: 'solid', color: '#9061C2' },
+            { x1: 1, x2: 5, y: 40, lineType: 'solid', color: '' },
+            { x1: 1, x2: 5, y: 40, lineType: 'solid', color: '#000000', page: 'phase' },
+          ],
+        }),
+      );
+
+      expect(getLocalSeriesStyles('group1', 'individual1', 'evaluation1').aim_lines).toEqual([
+        { x1: 1, x2: 5, y: 40, lineType: 'dashed', color: '#9061C2', page: 'rate' },
+      ]);
+    });
+
     it('keeps only valid phase changes when reading saved styles', () => {
       localStorage.setItem(
         'group1_individual1_evaluation1_SeriesStyles',
@@ -177,6 +222,146 @@ describe('LocalStorage Prefs', () => {
         { position: 3.5, lineType: 'dashed' },
         { position: 6, lineType: 'dotted' },
       ]);
+    });
+  });
+
+  describe('show title', () => {
+    it('defaults to shown when nothing is saved', () => {
+      expect(getLocalShowTitle(group, individual, evaluation, 'Rate')).toBe(true);
+    });
+
+    it('round-trips a hidden title per plot type', () => {
+      setLocalShowTitle(group, individual, evaluation, 'Rate', false);
+
+      expect(getLocalShowTitle(group, individual, evaluation, 'Rate')).toBe(false);
+      expect(getLocalShowTitle(group, individual, evaluation, 'Proportion')).toBe(true);
+    });
+
+    it('restores a shown title after it was hidden', () => {
+      setLocalShowTitle(group, individual, evaluation, 'Proportion', false);
+      setLocalShowTitle(group, individual, evaluation, 'Proportion', true);
+
+      expect(getLocalShowTitle(group, individual, evaluation, 'Proportion')).toBe(true);
+    });
+  });
+
+  describe('tooltip and condition legend', () => {
+    it('defaults both to shown when nothing is saved', () => {
+      expect(getLocalShowTooltip(group, individual, evaluation)).toBe(true);
+      expect(getLocalShowConditionLegend(group, individual, evaluation)).toBe(true);
+    });
+
+    it('round-trips hidden values and restores them when turned back on', () => {
+      setLocalShowTooltip(group, individual, evaluation, false);
+      setLocalShowConditionLegend(group, individual, evaluation, false);
+
+      expect(getLocalShowTooltip(group, individual, evaluation)).toBe(false);
+      expect(getLocalShowConditionLegend(group, individual, evaluation)).toBe(false);
+
+      setLocalShowTooltip(group, individual, evaluation, true);
+      setLocalShowConditionLegend(group, individual, evaluation, true);
+
+      expect(getLocalShowTooltip(group, individual, evaluation)).toBe(true);
+      expect(getLocalShowConditionLegend(group, individual, evaluation)).toBe(true);
+    });
+  });
+
+  describe('show description', () => {
+    it('defaults to shown and round-trips hidden and shown values', () => {
+      expect(getLocalShowDescription(group, individual, evaluation)).toBe(true);
+
+      setLocalShowDescription(group, individual, evaluation, false);
+      expect(getLocalShowDescription(group, individual, evaluation)).toBe(false);
+
+      setLocalShowDescription(group, individual, evaluation, true);
+      expect(getLocalShowDescription(group, individual, evaluation)).toBe(true);
+    });
+  });
+
+  describe('connect spans', () => {
+    it('defaults to not connected when nothing is saved', () => {
+      expect(getLocalConnectSpans(group, individual, evaluation, 'Rate')).toBe(false);
+    });
+
+    it('round-trips a connected state per plot type', () => {
+      setLocalConnectSpans(group, individual, evaluation, 'Rate', true);
+
+      expect(getLocalConnectSpans(group, individual, evaluation, 'Rate')).toBe(true);
+      expect(getLocalConnectSpans(group, individual, evaluation, 'Proportion')).toBe(false);
+    });
+
+    it('restores a disconnected state after it was connected', () => {
+      setLocalConnectSpans(group, individual, evaluation, 'Proportion', true);
+      setLocalConnectSpans(group, individual, evaluation, 'Proportion', false);
+
+      expect(getLocalConnectSpans(group, individual, evaluation, 'Proportion')).toBe(false);
+    });
+  });
+
+  describe('figure labels', () => {
+    const saved = {
+      overrideTitle: true,
+      titleText: 'Custom',
+      overrideXAxis: false,
+      xAxisText: '',
+      overrideYAxis: true,
+      yAxisText: 'Rate',
+    };
+
+    it('defaults to no overrides when nothing is saved', () => {
+      expect(getLocalFigureLabels(group, individual, evaluation, 'Rate')).toEqual(EMPTY_FIGURE_LABEL_SETTINGS);
+    });
+
+    it('round-trips label settings per plot type', () => {
+      setLocalFigureLabels(group, individual, evaluation, 'Rate', saved);
+
+      expect(getLocalFigureLabels(group, individual, evaluation, 'Rate')).toEqual(saved);
+      expect(getLocalFigureLabels(group, individual, evaluation, 'Proportion')).toEqual(EMPTY_FIGURE_LABEL_SETTINGS);
+    });
+
+    it('falls back to empty settings when stored JSON is invalid', () => {
+      localStorage.setItem(`${group}_${individual}_${evaluation}_FigureLabels_Rate`, '{not json');
+
+      expect(getLocalFigureLabels(group, individual, evaluation, 'Rate')).toEqual(EMPTY_FIGURE_LABEL_SETTINGS);
+    });
+
+    it('falls back to empty settings when stored data has the wrong shape', () => {
+      localStorage.setItem(
+        `${group}_${individual}_${evaluation}_FigureLabels_Rate`,
+        JSON.stringify({ overrideTitle: true }),
+      );
+
+      expect(getLocalFigureLabels(group, individual, evaluation, 'Rate')).toEqual(EMPTY_FIGURE_LABEL_SETTINGS);
+    });
+  });
+
+  describe('legend settings', () => {
+    const saved = { position: 'upper-left' as const, layout: 'vertical' as const };
+
+    it('defaults to below and horizontal when nothing is saved', () => {
+      expect(getLocalLegendSettings(group, individual, evaluation, 'Rate')).toEqual(DEFAULT_LEGEND_SETTINGS);
+    });
+
+    it('round-trips legend settings per plot type', () => {
+      setLocalLegendSettings(group, individual, evaluation, 'Rate', saved);
+
+      expect(getLocalLegendSettings(group, individual, evaluation, 'Rate')).toEqual(saved);
+      expect(getLocalLegendSettings(group, individual, evaluation, 'Proportion')).toEqual(DEFAULT_LEGEND_SETTINGS);
+    });
+
+    it('falls back to defaults when stored JSON is invalid', () => {
+      localStorage.setItem(`${group}_${individual}_${evaluation}_LegendSettings_Rate`, '{not json');
+
+      expect(getLocalLegendSettings(group, individual, evaluation, 'Rate')).toEqual(DEFAULT_LEGEND_SETTINGS);
+    });
+
+    it('falls back to defaults when stored data has an unknown position', () => {
+      localStorage.setItem(
+        `${group}_${individual}_${evaluation}_LegendSettings_Rate`,
+        JSON.stringify({ position: 'center', layout: 'vertical' }),
+      );
+
+      expect(getLocalLegendSettings(group, individual, evaluation, 'Rate')).toEqual(DEFAULT_LEGEND_SETTINGS);
     });
   });
 });

@@ -23,22 +23,19 @@ const mockSessionProcessKeypress = vi.hoisted(() => vi.fn());
 const mockHandleMessageChannel = vi.hoisted(() => vi.fn());
 const mockHandleWorkerMessage = vi.hoisted(() => vi.fn());
 const mockFormatTimeOfDay = vi.hoisted(() => vi.fn(() => '12:00:00'));
+const mockDurationRender = vi.hoisted(() => vi.fn());
 
 // ----- Module mocks -----
-
-vi.mock('@/App', () => ({
-  queryClient: {
-    setQueryData: mockQuerySetData,
-    invalidateQueries: mockQueryInvalidate,
-    setDefaultOptions: vi.fn(),
-  },
-}));
 
 vi.mock('@tanstack/react-router', () => ({
   useRouter: vi.fn(() => mockRouter),
 }));
 
 vi.mock('@tanstack/react-query', () => ({
+  useQueryClient: vi.fn(() => ({
+    setQueryData: mockQuerySetData,
+    invalidateQueries: mockQueryInvalidate,
+  })),
   useMutation: vi.fn((config: any) => {
     mutationConfigs.push(config);
     const mutateAsync = vi.fn(async (payload: unknown) => {
@@ -108,7 +105,10 @@ vi.mock('../ui-counts-frequency', () => ({
 }));
 
 vi.mock('../ui-counts-duration', () => ({
-  default: () => <div data-testid="duration-tallies">Duration</div>,
+  default: () => {
+    mockDurationRender();
+    return <div data-testid="duration-tallies">Duration</div>;
+  },
 }));
 
 vi.mock('../../subpanels/header-component', () => ({
@@ -327,72 +327,67 @@ describe('SessionRecorderInterface', () => {
     expect(mockFormatTimeOfDay).toHaveBeenCalled();
   });
 
-  it('covers UI polling fallback and active-duration interval update path', async () => {
-    const setIntervalSpy = vi.spyOn(globalThis, 'setInterval').mockImplementation((fn: any, _ms?: any) => {
-      fn();
-      return 1 as any;
-    });
-    const dateNowSpy = vi.spyOn(Date, 'now').mockReturnValue(1234567890);
+  describe('live duration tallies', () => {
+    const durationKeyPress = {
+      KeyType: 'Duration',
+      KeyCode: 68,
+      KeyName: 'D',
+      KeyDescription: 'Dur',
+      KeyScheduleRecording: 'Continuous',
+      TimePressed: new Date('2024-01-01T00:00:01.000Z'),
+      TimeIntoSession: 1.23,
+    };
 
-    mockHandleWorkerMessage.mockImplementation((_event: any, ctx: any) => {
-      ctx.setRunningState('Started');
-      ctx.setKeysPressed([
-        {
-          KeyType: 'Duration',
-          KeyCode: 68,
-          KeyName: 'D',
-          KeyDescription: 'Dur',
-          KeyScheduleRecording: 'Continuous',
-          TimePressed: new Date('2024-01-01T00:00:01.000Z'),
-          TimeIntoSession: 1.23,
-        },
-      ]);
-    });
-
-    const appSettings = makeAppSettings({ RecorderPolling: 'unknown' as any });
-    await render(<SessionRecorderInterface {...buildProps({ ApplicationSettings: appSettings })} />);
-
-    const worker = workerInstances[0];
-    worker.onmessage?.({ data: { type: 'RUNNING' } } as MessageEvent<any>);
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 100);
-    expect(dateNowSpy).toHaveBeenCalled();
-    dateNowSpy.mockRestore();
-  });
-
-  it('covers scheduleUIUpdate throttle and applies pending timer updates', async () => {
-    const raf = vi
-      .fn()
-      .mockImplementationOnce((cb: FrameRequestCallback) => {
-        cb(0);
-        return 1;
-      })
-      .mockImplementationOnce((cb: FrameRequestCallback) => {
-        cb(20);
-        return 2;
+    const sendTimerUpdate = (channel: any, total: number) => {
+      mockHandleMessageChannel.mockImplementation((_event: any, ctx: any) => {
+        ctx.pendingTimerUpdate.current = {
+          total,
+          first: total,
+          second: 0,
+          third: 0,
+          active: total,
+          activeTimer: 'Primary',
+        };
+        ctx.scheduleUIUpdate();
       });
-    vi.stubGlobal('requestAnimationFrame', raf as any);
 
-    mockHandleMessageChannel.mockImplementation((_event: any, ctx: any) => {
-      ctx.pendingTimerUpdate.current = {
-        total: 1,
-        first: 1,
-        second: 0,
-        third: 0,
-        active: 1,
-        activeTimer: 'Primary',
-      };
-      ctx.scheduleUIUpdate();
+      channel.port1.onmessage?.({ data: { type: 'HIGH_FREQ_UPDATE' } } as MessageEvent<any>);
+    };
+
+    it('re-renders the duration tallies on timer updates while a duration key is active', async () => {
+      mockHandleWorkerMessage.mockImplementation((_event: any, ctx: any) => {
+        ctx.setRunningState('Started');
+        ctx.setKeysPressed([durationKeyPress]);
+      });
+
+      await render(<SessionRecorderInterface {...buildProps()} />);
+      const worker = workerInstances[0];
+      worker.onmessage?.({ data: { type: 'SYSTEM_EVENT' } } as MessageEvent<any>);
+      await expect.element(page.getByTestId('duration-tallies')).toBeInTheDocument();
+
+      const channel = getRecorderChannelFromWorker(worker);
+      mockDurationRender.mockClear();
+
+      sendTimerUpdate(channel, 1);
+      await vi.waitFor(() => expect(mockDurationRender).toHaveBeenCalled());
+      const rendersAfterFirstUpdate = mockDurationRender.mock.calls.length;
+
+      sendTimerUpdate(channel, 2);
+      await vi.waitFor(() => expect(mockDurationRender.mock.calls.length).toBeGreaterThan(rendersAfterFirstUpdate));
     });
 
-    await render(<SessionRecorderInterface {...buildProps()} />);
+    it('does not re-render the duration tallies on timer updates when no duration key is active', async () => {
+      await render(<SessionRecorderInterface {...buildProps()} />);
+      await expect.element(page.getByTestId('duration-tallies')).toBeInTheDocument();
 
-    const channel = getRecorderChannelFromWorker(workerInstances[0]);
-    expect(channel).toBeDefined();
-    channel.port1.onmessage?.({ data: { type: 'TIMER_UPDATE' } } as MessageEvent<any>);
+      const channel = getRecorderChannelFromWorker(workerInstances[0]);
+      mockDurationRender.mockClear();
 
-    expect(raf).toHaveBeenCalledTimes(2);
+      sendTimerUpdate(channel, 1);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockDurationRender).not.toHaveBeenCalled();
+    });
   });
 
   it('returns early when scheduleUIUpdate is called while a frame is already pending', async () => {
@@ -512,5 +507,58 @@ describe('SessionRecorderInterface', () => {
     expect(channel.port1.close).toHaveBeenCalled();
     expect(worker.terminate).toHaveBeenCalled();
     expect(wakeRelease).toHaveBeenCalled();
+  });
+
+  it('keeps the worker and hands the latest props to worker message handlers after a rerender', async () => {
+    const base = buildProps();
+    const view = await render(<SessionRecorderInterface {...base} />);
+    const worker = workerInstances[0];
+
+    const newAppSettings = makeAppSettings();
+    const newHandle = makeHandle();
+    await view.rerender(
+      <SessionRecorderInterface {...base} Group="GroupB" Handle={newHandle} ApplicationSettings={newAppSettings} />,
+    );
+
+    expect(workerInstances).toHaveLength(1);
+    expect(worker.terminate).not.toHaveBeenCalled();
+
+    worker.onmessage?.({ data: { type: 'SYSTEM_EVENT' } } as MessageEvent<any>);
+
+    const ctx = mockHandleWorkerMessage.mock.calls.at(-1)?.[1];
+    expect(ctx.Group).toBe('GroupB');
+    expect(ctx.Handle).toBe(newHandle);
+    expect(ctx.ApplicationSettings).toBe(newAppSettings);
+  });
+
+  it('confirmEndedEarly opens the confirm dialog and resolves true on Save Results', async () => {
+    await render(<SessionRecorderInterface {...buildProps()} />);
+    const worker = workerInstances[0];
+
+    worker.onmessage?.({ data: { type: 'SYSTEM_EVENT' } } as MessageEvent<any>);
+    const { confirmEndedEarly } = mockHandleWorkerMessage.mock.calls.at(-1)[1];
+
+    const decision = confirmEndedEarly();
+
+    await expect.element(page.getByRole('dialog')).toBeVisible();
+    await expect.element(page.getByRole('button', { name: 'Save Results', exact: true })).toHaveFocus();
+    await page.getByRole('button', { name: 'Save Results', exact: true }).click();
+
+    await expect(decision).resolves.toBe(true);
+    await expect.element(page.getByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('confirmEndedEarly resolves false when the user discards', async () => {
+    await render(<SessionRecorderInterface {...buildProps()} />);
+    const worker = workerInstances[0];
+
+    worker.onmessage?.({ data: { type: 'SYSTEM_EVENT' } } as MessageEvent<any>);
+    const { confirmEndedEarly } = mockHandleWorkerMessage.mock.calls.at(-1)[1];
+
+    const decision = confirmEndedEarly();
+
+    await page.getByRole('button', { name: 'Discard', exact: true }).click();
+
+    await expect(decision).resolves.toBe(false);
   });
 });

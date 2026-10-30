@@ -1,6 +1,6 @@
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
 import { FetchGroupsRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 
 /**
  * Queries the groups by accessing the file system and retrieving the names of group directories. It returns an array of group names that are found, or an empty array if no groups are found or if there is an error during the file system operations.
@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 export const groupQueryOptions = (Handle: FileSystemDirectoryHandle) => ({
   queryKey: ['/'],
   queryFn: () => fetchGroupsWorker(Handle),
+  staleTime: 'static' as const,
 });
 
 /**
@@ -21,7 +22,7 @@ export const groupQueryOptions = (Handle: FileSystemDirectoryHandle) => ({
  */
 export const fetchGroupsWorker = async (Handle: FileSystemDirectoryHandle) => {
   const worker = new GenericFileWorker();
-  const request = { id: uuidv4(), type: 'FETCH_GROUPS', handle: Handle } satisfies FetchGroupsRequest;
+  const request = { id: v4(), type: 'FETCH_GROUPS', handle: Handle } satisfies FetchGroupsRequest;
 
   return new Promise<string[]>((resolve) => {
     worker.onmessage = (event: MessageEvent<QueryResponse>) => {

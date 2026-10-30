@@ -1,11 +1,14 @@
-import { KeySet, KeySetInstance } from '../../types/keyset';
-import { v4 as uuidv4 } from 'uuid';
-import { createNewKeySet, deserializeKeySet, serializeKeySet, pullMostRecentKeySet } from '../keyset';
-import { SavedSessionResult, SavedSettings } from '../dtos';
+import { KeySet, KeySetInstance } from '../../types/keyset/core';
+import { v4 } from '@/lib/uuid';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { createNewKeySet, deserializeKeySet, pullMostRecentSession, serializeKeySet } from '../keyset';
+import { SavedSessionResult } from '../dtos/session-results';
+import { SavedSettings } from '../dtos/session-settings';
 import { ModifiedSessionResult } from '@/types/storage';
 import { Mock, vi, describe, it, expect, beforeEach } from 'vitest';
 
-vi.mock('uuid', () => ({
+vi.mock('@/lib/uuid', () => ({
   v4: vi.fn(),
 }));
 
@@ -66,7 +69,7 @@ describe('KeySet Functions', () => {
   describe('createNewKeySet', () => {
     it('should create a new KeySet with the given name and generate a unique id', () => {
       const mockUUID = '123e4567-e89b-12d3-a456-426614174000';
-      (uuidv4 as Mock).mockReturnValue(mockUUID);
+      (v4 as Mock).mockReturnValue(mockUUID);
 
       const keySetName = 'Test KeySet';
       const result = createNewKeySet(keySetName);
@@ -146,7 +149,7 @@ describe('KeySet Functions', () => {
       expect(() => deserializeKeySet(invalidJSON)).toThrow();
     });
 
-    it('should handle missing properties in JSON', () => {
+    it('should default missing key lists to empty arrays', () => {
       const incompleteJSON = JSON.stringify({
         id: 'test-id',
         Name: 'Test KeySet',
@@ -157,8 +160,109 @@ describe('KeySet Functions', () => {
 
       expect(result.id).toBe('test-id');
       expect(result.Name).toBe('Test KeySet');
-      expect(result.FrequencyKeys).toBeUndefined();
-      expect(result.DurationKeys).toBeUndefined();
+      expect(result.FrequencyKeys).toEqual([]);
+      expect(result.DurationKeys).toEqual([]);
+    });
+
+    it('should drop malformed key entries and keep valid ones', () => {
+      const json = JSON.stringify({
+        id: 'test-id',
+        Name: 'Test KeySet',
+        FrequencyKeys: [
+          { KeyName: 'A', KeyDescription: 'Key A', KeyCode: 65 },
+          { KeyName: 'B', KeyCode: 'not-a-number' },
+          'junk',
+        ],
+        DurationKeys: 'not-a-list',
+      });
+
+      const result = deserializeKeySet(json);
+
+      expect(result.FrequencyKeys).toEqual([{ KeyName: 'A', KeyDescription: 'Key A', KeyCode: 65 }]);
+      expect(result.DurationKeys).toEqual([]);
+    });
+
+    it('should reject a keyset without an id or Name', () => {
+      expect(() => deserializeKeySet(JSON.stringify({ Name: 'No Id' }))).toThrow();
+      expect(() => deserializeKeySet(JSON.stringify({ id: 'x' }))).toThrow();
+    });
+
+    it('should keep an editor-shaped DerivedKey with field sources and steps', () => {
+      const field = { KeyName: 'A', KeyDescription: 'Key A', KeyCode: 65, Value: 3, Tag: 'field.Key A' };
+      const derived = {
+        id: 'derived-2',
+        name: 'Doubled',
+        value: 3,
+        initial: { type: 'field', field },
+        fields: [field],
+        steps: [
+          { id: 'step-1', operation: 'multiply', operand: { type: 'constant', value: 2 } },
+          { id: 'step-2', operation: 'add', operand: { type: 'field', field } },
+        ],
+      };
+
+      const result = deserializeKeySet(JSON.stringify({ id: 'test-id', Name: 'Test KeySet', DerivedKeys: [derived] }));
+
+      expect(result.DerivedKeys).toEqual([derived]);
+    });
+
+    it('should keep valid DerivedKeys and keep malformed ones unchanged', () => {
+      const validDerived = {
+        id: 'derived-1',
+        name: 'Derived',
+        value: 0,
+        initial: { type: 'constant', value: 0 },
+        fields: [],
+        steps: [],
+      };
+      const malformed = { id: 'missing-fields' };
+      const json = JSON.stringify({
+        id: 'test-id',
+        Name: 'Test KeySet',
+        DerivedKeys: [validDerived, malformed, 'junk'],
+      });
+
+      const result = deserializeKeySet(json);
+
+      expect(result.DerivedKeys).toEqual([validDerived, malformed, 'junk']);
+    });
+
+    it('should keep a DerivedKey whose field entry lacks Value or Tag, so saving does not delete it', () => {
+      const field = { KeyName: 'A', KeyDescription: 'Key A', KeyCode: 65, Value: 1, Tag: 'field.Key A' };
+      const { Tag: _tag, ...fieldWithoutTag } = field;
+      const base = {
+        id: 'derived-3',
+        name: 'Derived',
+        value: 0,
+        initial: { type: 'field', field },
+        fields: [field],
+        steps: [],
+      };
+      const unmatched = { ...base, fields: [fieldWithoutTag] };
+
+      const result = deserializeKeySet(
+        JSON.stringify({ id: 'test-id', Name: 'Test KeySet', DerivedKeys: [unmatched] }),
+      );
+
+      expect(result.DerivedKeys).toEqual([unmatched]);
+    });
+
+    it('should load the demo DerivedKeys without dropping any entries', () => {
+      const demoPath = resolve(
+        process.cwd(),
+        'demo-data/Evaluation Study/Participant 001/FC Treatment Evaluation.json',
+      );
+      const demo = JSON.parse(readFileSync(demoPath, 'utf8'));
+
+      const result = deserializeKeySet(JSON.stringify(demo));
+
+      expect(result.DerivedKeys).toHaveLength(2);
+      expect(result.DerivedKeys).toEqual(demo.DerivedKeys);
+      expect(result.DerivedKeys.map((d) => d.name)).toEqual(['CTB', 'Comply PCT']);
+      expect(result.DerivedKeys[1].steps.map((s) => [s.operation, s.operand.type])).toEqual([
+        ['divide', 'field'],
+        ['multiply', 'constant'],
+      ]);
     });
 
     it('should handle date parsing errors gracefully', () => {
@@ -180,205 +284,44 @@ describe('KeySet Functions', () => {
     });
   });
 
-  describe('pullMostRecentKeySet', () => {
-    describe('with SavedSessionResult arrays', () => {
-      it('should return the keyset from the session with the highest session number', () => {
-        const sessions: SavedSessionResult[] = [
-          createMockSavedSession(1, 'KeySet 1'),
-          createMockSavedSession(5, 'KeySet 5'),
-          createMockSavedSession(3, 'KeySet 3'),
-          createMockSavedSession(2, 'KeySet 2'),
-        ];
+  describe('serializeKeySet fallbacks', () => {
+    it('writes empty lists when the optional key lists are absent', () => {
+      const keyset = createMockKeySet('Sparse') as Partial<KeySet>;
+      delete keyset.DerivedKeys;
+      delete keyset.SpecialDurationKeys;
+      delete keyset.ScorableDurationKeys;
 
-        const result = pullMostRecentKeySet(sessions);
+      const parsed = JSON.parse(serializeKeySet(keyset as KeySet));
 
-        expect(result.Name).toBe('KeySet 5');
-        expect(result.id).toBe('keyset-keyset-5');
-      });
+      expect(parsed.DerivedKeys).toEqual([]);
+      expect(parsed.SpecialDurationKeys).toEqual([]);
+      expect(parsed.ScorableDurationKeys).toEqual([]);
+    });
+  });
 
-      it('should handle single session array', () => {
-        const sessions: SavedSessionResult[] = [createMockSavedSession(10, 'Only KeySet')];
+  describe('pullMostRecentSession', () => {
+    it('returns the saved session with the highest session number', () => {
+      const sessions = [createMockSavedSession(2), createMockSavedSession(7), createMockSavedSession(4)];
+      const seven = sessions[1];
 
-        const result = pullMostRecentKeySet(sessions);
+      const latest = pullMostRecentSession(sessions);
 
-        expect(result.Name).toBe('Only KeySet');
-        expect(result.id).toBe('keyset-only-keyset');
-      });
-
-      it('should handle sessions with same session numbers', () => {
-        const sessions: SavedSessionResult[] = [
-          createMockSavedSession(3, 'KeySet A'),
-          createMockSavedSession(3, 'KeySet B'),
-          createMockSavedSession(1, 'KeySet C'),
-        ];
-
-        const result = pullMostRecentKeySet(sessions);
-
-        // Should return one of the session 3 keysets (stable sort behavior)
-        expect([3, 3, 1]).toContain(3);
-        expect(['KeySet A', 'KeySet B']).toContain(result.Name);
-      });
-
-      it('should handle negative session numbers', () => {
-        const sessions: SavedSessionResult[] = [
-          createMockSavedSession(-1, 'KeySet -1'),
-          createMockSavedSession(0, 'KeySet 0'),
-          createMockSavedSession(-5, 'KeySet -5'),
-        ];
-
-        const result = pullMostRecentKeySet(sessions);
-
-        expect(result.Name).toBe('KeySet 0');
-      });
-
-      it('should handle large session numbers', () => {
-        const sessions: SavedSessionResult[] = [
-          createMockSavedSession(999999, 'KeySet Large'),
-          createMockSavedSession(1, 'KeySet Small'),
-          createMockSavedSession(1000000, 'KeySet Largest'),
-        ];
-
-        const result = pullMostRecentKeySet(sessions);
-
-        expect(result.Name).toBe('KeySet Largest');
-      });
+      expect(latest.SessionSettings.Session).toBe(7);
+      expect(latest).toBe(seven);
     });
 
-    describe('with ModifiedSessionResult arrays', () => {
-      it('should return the keyset from the session with the highest session number', () => {
-        const sessions: ModifiedSessionResult[] = [
-          createMockModifiedSession(2, 'Modified KeySet 2', 'file2.json'),
-          createMockModifiedSession(7, 'Modified KeySet 7', 'file7.json'),
-          createMockModifiedSession(1, 'Modified KeySet 1', 'file1.json'),
-          createMockModifiedSession(4, 'Modified KeySet 4', 'file4.json'),
-        ];
+    it('returns the modified session with the highest session number', () => {
+      const sessions = [createMockModifiedSession(3, 'A', 'a.json'), createMockModifiedSession(1, 'A', 'b.json')];
 
-        const result = pullMostRecentKeySet(sessions);
+      const latest = pullMostRecentSession(sessions);
 
-        expect(result.Name).toBe('Modified KeySet 7');
-        expect(result.id).toBe('keyset-modified-keyset-7');
-      });
-
-      it('should handle single modified session array', () => {
-        const sessions: ModifiedSessionResult[] = [
-          createMockModifiedSession(15, 'Single Modified KeySet', 'single.json'),
-        ];
-
-        const result = pullMostRecentKeySet(sessions);
-
-        expect(result.Name).toBe('Single Modified KeySet');
-      });
-
-      it('should preserve original keyset properties', () => {
-        const sessions: ModifiedSessionResult[] = [createMockModifiedSession(1, 'Test KeySet')];
-
-        const result = pullMostRecentKeySet(sessions);
-
-        expect(result).toHaveProperty('FrequencyKeys');
-        expect(result).toHaveProperty('DurationKeys');
-        expect(result).toHaveProperty('createdAt');
-        expect(result).toHaveProperty('lastModified');
-        expect(result.FrequencyKeys).toHaveLength(1);
-        expect(result.DurationKeys).toHaveLength(1);
-      });
+      expect(latest.SessionSettings.Session).toBe(3);
+      expect(latest).toEqual(expect.objectContaining({ Filename: 'a.json' }));
     });
 
-    describe('mixed array handling', () => {
-      it('should work with mixed SavedSessionResult and ModifiedSessionResult types', () => {
-        // Note: TypeScript would prevent this at compile time, but testing runtime behavior
-        const sessions: (SavedSessionResult | ModifiedSessionResult)[] = [
-          createMockSavedSession(2, 'Saved KeySet'),
-          createMockModifiedSession(5, 'Modified KeySet', 'modified.json'),
-        ];
-
-        const result = pullMostRecentKeySet(sessions as any);
-
-        expect(result.Name).toBe('Modified KeySet');
-      });
-    });
-
-    describe('edge cases', () => {
-      it('should handle sessions with zero session numbers', () => {
-        const sessions: SavedSessionResult[] = [
-          createMockSavedSession(0, 'KeySet Zero'),
-          createMockSavedSession(-1, 'KeySet Negative'),
-        ];
-
-        const result = pullMostRecentKeySet(sessions);
-
-        expect(result.Name).toBe('KeySet Zero');
-      });
-
-      it('should handle floating point session numbers', () => {
-        const session1 = createMockSavedSession(1, 'KeySet 1');
-        const session2 = createMockSavedSession(2, 'KeySet 2');
-
-        // Artificially set floating point session numbers
-        session1.SessionSettings.Session = 1.5;
-        session2.SessionSettings.Session = 2.3;
-
-        const sessions: SavedSessionResult[] = [session1, session2];
-
-        const result = pullMostRecentKeySet(sessions);
-
-        expect(result.Name).toBe('KeySet 2');
-      });
-
-      it('should maintain original array order when extracting result', () => {
-        const sessions: SavedSessionResult[] = [
-          createMockSavedSession(3, 'First'),
-          createMockSavedSession(1, 'Second'),
-          createMockSavedSession(5, 'Third'),
-        ];
-
-        const originalLength = sessions.length;
-        const result = pullMostRecentKeySet(sessions);
-
-        // Verify original array is not mutated
-        expect(sessions).toHaveLength(originalLength);
-        expect(result.Name).toBe('Third');
-      });
-
-      it('should handle sessions with complex keyset structures', () => {
-        const complexKeyset: KeySet = {
-          id: 'complex-keyset',
-          Name: 'Complex KeySet',
-          FrequencyKeys: [
-            { KeyName: 'F1', KeyDescription: 'Frequency Key 1', KeyCode: 70 },
-            { KeyName: 'F2', KeyDescription: 'Frequency Key 2', KeyCode: 71 },
-          ],
-          DurationKeys: [
-            { KeyName: 'D1', KeyDescription: 'Duration Key 1', KeyCode: 68 },
-            { KeyName: 'D2', KeyDescription: 'Duration Key 2', KeyCode: 69 },
-            { KeyName: 'D3', KeyDescription: 'Duration Key 3', KeyCode: 70 },
-          ],
-          createdAt: new Date('2024-01-01T10:00:00Z'),
-          lastModified: new Date('2024-01-02T15:30:00Z'),
-          DerivedKeys: [],
-          SpecialDurationKeys: [],
-          ScorableDurationKeys: [],
-        };
-
-        const session = createMockSavedSession(1, 'Complex');
-        session.Keyset = complexKeyset;
-
-        const sessions: SavedSessionResult[] = [session];
-
-        const result = pullMostRecentKeySet(sessions);
-
-        expect(result).toEqual(complexKeyset);
-        expect(result.FrequencyKeys).toHaveLength(2);
-        expect(result.DurationKeys).toHaveLength(3);
-        expect(result.SpecialDurationKeys).toHaveLength(0);
-      });
-
-      it('should throw error for empty arrays', () => {
-        const emptySavedSessions: SavedSessionResult[] = [];
-        const emptyModifiedSessions: ModifiedSessionResult[] = [];
-
-        expect(() => pullMostRecentKeySet(emptySavedSessions)).toThrow();
-        expect(() => pullMostRecentKeySet(emptyModifiedSessions)).toThrow();
-      });
+    it('returns the only session when given a single item', () => {
+      const only = createMockSavedSession(5);
+      expect(pullMostRecentSession([only])).toBe(only);
     });
   });
 });

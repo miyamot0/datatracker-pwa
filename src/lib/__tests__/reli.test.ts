@@ -17,7 +17,8 @@ import {
   prepareDurationReliTable,
 } from '../reli.ts';
 import { ProbedKey, BinValueType, ReliabilityPairType } from '../../types/reli';
-import { SavedSessionResult, SavedSettings } from '../dtos';
+import { SavedSessionResult } from '../dtos/session-results';
+import { SavedSettings } from '../dtos/session-settings';
 import { KeyManageType } from '@/types/timing';
 import { KeySet } from '@/types/keyset/core';
 

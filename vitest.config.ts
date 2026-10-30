@@ -4,10 +4,11 @@ import { playwright } from '@vitest/browser-playwright';
 import tailwindcss from '@tailwindcss/vite';
 import { CoverageV8Options } from 'vitest/node';
 import { loadEnv } from 'vite';
+import { prerenderDocsPlugin } from './scripts/plugins/prerender-docs.ts';
 
 const componentProj: TestProjectConfiguration = {
   extends: false,
-  plugins: [tailwindcss()],
+  plugins: [tailwindcss(), prerenderDocsPlugin],
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
@@ -30,14 +31,26 @@ const componentProj: TestProjectConfiguration = {
     maxConcurrency: 20,
     //maxWorkers: 1,
     include: ['./**/*.spec.tsx'],
-    exclude: [...configDefaults.exclude, '**/*.test.{ts,tsx}'],
+    exclude: [...configDefaults.exclude, '**/*.test.{ts,tsx}', '**/__screenshots__/**'],
     globals: true,
     name: 'browser-tests',
   },
 };
 
+// On-demand capture of documentation screenshots; enabled via CAPTURE_SCREENSHOTS=1 (see `npm run screenshots`).
+const screenshotProj: TestProjectConfiguration = {
+  ...componentProj,
+  test: {
+    ...componentProj.test,
+    include: ['./src/components/pages/__screenshots__/**/*.spec.tsx'],
+    exclude: [...configDefaults.exclude],
+    name: 'screenshots',
+  },
+};
+
 const logicProj: TestProjectConfiguration = {
   extends: false,
+  plugins: [prerenderDocsPlugin],
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
@@ -46,15 +59,27 @@ const logicProj: TestProjectConfiguration = {
   test: {
     clearMocks: false,
     include: ['./**/*.test.{ts,tsx}'],
-    exclude: [
-      ...configDefaults.exclude,
-      '**/*-worker.test.{ts,tsx}',
-      '**/*.spec.{ts,tsx}',
-      '**/*-worker-actual.test.{ts,tsx}',
-    ],
+    exclude: [...configDefaults.exclude, 'src/workers/**', '**/*.spec.{ts,tsx}'],
     environment: 'jsdom',
     globals: true,
     name: 'unit-tests',
+  },
+};
+
+const workerProj: TestProjectConfiguration = {
+  extends: false,
+  resolve: {
+    alias: {
+      '@': path.resolve(import.meta.dirname, './src'),
+    },
+  },
+  test: {
+    clearMocks: false,
+    include: ['./src/workers/**/*.test.{ts,tsx}'],
+    exclude: [...configDefaults.exclude],
+    environment: 'jsdom',
+    globals: true,
+    name: 'worker-tests',
   },
 };
 
@@ -67,7 +92,11 @@ export default defineConfig(({ command, mode }) => {
 
   const isVercel = location === 'vercel';
 
-  const projects: TestProjectConfiguration[] = isVercel ? [logicProj] : [componentProj, logicProj];
+  const captureScreenshots = process.env.CAPTURE_SCREENSHOTS === '1';
+
+  const projects: TestProjectConfiguration[] = isVercel
+    ? [logicProj]
+    : [componentProj, logicProj, workerProj, ...(captureScreenshots ? [screenshotProj] : [])];
 
   const coverage: CoverageV8Options | undefined = isVercel
     ? {
@@ -84,13 +113,16 @@ export default defineConfig(({ command, mode }) => {
       clean: true,
       reportsDirectory: './coverage',
       include: [
-        'src/lib/**/*.{ts,tsx}',
-        'src/calculations/**/*.ts',
-        'src/analytics/**/*.ts',
-        'src/components/elements/**/*.{ts,tsx}',
-        'src/components/pages/**/*.{ts,tsx}',
+        'src/**/*.{ts,tsx}'
       ],
-      exclude: ['**/__tests__/**/*', '**/types/**/*', 'src/lib/utils.ts', 'src/components/ui/**'],
+      exclude: [
+        '**/__tests__/**/*',
+        '**/__screenshots__/**/*',
+        '**/types/**/*',
+        'src/routes/**/*',
+        'src/config/*',
+        'src/*',
+        'src/lib/utils.ts'],
     };
 
   return {

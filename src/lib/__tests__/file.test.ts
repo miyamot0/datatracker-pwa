@@ -156,3 +156,126 @@ describe('file.ts', () => {
     });
   });
 });
+
+type MemoryNode = { kind: 'dir'; entries: Map<string, MemoryNode> } | { kind: 'file'; text: string };
+
+/** In-memory directory tree implementing the File System Access calls used by file.ts */
+function memoryDir(entries: Map<string, MemoryNode> = new Map()): FileSystemDirectoryHandle {
+  return {
+    async getDirectoryHandle(name: string, options?: { create?: boolean }) {
+      let node = entries.get(name);
+      if (!node) {
+        if (!options?.create) throw new DOMException('missing', 'NotFoundError');
+        node = { kind: 'dir', entries: new Map() };
+        entries.set(name, node);
+      }
+      if (node.kind !== 'dir') throw new TypeError(`${name} is not a directory`);
+      return memoryDir(node.entries);
+    },
+    async getFileHandle(name: string, options?: { create?: boolean }) {
+      let node = entries.get(name);
+      if (!node) {
+        if (!options?.create) throw new DOMException('missing', 'NotFoundError');
+        node = { kind: 'file', text: '' };
+        entries.set(name, node);
+      }
+      if (node.kind !== 'file') throw new TypeError(`${name} is not a file`);
+      const fileNode = node;
+      return {
+        async getFile() {
+          return new File([fileNode.text], name);
+        },
+        async createWritable() {
+          return {
+            async write(data: Blob) {
+              fileNode.text = await data.text();
+            },
+            async close() {},
+          };
+        },
+      };
+    },
+  } as unknown as FileSystemDirectoryHandle;
+}
+
+const row = (file: string) => ({ file }) as SyncEntryTableRow;
+
+describe('file.ts behavior', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+  });
+
+  it('readFileAsync resolves with the file text', async () => {
+    await expect(readFileAsync(new File(['hello world'], 'a.txt'))).resolves.toBe('hello world');
+  });
+
+  it('readFileAsync rejects when the reader fails', async () => {
+    const failure = new ProgressEvent('error');
+    vi.spyOn(FileReader.prototype, 'readAsText').mockImplementation(function (this: FileReader) {
+      this.onerror?.(failure as ProgressEvent<FileReader>);
+    });
+
+    await expect(readFileAsync(new File(['x'], 'a.txt'))).rejects.toBe(failure);
+  });
+
+  it('getFileHandle creates intermediate folders and the final file', async () => {
+    const root = memoryDir();
+    const handle = await getFileHandle(root, 'data//nested/notes.txt');
+
+    expect(handle).toBeDefined();
+    await expect(root.getDirectoryHandle('data')).resolves.toBeDefined();
+    const nested = await (await root.getDirectoryHandle('data')).getDirectoryHandle('nested');
+    await expect(nested.getFileHandle('notes.txt')).resolves.toBeDefined();
+  });
+
+  it('getFileHandle reuses existing folders and files', async () => {
+    const root = memoryDir();
+    await getFileHandle(root, 'docs/a.txt');
+    await expect(getFileHandle(root, 'docs/a.txt')).resolves.toBeDefined();
+  });
+
+  it('writeOutFileToRemote returns early when a handle is missing or the path is blank', async () => {
+    const local = memoryDir();
+    const remote = memoryDir();
+
+    await expect(
+      writeOutFileToRemote(undefined as unknown as FileSystemDirectoryHandle, local, row('a.txt')),
+    ).resolves.toBeUndefined();
+    await expect(
+      writeOutFileToRemote(remote, undefined as unknown as FileSystemDirectoryHandle, row('a.txt')),
+    ).resolves.toBeUndefined();
+    await expect(writeOutFileToRemote(remote, local, row('///'))).resolves.toBeUndefined();
+    await expect(remote.getFileHandle('a.txt')).rejects.toThrow();
+  });
+
+  it('writeOutFileToRemote copies local text into the remote file', async () => {
+    const localEntries = new Map<string, MemoryNode>();
+    const local = memoryDir(localEntries);
+    const remote = memoryDir();
+
+    const source = await getFileHandle(local, 'Group/Ind/Eval/settings.json');
+    const writer = await source!.createWritable();
+    await writer.write(new Blob(['{"a":1}']));
+    await writer.close();
+
+    await writeOutFileToRemote(remote, local, row('Group/Ind/Eval/settings.json'));
+
+    const copied = await (await getFileHandle(remote, 'Group/Ind/Eval/settings.json'))!.getFile();
+    expect(await copied.text()).toBe('{"a":1}');
+  });
+
+  it('syncAllFiles writes every row and appends the names to the previous remote list', async () => {
+    const local = memoryDir();
+    const remote = memoryDir();
+    const setRemote = vi.fn();
+
+    await syncAllFiles([row('one.txt'), row('two/three.txt')], local, remote, setRemote);
+
+    expect(setRemote).toHaveBeenCalledTimes(1);
+    const updater = setRemote.mock.calls[0][0] as (prev: string[] | null) => string[];
+    expect(updater(['existing.txt'])).toEqual(['existing.txt', 'one.txt', 'two/three.txt']);
+    expect(updater(null)).toEqual(['one.txt', 'two/three.txt']);
+    await expect(getFileHandle(remote, 'two/three.txt')).resolves.toBeDefined();
+  });
+});

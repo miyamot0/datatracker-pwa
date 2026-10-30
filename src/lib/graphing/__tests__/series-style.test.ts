@@ -11,7 +11,10 @@ import {
   resolveMarkerStroke,
   isSeriesHidden,
   isValidTextAnnotation,
+  isValidPhaseChange,
   getPageTextAnnotations,
+  isValidAimLine,
+  getPageAimLines,
   splitTextAnnotationLines,
   SERIES_COLOR_PALETTE,
   type SeriesStyles,
@@ -26,6 +29,7 @@ const styled: SeriesStyles = {
   ConditionStyles: { Treatment: { color: '#FF0000' } },
   phase_changes: [{ position: 4, lineType: 'dashed' }],
   text_annotations: [],
+  aim_lines: [],
 };
 
 describe('series style resolvers fall back to defaults', () => {
@@ -33,7 +37,13 @@ describe('series style resolvers fall back to defaults', () => {
     expect(resolveKeyShape(EMPTY_SERIES_STYLES, 'Hitting', 'circle')).toBe('circle');
     expect(
       resolveKeyShape(
-        { KeyStyles: { Hitting: { shape: 'not-a-shape' as never } }, ConditionStyles: {} },
+        {
+          KeyStyles: { Hitting: { shape: 'not-a-shape' as never } },
+          ConditionStyles: {},
+          phase_changes: [],
+          text_annotations: [],
+          aim_lines: [],
+        },
         'Hitting',
         'cross',
       ),
@@ -67,6 +77,9 @@ describe('series style resolvers fall back to defaults', () => {
     const withFill: SeriesStyles = {
       KeyStyles: { Hitting: { fillColors: { Baseline: '#00FF00' } } },
       ConditionStyles: { Baseline: { color: '#FF0000' } },
+      phase_changes: [],
+      text_annotations: [],
+      aim_lines: [],
     };
 
     expect(resolveKeyFillColor(withFill, 'Hitting', 'Baseline', '#9061C2')).toBe('#00FF00');
@@ -117,6 +130,9 @@ describe('isSeriesHidden', () => {
         },
       },
       ConditionStyles: {},
+      phase_changes: [],
+      text_annotations: [],
+      aim_lines: [],
     };
 
     expect(isSeriesHidden(styles, 'Key1', 'Baseline')).toBe(true);
@@ -127,22 +143,83 @@ describe('isSeriesHidden', () => {
     const styles = {
       KeyStyles: { Key1: { fillColors: { Baseline: TRANSPARENT_COLOR } } },
       ConditionStyles: {},
+      phase_changes: [],
+      text_annotations: [],
+      aim_lines: [],
     };
 
     expect(isSeriesHidden(styles, 'Key1', 'Baseline')).toBe(false);
   });
 
   it('is true when a transparent condition fill and a transparent line both apply', () => {
-    const styles = {
+    const styles: SeriesStyles = {
       KeyStyles: { Key1: { lineColors: { Baseline: TRANSPARENT_COLOR } } },
       ConditionStyles: { Baseline: { color: TRANSPARENT_COLOR } },
+      phase_changes: [],
+      text_annotations: [],
+      aim_lines: [],
     };
 
     expect(isSeriesHidden(styles, 'Key1', 'Baseline')).toBe(true);
   });
 });
 
+describe('aim line helpers', () => {
+  const valid = { x1: 1, x2: 5, y: 40, lineType: 'dashed', color: '#9061C2' } as const;
+
+  it('accepts a complete aim line and rejects incomplete or unknown values', () => {
+    expect(isValidAimLine(valid)).toBe(true);
+    expect(isValidAimLine(null)).toBe(false);
+    expect(isValidAimLine({ ...valid, x1: Number.NaN })).toBe(false);
+    expect(isValidAimLine({ ...valid, x2: '5' })).toBe(false);
+    expect(isValidAimLine({ ...valid, y: Number.POSITIVE_INFINITY })).toBe(false);
+    expect(isValidAimLine({ ...valid, lineType: 'wavy' })).toBe(false);
+    expect(isValidAimLine({ ...valid, color: '   ' })).toBe(false);
+    expect(isValidAimLine({ ...valid, page: 'rate' })).toBe(true);
+    expect(isValidAimLine({ ...valid, page: 'phase' })).toBe(false);
+  });
+
+  it('returns only the aim lines for a page, including ones saved before pages existed', () => {
+    const legacy = { x1: 1, x2: 5, y: 40, lineType: 'solid', color: '#000000' } as const;
+    const rate = { ...legacy, y: 10, page: 'rate' } as const;
+    const proportion = { ...legacy, y: 0.5, page: 'proportion' } as const;
+    const all = [rate, proportion, legacy];
+
+    expect(getPageAimLines(all, 'rate')).toEqual([rate, legacy]);
+    expect(getPageAimLines(all, 'proportion')).toEqual([proportion, legacy]);
+  });
+
+  it('returns no aim lines when none are saved', () => {
+    expect(getPageAimLines(undefined, 'rate')).toEqual([]);
+  });
+});
+
+describe('phase change helpers', () => {
+  it('accepts a positive finite position with a known line type', () => {
+    expect(isValidPhaseChange({ position: 2, lineType: 'dashed' })).toBe(true);
+  });
+
+  it('rejects non-object values', () => {
+    expect(isValidPhaseChange(null)).toBe(false);
+    expect(isValidPhaseChange(undefined)).toBe(false);
+    expect(isValidPhaseChange('phase')).toBe(false);
+    expect(isValidPhaseChange(3)).toBe(false);
+  });
+
+  it('rejects non-positive, non-finite, or unknown values', () => {
+    expect(isValidPhaseChange({ position: 0, lineType: 'solid' })).toBe(false);
+    expect(isValidPhaseChange({ position: Number.NaN, lineType: 'solid' })).toBe(false);
+    expect(isValidPhaseChange({ position: Number.POSITIVE_INFINITY, lineType: 'solid' })).toBe(false);
+    expect(isValidPhaseChange({ position: 2, lineType: 'wavy' })).toBe(false);
+  });
+});
+
 describe('text annotation helpers', () => {
+  it('rejects non-object values', () => {
+    expect(isValidTextAnnotation(null)).toBe(false);
+    expect(isValidTextAnnotation('note')).toBe(false);
+  });
+
   it('accepts a complete annotation and rejects incomplete or unknown values', () => {
     const valid = { label: 'Note', x: 2, y: 50, anchor: 'top-left', justify: 'center' };
 

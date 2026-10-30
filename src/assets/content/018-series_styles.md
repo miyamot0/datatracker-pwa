@@ -43,12 +43,12 @@ Key-specific settings in the dialog are provided in the "Keys" section, where ea
 
 #### Resetting Styles
 
-There are various combinations of styles available to users, and in conditions where styles have become problematic or confusing, it may be helpful to reset them to the default values. Users can click the **Reset All to Defaults** button to revert all series and condition styles back to their automatic defaults. Phase change lines and text annotations are not affected by this button.
+There are various combinations of styles available to users, and in conditions where styles have become problematic or confusing, it may be helpful to reset them to the default values. Users can click the **Reset All to Defaults** button to revert all series and condition styles back to their automatic defaults. Phase change lines and text annotations are not affected by this button. Aim lines are cleared by it, so re-add any aim lines you still need after using the reset.
 
-#### Phase Lines and Text Annotations
+#### Phase Lines, Aim Lines, and Text Annotations
 
-Phase change lines and text annotations are not part of series styling, so they are documented separately in [Adding Phase Lines and Text Annotations to Figures](/documentation/019-figure_annotations). That entry covers how to add and edit each type, how text is scoped to the rate or proportion page, and how these annotations are saved.
+Phase change lines, aim lines, and text annotations are not part of series styling, so they are documented separately in [Annotating Figures with Phase Lines, Aim Lines, and Text](/documentation/019-figure_annotations). That entry covers how to add and edit each type, how aim lines and text are scoped to the rate or proportion page, and how these annotations are saved.
 
 ### Closing Notes and Tips
 
-There is considerable flexibility in how series can be styled and users are encouraged to experiment with different combinations to best convey the information in their figures. As a general note, the settings adjusted at the evaluation-level for an individual are cached on the local machine, so these settings should persist over time unless modified. That is, settings made at once time should persist as more data and conditions are added to the data set.
+There is considerable flexibility in how series can be styled and users are encouraged to experiment with different combinations to best convey the information in their figures. Styles can also be written to a file, reloaded, or deleted, as described in [Saving, Loading, and Deleting Style Files](/documentation/021-styles_file). As a general note, the settings adjusted at the evaluation-level for an individual are cached on the local machine, so these settings should persist over time unless modified. That is, settings made at once time should persist as more data and conditions are added to the data set.

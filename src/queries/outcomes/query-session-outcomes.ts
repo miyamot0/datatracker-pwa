@@ -1,7 +1,7 @@
 import { ModifiedSessionResult } from '@/types/storage';
 import GenericFileWorker from '@/workers/queries/file-query-read-worker.ts?worker';
 import { FetchSessionOutcomesRequest, QueryResponse } from '@/workers/queries/types/file-query-read-worker-types';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 
 /**
  * Queries the session outcomes for a specific group, individual, and evaluation by accessing the file system and retrieving the relevant session outcome files. It returns an array of ModifiedSessionResult objects that contain the details of each session outcome found within the file system structure, or an empty array if no session outcomes are found or if there is an error during the file system operations.
@@ -20,6 +20,7 @@ export const sessionOutcomesQueryOptions = (
 ) => ({
   queryKey: ['/', Group, Individual, Evaluation, 'outcomes'],
   queryFn: () => fetchSessionOutcomesWorker(Handle, Group, Individual, Evaluation),
+  staleTime: 'static' as const,
 });
 
 /**
@@ -39,7 +40,7 @@ export const fetchSessionOutcomesWorker = async (
 ) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'FETCH_OUTCOMES',
     handle: Handle,
     groupName: Group,

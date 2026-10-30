@@ -1,6 +1,6 @@
 import { KeySet } from '@/types/keyset/core';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 import { MutateKeysetsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 
 /**
@@ -64,7 +64,7 @@ export const mutationKeysetsWorker = async ({
 }) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'MUTATE_KEYSETS',
     handle: Handle,
     groupName: Group,
@@ -76,19 +76,19 @@ export const mutationKeysetsWorker = async ({
     action: Action,
   } satisfies MutateKeysetsRequest;
 
-  return new Promise<KeySet[]>((resolve) => {
+  return new Promise<KeySet[]>((resolve, reject) => {
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
         const keysets = response.data;
         resolve(keysets);
       } else {
-        resolve([]);
+        reject(new Error(response.error));
       }
     };
     worker.onerror = (error) => {
       console.error('Worker error:', error);
-      resolve([]);
+      reject(new Error(error.message || 'Worker failed to complete the mutation'));
     };
     worker.postMessage(request);
   });

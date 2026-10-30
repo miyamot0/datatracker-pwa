@@ -113,6 +113,7 @@ const renderPage = (enableDeletion = true) =>
       Sessions={[makeSession(1, 'Primary'), makeSession(2, 'Reliability')]}
       Settings={{ EnableFileDeletion: enableDeletion } as any}
       Handle={{} as FileSystemDirectoryHandle}
+      Conditions={['Baseline', 'Treatment']}
     />,
   );
 
@@ -161,26 +162,20 @@ describe('DashboardHistoryPage', () => {
     await expect.element(page.getByText('14.50')).toBeInTheDocument();
   });
 
-  it('delete callback returns when confirmation is false', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => false),
-    );
+  it('delete callback returns when confirmation is canceled', async () => {
     await renderPage(true);
 
     await page.getByRole('button', { name: 'Trigger Delete Callback' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  it('delete callback mutates selected rows when confirmed', async () => {
-    vi.stubGlobal(
-      'confirm',
-      vi.fn(() => true),
-    );
+  it('delete callback mutates selected rows when accepted', async () => {
     await renderPage(true);
 
     await page.getByRole('button', { name: 'Trigger Delete Callback' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
 
     expect(mockMutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -194,24 +189,37 @@ describe('DashboardHistoryPage', () => {
     expect(mockRouterInvalidate).toHaveBeenCalled();
   });
 
-  it('rename callback returns early on null and short prompt values', async () => {
-    vi.stubGlobal('prompt', vi.fn().mockReturnValueOnce(null).mockReturnValueOnce('ab'));
+  it('rename dialog closes without mutating when canceled', async () => {
     await renderPage(true);
 
     await page.getByRole('button', { name: 'Trigger Rename Callback' }).click();
-    await page.getByRole('button', { name: 'Trigger Rename Callback' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  it('rename callback updates condition when prompt is valid', async () => {
-    vi.stubGlobal(
-      'prompt',
-      vi.fn(() => 'New Condition'),
-    );
+  it('rename dialog blocks duplicate and too-short condition names', async () => {
     await renderPage(true);
 
     await page.getByRole('button', { name: 'Trigger Rename Callback' }).click();
+    const input = page.getByRole('dialog').getByLabelText('Condition Name');
+    const submit = page.getByRole('dialog').getByRole('button', { name: 'Rename', exact: true });
+
+    await input.fill('Baseline');
+    await expect.element(submit).toBeDisabled();
+
+    await input.fill('ab');
+    await expect.element(submit).toBeDisabled();
+
+    expect(mockMutateAsync).not.toHaveBeenCalled();
+  });
+
+  it('rename dialog updates condition when the name is valid', async () => {
+    await renderPage(true);
+
+    await page.getByRole('button', { name: 'Trigger Rename Callback' }).click();
+    await page.getByRole('dialog').getByLabelText('Condition Name').fill('New Condition');
+    await page.getByRole('dialog').getByRole('button', { name: 'Rename', exact: true }).click();
 
     expect(mockMutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({

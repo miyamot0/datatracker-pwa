@@ -11,20 +11,13 @@ import { conditionQueryOptions } from '@/queries/conditions/query-conditions';
 import { keyboardQueryOptions } from '@/queries/keysets/query-keyboards';
 import { sessionQueryOptions } from '@/queries/session/query-session-params';
 import { Await, createFileRoute, redirect } from '@tanstack/react-router';
+import { routeGuard } from '@/lib/routing';
+
+import { trackSettlement } from '@/lib/settle-tracking';
 
 export const Route = createFileRoute('/session/$group/$individual/$evaluation/')({
   beforeLoad: ({ context, params }) => {
-    if (!context.folderHandleContext.isInitialized) {
-      throw redirect({
-        href: '/',
-      });
-    }
-
-    if (!context.folderHandleContext.handle) {
-      throw redirect({
-        to: '/dashboard',
-      });
-    }
+    const guarded = routeGuard({ context });
 
     const { group, individual, evaluation } = params;
 
@@ -35,7 +28,8 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/')
     }
 
     return {
-      CleanHandle: context.folderHandleContext.handle,
+      CleanHandle: guarded.handle,
+      Settings: guarded.settings,
       Group: CleanUpString(group),
       Individual: CleanUpString(individual),
       Evaluation: CleanUpString(evaluation),
@@ -44,23 +38,23 @@ export const Route = createFileRoute('/session/$group/$individual/$evaluation/')
   loader: ({ context }) => {
     const { Group, Individual, Evaluation, CleanHandle } = context;
 
-    const fetchConditions = context.queryClient.fetchQuery(
+    const fetchConditions = context.queryClient.query(
       conditionQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const fetchKeyboards = context.queryClient.fetchQuery(keyboardQueryOptions(CleanHandle, Group, Individual));
+    const fetchKeyboards = context.queryClient.query(keyboardQueryOptions(CleanHandle, Group, Individual));
 
-    const fetchSessionParams = context.queryClient.fetchQuery(
+    const fetchSessionParams = context.queryClient.query(
       sessionQueryOptions(CleanHandle, Group, Individual, Evaluation),
     );
 
-    const totalQuery = Promise.all([fetchConditions, fetchKeyboards, fetchSessionParams]);
+    const totalQuery = trackSettlement(Promise.all([fetchConditions, fetchKeyboards, fetchSessionParams]));
 
     return {
       Group: Group,
       Individual: Individual,
       Evaluation: Evaluation,
-      Settings: context.folderHandleContext.settings,
+      Settings: context.Settings,
       CleanHandle,
       totalQuery,
     };

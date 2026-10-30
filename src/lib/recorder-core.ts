@@ -1,4 +1,4 @@
-import { KeySet } from '@/types/keyset';
+import { KeySet } from '@/types/keyset/core';
 import { SavedSettings } from '@/lib/dtos/session-settings';
 import { KeyManageType, KeyTiming, TimerSetting } from '@/types/timing';
 import { SessionPollingIntervals, SessionRecorderPolling } from '@/types/settings/performance-settings';
@@ -106,7 +106,7 @@ export class SessionRecorderCore {
   init(settings: SavedSettings, keyset: KeySet, uiPollingInterval: SessionRecorderPolling): void {
     this.settings = settings;
     this.keyset = keyset;
-    this.uiUpdateInterval = SessionPollingIntervals[uiPollingInterval];
+    this.uiUpdateInterval = SessionPollingIntervals[uiPollingInterval] ?? SessionPollingIntervals.course;
     this.resetState();
 
     // Initialize special key timers

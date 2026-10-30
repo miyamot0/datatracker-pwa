@@ -2,11 +2,11 @@ import { MutateEvaluationsAllRequest, MutationResponse } from '@/workers/mutatio
 import { EvaluationRecord } from '../keysets/types/evaluation-record';
 import { evaluationsAllQueryOptions } from './query-evaluations-all';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 } from '@/lib/uuid';
 import { queryClient } from '@/App';
 
 /**
- * This function is responsible for mutating the evaluations associated with a specific group and individual. It takes in the necessary parameters to identify the target evaluations and the action to be performed (in this case, importing evaluations). The function first retrieves the current list of evaluations using React Query's `fetchQuery` method. It then performs the specified action by iterating over the relevant evaluation records and duplicating them in the file system using the provided directory handle. Finally, it returns the updated list of evaluation records after the mutation is complete.
+ * This function is responsible for mutating the evaluations associated with a specific group and individual. It takes in the necessary parameters to identify the target evaluations and the action to be performed (in this case, importing evaluations). The function first retrieves the current list of evaluations using React Query's `query` method. It then performs the specified action by iterating over the relevant evaluation records and duplicating them in the file system using the provided directory handle. Finally, it returns the updated list of evaluation records after the mutation is complete.
  *
  * @param Group - The name of the group associated with the evaluations.
  * @param Individual - The name of the individual associated with the evaluations.
@@ -28,7 +28,7 @@ export const mutationEvaluationsAll = async ({
   Handle: FileSystemDirectoryHandle;
   Action: 'Import';
 }): Promise<EvaluationRecord[]> => {
-  const evaluationsAll: EvaluationRecord[] = await queryClient.fetchQuery(evaluationsAllQueryOptions(Handle));
+  const evaluationsAll: EvaluationRecord[] = await queryClient.query(evaluationsAllQueryOptions(Handle));
 
   if (!evaluationsAll) {
     throw new Error('Evaluations not found');
@@ -72,7 +72,7 @@ export const mutationEvaluationsAllWorker = async ({
 }) => {
   const worker = new GenericFileWorker();
   const request = {
-    id: uuidv4(),
+    id: v4(),
     type: 'MUTATE_EVALUATIONS_ALL',
     handle: Handle,
     groupName: Group,
@@ -82,19 +82,19 @@ export const mutationEvaluationsAllWorker = async ({
     action: Action,
   } satisfies MutateEvaluationsAllRequest;
 
-  return new Promise<EvaluationRecord[]>((resolve) => {
+  return new Promise<EvaluationRecord[]>((resolve, reject) => {
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
         const settings = response.data;
         resolve(settings);
       } else {
-        throw new Error(`Worker error: ${response.error}\nStack: ${response.stack}`);
+        reject(new Error(`Worker error: ${response.error}\nStack: ${response.stack}`));
       }
     };
     worker.onerror = (error) => {
       console.error('Worker error:', error);
-      throw new Error(`Worker error: ${error.message}`);
+      reject(new Error(`Worker error: ${error.message}`));
     };
     worker.postMessage(request);
   });
