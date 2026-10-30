@@ -9,7 +9,6 @@ const mockPreloadRoute = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const mockInvalidate = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const mockDisplayNotification = vi.hoisted(() => vi.fn());
 const mockToastPromise = vi.hoisted(() => vi.fn(async (fn: () => Promise<unknown>) => await fn()));
-const mockPrompt = vi.hoisted(() => vi.fn());
 const mockMutationConditionsFn = vi.hoisted(() => vi.fn());
 const mockMutationSettingsFn = vi.hoisted(() => vi.fn());
 const mockFilteredSessionTerminationOptions = vi.hoisted(() => vi.fn(() => ['1', 'UNKNOWN_OPTION']));
@@ -138,14 +137,14 @@ const makeSessionSettings = () =>
     Role: 'Primary',
   }) as any;
 
-const renderDesigner = (cacheBehavior: 'normal' | 'aggressive' = 'normal') =>
+const renderDesigner = (cacheBehavior: 'normal' | 'aggressive' = 'normal', keysets = makeKeysets()) =>
   render(
     <SessionDesigner
       Group="GroupA"
       Individual="ClientB"
       Evaluation="Eval1"
       Conditions={['Baseline', 'Intervention']}
-      Keysets={makeKeysets()}
+      Keysets={keysets}
       SessionSettings={makeSessionSettings()}
       Settings={makeSettings(cacheBehavior)}
       Handle={{} as FileSystemDirectoryHandle}
@@ -161,12 +160,8 @@ describe('SessionDesigner', () => {
     mockInvalidate.mockReset();
     mockDisplayNotification.mockReset();
     mockToastPromise.mockClear();
-    mockPrompt.mockReset();
-
     mockConditionsMutate.mockResolvedValue([]);
     mockSettingsMutate.mockResolvedValue({ KeySet: 'Keyset B' });
-
-    vi.stubGlobal('prompt', mockPrompt);
   });
 
   it('renders session designer sections and fields', async () => {
@@ -178,30 +173,61 @@ describe('SessionDesigner', () => {
     await expect.element(page.getByRole('button', { name: 'Run Session' })).toBeInTheDocument();
   });
 
-  it('returns early when add condition prompt is canceled', async () => {
-    mockPrompt.mockReturnValue(null);
+  it('renders derived keys with their formulas', async () => {
+    const keysets = makeKeysets();
+    keysets[0].DerivedKeys = [
+      {
+        id: 'dk1',
+        name: 'Derived Alpha',
+        initial: { type: 'constant', value: 42 },
+        fields: [],
+        steps: [],
+        value: 0,
+      },
+    ];
+
+    await renderDesigner('normal', keysets);
+
+    await expect.element(page.getByText('Frequency Keys')).toBeInTheDocument();
+    await expect.element(page.getByText('Derived Alpha (Derived Key)')).toBeInTheDocument();
+    await expect.element(page.getByText('42', { exact: true })).toBeInTheDocument();
+  });
+
+  it('closes the add condition dialog without adding when canceled', async () => {
     await renderDesigner();
 
     await page.getByRole('button', { name: 'Add New Condition' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click();
 
     expect(mockConditionsMutate).not.toHaveBeenCalled();
   });
 
-  it('shows duplicate condition notification', async () => {
-    mockPrompt.mockReturnValue('Baseline');
+  it('blocks submitting a duplicate condition name in the dialog', async () => {
     await renderDesigner();
 
     await page.getByRole('button', { name: 'Add New Condition' }).click();
+    await page.getByLabelText('Condition Name').fill('Baseline');
 
-    expect(mockDisplayNotification).toHaveBeenCalled();
+    await expect.element(page.getByRole('button', { name: 'Add Condition' })).toBeDisabled();
+    expect(mockConditionsMutate).not.toHaveBeenCalled();
+  });
+
+  it('blocks submitting a name that is too short', async () => {
+    await renderDesigner();
+
+    await page.getByRole('button', { name: 'Add New Condition' }).click();
+    await page.getByLabelText('Condition Name').fill('  ab ');
+
+    await expect.element(page.getByRole('button', { name: 'Add Condition' })).toBeDisabled();
     expect(mockConditionsMutate).not.toHaveBeenCalled();
   });
 
   it('adds a new condition via mutation', async () => {
-    mockPrompt.mockReturnValue('New Cond');
     await renderDesigner();
 
     await page.getByRole('button', { name: 'Add New Condition' }).click();
+    await page.getByLabelText('Condition Name').fill('New Cond');
+    await page.getByRole('button', { name: 'Add Condition' }).click();
 
     expect(mockToastPromise).toHaveBeenCalled();
     expect(mockConditionsMutate).toHaveBeenCalledWith(
@@ -223,17 +249,6 @@ describe('SessionDesigner', () => {
     expect(invalidateConfig.filter({ routeId: '/test' })).toBe(true);
     expect(invalidateConfig.filter({ routeId: '/session/$group/$individual/$evaluation/run/$keyset' })).toBe(true);
     expect(invalidateConfig.filter({ routeId: '/not-this-route' })).toBe(false);
-  });
-
-  it('does not add a condition when prompt returns only whitespace', async () => {
-    mockPrompt.mockReturnValue('   ');
-    await renderDesigner();
-
-    await page.getByRole('button', { name: 'Add New Condition' }).click();
-
-    expect(mockToastPromise).not.toHaveBeenCalled();
-    expect(mockConditionsMutate).not.toHaveBeenCalled();
-    expect(mockDisplayNotification).not.toHaveBeenCalled();
   });
 
   it('cancels clear empty conditions when user declines', async () => {
