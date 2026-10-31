@@ -4,6 +4,7 @@ import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?w
 import { v4 } from '@/lib/uuid';
 import { MutateGroupsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 import { applyDemoStyles, loadDemoStyles } from '@/lib/demo-styles';
+import { clearEvaluationPaths, listEvaluationPathsForGroups } from '@/lib/evaluation-local-storage';
 
 /**
  * This function is responsible for mutating the groups within the application. It takes in the necessary parameters to identify the target group and the action to be performed (adding, deleting, or loading demo data). The function first retrieves the current list of groups using React Query's `query` method. It then performs the specified action by interacting with the file system through the provided directory handle. Finally, it returns the updated list of groups after the mutation is complete.
@@ -50,6 +51,8 @@ export const mutationGroupsWorker = async ({
 }) => {
   // Parsed before the worker runs so an invalid bundled styles file fails before any demo files are written.
   const demoStyles = Action === 'Demo' ? await loadDemoStyles() : [];
+  // Listed before the worker removes the folders, since the evaluations cannot be found afterwards.
+  const removedEvaluations = Action === 'Delete' ? await listEvaluationPathsForGroups(Handle, Group) : [];
   const worker = new GenericFileWorker();
   const request = {
     id: v4(),
@@ -67,6 +70,7 @@ export const mutationGroupsWorker = async ({
           if (Action === 'Demo') {
             applyDemoStyles(demoStyles);
           }
+          clearEvaluationPaths(removedEvaluations);
           const directories = response.data;
           resolve(directories);
         } catch (error) {

@@ -330,7 +330,7 @@ export function applyStylesFile(
   }
 }
 
-const backupKey = (group: string, individual: string, evaluation: string) =>
+export const backupKey = (group: string, individual: string, evaluation: string) =>
   `styles-backup:${group}|${individual}|${evaluation}`;
 
 /**
