@@ -13,7 +13,7 @@
       {
         "label": "Baseline",
         "x": 2,
-        "y": 8,
+        "y": 7,
         "anchor": "middle-left",
         "justify": "left",
         "weight": "bold",
@@ -22,7 +22,7 @@
       {
         "label": "Intervention",
         "x": 13,
-        "y": 8,
+        "y": 7,
         "anchor": "middle-left",
         "justify": "left",
         "weight": "bold",
@@ -32,8 +32,8 @@
     "aim_lines": [
       {
         "x1": 12.5,
-        "x2": 30,
-        "y": 2,
+        "x2": 25,
+        "y": 1,
         "lineType": "dotted",
         "color": "#EB540A",
         "page": "rate"
@@ -41,36 +41,43 @@
     ]
   },
   "showTooltip": true,
-  "showConditionLegend": true,
+  "showConditionLegend": false,
   "showKeyLegend": true,
   "showDescription": true,
   "singleTarget": false,
   "hiddenConditions": [],
   "plots": {
     "Rate": {
-      "showTitle": false,
+      "showTitle": true,
       "connectSpans": false,
       "figureLabels": {
-        "overrideTitle": false,
-        "titleText": "",
+        "overrideTitle": true,
+        "titleText": "Demand Treatment Evaluation",
         "overrideXAxis": false,
         "xAxisText": "",
-        "overrideYAxis": false,
-        "yAxisText": ""
+        "overrideYAxis": true,
+        "yAxisText": "Combined Target Behavior (per min)"
       },
       "legendSettings": {
-        "position": "upper-right",
-        "layout": "horizontal"
+        "position": "mid-right",
+        "layout": "vertical"
       },
       "fontFamily": "timesNewRoman",
       "axisMax": {
         "overrideXMax": true,
-        "xMax": 30,
-        "overrideYMax": false,
-        "yMax": null
+        "xMax": 25,
+        "overrideYMax": true,
+        "yMax": 7
       },
       "figureTextSize": "base",
-      "hiddenKeys": []
+      "hiddenKeys": [
+        "SIB",
+        "DIS",
+        "AGG",
+        "Prompt",
+        "Compliance",
+        "Comply PCT"
+      ]
     },
     "Proportion": {
       "showTitle": true,
