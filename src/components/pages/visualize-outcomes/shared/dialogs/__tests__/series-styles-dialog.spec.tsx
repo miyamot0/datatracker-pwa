@@ -36,7 +36,7 @@ describe('SeriesStylesDialog', () => {
     await expect.element(page.getByText('Marker fill (Baseline)').first()).toBeInTheDocument();
     await expect.element(page.getByText('Line (Baseline)')).toBeInTheDocument();
     await expect.element(page.getByRole('combobox', { name: 'Select key' })).toHaveTextContent('Hitting');
-    await expect.element(page.getByText('Default (circle)')).toBeInTheDocument();
+    await expect.element(page.getByText('Default (circle)').first()).toBeInTheDocument();
   });
 
   it('omits hidden keys and defaults shapes by visible position', async () => {
@@ -56,7 +56,7 @@ describe('SeriesStylesDialog', () => {
     await page.getByRole('button', { name: 'Edit Series Styles' }).click();
 
     await expect.element(page.getByRole('combobox', { name: 'Select key' })).toHaveTextContent('Kicking');
-    await expect.element(page.getByText('Default (circle)')).toBeInTheDocument();
+    await expect.element(page.getByText('Default (circle)').first()).toBeInTheDocument();
 
     await page.getByRole('combobox', { name: 'Select key' }).click();
     await expect.element(page.getByRole('option', { name: 'Kicking' })).toBeInTheDocument();
@@ -148,6 +148,52 @@ describe('SeriesStylesDialog', () => {
     expect(onChange).toHaveBeenCalledWith({
       ...EMPTY_SERIES_STYLES,
       KeyStyles: { Hitting: { shape: 'triangle' } },
+    });
+  });
+
+  it('sets a per-condition shape from the condition shape selector', async () => {
+    const onChange = vi.fn();
+
+    await render(
+      <SeriesStylesDialog
+        keys={[{ KeyDescription: 'Hitting', Visible: true }]}
+        conditions={['Baseline']}
+        visibleConditions={['Baseline']}
+        styles={EMPTY_SERIES_STYLES}
+        onChange={onChange}
+      />,
+    );
+
+    await page.getByRole('button', { name: 'Edit Series Styles' }).click();
+    await page.getByRole('combobox', { name: 'Shape in Baseline for Hitting' }).click();
+    await page.getByRole('option', { name: 'diamond', exact: true }).click();
+
+    expect(onChange).toHaveBeenCalledWith({
+      ...EMPTY_SERIES_STYLES,
+      KeyStyles: { Hitting: { shapes: { Baseline: 'diamond' } } },
+    });
+  });
+
+  it('clears a per-condition shape back to Default', async () => {
+    const onChange = vi.fn();
+
+    await render(
+      <SeriesStylesDialog
+        keys={[{ KeyDescription: 'Hitting', Visible: true }]}
+        conditions={['Baseline']}
+        visibleConditions={['Baseline']}
+        styles={{ ...EMPTY_SERIES_STYLES, KeyStyles: { Hitting: { shapes: { Baseline: 'diamond' } } } }}
+        onChange={onChange}
+      />,
+    );
+
+    await page.getByRole('button', { name: 'Edit Series Styles' }).click();
+    await page.getByRole('combobox', { name: 'Shape in Baseline for Hitting' }).click();
+    await page.getByRole('option', { name: /^Default/ }).click();
+
+    expect(onChange).toHaveBeenCalledWith({
+      ...EMPTY_SERIES_STYLES,
+      KeyStyles: { Hitting: { shapes: {} } },
     });
   });
 

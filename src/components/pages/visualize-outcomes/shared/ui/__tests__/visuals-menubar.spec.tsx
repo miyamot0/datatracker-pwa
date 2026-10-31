@@ -28,6 +28,7 @@ function makeSettings(overrides: Partial<VisualsSettingsState> = {}): VisualsSet
     schedule: { value: 'Default', label: 'Default' },
     figureTextSize: 'base',
     connectSpans: false,
+    singleTarget: false,
     showTitle: true,
     showTooltip: true,
     showConditionLegend: true,
@@ -336,6 +337,32 @@ describe('VisualsMenubar', () => {
     await page.getByRole('menuitemcheckbox', { name: 'Connect All Spans' }).click();
 
     expect(dispatch).toHaveBeenCalledWith({ type: 'connectSpansChanged', connect: true });
+  });
+
+  it('dispatches Single Target toggled on from Data when one key is visible', async () => {
+    const { dispatch } = renderMenubar();
+
+    await page.getByRole('menuitem', { name: 'Data' }).click();
+    await page.getByRole('menuitemcheckbox', { name: 'Single Target' }).click();
+
+    expect(dispatch).toHaveBeenCalledWith({ type: 'singleTargetChanged', singleTarget: true });
+  });
+
+  it('disables Single Target from Data when more than one key is visible', async () => {
+    renderMenubar({
+      settings: {
+        keys: [
+          { KeyName: 'a', KeyCode: 1, KeyDescription: 'Key A', KeyType: 'Observed', Visible: true },
+          { KeyName: 'b', KeyCode: 2, KeyDescription: 'Key B', KeyType: 'Derived', Visible: true },
+        ],
+      },
+    });
+
+    await page.getByRole('menuitem', { name: 'Data' }).click();
+
+    await expect
+      .element(page.getByRole('menuitemcheckbox', { name: 'Single Target' }))
+      .toHaveAttribute('aria-disabled', 'true');
   });
 
   it('dispatches Enable Tooltip toggled off from Settings and keeps the menu open', async () => {

@@ -210,6 +210,24 @@ export function setLocalShowKeyLegend(Group: string, Individual: string, Evaluat
 }
 
 /**
+ * Retrieve whether single-target display is enabled for a Group/Individual/Evaluation. Defaults to off.
+ */
+export function getLocalSingleTarget(Group: string, Individual: string, Evaluation: string) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'SingleTarget'].join('_');
+
+  return localStorage.getItem(dynamic_key) === 'true';
+}
+
+/**
+ * Store whether single-target display is enabled for a Group/Individual/Evaluation.
+ */
+export function setLocalSingleTarget(Group: string, Individual: string, Evaluation: string, SingleTarget: boolean) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'SingleTarget'].join('_');
+
+  localStorage.setItem(dynamic_key, String(SingleTarget));
+}
+
+/**
  * Retrieve whether the explanation text above the figure is shown for a Group/Individual/Evaluation. Defaults to shown.
  */
 export function getLocalShowDescription(Group: string, Individual: string, Evaluation: string) {

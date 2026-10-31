@@ -16,6 +16,7 @@ export type PersistedVisualsSettings = Pick<
   | 'showConditionLegend'
   | 'showKeyLegend'
   | 'showDescription'
+  | 'singleTarget'
   | 'figureLabels'
   | 'legendSettings'
   | 'seriesStyles'
@@ -34,6 +35,8 @@ export type VisualsSettingsState = {
   showConditionLegend: boolean;
   showKeyLegend: boolean;
   showDescription: boolean;
+  /** Requested single-target display; only takes effect while exactly one key is visible */
+  singleTarget: boolean;
   figureLabels: FigureLabelSettings;
   legendSettings: LegendSettings;
   seriesStyles: SeriesStyles;
@@ -52,12 +55,20 @@ export type VisualsSettingsAction =
   | { type: 'showConditionLegendChanged'; show: boolean }
   | { type: 'showKeyLegendChanged'; show: boolean }
   | { type: 'showDescriptionChanged'; show: boolean }
+  | { type: 'singleTargetChanged'; singleTarget: boolean }
   | { type: 'figureLabelsChanged'; labels: FigureLabelSettings }
   | { type: 'legendSettingsChanged'; settings: LegendSettings }
   | { type: 'seriesStylesChanged'; styles: SeriesStyles }
   | { type: 'fontFamilyChanged'; fontFamily: FigureFontFamily }
   | { type: 'axisMaxChanged'; axisMax: FigureAxisMaxSettings }
   | { type: 'settingsReloaded'; settings: PersistedVisualsSettings };
+
+/**
+ * Number of keys currently visible. Single-target display applies only when this is exactly one.
+ */
+export function countVisibleKeys(keys: ToggleDisplayKey[]): number {
+  return keys.filter((key) => key.Visible === true).length;
+}
 
 /**
  * Pure state transitions for visualization settings. Toggles read the latest state, so rapid updates do not overwrite each other.
@@ -67,13 +78,16 @@ export function visualsSettingsReducer(
   action: VisualsSettingsAction,
 ): VisualsSettingsState {
   switch (action.type) {
-    case 'keyVisibilityChanged':
-      return {
-        ...state,
-        keys: state.keys.map((key) =>
-          key.KeyDescription === action.keyDescription ? { ...key, Visible: action.visible } : key,
-        ),
-      };
+    case 'keyVisibilityChanged': {
+      const keys = state.keys.map((key) =>
+        key.KeyDescription === action.keyDescription ? { ...key, Visible: action.visible } : key,
+      );
+
+      // Single target is lifted once more than one key is enabled
+      const lifted = countVisibleKeys(keys) > 1 && state.singleTarget;
+
+      return { ...state, keys, ...(lifted ? { singleTarget: false } : {}) };
+    }
     case 'conditionVisibilityChanged':
       return {
         ...state,
@@ -97,6 +111,8 @@ export function visualsSettingsReducer(
       return { ...state, showKeyLegend: action.show };
     case 'showDescriptionChanged':
       return { ...state, showDescription: action.show };
+    case 'singleTargetChanged':
+      return { ...state, singleTarget: action.singleTarget };
     case 'figureLabelsChanged':
       return { ...state, figureLabels: action.labels };
     case 'legendSettingsChanged':

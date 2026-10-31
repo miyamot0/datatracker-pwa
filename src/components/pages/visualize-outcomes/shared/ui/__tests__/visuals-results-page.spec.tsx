@@ -37,6 +37,8 @@ vi.mock('@/lib/local_storage', () => ({
   setLocalShowConditionLegend: vi.fn(),
   getLocalShowKeyLegend: vi.fn(() => true),
   setLocalShowKeyLegend: vi.fn(),
+  getLocalSingleTarget: vi.fn(() => false),
+  setLocalSingleTarget: vi.fn(),
   getLocalShowDescription: mockGetLocalShowDescription,
   setLocalShowDescription: vi.fn(),
 }));

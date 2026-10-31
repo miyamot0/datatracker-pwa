@@ -37,9 +37,15 @@ Clicking the **Styles** control presents a dialog with various options for custo
 
 It is most likely that users will desire to customize the appearance of individual series beyond the condition-wide settings. This allows for highlighting specific keys or making certain series stand out in the figure (e.g., alternative target with bright/contrasting colors). In these cases, settings provided by clicking the **Styles** can be used to override the key-specific settings in the figure as well.
 
-Key-specific settings in the dialog are provided in the "Keys" section, where each key listed can be selected to reveal its individual styling options. Note: only a single key is presented at a single time and selecting a key brings up settings specific to that key. The series editor allows users to edit the **Shape** of the marker for that key, as well as its fill (**Marker Fill**) and **Line** colors per key and condition. A preview is provided beside the dropdown, showing the marker as it will look in that condition.
+Key-specific settings in the dialog are provided in the "Keys" section, where each key listed can be selected to reveal its individual styling options. Note: only a single key is presented at a single time and selecting a key brings up settings specific to that key. The series editor allows users to edit the **Shape** of the marker for all conditions of that key, then override the **Shape** for an individual condition, along with its fill (**Marker Fill**) and **Line** colors per key and condition. A condition shape left at Default uses the key shape. A preview is provided beside each dropdown, showing the marker as it will look in that condition.
 
 **Example:** An alternative target behavior, such as _Functional Communication_, may benefit from styling in a few different ways. Specifically, this response can be adjusted to include a distinct marker (e.g., a star) as well as unique colors to make it stand out in the figure (e.g., light blue in an otherwise black/white figure). In this example, it similarly would be helpful to de-emphasize aspects of this series in certain areas of the figure, such as Baseline. In this case, since the relevant target could not have taken place in baseline, we may adjust the style for this target and condition to have a 'hidden' marker and 'hidden' line specific to Baseline conditions. Doing this omits the series from being visually prominent in that condition, while still allowing it to stand out in other conditions where is it more meaningful to emphasize.
+
+#### Single Target Legend
+
+When only one target is the focus, differences between series are often only in condition. The **Single Target** checkbox in the **Data Display** menu makes the legend's condition entries match that target. When it is checked, each condition entry in the legend uses the marker shape and fill of the first visible key for that condition, including any overrides from the **Styles** dialog. Single Target is stored with your visual settings and is not saved in the styles file.
+
+Single Target is available only when one key is visible. Enabling a second key clears the setting, and the checkbox is disabled while more than one key is visible.
 
 #### Resetting Styles
 

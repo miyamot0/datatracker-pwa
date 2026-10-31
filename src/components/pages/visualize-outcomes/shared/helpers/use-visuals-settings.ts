@@ -11,6 +11,7 @@ import {
   getLocalShowKeyLegend,
   getLocalShowTitle,
   getLocalShowTooltip,
+  getLocalSingleTarget,
   setLocalCachedPrefs,
   setLocalConnectSpans,
   setLocalFigureAxisMax,
@@ -23,9 +24,10 @@ import {
   setLocalShowKeyLegend,
   setLocalShowTitle,
   setLocalShowTooltip,
+  setLocalSingleTarget,
 } from '@/lib/local_storage';
 import { type ToggleDisplayKey } from '@/types/visuals';
-import { visualsSettingsReducer, VisualsSettingsState, type PersistedVisualsSettings, type ScheduleOption } from './visuals-settings-reducer';
+import { countVisibleKeys, visualsSettingsReducer, VisualsSettingsState, type PersistedVisualsSettings, type ScheduleOption } from './visuals-settings-reducer';
 
 export type VisualsSettingsOptions = {
   group: string;
@@ -55,6 +57,7 @@ export function readPersistedVisualsSettings(
     showConditionLegend: getLocalShowConditionLegend(group, individual, evaluation),
     showKeyLegend: getLocalShowKeyLegend(group, individual, evaluation),
     showDescription: getLocalShowDescription(group, individual, evaluation),
+    singleTarget: getLocalSingleTarget(group, individual, evaluation),
     figureLabels: getLocalFigureLabels(group, individual, evaluation, plot),
     legendSettings: getLocalLegendSettings(group, individual, evaluation, plot),
     seriesStyles: getLocalSeriesStyles(group, individual, evaluation),
@@ -64,12 +67,17 @@ export function readPersistedVisualsSettings(
 }
 
 function buildInitialState(options: VisualsSettingsOptions): VisualsSettingsState {
+  const keys = [...options.keys].sort((a, b) => b.KeyType.localeCompare(a.KeyType));
+  const persisted = readPersistedVisualsSettings(options);
+
   return {
-    keys: [...options.keys].sort((a, b) => b.KeyType.localeCompare(a.KeyType)),
+    keys,
     conditions: options.conditions.map((condition) => ({ Condition: condition, Visible: true })),
     schedule: options.defaultSchedule,
     figureTextSize: 'base',
-    ...readPersistedVisualsSettings(options),
+    ...persisted,
+    // Single target is lifted when more than one key is visible
+    singleTarget: persisted.singleTarget && countVisibleKeys(keys) <= 1,
   };
 }
 
@@ -106,6 +114,9 @@ export function useVisualsSettings(options: VisualsSettingsOptions) {
   );
   usePersistOnChange(state.showKeyLegend, (show) => setLocalShowKeyLegend(group, individual, evaluation, show));
   usePersistOnChange(state.showDescription, (show) => setLocalShowDescription(group, individual, evaluation, show));
+  usePersistOnChange(state.singleTarget, (singleTarget) =>
+    setLocalSingleTarget(group, individual, evaluation, singleTarget),
+  );
   usePersistOnChange(state.figureLabels, (labels) => setLocalFigureLabels(group, individual, evaluation, plot, labels));
   usePersistOnChange(state.legendSettings, (settings) =>
     setLocalLegendSettings(group, individual, evaluation, plot, settings),

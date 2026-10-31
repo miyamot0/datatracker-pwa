@@ -24,6 +24,8 @@ vi.mock('@/lib/local_storage', () => ({
   setLocalShowTooltip: vi.fn(),
   setLocalShowConditionLegend: vi.fn(),
   setLocalShowKeyLegend: vi.fn(),
+  getLocalSingleTarget: vi.fn(() => false),
+  setLocalSingleTarget: vi.fn(),
   setLocalShowTitle: mockSetLocalShowTitle,
   getLocalConnectSpans: vi.fn(() => false),
   setLocalConnectSpans: mockSetLocalConnectSpans,

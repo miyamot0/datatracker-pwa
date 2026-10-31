@@ -136,6 +136,7 @@ describe('ProportionFigureVisualization', () => {
       defaultProps.FilteredSessions,
       defaultProps.KeySetFull,
       EMPTY_SERIES_STYLES,
+      false,
     );
     expect(mockCreateNavigationHandler).toHaveBeenCalledWith(
       mockNavigate,

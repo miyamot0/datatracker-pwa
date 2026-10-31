@@ -23,8 +23,8 @@ import {
   PHASE_LINE_COLOR,
   PHASE_LINE_DASH_ARRAY,
   isSeriesHidden,
+  resolveKeyConditionShape,
   resolveKeyFillColor,
-  resolveKeyShape,
   resolveLineColor,
   resolveMarkerStroke,
   type SeriesStyles,
@@ -170,7 +170,12 @@ export function BaseChart({
           const lines = keySetFull
             .filter((key) => key.Visible === true)
             .map((key, index) => {
-              const shape: SymbolType = resolveKeyShape(seriesStyles, key.KeyDescription, getShape(index));
+              const shape: SymbolType = resolveKeyConditionShape(
+                seriesStyles,
+                key.KeyDescription,
+                condition.name,
+                getShape(index),
+              );
               const line_color = resolveLineColor(seriesStyles, key.KeyDescription, condition.name, DEFAULT_LINE_COLOR);
               const marker_fill = resolveKeyFillColor(
                 seriesStyles,

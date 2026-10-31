@@ -23,6 +23,7 @@ import {
   SERIES_SHAPES,
   TRANSPARENT_COLOR,
   resolveFillColor,
+  resolveKeyConditionShape,
   resolveKeyFillColor,
   type KeySeriesStyle,
   type SeriesStyles,
@@ -171,6 +172,55 @@ function ColorSelect({
 }
 
 /**
+ * Dropdown for choosing a marker shape, where Default clears the override
+ *
+ * @param value - Stored shape, or undefined when using the default
+ * @param defaultShape - Shape shown next to the Default option
+ * @param onChange - Receives the chosen shape, or undefined for Default
+ * @param label - Accessible label for the trigger
+ */
+function ShapeSelect({
+  value,
+  defaultShape,
+  onChange,
+  label,
+}: {
+  value: SymbolType | undefined;
+  defaultShape: SymbolType;
+  onChange: (value: SymbolType | undefined) => void;
+  label: string;
+}) {
+  return (
+    <Select
+      value={value ?? DEFAULT_VALUE}
+      onValueChange={(next) => onChange(next === DEFAULT_VALUE ? undefined : (next as SymbolType))}
+    >
+      <SelectTrigger className={CONTROL_WIDTH} aria-label={label}>
+        <SelectValue>{value ?? `Default (${defaultShape})`}</SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectItem value={DEFAULT_VALUE}>
+            <span className="flex flex-row items-center gap-2">
+              <ShapeGlyph shape={defaultShape} />
+              Default ({defaultShape})
+            </span>
+          </SelectItem>
+          {SERIES_SHAPES.map((shape) => (
+            <SelectItem key={shape} value={shape}>
+              <span className="flex flex-row items-center gap-2">
+                <ShapeGlyph shape={shape} />
+                {shape}
+              </span>
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  );
+}
+
+/**
  * Returns a copy of a record with one entry set, or removed when the value is undefined
  *
  * @param record - Source record, which is not mutated
@@ -240,6 +290,12 @@ export function SeriesStylesDialog({
 
   const setShape = (key: string, shape: SymbolType | undefined) => updateKey(key, (current) => ({ ...current, shape }));
 
+  const setConditionShape = (key: string, condition: string, shape: SymbolType | undefined) =>
+    updateKey(key, (current) => ({
+      ...current,
+      shapes: setOrDelete(current.shapes ?? {}, condition, shape),
+    }));
+
   const setFillColor = (key: string, condition: string, color: string | undefined) =>
     updateKey(key, (current) => ({
       ...current,
@@ -276,8 +332,8 @@ export function SeriesStylesDialog({
         <DialogHeader>
           <DialogTitle>Series Styles</DialogTitle>
           <DialogDescription>
-            Override marker shapes, marker fills, and line colors. Marker borders are always black. Anything left at
-            Default keeps the standard style for the figure.
+            Override marker shapes, marker fills, and line colors for each condition. Marker borders are always black.
+            Anything left at Default keeps the standard style for the figure.
           </DialogDescription>
         </DialogHeader>
 
@@ -320,39 +376,31 @@ export function SeriesStylesDialog({
                   </Select>
                 </StyleRow>
 
-                <StyleRow label="Shape">
+                <StyleRow label="Shape (all conditions)">
                   <div className="flex flex-row items-center gap-2">
                     <ShapeGlyph shape={effectiveShape} />
-                    <Select
-                      value={activeKeyStyle?.shape ?? DEFAULT_VALUE}
-                      onValueChange={(next) =>
-                        setShape(activeKey, next === DEFAULT_VALUE ? undefined : (next as SymbolType))
-                      }
-                    >
-                      <SelectTrigger className={CONTROL_WIDTH} aria-label={`Shape for ${activeKey}`}>
-                        <SelectValue>{activeKeyStyle?.shape ?? `Default (${defaultShape})`}</SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectItem value={DEFAULT_VALUE}>
-                            <span className="flex flex-row items-center gap-2">
-                              <ShapeGlyph shape={defaultShapeForKey(activeKey)} />
-                              Default ({defaultShape})
-                            </span>
-                          </SelectItem>
-                          {SERIES_SHAPES.map((shape) => (
-                            <SelectItem key={shape} value={shape}>
-                              <span className="flex flex-row items-center gap-2">
-                                <ShapeGlyph shape={shape} />
-                                {shape}
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                    <ShapeSelect
+                      label={`Shape for ${activeKey}`}
+                      value={activeKeyStyle?.shape}
+                      defaultShape={defaultShape}
+                      onChange={(shape) => setShape(activeKey, shape)}
+                    />
                   </div>
                 </StyleRow>
+
+                {conditions.map((condition) => (
+                  <StyleRow key={`shape-${condition}`} label={`Shape (${condition})`}>
+                    <div className="flex flex-row items-center gap-2">
+                      <ShapeGlyph shape={resolveKeyConditionShape(styles, activeKey, condition, effectiveShape)} />
+                      <ShapeSelect
+                        label={`Shape in ${condition} for ${activeKey}`}
+                        value={activeKeyStyle?.shapes?.[condition]}
+                        defaultShape={effectiveShape}
+                        onChange={(shape) => setConditionShape(activeKey, condition, shape)}
+                      />
+                    </div>
+                  </StyleRow>
+                ))}
 
                 {conditions.map((condition) => (
                   <StyleRow key={`fill-${condition}`} label={`Marker Fill (${condition})`}>

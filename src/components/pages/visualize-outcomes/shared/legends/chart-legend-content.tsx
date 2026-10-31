@@ -51,7 +51,7 @@ export function ChartLegendContent({ payload, layout = 'horizontal', align = 'ce
           >
             {entry.kind === 'condition' ? (
               <Symbols
-                type={'circle'}
+                type={entry.type}
                 cx={16}
                 cy={16}
                 size={32}

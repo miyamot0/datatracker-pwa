@@ -18,6 +18,7 @@ function makeState(overrides: Partial<VisualsSettingsState> = {}): VisualsSettin
     schedule: { value: 'Default', label: 'Default' },
     figureTextSize: 'base',
     connectSpans: false,
+    singleTarget: false,
     showTitle: true,
     showTooltip: true,
     showConditionLegend: true,
@@ -100,6 +101,27 @@ describe('visualsSettingsReducer', () => {
 
   it('updates connectSpans', () => {
     expect(visualsSettingsReducer(makeState(), { type: 'connectSpansChanged', connect: true }).connectSpans).toBe(true);
+  });
+
+  it('updates singleTarget', () => {
+    expect(visualsSettingsReducer(makeState(), { type: 'singleTargetChanged', singleTarget: true }).singleTarget).toBe(
+      true,
+    );
+  });
+
+  it('keeps singleTarget while one key is visible', () => {
+    const state = makeState({ singleTarget: true });
+    const next = visualsSettingsReducer(state, { type: 'keyVisibilityChanged', keyDescription: 'Key A', visible: false });
+
+    expect(next.singleTarget).toBe(true);
+  });
+
+  it('lifts singleTarget when a second key is enabled', () => {
+    const state = makeState({ singleTarget: true });
+    const next = visualsSettingsReducer(state, { type: 'keyVisibilityChanged', keyDescription: 'Key B', visible: true });
+
+    expect(next.keys.filter((k) => k.Visible)).toHaveLength(2);
+    expect(next.singleTarget).toBe(false);
   });
 
   it('updates the boolean display flags', () => {

@@ -8,6 +8,8 @@ import {
   EMPTY_SERIES_STYLES,
   MARKER_BORDER_COLOR,
   resolveFillColor,
+  resolveKeyConditionShape,
+  resolveKeyFillColor,
   resolveKeyShape,
   type SeriesStyles,
 } from './series-style';
@@ -34,30 +36,48 @@ export function generateTicks(maxTick: number, minTick: number) {
 }
 
 /**
- * Creates legend items for chart visualization
+ * Creates legend items for chart visualization.
+ * With singleTarget, condition entries take the marker shape and fill of the first visible key
+ * for that condition, matching how the single key is drawn in the figure.
  */
 export function createChartLegends(
   filteredSessions: SavedSessionResult[],
   keySetFull: ExpandedKeySetInstance[],
   seriesStyles: SeriesStyles = EMPTY_SERIES_STYLES,
+  singleTarget = false,
 ) {
-  const conditionLegends = getUniqueSessionConditions(filteredSessions).map((condition, index) => ({
-    id: condition,
-    kind: 'condition' as const,
-    type: 'circle' as const,
-    value: condition,
-    color: resolveFillColor(seriesStyles, condition, FIGURE_PATH_COLORS[index % FIGURE_PATH_COLORS.length]),
-  }));
+  const visibleKeys = keySetFull.filter((key) => key.Visible === true);
+  const singleTargetKey = singleTarget ? visibleKeys[0]?.KeyDescription : undefined;
 
-  const keyLegends = keySetFull
-    .filter((key) => key.Visible === true)
-    .map((item, index) => ({
-      id: item.KeyDescription,
-      kind: 'key' as const,
-      type: resolveKeyShape(seriesStyles, item.KeyDescription, getShape(index)),
-      value: item.KeyDescription,
-      color: MARKER_BORDER_COLOR,
-    }));
+  const conditionLegends = getUniqueSessionConditions(filteredSessions).map((condition, index) => {
+    const defaultColor = FIGURE_PATH_COLORS[index % FIGURE_PATH_COLORS.length];
+
+    if (singleTargetKey === undefined) {
+      return {
+        id: condition,
+        kind: 'condition' as const,
+        type: 'circle' as const,
+        value: condition,
+        color: resolveFillColor(seriesStyles, condition, defaultColor),
+      };
+    }
+
+    return {
+      id: condition,
+      kind: 'condition' as const,
+      type: resolveKeyConditionShape(seriesStyles, singleTargetKey, condition, getShape(0)),
+      value: condition,
+      color: resolveKeyFillColor(seriesStyles, singleTargetKey, condition, defaultColor),
+    };
+  });
+
+  const keyLegends = visibleKeys.map((item, index) => ({
+    id: item.KeyDescription,
+    kind: 'key' as const,
+    type: resolveKeyShape(seriesStyles, item.KeyDescription, getShape(index)),
+    value: item.KeyDescription,
+    color: MARKER_BORDER_COLOR,
+  }));
 
   return [...conditionLegends, ...keyLegends];
 }

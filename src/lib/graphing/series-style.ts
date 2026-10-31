@@ -16,6 +16,7 @@ export function resolveMarkerStroke(fill: string) {
 
 export type KeySeriesStyle = {
   shape?: SymbolType;
+  shapes?: Record<string, SymbolType>;
   fillColors?: Record<string, string>;
   lineColors?: Record<string, string>;
 };
@@ -216,6 +217,21 @@ export function resolveKeyShape(styles: SeriesStyles, keyDescription: string, de
   const shape = styles.KeyStyles[keyDescription]?.shape;
 
   return shape && SERIES_SHAPES.includes(shape) ? shape : defaultShape;
+}
+
+/**
+ * Resolves the marker shape for a key within a condition. Precedence: key x condition override,
+ * then the key shape, then the caller's default.
+ */
+export function resolveKeyConditionShape(
+  styles: SeriesStyles,
+  keyDescription: string,
+  condition: string,
+  defaultShape: SymbolType,
+): SymbolType {
+  const shape = styles.KeyStyles[keyDescription]?.shapes?.[condition];
+
+  return shape && SERIES_SHAPES.includes(shape) ? shape : resolveKeyShape(styles, keyDescription, defaultShape);
 }
 
 /**

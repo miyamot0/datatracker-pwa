@@ -114,8 +114,10 @@ export function VisualsMenubar({
     showConditionLegend,
     showKeyLegend,
     showDescription,
+    singleTarget,
   } = settings;
   const [activeDialog, setActiveDialog] = useState<AnnotationDialog | null>(null);
+  const visibleKeyCount = keys.filter((key) => key.Visible === true).length;
 
   const closeDialog = () => setActiveDialog(null);
   const onStylesChange = (next: SeriesStyles) => dispatch({ type: 'seriesStylesChanged', styles: next });
@@ -230,6 +232,14 @@ export function VisualsMenubar({
             onCheckedChange={(checked) => dispatch({ type: 'connectSpansChanged', connect: checked === true })}
           >
             Connect All Spans
+          </MenubarCheckboxItem>
+          <MenubarCheckboxItem
+            checked={singleTarget}
+            disabled={visibleKeyCount > 1}
+            onSelect={(event) => event.preventDefault()}
+            onCheckedChange={(checked) => dispatch({ type: 'singleTargetChanged', singleTarget: checked === true })}
+          >
+            Single Target
           </MenubarCheckboxItem>
         </MenubarContent>
       </MenubarMenu>

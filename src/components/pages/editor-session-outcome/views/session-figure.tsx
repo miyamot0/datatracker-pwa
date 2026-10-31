@@ -25,8 +25,8 @@ import {
   EMPTY_SERIES_STYLES,
   DEFAULT_LINE_COLOR,
   isSeriesHidden,
+  resolveKeyConditionShape,
   resolveKeyFillColor,
-  resolveKeyShape,
   resolveLineColor,
   resolveMarkerStroke,
   type SeriesStyles,
@@ -210,7 +210,7 @@ export default function SessionFigure({ Session, PlotData, KeysHidden, SeriesSty
                   animationDuration={100}
                   dataKey={`${key.KeyDescription}`}
                   fill={sessionMarkerFill}
-                  shape={resolveKeyShape(SeriesStyles, key.KeyDescription, getShape(index))}
+                  shape={resolveKeyConditionShape(SeriesStyles, key.KeyDescription, sessionCondition, getShape(index))}
                   stroke={resolveMarkerStroke(sessionMarkerFill)}
                 />
               </React.Fragment>

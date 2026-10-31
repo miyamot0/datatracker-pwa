@@ -25,7 +25,7 @@ The legend identifies each series and, when enabled, each condition in the figur
 
 - **Position:** Represents where the legend is drawn. **Below Figure** places the legend beneath the plotting area. The other options place the legend inside the plotting area, in one of six locations: **Upper Right**, **Lower Right**, **Upper Left**, **Lower Left**, **Middle Left**, or **Middle Right**. Inside positions can cover part of the data, so check the figure after changing this setting.
 - **Layout:** The **Horizontal** setting runs the legend entries across and **Vertical** stacks them one under another. Vertical is often easier to read when the legend is placed beside the plot, while Horizontal suits a legend placed below the figure.
-- **Conditions in Legend:** This setting refers to whether condition entries are included in the legend along with the series entries. Uncheck this box to show only the series entries (e.g., if Text Annotations already convey this information).
+- **Conditions in Legend:** This setting refers to whether condition entries are included in the legend along with the series entries. Uncheck this box to show only the series entries (e.g., if Text Annotations already convey this information). When **Single Target** is checked in the **Data Display** menu, condition entries use the marker shape and fill of the single visible key (see Series Styles, Single Target Legend).
 
 Various settings are available and users can click **Reset to Defaults** to return Position to **Below Figure** and Layout to **Horizontal**. This button does not change the **Conditions in Legend** checkbox.
 

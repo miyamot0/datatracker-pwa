@@ -25,6 +25,8 @@ vi.mock('@/lib/local_storage', () => ({
   setLocalSeriesStyles: vi.fn(),
   setLocalShowConditionLegend: vi.fn(),
   setLocalShowKeyLegend: vi.fn(),
+  getLocalSingleTarget: vi.fn(() => false),
+  setLocalSingleTarget: vi.fn(),
   setLocalShowDescription: vi.fn(),
   setLocalShowTitle: vi.fn(),
   setLocalShowTooltip: vi.fn(),
