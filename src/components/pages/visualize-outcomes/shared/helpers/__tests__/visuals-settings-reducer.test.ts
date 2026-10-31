@@ -18,9 +18,11 @@ function makeState(overrides: Partial<VisualsSettingsState> = {}): VisualsSettin
     schedule: { value: 'Default', label: 'Default' },
     figureTextSize: 'base',
     connectSpans: false,
+    singleTarget: false,
     showTitle: true,
     showTooltip: true,
     showConditionLegend: true,
+    showKeyLegend: true,
     showDescription: true,
     figureLabels: EMPTY_FIGURE_LABEL_SETTINGS,
     legendSettings: DEFAULT_LEGEND_SETTINGS,
@@ -28,6 +30,49 @@ function makeState(overrides: Partial<VisualsSettingsState> = {}): VisualsSettin
     ...overrides,
   };
 }
+
+describe('settingsReloaded visibility', () => {
+  const reloadSettings = {
+    schedule: { value: 'Default', label: 'Default' },
+    figureTextSize: 'large',
+    connectSpans: false,
+    singleTarget: true,
+    showTitle: true,
+    showTooltip: true,
+    showConditionLegend: true,
+    showKeyLegend: true,
+    showDescription: true,
+    figureLabels: EMPTY_FIGURE_LABEL_SETTINGS,
+    legendSettings: DEFAULT_LEGEND_SETTINGS,
+    seriesStyles: EMPTY_SERIES_STYLES,
+  } as const;
+
+  it('applies hidden keys and conditions from storage and keeps single target when one key is visible', () => {
+    const next = visualsSettingsReducer(makeState({ singleTarget: false }), {
+      type: 'settingsReloaded',
+      settings: { ...reloadSettings },
+      hiddenKeys: ['Key A'],
+      hiddenConditions: ['Treatment'],
+    });
+
+    expect(next.keys.map((k) => k.Visible)).toEqual([false, true]);
+    expect(next.conditions.map((c) => c.Visible)).toEqual([true, false]);
+    expect(next.figureTextSize).toBe('large');
+    expect(next.singleTarget).toBe(true);
+  });
+
+  it('lifts single target when more than one key is visible after reload', () => {
+    const next = visualsSettingsReducer(makeState(), {
+      type: 'settingsReloaded',
+      settings: { ...reloadSettings },
+      hiddenKeys: [],
+      hiddenConditions: [],
+    });
+
+    expect(next.keys.map((k) => k.Visible)).toEqual([true, true]);
+    expect(next.singleTarget).toBe(false);
+  });
+});
 
 describe('visualsSettingsReducer', () => {
   it('toggles only the matching key by description', () => {
@@ -101,6 +146,27 @@ describe('visualsSettingsReducer', () => {
     expect(visualsSettingsReducer(makeState(), { type: 'connectSpansChanged', connect: true }).connectSpans).toBe(true);
   });
 
+  it('updates singleTarget', () => {
+    expect(visualsSettingsReducer(makeState(), { type: 'singleTargetChanged', singleTarget: true }).singleTarget).toBe(
+      true,
+    );
+  });
+
+  it('keeps singleTarget while one key is visible', () => {
+    const state = makeState({ singleTarget: true });
+    const next = visualsSettingsReducer(state, { type: 'keyVisibilityChanged', keyDescription: 'Key A', visible: false });
+
+    expect(next.singleTarget).toBe(true);
+  });
+
+  it('lifts singleTarget when a second key is enabled', () => {
+    const state = makeState({ singleTarget: true });
+    const next = visualsSettingsReducer(state, { type: 'keyVisibilityChanged', keyDescription: 'Key B', visible: true });
+
+    expect(next.keys.filter((k) => k.Visible)).toHaveLength(2);
+    expect(next.singleTarget).toBe(false);
+  });
+
   it('updates the boolean display flags', () => {
     const state = makeState();
 
@@ -109,6 +175,7 @@ describe('visualsSettingsReducer', () => {
     expect(visualsSettingsReducer(state, { type: 'showConditionLegendChanged', show: false }).showConditionLegend).toBe(
       false,
     );
+    expect(visualsSettingsReducer(state, { type: 'showKeyLegendChanged', show: false }).showKeyLegend).toBe(false);
     expect(visualsSettingsReducer(state, { type: 'showDescriptionChanged', show: false }).showDescription).toBe(false);
   });
 

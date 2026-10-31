@@ -43,6 +43,8 @@ type Props = {
   ShowTitle?: boolean;
   ShowTooltip?: boolean;
   ShowConditionLegend?: boolean;
+  ShowKeyLegend?: boolean;
+  SingleTarget?: boolean;
   LegendSettings?: LegendSettings;
   FigureLabels?: FigureLabelSettings;
   FontFamily?: FigureFontFamily;
@@ -66,6 +68,8 @@ export default function RateFigureVisualization({
   ShowTitle = true,
   ShowTooltip = true,
   ShowConditionLegend = true,
+  ShowKeyLegend = true,
+  SingleTarget = false,
   LegendSettings = DEFAULT_LEGEND_SETTINGS,
   FigureLabels = EMPTY_FIGURE_LABEL_SETTINGS,
   FontFamily = DEFAULT_FIGURE_FONT_FAMILY,
@@ -79,7 +83,7 @@ export default function RateFigureVisualization({
   const labels = resolveFigureLabels(FigureLabels, FIGURE_LABEL_DEFAULTS.rate);
   const effectiveMaxX = resolveAxisMax(AxisMax.overrideXMax, AxisMax.xMax, MinX, MaxX);
   const x_ticks = generateTicks(effectiveMaxX, MinX);
-  const legends = createChartLegends(FilteredSessions, KeySetFull, SeriesStyles);
+  const legends = createChartLegends(FilteredSessions, KeySetFull, SeriesStyles, SingleTarget);
   const onNavigate = createNavigationHandler(navigate, Group, Individual, Evaluation);
 
   const yAxisConfig = {
@@ -117,6 +121,7 @@ export default function RateFigureVisualization({
         showTitle={ShowTitle}
         showTooltip={ShowTooltip}
         showConditionLegend={ShowConditionLegend}
+        showKeyLegend={ShowKeyLegend}
         legendSettings={LegendSettings}
         xAxisLabel={labels.xAxis}
         figureTextSize={FigureTextSize}

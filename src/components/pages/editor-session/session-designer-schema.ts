@@ -1,3 +1,4 @@
+import '@/lib/zod-config';
 import { getValues } from '@/lib/forms';
 import { DataCollectorRoles } from '@/types/roles';
 import { z } from 'zod';

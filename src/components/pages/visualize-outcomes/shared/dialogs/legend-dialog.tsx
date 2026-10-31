@@ -27,19 +27,23 @@ type Props = {
   onChange: (settings: LegendSettings) => void;
   showConditionLegend: boolean;
   onShowConditionLegendChange: (show: boolean) => void;
+  showKeyLegend: boolean;
+  onShowKeyLegendChange: (show: boolean) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
 /**
  * Lets the user choose where a figure's legend is drawn, whether its entries run across or down, and whether the
- * condition entries appear in it.
+ * condition and key entries appear in it.
  */
 export function LegendDialog({
   settings,
   onChange,
   showConditionLegend,
   onShowConditionLegendChange,
+  showKeyLegend,
+  onShowKeyLegendChange,
   open,
   onOpenChange,
 }: Props) {
@@ -47,6 +51,7 @@ export function LegendDialog({
   const positionId = `${id}-legend-position`;
   const layoutId = `${id}-legend-layout`;
   const conditionId = `${id}-legend-conditions`;
+  const keyId = `${id}-legend-keys`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -107,6 +112,15 @@ export function LegendDialog({
               id={conditionId}
               checked={showConditionLegend}
               onCheckedChange={(checked) => onShowConditionLegendChange(checked === true)}
+            />
+          </div>
+
+          <div className="flex flex-row items-center justify-between gap-4">
+            <Label htmlFor={keyId}>Keys in Legend</Label>
+            <Checkbox
+              id={keyId}
+              checked={showKeyLegend}
+              onCheckedChange={(checked) => onShowKeyLegendChange(checked === true)}
             />
           </div>
         </div>

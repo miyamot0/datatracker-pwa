@@ -1,4 +1,5 @@
 import { SessionTerminationOptionsType } from '@/types/terminations';
+import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 import {
   isValidPhaseChange,
   isValidTextAnnotation,
@@ -60,7 +61,9 @@ export function getLocalCachedPrefs(
 
   const cached_information = localStorage.getItem(dynamic_key);
 
-  const cached_information_object = cached_information ? JSON.parse(cached_information) : DEFAULT_LOCAL_STORAGE;
+  const cached_information_object = cached_information
+    ? { ...DEFAULT_LOCAL_STORAGE, ...JSON.parse(cached_information) }
+    : DEFAULT_LOCAL_STORAGE;
 
   return cached_information_object as ReturnLocalStorageCache;
 }
@@ -151,6 +154,67 @@ export function setLocalShowTitle(
 }
 
 /**
+ * Retrieve the figure text size for a plot. Defaults to base when nothing valid is saved.
+ */
+export function getLocalFigureTextSize(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  Plot: 'Rate' | 'Proportion',
+): FigureVisualSizing {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'FigureTextSize', Plot].join('_');
+
+  const saved = localStorage.getItem(dynamic_key);
+
+  return FIGURE_TEXT_OPTIONS.find((option) => option.value === saved)?.value ?? 'base';
+}
+
+/**
+ * Store the figure text size for a plot.
+ */
+export function setLocalFigureTextSize(
+  Group: string,
+  Individual: string,
+  Evaluation: string,
+  Plot: 'Rate' | 'Proportion',
+  Size: FigureVisualSizing,
+) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'FigureTextSize', Plot].join('_');
+
+  localStorage.setItem(dynamic_key, Size);
+}
+
+/**
+ * Retrieve the condition names hidden on the figure for a Group/Individual/Evaluation. Defaults to none hidden.
+ */
+export function getLocalHiddenConditions(Group: string, Individual: string, Evaluation: string): string[] {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'HiddenConditions'].join('_');
+
+  const cached_information = localStorage.getItem(dynamic_key);
+
+  if (!cached_information) {
+    return [];
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(cached_information);
+
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Store the condition names hidden on the figure for a Group/Individual/Evaluation.
+ */
+export function setLocalHiddenConditions(Group: string, Individual: string, Evaluation: string, Conditions: string[]) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'HiddenConditions'].join('_');
+
+  localStorage.setItem(dynamic_key, JSON.stringify(Conditions));
+}
+
+/**
  * Retrieve whether chart tooltips are enabled for a Group/Individual/Evaluation. Defaults to enabled.
  */
 export function getLocalShowTooltip(Group: string, Individual: string, Evaluation: string) {
@@ -189,6 +253,42 @@ export function setLocalShowConditionLegend(
   const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ShowConditionLegend'].join('_');
 
   localStorage.setItem(dynamic_key, String(ShowConditionLegend));
+}
+
+/**
+ * Retrieve whether the key entries of the legend are shown for a Group/Individual/Evaluation. Defaults to shown.
+ */
+export function getLocalShowKeyLegend(Group: string, Individual: string, Evaluation: string) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ShowKeyLegend'].join('_');
+
+  return localStorage.getItem(dynamic_key) !== 'false';
+}
+
+/**
+ * Store whether the key entries of the legend are shown for a Group/Individual/Evaluation.
+ */
+export function setLocalShowKeyLegend(Group: string, Individual: string, Evaluation: string, ShowKeyLegend: boolean) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ShowKeyLegend'].join('_');
+
+  localStorage.setItem(dynamic_key, String(ShowKeyLegend));
+}
+
+/**
+ * Retrieve whether single-target display is enabled for a Group/Individual/Evaluation. Defaults to off.
+ */
+export function getLocalSingleTarget(Group: string, Individual: string, Evaluation: string) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'SingleTarget'].join('_');
+
+  return localStorage.getItem(dynamic_key) === 'true';
+}
+
+/**
+ * Store whether single-target display is enabled for a Group/Individual/Evaluation.
+ */
+export function setLocalSingleTarget(Group: string, Individual: string, Evaluation: string, SingleTarget: boolean) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'SingleTarget'].join('_');
+
+  localStorage.setItem(dynamic_key, String(SingleTarget));
 }
 
 /**

@@ -13,7 +13,6 @@ import {
   ZAxis,
   ReferenceLine,
 } from 'recharts';
-import { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { getShape } from '@/lib/shapes';
 import { ChartLegendContent } from '@/components/pages/visualize-outcomes/shared/legends/chart-legend-content';
@@ -23,10 +22,12 @@ import {
   PHASE_LINE_COLOR,
   PHASE_LINE_DASH_ARRAY,
   isSeriesHidden,
+  resolveKeyConditionShape,
   resolveKeyFillColor,
-  resolveKeyShape,
   resolveLineColor,
   resolveMarkerStroke,
+  toSymbolType,
+  type SeriesShape,
   type SeriesStyles,
   type TextPage,
   getPageTextAnnotations,
@@ -44,12 +45,8 @@ import {
   type FigureFontFamily,
 } from '@/lib/graphing/figure-text-settings';
 import { calculateSplitPoints } from '@/lib/graphing/data-preparation';
-import { getChartConfiguration, getChartVerticalSpacing } from '@/lib/graphing/chart-setup';
-import {
-  DEFAULT_LEGEND_SETTINGS,
-  LEGEND_CHART_POSITIONS,
-  type LegendSettings,
-} from '@/lib/graphing/legend-settings';
+import { getChartConfiguration, getChartVerticalSpacing, SERIES_RENDER_PROPS } from '@/lib/graphing/chart-setup';
+import { DEFAULT_LEGEND_SETTINGS, LEGEND_CHART_POSITIONS, type LegendSettings } from '@/lib/graphing/legend-settings';
 import { AxisSpanLines } from '../annotations/axis-span-lines';
 import { TextAnnotationsLayer } from '../annotations/text-annotations-layer';
 import { AimLinesLayer } from '../annotations/aim-lines-layer';
@@ -85,6 +82,7 @@ type BaseChartProps = {
   showTitle?: boolean;
   showTooltip?: boolean;
   showConditionLegend?: boolean;
+  showKeyLegend?: boolean;
   legendSettings?: LegendSettings;
   xAxisLabel?: string;
   fontFamily?: FigureFontFamily;
@@ -110,6 +108,7 @@ export function BaseChart({
   showTitle = true,
   showTooltip = true,
   showConditionLegend = true,
+  showKeyLegend = true,
   legendSettings = DEFAULT_LEGEND_SETTINGS,
   xAxisLabel = 'Session',
   fontFamily = DEFAULT_FIGURE_FONT_FAMILY,
@@ -168,7 +167,12 @@ export function BaseChart({
           const lines = keySetFull
             .filter((key) => key.Visible === true)
             .map((key, index) => {
-              const shape: SymbolType = resolveKeyShape(seriesStyles, key.KeyDescription, getShape(index));
+              const shape: SeriesShape = resolveKeyConditionShape(
+                seriesStyles,
+                key.KeyDescription,
+                condition.name,
+                getShape(index),
+              );
               const line_color = resolveLineColor(seriesStyles, key.KeyDescription, condition.name, DEFAULT_LINE_COLOR);
               const marker_fill = resolveKeyFillColor(
                 seriesStyles,
@@ -184,6 +188,7 @@ export function BaseChart({
                   <React.Fragment key={`${index_main}-${index}`}>
                     <Line
                       {...noAnimationProps}
+                      {...SERIES_RENDER_PROPS}
                       connectNulls={false}
                       name={`${key.KeyDescription}-Points_`}
                       data={condition.data}
@@ -198,10 +203,11 @@ export function BaseChart({
                       name={key.KeyDescription}
                       data={condition.data}
                       {...noAnimationProps}
+                      {...SERIES_RENDER_PROPS}
                       onDoubleClick={onNavigate}
                       dataKey={`${key.KeyDescription}`}
                       fill={marker_fill}
-                      shape={shape}
+                      shape={toSymbolType(shape)}
                       stroke={marker_stroke}
                     />
                   </React.Fragment>
@@ -216,6 +222,7 @@ export function BaseChart({
                     <React.Fragment key={`${index_main}-${index}-${segment_index}`}>
                       <Line
                         {...noAnimationProps}
+                        {...SERIES_RENDER_PROPS}
                         connectNulls={false}
                         name={`${key.KeyDescription}-Points_`}
                         data={segment}
@@ -230,10 +237,11 @@ export function BaseChart({
                         name={key.KeyDescription}
                         data={segment}
                         {...noAnimationProps}
+                        {...SERIES_RENDER_PROPS}
                         onDoubleClick={onNavigate}
                         dataKey={`${key.KeyDescription}`}
                         fill={marker_fill}
-                        shape={shape}
+                        shape={toSymbolType(shape)}
                         stroke={marker_stroke}
                       />
                     </React.Fragment>
@@ -327,15 +335,18 @@ export function BaseChart({
           {...(legendPosition === undefined
             ? { wrapperStyle: { left: chartMargins.left + Y_AXIS_WIDTH, right: chartMargins.right, width: 'auto' } }
             : {
-              position: legendPosition,
-              wrapperStyle: { backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '2px 6px', borderRadius: 4 },
-            })}
+                position: legendPosition,
+                wrapperStyle: { backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '2px 6px', borderRadius: 4 },
+              })}
           layout={legendSettings.layout}
           content={() => (
             <ChartLegendContent
               layout={legendSettings.layout}
               align={legendPosition === undefined ? 'center' : 'start'}
-              payload={showConditionLegend ? legends : legends.filter((entry) => entry.kind !== 'condition')}
+              payload={legends.filter(
+                (entry) =>
+                  (entry.kind !== 'condition' || showConditionLegend) && (entry.kind !== 'key' || showKeyLegend),
+              )}
             />
           )}
         />

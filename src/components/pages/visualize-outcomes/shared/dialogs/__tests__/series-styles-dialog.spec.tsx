@@ -34,9 +34,10 @@ describe('SeriesStylesDialog', () => {
     await page.getByRole('button', { name: 'Edit Series Styles' }).click();
 
     await expect.element(page.getByText('Marker fill (Baseline)').first()).toBeInTheDocument();
-    await expect.element(page.getByText('Line (Baseline)')).toBeInTheDocument();
+    await expect.element(page.getByText('Line (Baseline)')).not.toBeInTheDocument();
+    await expect.element(page.getByRole('checkbox', { name: 'Condition-specific Line Color' })).not.toBeChecked();
     await expect.element(page.getByRole('combobox', { name: 'Select key' })).toHaveTextContent('Hitting');
-    await expect.element(page.getByText('Default (circle)')).toBeInTheDocument();
+    await expect.element(page.getByText('Default (circle)').first()).toBeInTheDocument();
   });
 
   it('omits hidden keys and defaults shapes by visible position', async () => {
@@ -56,7 +57,7 @@ describe('SeriesStylesDialog', () => {
     await page.getByRole('button', { name: 'Edit Series Styles' }).click();
 
     await expect.element(page.getByRole('combobox', { name: 'Select key' })).toHaveTextContent('Kicking');
-    await expect.element(page.getByText('Default (circle)')).toBeInTheDocument();
+    await expect.element(page.getByText('Default (circle)').first()).toBeInTheDocument();
 
     await page.getByRole('combobox', { name: 'Select key' }).click();
     await expect.element(page.getByRole('option', { name: 'Kicking' })).toBeInTheDocument();
@@ -151,6 +152,76 @@ describe('SeriesStylesDialog', () => {
     });
   });
 
+  it('offers a rotated square shape and saves it as a key shape', async () => {
+    const onChange = vi.fn();
+
+    await render(
+      <SeriesStylesDialog
+        keys={[{ KeyDescription: 'Hitting', Visible: true }]}
+        conditions={['Baseline']}
+        visibleConditions={['Baseline']}
+        styles={EMPTY_SERIES_STYLES}
+        onChange={onChange}
+      />,
+    );
+
+    await page.getByRole('button', { name: 'Edit Series Styles' }).click();
+    await page.getByRole('combobox', { name: 'Shape for Hitting' }).click();
+    await page.getByRole('option', { name: 'rotatedSquare', exact: true }).click();
+
+    expect(onChange).toHaveBeenCalledWith({
+      ...EMPTY_SERIES_STYLES,
+      KeyStyles: { Hitting: { shape: 'rotatedSquare' } },
+    });
+  });
+
+  it('sets a per-condition shape from the condition shape selector', async () => {
+    const onChange = vi.fn();
+
+    await render(
+      <SeriesStylesDialog
+        keys={[{ KeyDescription: 'Hitting', Visible: true }]}
+        conditions={['Baseline']}
+        visibleConditions={['Baseline']}
+        styles={EMPTY_SERIES_STYLES}
+        onChange={onChange}
+      />,
+    );
+
+    await page.getByRole('button', { name: 'Edit Series Styles' }).click();
+    await page.getByRole('checkbox', { name: 'Condition-specific Shape' }).click();
+    await page.getByRole('combobox', { name: 'Shape in Baseline for Hitting' }).click();
+    await page.getByRole('option', { name: 'diamond', exact: true }).click();
+
+    expect(onChange).toHaveBeenCalledWith({
+      ...EMPTY_SERIES_STYLES,
+      KeyStyles: { Hitting: { shapes: { Baseline: 'diamond' } } },
+    });
+  });
+
+  it('clears a per-condition shape back to Default', async () => {
+    const onChange = vi.fn();
+
+    await render(
+      <SeriesStylesDialog
+        keys={[{ KeyDescription: 'Hitting', Visible: true }]}
+        conditions={['Baseline']}
+        visibleConditions={['Baseline']}
+        styles={{ ...EMPTY_SERIES_STYLES, KeyStyles: { Hitting: { shapes: { Baseline: 'diamond' } } } }}
+        onChange={onChange}
+      />,
+    );
+
+    await page.getByRole('button', { name: 'Edit Series Styles' }).click();
+    await page.getByRole('combobox', { name: 'Shape in Baseline for Hitting' }).click();
+    await page.getByRole('option', { name: /^Default/ }).click();
+
+    expect(onChange).toHaveBeenCalledWith({
+      ...EMPTY_SERIES_STYLES,
+      KeyStyles: { Hitting: { shapes: {} } },
+    });
+  });
+
   it('clears a key shape back to Default', async () => {
     const onChange = vi.fn();
 
@@ -188,6 +259,7 @@ describe('SeriesStylesDialog', () => {
     );
 
     await page.getByRole('button', { name: 'Edit Series Styles' }).click();
+    await page.getByRole('checkbox', { name: 'Condition-specific Fill' }).click();
     await page.getByRole('combobox', { name: 'Marker fill for Hitting in Baseline' }).click();
     await page.getByRole('option', { name: 'Hidden', exact: true }).click();
 
@@ -212,6 +284,7 @@ describe('SeriesStylesDialog', () => {
     );
 
     await page.getByRole('button', { name: 'Edit Series Styles' }).click();
+    await page.getByRole('checkbox', { name: 'Condition-specific Fill' }).click();
     await page.getByRole('combobox', { name: 'Marker fill for Hitting in Baseline' }).click();
     await page.getByRole('option', { name: paletteColor, exact: true }).click();
 
@@ -353,6 +426,7 @@ describe('SeriesStylesDialog', () => {
       .element(page.getByRole('combobox', { name: 'Marker fill for Hitting in Baseline' }))
       .toHaveTextContent('Hidden');
 
+    await page.getByRole('checkbox', { name: 'Condition-specific Line Color' }).click();
     await page.getByRole('combobox', { name: 'Line color for Hitting in Baseline' }).click();
     await page.getByRole('option', { name: '#000000', exact: true }).click();
 
@@ -360,6 +434,101 @@ describe('SeriesStylesDialog', () => {
       ...EMPTY_SERIES_STYLES,
       KeyStyles: { Hitting: { fillColors: { Baseline: TRANSPARENT_COLOR }, lineColors: { Baseline: '#000000' } } },
     });
+  });
+
+  it('previews the saved line colour behind the marker for each condition', async () => {
+    await render(
+      <SeriesStylesDialog
+        keys={[{ KeyDescription: 'Hitting', Visible: true }]}
+        conditions={['Baseline']}
+        visibleConditions={['Baseline']}
+        styles={{ ...EMPTY_SERIES_STYLES, KeyStyles: { Hitting: { lineColors: { Baseline: '#FF0000' } } } }}
+        onChange={vi.fn()}
+      />,
+    );
+
+    await page.getByRole('button', { name: 'Edit Series Styles' }).click();
+
+    await expect.poll(() => document.querySelector('svg line[stroke="#FF0000"]')).not.toBeNull();
+  });
+
+  it('hides per-key fill and line rows until their override checkbox is enabled', async () => {
+    const onChange = vi.fn();
+
+    await render(
+      <SeriesStylesDialog
+        keys={[{ KeyDescription: 'Hitting', Visible: true }]}
+        conditions={['Baseline']}
+        visibleConditions={['Baseline']}
+        styles={EMPTY_SERIES_STYLES}
+        onChange={onChange}
+      />,
+    );
+
+    await page.getByRole('button', { name: 'Edit Series Styles' }).click();
+    await expect
+      .element(page.getByRole('combobox', { name: 'Marker fill for Hitting in Baseline' }))
+      .not.toBeInTheDocument();
+
+    await page.getByRole('checkbox', { name: 'Condition-specific Fill' }).click();
+    await expect
+      .element(page.getByRole('combobox', { name: 'Marker fill for Hitting in Baseline' }))
+      .toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('hides per-condition shape rows until the condition-specific shape checkbox is enabled', async () => {
+    const onChange = vi.fn();
+
+    await render(
+      <SeriesStylesDialog
+        keys={[{ KeyDescription: 'Hitting', Visible: true }]}
+        conditions={['Baseline']}
+        visibleConditions={['Baseline']}
+        styles={EMPTY_SERIES_STYLES}
+        onChange={onChange}
+      />,
+    );
+
+    await page.getByRole('button', { name: 'Edit Series Styles' }).click();
+    await expect.element(page.getByRole('combobox', { name: 'Shape in Baseline for Hitting' })).not.toBeInTheDocument();
+    await expect.element(page.getByRole('combobox', { name: 'Shape for Hitting' })).toBeInTheDocument();
+
+    await page.getByRole('checkbox', { name: 'Condition-specific Shape' }).click();
+    await expect.element(page.getByRole('combobox', { name: 'Shape in Baseline for Hitting' })).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('starts the condition-specific shape checkbox on when a key already has condition shapes', async () => {
+    await render(
+      <SeriesStylesDialog
+        keys={[{ KeyDescription: 'Hitting', Visible: true }]}
+        conditions={['Baseline']}
+        visibleConditions={['Baseline']}
+        styles={{ ...EMPTY_SERIES_STYLES, KeyStyles: { Hitting: { shapes: { Baseline: 'diamond' } } } }}
+        onChange={vi.fn()}
+      />,
+    );
+
+    await page.getByRole('button', { name: 'Edit Series Styles' }).click();
+    await expect.element(page.getByRole('checkbox', { name: 'Condition-specific Shape' })).toBeChecked();
+    await expect.element(page.getByRole('checkbox', { name: 'Condition-specific Fill' })).not.toBeChecked();
+  });
+
+  it('starts the override checkboxes on when a key already has overrides', async () => {
+    await render(
+      <SeriesStylesDialog
+        keys={[{ KeyDescription: 'Hitting', Visible: true }]}
+        conditions={['Baseline']}
+        visibleConditions={['Baseline']}
+        styles={{ ...EMPTY_SERIES_STYLES, KeyStyles: { Hitting: { lineColors: { Baseline: '#FF0000' } } } }}
+        onChange={vi.fn()}
+      />,
+    );
+
+    await page.getByRole('button', { name: 'Edit Series Styles' }).click();
+    await expect.element(page.getByRole('checkbox', { name: 'Condition-specific Line Color' })).toBeChecked();
+    await expect.element(page.getByRole('checkbox', { name: 'Condition-specific Fill' })).not.toBeChecked();
   });
 
   it('falls back to the condition position when the condition is not visible', async () => {

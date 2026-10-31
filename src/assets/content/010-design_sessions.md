@@ -45,6 +45,8 @@ For example, it may be necessary to distinguish between "time spent working" fro
 
 DataTracker allows for the use of various timers; with each timer providing flexibility in the customization of session termination rules. Generally, only a single 'primary' schedule is needed; however, specific clinical or research questions may require the use of multiple timers to provide comparable estimations across sessions (e.g., partialling out reinforcement or break time within a larger session). Various options are available for session termination, and these are discussed in more detail in the documentation section on Session Timers.
 
+![Image of DataTracker session termination options](screenshots/session_designer_termination.png 'Image of DataTracker session termination options')
+
 ### Session Numbering
 
 The **Session Number** field allows the user to specify which session is being conducted. This is useful because participants undergo multiple sessions over time and this allows for a visualization of behavior changes over time. For example, if this is the second session for a participant, the user would enter "2" to clearly identify the position in the sequence of data.

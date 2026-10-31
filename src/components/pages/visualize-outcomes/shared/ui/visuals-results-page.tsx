@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { VisualsMenubar } from '@/components/pages/visualize-outcomes/shared/ui/visuals-menubar';
 import {
+  readPersistedVisibility,
   readPersistedVisualsSettings,
   useVisualsSettings,
 } from '@/components/pages/visualize-outcomes/shared/helpers/use-visuals-settings';
@@ -116,6 +117,12 @@ export function VisualsResultsPage({
           individual: Individual,
           evaluation: Evaluation,
           plot: config.plot,
+        }),
+        ...readPersistedVisibility({
+          group: Group,
+          individual: Individual,
+          evaluation: Evaluation,
+          prefsType: config.prefsType,
         }),
       });
 
@@ -261,6 +268,8 @@ export function VisualsResultsPage({
               ShowTitle={settings.showTitle}
               ShowTooltip={settings.showTooltip}
               ShowConditionLegend={settings.showConditionLegend}
+              ShowKeyLegend={settings.showKeyLegend}
+              SingleTarget={settings.singleTarget}
               LegendSettings={settings.legendSettings}
               FigureLabels={settings.figureLabels}
               FontFamily={settings.fontFamily}

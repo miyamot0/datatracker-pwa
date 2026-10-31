@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "seriesStyles": {
+    "KeyStyles": {
+      "CTB": {
+        "shapes": {
+          "Tangible": "rotatedSquare",
+          "Attention": "square",
+          "Demand": "triangle"
+        },
+        "fillColors": {
+          "Attention": "#FFFFFF"
+        },
+        "lineColors": {}
+      }
+    },
+    "ConditionStyles": {
+      "Control": {
+        "color": "#000000"
+      },
+      "Demand": {
+        "color": "#000000"
+      },
+      "Attention": {
+        "color": "#000000"
+      },
+      "Tangible": {
+        "color": "#000000"
+      }
+    },
+    "phase_changes": [],
+    "text_annotations": [],
+    "aim_lines": []
+  },
+  "showTooltip": true,
+  "showConditionLegend": true,
+  "showKeyLegend": false,
+  "showDescription": true,
+  "singleTarget": true,
+  "hiddenConditions": [],
+  "plots": {
+    "Rate": {
+      "showTitle": true,
+      "connectSpans": true,
+      "figureLabels": {
+        "overrideTitle": true,
+        "titleText": "Functional Analysis",
+        "overrideXAxis": false,
+        "xAxisText": "",
+        "overrideYAxis": true,
+        "yAxisText": "Combined Target Behavior"
+      },
+      "legendSettings": {
+        "position": "mid-right",
+        "layout": "vertical"
+      },
+      "fontFamily": "timesNewRoman",
+      "axisMax": {
+        "overrideXMax": false,
+        "xMax": null,
+        "overrideYMax": true,
+        "yMax": 6
+      },
+      "figureTextSize": "base",
+      "hiddenKeys": [
+        "SIB",
+        "DIS",
+        "AGG",
+        "Prompt",
+        "Compliance",
+        "Comply PCT"
+      ]
+    },
+    "Proportion": {
+      "showTitle": true,
+      "connectSpans": false,
+      "figureLabels": {
+        "overrideTitle": false,
+        "titleText": "",
+        "overrideXAxis": false,
+        "xAxisText": "",
+        "overrideYAxis": false,
+        "yAxisText": ""
+      },
+      "legendSettings": {
+        "position": "below",
+        "layout": "horizontal"
+      },
+      "fontFamily": "default",
+      "axisMax": {
+        "overrideXMax": false,
+        "xMax": null,
+        "overrideYMax": false,
+        "yMax": null
+      },
+      "figureTextSize": "base",
+      "hiddenKeys": []
+    }
+  }
+}

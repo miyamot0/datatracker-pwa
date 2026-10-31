@@ -12,6 +12,8 @@ describe('LegendDialog', () => {
         onChange={vi.fn()}
         showConditionLegend
         onShowConditionLegendChange={vi.fn()}
+        showKeyLegend
+        onShowKeyLegendChange={vi.fn()}
         open
         onOpenChange={vi.fn()}
       />,
@@ -34,6 +36,8 @@ describe('LegendDialog', () => {
         onChange={vi.fn()}
         showConditionLegend
         onShowConditionLegendChange={onShowConditionLegendChange}
+        showKeyLegend
+        onShowKeyLegendChange={vi.fn()}
         open
         onOpenChange={vi.fn()}
       />,
@@ -44,6 +48,26 @@ describe('LegendDialog', () => {
     expect(onShowConditionLegendChange).toHaveBeenLastCalledWith(false);
   });
 
+  it('reports the key legend toggle from the dialog', async () => {
+    const onShowKeyLegendChange = vi.fn();
+    await render(
+      <LegendDialog
+        settings={DEFAULT_LEGEND_SETTINGS}
+        onChange={vi.fn()}
+        showConditionLegend
+        onShowConditionLegendChange={vi.fn()}
+        showKeyLegend
+        onShowKeyLegendChange={onShowKeyLegendChange}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    await page.getByRole('checkbox', { name: 'Keys in Legend' }).click();
+
+    expect(onShowKeyLegendChange).toHaveBeenLastCalledWith(false);
+  });
+
   it('reports a newly selected position while keeping the layout', async () => {
     const onChange = vi.fn();
     await render(
@@ -52,6 +76,8 @@ describe('LegendDialog', () => {
         onChange={onChange}
         showConditionLegend
         onShowConditionLegendChange={vi.fn()}
+        showKeyLegend
+        onShowKeyLegendChange={vi.fn()}
         open
         onOpenChange={vi.fn()}
       />,
@@ -71,6 +97,8 @@ describe('LegendDialog', () => {
         onChange={onChange}
         showConditionLegend
         onShowConditionLegendChange={vi.fn()}
+        showKeyLegend
+        onShowKeyLegendChange={vi.fn()}
         open
         onOpenChange={vi.fn()}
       />,
@@ -90,6 +118,8 @@ describe('LegendDialog', () => {
         onChange={onChange}
         showConditionLegend
         onShowConditionLegendChange={vi.fn()}
+        showKeyLegend
+        onShowKeyLegendChange={vi.fn()}
         open
         onOpenChange={vi.fn()}
       />,
@@ -108,6 +138,8 @@ describe('LegendDialog', () => {
         onChange={vi.fn()}
         showConditionLegend
         onShowConditionLegendChange={vi.fn()}
+        showKeyLegend
+        onShowKeyLegendChange={vi.fn()}
         open
         onOpenChange={onOpenChange}
       />,

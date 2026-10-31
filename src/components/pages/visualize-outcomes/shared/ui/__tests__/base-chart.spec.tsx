@@ -26,6 +26,7 @@ vi.mock('@/lib/graphing/chart-setup', async (importOriginal) => {
   return {
     getChartConfiguration: mockGetChartConfiguration,
     getChartVerticalSpacing: actual.getChartVerticalSpacing,
+    SERIES_RENDER_PROPS: actual.SERIES_RENDER_PROPS,
   };
 });
 
@@ -249,6 +250,22 @@ describe('BaseChart', () => {
     expect(document.querySelector('.recharts-legend-item')!.textContent).toBe('Shown Key');
   });
 
+  it('hides key entries from the legend when key legends are turned off', async () => {
+    await render(
+      <BaseChart
+        {...defaultProps}
+        showKeyLegend={false}
+        legends={[
+          { id: 'Cond', kind: 'condition', type: 'circle', value: 'Shown Condition', color: 'white' },
+          { id: 'Key', kind: 'key', type: 'diamond', value: 'Hidden Key', color: 'black' },
+        ]}
+      />,
+    );
+
+    await expect.poll(() => document.querySelectorAll('.recharts-legend-item').length).toBe(1);
+    expect(document.querySelector('.recharts-legend-item')!.textContent).toBe('Shown Condition');
+  });
+
   it('renders custom legend entries from the legends prop', async () => {
     await render(
       <BaseChart
@@ -386,7 +403,7 @@ describe('BaseChart', () => {
     const item = document.querySelector('.recharts-legend-item')!;
     const marker = item.querySelector('svg path')!;
     expect(marker.getAttribute('stroke')).toBe('black');
-    expect(marker.getAttribute('stroke-width')).toBe('3');
+    expect(marker.getAttribute('stroke-width')).toBe('4');
     expect(getComputedStyle(marker).fill).toBe('rgb(255, 255, 255)');
     expect(getComputedStyle(item.querySelector('.recharts-legend-item-text')!).color).toBe('rgb(0, 0, 0)');
   });

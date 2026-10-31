@@ -7,6 +7,7 @@ import {
   resolveFillColor,
   resolveKeyFillColor,
   resolveKeyShape,
+  resolveKeyConditionShape,
   resolveLineColor,
   resolveMarkerStroke,
   isSeriesHidden,
@@ -53,6 +54,17 @@ describe('series style resolvers fall back to defaults', () => {
 
   it('always uses a black marker border', () => {
     expect(MARKER_BORDER_COLOR).toBe('black');
+  });
+
+  it('prefers a key x condition shape, then the key shape, then the default', () => {
+    const withCondition: SeriesStyles = {
+      ...styled,
+      KeyStyles: { Hitting: { shape: 'star', shapes: { Treatment: 'diamond', Baseline: 'not-a-shape' as never } } },
+    };
+
+    expect(resolveKeyConditionShape(withCondition, 'Hitting', 'Treatment', 'circle')).toBe('diamond');
+    expect(resolveKeyConditionShape(withCondition, 'Hitting', 'Baseline', 'circle')).toBe('star');
+    expect(resolveKeyConditionShape(withCondition, 'Missing', 'Treatment', 'circle')).toBe('circle');
   });
 
   it('hides the whole marker when its fill is transparent', () => {

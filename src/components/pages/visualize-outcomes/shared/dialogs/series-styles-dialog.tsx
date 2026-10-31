@@ -1,8 +1,8 @@
-import { useState, type ReactNode } from 'react';
-import type { SymbolType } from 'recharts/types/util/types';
+import { useId, useState, type ReactNode } from 'react';
 import { Symbols } from 'recharts';
 import { PaintbrushIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -23,8 +23,12 @@ import {
   SERIES_SHAPES,
   TRANSPARENT_COLOR,
   resolveFillColor,
+  resolveKeyConditionShape,
   resolveKeyFillColor,
+  resolveLineColor,
+  toSymbolType,
   type KeySeriesStyle,
+  type SeriesShape,
   type SeriesStyles,
 } from '@/lib/graphing/series-style';
 import { getShape } from '@/lib/shapes';
@@ -60,29 +64,58 @@ function Swatch({ color }: { color: string }) {
 /**
  * Filled glyph of a marker shape, used to label shape options
  */
-function ShapeGlyph({ shape }: { shape: SymbolType }) {
+function ShapeGlyph({ shape }: { shape: SeriesShape }) {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" className="shrink-0 text-foreground">
-      <Symbols type={shape} cx={8} cy={8} size={96} sizeType="area" fill="currentColor" />
+      <Symbols type={toSymbolType(shape)} cx={8} cy={8} size={96} sizeType="area" fill="currentColor" />
     </svg>
   );
 }
 
 /**
- * Shows the marker as it will render for the selected shape and fill, with the standard black border
+ * Marker shape drawn at the same size and box as MarkerPreview, so shape rows line up with fill and line rows
+ */
+function ShapePreview({ shape }: { shape: SeriesShape }) {
+  return (
+    <svg width={40} height={20} viewBox="0 0 40 20" aria-hidden="true" className="shrink-0 text-foreground">
+      <Symbols type={toSymbolType(shape)} cx={20} cy={10} size={110} sizeType="area" fill="currentColor" />
+    </svg>
+  );
+}
+
+/**
+ * Shows the marker as it will render for the selected shape and fill, with the standard black border.
  * A hidden fill is drawn as a dashed outline so the preview still shows where the marker sits.
+ *
+ * When a line colour is given, the line is drawn behind the marker and extends past it on both sides,
+ * as it does in the figure. Every preview uses the same width so rows line up whether or not a line is shown.
  *
  * @param shape - Marker shape to draw
  * @param fill - Resolved fill colour, or the transparent sentinel for a hidden marker
+ * @param line - Resolved line colour, or the transparent sentinel for a hidden line
  */
-function MarkerPreview({ shape, fill }: { shape: SymbolType; fill: string }) {
+function MarkerPreview({ shape, fill, line }: { shape: SeriesShape; fill: string; line?: string }) {
   const hidden = fill === TRANSPARENT_COLOR;
+  const width = 40;
+  const center = width / 2;
+  const hiddenLine = line === TRANSPARENT_COLOR;
 
   return (
-    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" className="shrink-0">
+    <svg width={width} height="20" viewBox={`0 0 ${width} 20`} aria-hidden="true" className="shrink-0">
+      {line !== undefined && (
+        <line
+          x1={4}
+          x2={width - 4}
+          y1={10}
+          y2={10}
+          stroke={hiddenLine ? MARKER_BORDER_COLOR : line}
+          strokeWidth={1}
+          strokeDasharray={hiddenLine ? '2 2' : undefined}
+        />
+      )}
       <Symbols
-        type={shape}
-        cx={10}
+        type={toSymbolType(shape)}
+        cx={center}
         cy={10}
         size={110}
         sizeType="area"
@@ -93,6 +126,13 @@ function MarkerPreview({ shape, fill }: { shape: SymbolType; fill: string }) {
       />
     </svg>
   );
+}
+
+/**
+ * Whether any key has a saved per-condition override for the given field, so its rows should start visible
+ */
+function hasKeyOverrides(styles: SeriesStyles, field: 'fillColors' | 'lineColors' | 'shapes') {
+  return Object.values(styles.KeyStyles).some((style) => Object.keys(style[field] ?? {}).length > 0);
 }
 
 /**
@@ -171,6 +211,57 @@ function ColorSelect({
 }
 
 /**
+ * Dropdown for choosing a marker shape, where Default clears the override
+ *
+ * @param value - Stored shape, or undefined when using the default
+ * @param defaultShape - Shape shown next to the Default option
+ * @param onChange - Receives the chosen shape, or undefined for Default
+ * @param label - Accessible label for the trigger
+ */
+function ShapeSelect({
+  value,
+  defaultShape,
+  onChange,
+  label,
+}: {
+  value: SeriesShape | undefined;
+  defaultShape: SeriesShape;
+  onChange: (value: SeriesShape | undefined) => void;
+  label: string;
+}) {
+  return (
+    <Select
+      value={value ?? DEFAULT_VALUE}
+      onValueChange={(next) => onChange(next === DEFAULT_VALUE ? undefined : (next as SeriesShape))}
+    >
+      <SelectTrigger className={CONTROL_WIDTH} aria-label={label}>
+        <SelectValue>
+          <span className="capitalize">{value ?? `Default (${defaultShape})`}</span>
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectItem value={DEFAULT_VALUE}>
+            <span className="flex flex-row items-center gap-2">
+              <ShapeGlyph shape={defaultShape} />
+              <span className="capitalize">Default ({defaultShape})</span>
+            </span>
+          </SelectItem>
+          {SERIES_SHAPES.map((shape) => (
+            <SelectItem key={shape} value={shape}>
+              <span className="flex flex-row items-center gap-2">
+                <ShapeGlyph shape={shape} />
+                <span className="capitalize">{shape}</span>
+              </span>
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  );
+}
+
+/**
  * Returns a copy of a record with one entry set, or removed when the value is undefined
  *
  * @param record - Source record, which is not mutated
@@ -214,6 +305,12 @@ export function SeriesStylesDialog({
 }: Props) {
   const [open, setOpen] = useDialogOpenState(openProp, onOpenChange);
   const [selectedKey, setSelectedKey] = useState<string | undefined>(undefined);
+  const [showFillOverrides, setShowFillOverrides] = useState(() => hasKeyOverrides(styles, 'fillColors'));
+  const [showLineOverrides, setShowLineOverrides] = useState(() => hasKeyOverrides(styles, 'lineColors'));
+  const [showShapeOverrides, setShowShapeOverrides] = useState(() => hasKeyOverrides(styles, 'shapes'));
+  const fillToggleId = useId();
+  const lineToggleId = useId();
+  const shapeToggleId = useId();
 
   // Hidden keys are subsumed or not drawn, so they are not offered for styling
   const visibleKeys = keys.filter((key) => key.Visible === true);
@@ -228,7 +325,7 @@ export function SeriesStylesDialog({
     return FIGURE_PATH_COLORS[Math.max(index, 0) % FIGURE_PATH_COLORS.length];
   };
 
-  const defaultShapeForKey = (key: string): SymbolType => getShape(Math.max(keyDescriptions.indexOf(key), 0));
+  const defaultShapeForKey = (key: string): SeriesShape => getShape(Math.max(keyDescriptions.indexOf(key), 0));
 
   const updateKey = (key: string, patch: (current: KeySeriesStyle) => KeySeriesStyle) => {
     const current = styles.KeyStyles[key] ?? {};
@@ -238,7 +335,14 @@ export function SeriesStylesDialog({
     });
   };
 
-  const setShape = (key: string, shape: SymbolType | undefined) => updateKey(key, (current) => ({ ...current, shape }));
+  const setShape = (key: string, shape: SeriesShape | undefined) =>
+    updateKey(key, (current) => ({ ...current, shape }));
+
+  const setConditionShape = (key: string, condition: string, shape: SeriesShape | undefined) =>
+    updateKey(key, (current) => ({
+      ...current,
+      shapes: setOrDelete(current.shapes ?? {}, condition, shape),
+    }));
 
   const setFillColor = (key: string, condition: string, color: string | undefined) =>
     updateKey(key, (current) => ({
@@ -276,8 +380,8 @@ export function SeriesStylesDialog({
         <DialogHeader>
           <DialogTitle>Series Styles</DialogTitle>
           <DialogDescription>
-            Override marker shapes, marker fills, and line colors. Marker borders are always black. Anything left at
-            Default keeps the standard style for the figure.
+            Override marker shapes, marker fills, and line colors for each condition. Marker borders are always black.
+            Anything left at Default keeps the standard style for the figure.
           </DialogDescription>
         </DialogHeader>
 
@@ -295,6 +399,33 @@ export function SeriesStylesDialog({
                 />
               </StyleRow>
             ))}
+
+            <div className="flex flex-col gap-3 border-t pt-3">
+              <div className="flex flex-row items-center justify-between gap-4">
+                <Label htmlFor={fillToggleId}>Condition-specific Fill</Label>
+                <Checkbox
+                  id={fillToggleId}
+                  checked={showFillOverrides}
+                  onCheckedChange={(checked) => setShowFillOverrides(checked === true)}
+                />
+              </div>
+              <div className="flex flex-row items-center justify-between gap-4">
+                <Label htmlFor={lineToggleId}>Condition-specific Line Color</Label>
+                <Checkbox
+                  id={lineToggleId}
+                  checked={showLineOverrides}
+                  onCheckedChange={(checked) => setShowLineOverrides(checked === true)}
+                />
+              </div>
+              <div className="flex flex-row items-center justify-between gap-4">
+                <Label htmlFor={shapeToggleId}>Condition-specific Shape</Label>
+                <Checkbox
+                  id={shapeToggleId}
+                  checked={showShapeOverrides}
+                  onCheckedChange={(checked) => setShowShapeOverrides(checked === true)}
+                />
+              </div>
+            </div>
           </section>
 
           <section className="flex flex-col gap-3">
@@ -320,69 +451,82 @@ export function SeriesStylesDialog({
                   </Select>
                 </StyleRow>
 
-                <StyleRow label="Shape">
+                <StyleRow label="Shape (all conditions)">
                   <div className="flex flex-row items-center gap-2">
-                    <ShapeGlyph shape={effectiveShape} />
-                    <Select
-                      value={activeKeyStyle?.shape ?? DEFAULT_VALUE}
-                      onValueChange={(next) =>
-                        setShape(activeKey, next === DEFAULT_VALUE ? undefined : (next as SymbolType))
-                      }
-                    >
-                      <SelectTrigger className={CONTROL_WIDTH} aria-label={`Shape for ${activeKey}`}>
-                        <SelectValue>{activeKeyStyle?.shape ?? `Default (${defaultShape})`}</SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectItem value={DEFAULT_VALUE}>
-                            <span className="flex flex-row items-center gap-2">
-                              <ShapeGlyph shape={defaultShapeForKey(activeKey)} />
-                              Default ({defaultShape})
-                            </span>
-                          </SelectItem>
-                          {SERIES_SHAPES.map((shape) => (
-                            <SelectItem key={shape} value={shape}>
-                              <span className="flex flex-row items-center gap-2">
-                                <ShapeGlyph shape={shape} />
-                                {shape}
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                    <ShapePreview shape={effectiveShape} />
+                    <ShapeSelect
+                      label={`Shape for ${activeKey}`}
+                      value={activeKeyStyle?.shape}
+                      defaultShape={defaultShape}
+                      onChange={(shape) => setShape(activeKey, shape)}
+                    />
                   </div>
                 </StyleRow>
 
-                {conditions.map((condition) => (
-                  <StyleRow key={`fill-${condition}`} label={`Marker Fill (${condition})`}>
-                    <div className="flex flex-row items-center gap-2">
-                      <MarkerPreview
-                        shape={effectiveShape}
-                        fill={resolveKeyFillColor(styles, activeKey, condition, defaultConditionColor(condition))}
-                      />
-                      <ColorSelect
-                        label={`Marker fill for ${activeKey} in ${condition}`}
-                        value={activeKeyStyle?.fillColors?.[condition]}
-                        allowTransparent
-                        defaultColor={resolveFillColor(styles, condition, defaultConditionColor(condition))}
-                        onChange={(color) => setFillColor(activeKey, condition, color)}
-                      />
-                    </div>
-                  </StyleRow>
-                ))}
+                {showShapeOverrides && (
+                  <div className="flex flex-col gap-3 border-t pt-3">
+                    {conditions.map((condition) => (
+                      <StyleRow key={`shape-${condition}`} label={`Shape (${condition})`}>
+                        <div className="flex flex-row items-center gap-2">
+                          <ShapePreview
+                            shape={resolveKeyConditionShape(styles, activeKey, condition, effectiveShape)}
+                          />
+                          <ShapeSelect
+                            label={`Shape in ${condition} for ${activeKey}`}
+                            value={activeKeyStyle?.shapes?.[condition]}
+                            defaultShape={effectiveShape}
+                            onChange={(shape) => setConditionShape(activeKey, condition, shape)}
+                          />
+                        </div>
+                      </StyleRow>
+                    ))}
+                  </div>
+                )}
 
-                {conditions.map((condition) => (
-                  <StyleRow key={`line-${condition}`} label={`Line (${condition})`}>
-                    <ColorSelect
-                      label={`Line color for ${activeKey} in ${condition}`}
-                      value={activeKeyStyle?.lineColors?.[condition]}
-                      allowTransparent
-                      defaultColor={DEFAULT_LINE_COLOR}
-                      onChange={(color) => setLineColor(activeKey, condition, color)}
-                    />
-                  </StyleRow>
-                ))}
+                {showFillOverrides && (
+                  <div className="flex flex-col gap-3 border-t pt-3">
+                    {conditions.map((condition) => (
+                      <StyleRow key={`fill-${condition}`} label={`Marker Fill (${condition})`}>
+                        <div className="flex flex-row items-center gap-2">
+                          <MarkerPreview
+                            shape={resolveKeyConditionShape(styles, activeKey, condition, effectiveShape)}
+                            fill={resolveKeyFillColor(styles, activeKey, condition, defaultConditionColor(condition))}
+                          />
+                          <ColorSelect
+                            label={`Marker fill for ${activeKey} in ${condition}`}
+                            value={activeKeyStyle?.fillColors?.[condition]}
+                            allowTransparent
+                            defaultColor={resolveFillColor(styles, condition, defaultConditionColor(condition))}
+                            onChange={(color) => setFillColor(activeKey, condition, color)}
+                          />
+                        </div>
+                      </StyleRow>
+                    ))}
+                  </div>
+                )}
+
+                {showLineOverrides && (
+                  <div className="flex flex-col gap-3 border-t pt-3">
+                    {conditions.map((condition) => (
+                      <StyleRow key={`line-${condition}`} label={`Line (${condition})`}>
+                        <div className="flex flex-row items-center gap-2">
+                          <MarkerPreview
+                            shape={resolveKeyConditionShape(styles, activeKey, condition, effectiveShape)}
+                            fill={resolveKeyFillColor(styles, activeKey, condition, defaultConditionColor(condition))}
+                            line={resolveLineColor(styles, activeKey, condition, DEFAULT_LINE_COLOR)}
+                          />
+                          <ColorSelect
+                            label={`Line color for ${activeKey} in ${condition}`}
+                            value={activeKeyStyle?.lineColors?.[condition]}
+                            allowTransparent
+                            defaultColor={DEFAULT_LINE_COLOR}
+                            onChange={(color) => setLineColor(activeKey, condition, color)}
+                          />
+                        </div>
+                      </StyleRow>
+                    ))}
+                  </div>
+                )}
               </>
             )}
           </section>

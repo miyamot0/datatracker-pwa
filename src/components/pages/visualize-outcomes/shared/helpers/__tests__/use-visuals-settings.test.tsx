@@ -5,6 +5,11 @@ import { type ToggleDisplayKey } from '@/types/visuals';
 import { useVisualsSettings, type VisualsSettingsOptions } from '../use-visuals-settings';
 
 vi.mock('@/lib/local_storage', () => ({
+  getLocalCachedPrefs: vi.fn(() => ({ KeyDescription: [], Schedule: [] })),
+  getLocalFigureTextSize: vi.fn(() => 'base'),
+  setLocalFigureTextSize: vi.fn(),
+  getLocalHiddenConditions: vi.fn(() => []),
+  setLocalHiddenConditions: vi.fn(),
   getLocalFigureFontFamily: vi.fn(() => 'default'),
   setLocalFigureFontFamily: vi.fn(),
   getLocalFigureAxisMax: vi.fn(() => ({ overrideXMax: false, xMax: null, overrideYMax: false, yMax: null })),
@@ -14,6 +19,7 @@ vi.mock('@/lib/local_storage', () => ({
   getLocalLegendSettings: vi.fn(() => ({ position: 'bottom' })),
   getLocalSeriesStyles: vi.fn(() => ({})),
   getLocalShowConditionLegend: vi.fn(() => true),
+  getLocalShowKeyLegend: vi.fn(() => true),
   getLocalShowDescription: vi.fn(() => false),
   getLocalShowTitle: vi.fn(() => true),
   getLocalShowTooltip: vi.fn(() => true),
@@ -23,6 +29,9 @@ vi.mock('@/lib/local_storage', () => ({
   setLocalLegendSettings: vi.fn(),
   setLocalSeriesStyles: vi.fn(),
   setLocalShowConditionLegend: vi.fn(),
+  setLocalShowKeyLegend: vi.fn(),
+  getLocalSingleTarget: vi.fn(() => false),
+  setLocalSingleTarget: vi.fn(),
   setLocalShowDescription: vi.fn(),
   setLocalShowTitle: vi.fn(),
   setLocalShowTooltip: vi.fn(),

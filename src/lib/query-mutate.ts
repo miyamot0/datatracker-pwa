@@ -18,6 +18,7 @@ export const DemoDataFolderName = 'Example DataTracker Group';
 
 /**
  * Utility function to copy demo data into user's file system. Checks for existing demo folder to prevent overwriting.
+ * Runs in a worker, so it only writes files; bundled styles are applied separately on the main thread.
  *
  * @param handle - The FileSystemDirectoryHandle representing the root directory where the demo data should be copied.
  * @param loadArchive - Returns the verified demo archive bytes. Rejects if the download or integrity check fails.
@@ -445,7 +446,6 @@ export async function mutateDeIdentifyIndividual(
             filename,
             result,
           });
-
         }
       }
     }

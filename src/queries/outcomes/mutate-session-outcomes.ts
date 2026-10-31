@@ -5,6 +5,7 @@ import { SavedSessionResult } from '@/lib/dtos/session-results';
 import { MutateSessionOutcomesRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
 import { v4 } from '@/lib/uuid';
+import { syncConditionRenameStyles } from '@/lib/condition-styles';
 
 /**
  * Mutates the session outcomes based on the specified action (Delete, EditCondition, Modify, Add) for a given group, individual, and evaluation. It interacts with the file system to delete, copy and rename, modify, or add session outcome files accordingly and returns the updated list of ModifiedSessionResult objects.
@@ -128,6 +129,15 @@ export const mutationKeysetsWorker = async ({
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
+        if (Action === 'EditCondition' && ConditionRename) {
+          // Workers cannot reach local storage, and a storage problem must not fail a rename that already succeeded
+          try {
+            syncConditionRenameStyles(Group, Individual, Evaluation, Outcomes, CurrentOutcomes, ConditionRename);
+          } catch (error) {
+            console.warn('Could not carry condition styles to the new condition name:', error);
+          }
+        }
+
         const outcomes = response.data;
         resolve(outcomes);
       } else {

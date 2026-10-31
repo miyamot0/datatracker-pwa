@@ -56,7 +56,7 @@ vi.mock('recharts', () => ({
     );
   },
   Legend: ({ content }: any) => (typeof content === 'function' ? content({}) : null),
-  Symbols: () => null,
+  Symbols: Object.assign(() => null, { registerSymbol: () => {} }),
 }));
 
 vi.mock('@/components/pages/visualize-outcomes/shared/legends/chart-legend-content', () => ({

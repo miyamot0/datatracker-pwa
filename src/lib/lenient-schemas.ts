@@ -1,3 +1,4 @@
+import '@/lib/zod-config';
 import { z } from 'zod';
 import { LogicState, OperationTypes } from '@/lib/logic';
 

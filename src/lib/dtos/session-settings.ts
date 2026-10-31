@@ -1,3 +1,4 @@
+import '@/lib/zod-config';
 import { SessionDesignerSchemaType } from '@/components/pages/editor-session/session-designer-schema';
 import { DataCollectorRoles, DataCollectorRolesType } from '@/types/roles';
 import { SessionTerminationOptions, SessionTerminationOptionsType } from '@/types/terminations';

@@ -1,0 +1,3 @@
+# demo archive is verified byte-for-byte, so git must never convert line endings.
+demo-data/** -text
+src/assets/demo/*.zip binary

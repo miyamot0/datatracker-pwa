@@ -17,6 +17,8 @@ The Rate and Proportion sections of an evaluation provide access to several ways
 
 Regardless of the control you use, changes only affect the visual representation of the figure and **do not alter the underlying session data**. Additional information on the style controls is provided in the sections below.
 
+![Image of the rate visualization page with the figure toolbar](screenshots/rate_visuals_page.png 'Image of the rate visualization page with the figure toolbar')
+
 #### Showing and Hiding Keys
 
 The **Keys** control allows you to choose which keys appear in the figure. Each key has a checkbox. You can uncheck a key to remove it from the chart and check it again to bring it back. As a reminder, keys labeled **(Derived)** are "keys" that are calculated from other keys rather than logged manually. The logic builder provided in the KeySet portion of the app can be used to create event types based on other manually logged keys, which then appears in this list like any other key.
@@ -25,11 +27,15 @@ The **Keys** control allows you to choose which keys appear in the figure. Each 
 
 As a reminder, keys that are flagged as 'hidden' will not appear in the figure nor in the styling dialog for individual series.
 
+![Image of the Display Keys menu](screenshots/figure_menu_display_keys.png 'Image of the Display Keys menu')
+
 #### Styling: Condition-wide Settings
 
 It is often the case that you want all series within a condition to share a common visual style, such as a common marker fill color (e.g., all markers in Baseline have black fill, all markers in Intervention have white fill). This helps quickly distinguish one condition from another in the figure. The program provides some simple defaults, but you may wish to override them to match your preferred color scheme or to emphasize certain conditions.
 
-Clicking the **Styles** control presents a dialog with various options for customizing the appearance of series in the figure. The top-most portion, labeled with a heading named **Conditions**, contains settings that apply to *all series within* each condition. This section will include a **Marker Fill (__condition__)** for *each* of the conditions included in the data set. Selecting the dropdown for a condition allows you to choose a color for all series within that condition.
+Clicking the **Styles** control presents a dialog with various options for customizing the appearance of series in the figure. The top-most portion, labeled with a heading named **Conditions**, contains settings that apply to _all series within_ each condition. This section will include a **Marker Fill (**condition**)** for _each_ of the conditions included in the data set. Selecting the dropdown for a condition allows you to choose a color for all series within that condition.
+
+![Image of the series styles dialog](screenshots/series_styles_dialog.png 'Image of the series styles dialog')
 
 **Example:** Should you wish to have every marker in _Baseline_ to have a black fill, you would select **Marker Fill (Baseline)** and set it to black. Every key's marker in _Baseline_ is now black, unless you override a specific key (see the next section). Line colors do not change at the condition level, because lines stay black by default, unless these are changed at the individual series level. This is described in the sections below.
 
@@ -37,9 +43,15 @@ Clicking the **Styles** control presents a dialog with various options for custo
 
 It is most likely that users will desire to customize the appearance of individual series beyond the condition-wide settings. This allows for highlighting specific keys or making certain series stand out in the figure (e.g., alternative target with bright/contrasting colors). In these cases, settings provided by clicking the **Styles** can be used to override the key-specific settings in the figure as well.
 
-Key-specific settings in the dialog are provided in the "Keys" section, where each key listed can be selected to reveal its individual styling options. Note: only a single key is presented at a single time and selecting a key brings up settings specific to that key. The series editor allows users to edit the **Shape** of the marker for that key, as well as its fill (**Marker Fill**) and **Line** colors per key and condition. A preview is provided beside the dropdown, showing the marker as it will look in that condition.
+Key-specific settings in the dialog are provided in the "Keys" section, where each key listed can be selected to reveal its individual styling options. Note: only a single key is presented at a single time and selecting a key brings up settings specific to that key. The series editor allows users to edit the **Shape** of the marker for all conditions of that key. Shape options are circle, cross, diamond, square, rotated square (a square turned 45 degrees), star, triangle, and wye. Per-condition **Shape**, **Marker Fill**, and **Line** overrides are hidden by default to keep the editor simple. Turn them on with the **Condition-specific Shape**, **Condition-specific Fill**, and **Condition-specific Line Color** checkboxes at the bottom of the Conditions section. A condition shape left at Default uses the key shape. Previews are provided beside each dropdown, showing the marker as it will look in that condition. The **Line** preview shows the marker with its line drawn behind it, so you can see the line color and marker together.
 
 **Example:** An alternative target behavior, such as _Functional Communication_, may benefit from styling in a few different ways. Specifically, this response can be adjusted to include a distinct marker (e.g., a star) as well as unique colors to make it stand out in the figure (e.g., light blue in an otherwise black/white figure). In this example, it similarly would be helpful to de-emphasize aspects of this series in certain areas of the figure, such as Baseline. In this case, since the relevant target could not have taken place in baseline, we may adjust the style for this target and condition to have a 'hidden' marker and 'hidden' line specific to Baseline conditions. Doing this omits the series from being visually prominent in that condition, while still allowing it to stand out in other conditions where is it more meaningful to emphasize.
+
+#### Single Target Legend
+
+When only one target is the focus, differences between series are often only in condition. The **Single Target** checkbox in the **Data Display** menu makes the legend's condition entries match that target. When it is checked, each condition entry in the legend uses the marker shape and fill of the first visible key for that condition, including any overrides from the **Styles** dialog. Single Target is stored with your visual settings and is not saved in the styles file.
+
+Single Target is available only when one key is visible. Enabling a second key clears the setting, and the checkbox is disabled while more than one key is visible.
 
 #### Resetting Styles
 
@@ -48,6 +60,8 @@ There are various combinations of styles available to users, and in conditions w
 #### Phase Lines, Aim Lines, and Text Annotations
 
 Phase change lines, aim lines, and text annotations are not part of series styling, so they are documented separately in [Annotating Figures with Phase Lines, Aim Lines, and Text](/documentation/019-figure_annotations). That entry covers how to add and edit each type, how aim lines and text are scoped to the rate or proportion page, and how these annotations are saved.
+
+![Image of the Annotations submenu](screenshots/figure_menu_annotations.png 'Image of the Annotations submenu')
 
 ### Closing Notes and Tips
 

@@ -145,12 +145,14 @@ describe('chart-setup', () => {
 
       expect(result[3]).toEqual({
         id: 'Key1',
+        kind: 'key',
         type: 'circle',
         value: 'Key1',
         color: 'black',
       });
       expect(result[4]).toEqual({
         id: 'Key3',
+        kind: 'key',
         type: 'cross',
         value: 'Key3',
         color: 'black',
@@ -169,6 +171,7 @@ describe('chart-setup', () => {
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
         id: 'Key1',
+        kind: 'key',
         type: 'circle',
         value: 'Key1',
         color: 'black',
@@ -282,6 +285,35 @@ describe('chart-setup', () => {
 
         const keys = result.filter((entry) => entry.kind !== 'condition');
         expect(keys.every((entry) => entry.color === 'black')).toBe(true);
+      });
+    });
+
+    describe('with singleTarget', () => {
+      const filteredSessions = [createMockSession(1, 'Baseline'), createMockSession(2, 'Treatment')];
+
+      const keySetFull: ExpandedKeySetInstance[] = [
+        { KeyDescription: 'Key1', Visible: true },
+        { KeyDescription: 'Key2', Visible: false },
+      ];
+
+      const styles = {
+        KeyStyles: {
+          Key1: { shapes: { Baseline: 'star' as const }, fillColors: { Baseline: '#00FF00' } },
+        },
+        ConditionStyles: {},
+      };
+
+      it('uses the first visible key per-condition shape and fill for condition entries', () => {
+        const result = createChartLegends(filteredSessions, keySetFull, styles, true);
+
+        expect(result[0]).toMatchObject({ value: 'Baseline', type: 'star', color: '#00FF00' });
+        expect(result[1]).toMatchObject({ value: 'Treatment', type: 'circle', color: '#4E9CB5' });
+      });
+
+      it('keeps circle condition entries when singleTarget is off', () => {
+        const result = createChartLegends(filteredSessions, keySetFull, styles, false);
+
+        expect(result[0]).toMatchObject({ value: 'Baseline', type: 'circle', color: '#9061C2' });
       });
     });
   });

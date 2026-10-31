@@ -1,3 +1,4 @@
+import '@/lib/zod-config';
 import { z } from 'zod';
 import { KeyManageType } from '@/types/timing';
 import { KeySet } from '@/types/keyset/core';

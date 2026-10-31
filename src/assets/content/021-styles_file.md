@@ -2,7 +2,7 @@
 title: Saving, Loading, and Deleting Style Files
 description: This entry explains how to write, read, and delete the styles.json file for an evaluation from the figure menu bar. It also describes what the file contains, how Undo works when reading a file, and how the file is handled by the File Sync Assistant.
 date: 10/28/2026
-keywords: 'styles.json, Saving Styles, Loading Styles, Deleting Styles'
+keywords: 'Saving Styles, Loading Styles, Deleting Styles'
 author: 'Shawn Gilroy'
 index: 21
 ---
@@ -18,10 +18,14 @@ The file holds the settings that are otherwise kept in the browser for each eval
 - Series styles for keys and conditions, such as marker shapes, marker fills, line colors, and hidden series.
 - Titles, axis labels, and whether the title is hidden.
 - Maximum tick overrides for the X axis, and for the Y axis on Rate figures.
-- Font family, either Default or Times New Roman.
-- Legend position, layout, and whether conditions appear in the legend.
+- Font family, either Default or Times New Roman, and figure text size.
+- Legend position, layout, and whether conditions or keys appear in the legend.
+- Keys and conditions hidden from the figure. Hidden conditions apply to all figures in the evaluation, while hidden keys are saved for each figure type (Rate or Proportion).
+- Single target display.
 - Phase change lines, aim lines, and text annotations.
 - Display options such as tooltips, descriptions, and connected spans.
+
+The schedule is not stored in the file. It stays as it is when a style file is read.
 
 ### Writing a Style File
 
@@ -45,6 +49,14 @@ The **File Sync Assistant** on the sync page lists `styles.json` as its own file
 
 To sync only styles, open the **Type** filter above either sync table and choose **Figure Styles**. The table then shows only `styles.json` files, so you can select and sync them without other session data. Choose **All types** to return to the full list.
 
+### Duplicating, Renaming, and Deleting Evaluations
+
+The styles stored in the browser follow the evaluation folder. **Duplicating** an evaluation gives the copy the same styles as the original, including hidden keys and the session schedule, so the copy looks the same without reading a file. **Renaming** an evaluation moves its styles to the new name. **Deleting** an evaluation, or deleting an individual or group that contains it, clears the stored styles for every evaluation removed. A new evaluation that later reuses a deleted name starts with default styles. A `styles.json` file inside a duplicated or renamed folder is copied with the folder like any other file.
+
+### Renaming Conditions
+
+When you rename a condition from the session history page, its styles follow it. This covers the condition's marker color, per-key marker shapes, fills and line colors, and whether the condition is hidden. Styles move only when **every** session in the old condition was renamed. If some sessions remain in the old condition, its styles stay with it. If you rename into a condition that already has sessions, that condition keeps its own styles. If several conditions merge into a new name, the first one that has styles supplies them. The `styles.json` file in the folder is not rewritten, so **Write** it again to refresh it, because reading an older file would bring back the old condition names.
+
 ### Closing Notes and Tips
 
-A few tips are provided here to help with visualizing outcomes consistently across users and machines. First, write a style file after you finish styling a set of figures, so you have a copy you can save/restore/share. Second, sync that file to a remote backup or another machine to keep the styles consistent across environments. Third, on new machines, pull the relevant information for a case to your new *local* machine, including the relevant figure styles. Lastly, you can use **Read** styles on the new machine to ensure that the same look is applied to the evaluation figures.
+A few tips are provided here to help with visualizing outcomes consistently across users and machines. First, write a style file after you finish styling a set of figures, so you have a copy you can save/restore/share. Second, sync that file to a remote backup or another machine to keep the styles consistent across environments. Third, on new machines, pull the relevant information for a case to your new _local_ machine, including the relevant figure styles. Lastly, you can use **Read** styles on the new machine to ensure that the same look is applied to the evaluation figures.

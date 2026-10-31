@@ -3,6 +3,7 @@ import { queryClient } from '@/App';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
 import { v4 } from '@/lib/uuid';
 import { MutateIndividualsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
+import { clearEvaluationPaths, listEvaluationPathsForIndividuals } from '@/lib/evaluation-local-storage';
 
 /**
  * This function is responsible for mutating the individuals associated with a specific group. It takes in the necessary parameters to identify the target group and the individuals to be added or deleted. The function first retrieves the current list of individuals using React Query's `query` method. It then performs the specified action (adding or deleting individuals) by interacting with the file system through the provided directory handle. Finally, it returns the updated list of individual names after the mutation is complete.
@@ -43,6 +44,8 @@ export const mutationIndividualsWorker = async ({
   Individuals: string[];
   Action: 'Add' | 'Delete';
 }) => {
+  // Listed before the worker removes the folders, since the evaluations cannot be found afterwards.
+  const removedEvaluations = Action === 'Delete' ? await listEvaluationPathsForIndividuals(Handle, Group, Individuals) : [];
   const worker = new GenericFileWorker();
   const request = {
     id: v4(),
@@ -57,6 +60,7 @@ export const mutationIndividualsWorker = async ({
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
+        clearEvaluationPaths(removedEvaluations);
         const directories = response.data;
         resolve(directories);
       } else {

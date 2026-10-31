@@ -14,7 +14,10 @@ export type PersistedVisualsSettings = Pick<
   | 'showTitle'
   | 'showTooltip'
   | 'showConditionLegend'
+  | 'showKeyLegend'
   | 'showDescription'
+  | 'singleTarget'
+  | 'figureTextSize'
   | 'figureLabels'
   | 'legendSettings'
   | 'seriesStyles'
@@ -31,7 +34,10 @@ export type VisualsSettingsState = {
   showTitle: boolean;
   showTooltip: boolean;
   showConditionLegend: boolean;
+  showKeyLegend: boolean;
   showDescription: boolean;
+  /** Requested single-target display; only takes effect while exactly one key is visible */
+  singleTarget: boolean;
   figureLabels: FigureLabelSettings;
   legendSettings: LegendSettings;
   seriesStyles: SeriesStyles;
@@ -48,13 +54,22 @@ export type VisualsSettingsAction =
   | { type: 'showTitleChanged'; show: boolean }
   | { type: 'showTooltipChanged'; show: boolean }
   | { type: 'showConditionLegendChanged'; show: boolean }
+  | { type: 'showKeyLegendChanged'; show: boolean }
   | { type: 'showDescriptionChanged'; show: boolean }
+  | { type: 'singleTargetChanged'; singleTarget: boolean }
   | { type: 'figureLabelsChanged'; labels: FigureLabelSettings }
   | { type: 'legendSettingsChanged'; settings: LegendSettings }
   | { type: 'seriesStylesChanged'; styles: SeriesStyles }
   | { type: 'fontFamilyChanged'; fontFamily: FigureFontFamily }
   | { type: 'axisMaxChanged'; axisMax: FigureAxisMaxSettings }
-  | { type: 'settingsReloaded'; settings: PersistedVisualsSettings };
+  | { type: 'settingsReloaded'; settings: PersistedVisualsSettings; hiddenKeys: string[]; hiddenConditions: string[] };
+
+/**
+ * Number of keys currently visible. Single-target display applies only when this is exactly one.
+ */
+export function countVisibleKeys(keys: ToggleDisplayKey[]): number {
+  return keys.filter((key) => key.Visible === true).length;
+}
 
 /**
  * Pure state transitions for visualization settings. Toggles read the latest state, so rapid updates do not overwrite each other.
@@ -64,13 +79,16 @@ export function visualsSettingsReducer(
   action: VisualsSettingsAction,
 ): VisualsSettingsState {
   switch (action.type) {
-    case 'keyVisibilityChanged':
-      return {
-        ...state,
-        keys: state.keys.map((key) =>
-          key.KeyDescription === action.keyDescription ? { ...key, Visible: action.visible } : key,
-        ),
-      };
+    case 'keyVisibilityChanged': {
+      const keys = state.keys.map((key) =>
+        key.KeyDescription === action.keyDescription ? { ...key, Visible: action.visible } : key,
+      );
+
+      // Single target is lifted once more than one key is enabled
+      const lifted = countVisibleKeys(keys) > 1 && state.singleTarget;
+
+      return { ...state, keys, ...(lifted ? { singleTarget: false } : {}) };
+    }
     case 'conditionVisibilityChanged':
       return {
         ...state,
@@ -90,8 +108,12 @@ export function visualsSettingsReducer(
       return { ...state, showTooltip: action.show };
     case 'showConditionLegendChanged':
       return { ...state, showConditionLegend: action.show };
+    case 'showKeyLegendChanged':
+      return { ...state, showKeyLegend: action.show };
     case 'showDescriptionChanged':
       return { ...state, showDescription: action.show };
+    case 'singleTargetChanged':
+      return { ...state, singleTarget: action.singleTarget };
     case 'figureLabelsChanged':
       return { ...state, figureLabels: action.labels };
     case 'legendSettingsChanged':
@@ -102,7 +124,21 @@ export function visualsSettingsReducer(
       return { ...state, fontFamily: action.fontFamily };
     case 'axisMaxChanged':
       return { ...state, axisMax: action.axisMax };
-    case 'settingsReloaded':
-      return { ...state, ...action.settings };
+    case 'settingsReloaded': {
+      // Visibility comes from storage in the same step so single target is lifted against the reloaded keys
+      const keys = state.keys.map((key) => ({ ...key, Visible: !action.hiddenKeys.includes(key.KeyDescription) }));
+      const conditions = state.conditions.map((condition) => ({
+        ...condition,
+        Visible: !action.hiddenConditions.includes(condition.Condition),
+      }));
+
+      return {
+        ...state,
+        ...action.settings,
+        keys,
+        conditions,
+        singleTarget: action.settings.singleTarget && countVisibleKeys(keys) <= 1,
+      };
+    }
   }
 }

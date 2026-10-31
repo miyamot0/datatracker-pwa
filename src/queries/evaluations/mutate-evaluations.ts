@@ -3,6 +3,55 @@ import { queryClient } from '@/App';
 import GenericFileWorker from '@/workers/mutations/file-query-mutate-worker.ts?worker';
 import { v4 } from '@/lib/uuid';
 import { MutateEvaluationsRequest, MutationResponse } from '@/workers/mutations/file-query-mutate-worker';
+import {
+  clearEvaluationPaths,
+  copyEvaluationLocalStorage,
+  moveEvaluationLocalStorage,
+} from '@/lib/evaluation-local-storage';
+
+/**
+ * Keeps stored figure settings in step with a finished folder mutation. Workers cannot reach local storage, so this
+ * runs on the main thread. Failures are logged and never fail a file operation that already succeeded.
+ */
+function syncEvaluationStorage({
+  Group,
+  Individual,
+  Evaluations,
+  Rename,
+  Action,
+}: {
+  Group: string;
+  Individual: string;
+  Evaluations: string[];
+  Rename?: string;
+  Action: 'Add' | 'Delete' | 'Duplicate' | 'Rename';
+}) {
+  try {
+    switch (Action) {
+      case 'Delete':
+        clearEvaluationPaths(Evaluations.map((evaluation) => ({ group: Group, individual: Individual, evaluation })));
+        break;
+      case 'Duplicate':
+        if (Rename) {
+          copyEvaluationLocalStorage(
+            { group: Group, individual: Individual, evaluation: Evaluations[0] },
+            { group: Group, individual: Individual, evaluation: Rename },
+          );
+        }
+        break;
+      case 'Rename':
+        if (Rename) {
+          moveEvaluationLocalStorage(
+            { group: Group, individual: Individual, evaluation: Evaluations[0] },
+            { group: Group, individual: Individual, evaluation: Rename },
+          );
+        }
+        break;
+    }
+  } catch (error) {
+    console.warn('Could not update stored figure settings:', error);
+  }
+}
 
 /**
  * This function is responsible for mutating the evaluations associated with a specific group and individual. It takes in the necessary parameters to identify the target evaluations and the action to be performed (in this case, adding, deleting, duplicating, or renaming evaluations). The function first retrieves the current list of evaluations using React Query's `query` method. It then performs the specified action by interacting with the file system through the provided directory handle. Finally, it returns the updated list of evaluation names after the mutation is complete.
@@ -81,6 +130,7 @@ export const mutationEvaluationsWorker = async ({
     worker.onmessage = (event: MessageEvent<MutationResponse>) => {
       const response = event.data;
       if (response.success) {
+        syncEvaluationStorage({ Group, Individual, Evaluations, Rename, Action });
         const directories = response.data;
         resolve(directories);
       } else {

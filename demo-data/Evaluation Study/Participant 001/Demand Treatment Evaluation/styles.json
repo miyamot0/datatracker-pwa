@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "seriesStyles": {
+    "KeyStyles": {},
+    "ConditionStyles": {},
+    "phase_changes": [
+      {
+        "position": 12.5,
+        "lineType": "solid"
+      }
+    ],
+    "text_annotations": [
+      {
+        "label": "Baseline",
+        "x": 2,
+        "y": 7,
+        "anchor": "middle-left",
+        "justify": "left",
+        "weight": "bold",
+        "page": "rate"
+      },
+      {
+        "label": "Intervention",
+        "x": 13,
+        "y": 7,
+        "anchor": "middle-left",
+        "justify": "left",
+        "weight": "bold",
+        "page": "rate"
+      }
+    ],
+    "aim_lines": [
+      {
+        "x1": 12.5,
+        "x2": 25,
+        "y": 1,
+        "lineType": "dotted",
+        "color": "#EB540A",
+        "page": "rate"
+      }
+    ]
+  },
+  "showTooltip": true,
+  "showConditionLegend": false,
+  "showKeyLegend": true,
+  "showDescription": true,
+  "singleTarget": false,
+  "hiddenConditions": [],
+  "plots": {
+    "Rate": {
+      "showTitle": true,
+      "connectSpans": false,
+      "figureLabels": {
+        "overrideTitle": true,
+        "titleText": "Demand Treatment Evaluation",
+        "overrideXAxis": false,
+        "xAxisText": "",
+        "overrideYAxis": true,
+        "yAxisText": "Combined Target Behavior (per min)"
+      },
+      "legendSettings": {
+        "position": "mid-right",
+        "layout": "vertical"
+      },
+      "fontFamily": "timesNewRoman",
+      "axisMax": {
+        "overrideXMax": true,
+        "xMax": 25,
+        "overrideYMax": true,
+        "yMax": 7
+      },
+      "figureTextSize": "base",
+      "hiddenKeys": [
+        "SIB",
+        "DIS",
+        "AGG",
+        "Prompt",
+        "Compliance",
+        "Comply PCT"
+      ]
+    },
+    "Proportion": {
+      "showTitle": true,
+      "connectSpans": false,
+      "figureLabels": {
+        "overrideTitle": false,
+        "titleText": "",
+        "overrideXAxis": false,
+        "xAxisText": "",
+        "overrideYAxis": false,
+        "yAxisText": ""
+      },
+      "legendSettings": {
+        "position": "below",
+        "layout": "horizontal"
+      },
+      "fontFamily": "default",
+      "axisMax": {
+        "overrideXMax": false,
+        "xMax": null,
+        "overrideYMax": false,
+        "yMax": null
+      },
+      "figureTextSize": "base",
+      "hiddenKeys": []
+    }
+  }
+}
