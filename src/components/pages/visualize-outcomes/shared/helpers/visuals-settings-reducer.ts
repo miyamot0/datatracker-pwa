@@ -17,6 +17,7 @@ export type PersistedVisualsSettings = Pick<
   | 'showKeyLegend'
   | 'showDescription'
   | 'singleTarget'
+  | 'figureTextSize'
   | 'figureLabels'
   | 'legendSettings'
   | 'seriesStyles'
@@ -61,7 +62,7 @@ export type VisualsSettingsAction =
   | { type: 'seriesStylesChanged'; styles: SeriesStyles }
   | { type: 'fontFamilyChanged'; fontFamily: FigureFontFamily }
   | { type: 'axisMaxChanged'; axisMax: FigureAxisMaxSettings }
-  | { type: 'settingsReloaded'; settings: PersistedVisualsSettings };
+  | { type: 'settingsReloaded'; settings: PersistedVisualsSettings; hiddenKeys: string[]; hiddenConditions: string[] };
 
 /**
  * Number of keys currently visible. Single-target display applies only when this is exactly one.
@@ -123,7 +124,21 @@ export function visualsSettingsReducer(
       return { ...state, fontFamily: action.fontFamily };
     case 'axisMaxChanged':
       return { ...state, axisMax: action.axisMax };
-    case 'settingsReloaded':
-      return { ...state, ...action.settings };
+    case 'settingsReloaded': {
+      // Visibility comes from storage in the same step so single target is lifted against the reloaded keys
+      const keys = state.keys.map((key) => ({ ...key, Visible: !action.hiddenKeys.includes(key.KeyDescription) }));
+      const conditions = state.conditions.map((condition) => ({
+        ...condition,
+        Visible: !action.hiddenConditions.includes(condition.Condition),
+      }));
+
+      return {
+        ...state,
+        ...action.settings,
+        keys,
+        conditions,
+        singleTarget: action.settings.singleTarget && countVisibleKeys(keys) <= 1,
+      };
+    }
   }
 }

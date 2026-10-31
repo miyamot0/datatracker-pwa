@@ -1,9 +1,12 @@
 import { useEffect, useReducer, useRef } from 'react';
 import {
+  getLocalCachedPrefs,
   getLocalConnectSpans,
   getLocalFigureAxisMax,
   getLocalFigureFontFamily,
   getLocalFigureLabels,
+  getLocalFigureTextSize,
+  getLocalHiddenConditions,
   getLocalLegendSettings,
   getLocalSeriesStyles,
   getLocalShowConditionLegend,
@@ -17,6 +20,8 @@ import {
   setLocalFigureAxisMax,
   setLocalFigureFontFamily,
   setLocalFigureLabels,
+  setLocalFigureTextSize,
+  setLocalHiddenConditions,
   setLocalLegendSettings,
   setLocalSeriesStyles,
   setLocalShowConditionLegend,
@@ -58,6 +63,7 @@ export function readPersistedVisualsSettings(
     showKeyLegend: getLocalShowKeyLegend(group, individual, evaluation),
     showDescription: getLocalShowDescription(group, individual, evaluation),
     singleTarget: getLocalSingleTarget(group, individual, evaluation),
+    figureTextSize: getLocalFigureTextSize(group, individual, evaluation, plot),
     figureLabels: getLocalFigureLabels(group, individual, evaluation, plot),
     legendSettings: getLocalLegendSettings(group, individual, evaluation, plot),
     seriesStyles: getLocalSeriesStyles(group, individual, evaluation),
@@ -66,20 +72,38 @@ export function readPersistedVisualsSettings(
   };
 }
 
+/**
+ * Reads which keys and conditions are hidden. Keys use the page's cache scope, conditions are shared across plots.
+ */
+export function readPersistedVisibility(
+  options: Pick<VisualsSettingsOptions, 'group' | 'individual' | 'evaluation' | 'prefsType'>,
+): { hiddenKeys: string[]; hiddenConditions: string[] } {
+  const { group, individual, evaluation, prefsType } = options;
+
+  return {
+    hiddenKeys: getLocalCachedPrefs(group, individual, evaluation, prefsType).KeyDescription,
+    hiddenConditions: getLocalHiddenConditions(group, individual, evaluation),
+  };
+}
+
 function buildInitialState(options: VisualsSettingsOptions): VisualsSettingsState {
   const keys = [...options.keys].sort((a, b) => b.KeyType.localeCompare(a.KeyType));
   const persisted = readPersistedVisualsSettings(options);
+  const { hiddenConditions } = readPersistedVisibility(options);
 
   return {
     keys,
-    conditions: options.conditions.map((condition) => ({ Condition: condition, Visible: true })),
+    conditions: options.conditions.map((condition) => ({
+      Condition: condition,
+      Visible: !hiddenConditions.includes(condition),
+    })),
     schedule: options.defaultSchedule,
-    figureTextSize: 'base',
     ...persisted,
     // Single target is lifted when more than one key is visible
     singleTarget: persisted.singleTarget && countVisibleKeys(keys) <= 1,
   };
 }
+
 
 /**
  * Calls persist whenever value changes after mount. The first render is skipped so that loading settings never rewrites them.
@@ -126,6 +150,17 @@ export function useVisualsSettings(options: VisualsSettingsOptions) {
     setLocalFigureFontFamily(group, individual, evaluation, plot, fontFamily),
   );
   usePersistOnChange(state.axisMax, (axisMax) => setLocalFigureAxisMax(group, individual, evaluation, plot, axisMax));
+  usePersistOnChange(state.figureTextSize, (size) =>
+    setLocalFigureTextSize(group, individual, evaluation, plot, size),
+  );
+  usePersistOnChange(state.conditions, (conditions) =>
+    setLocalHiddenConditions(
+      group,
+      individual,
+      evaluation,
+      conditions.filter((condition) => condition.Visible === false).map((condition) => condition.Condition),
+    ),
+  );
   const persistCachedPrefs = (keys: ToggleDisplayKey[], schedule: string) =>
     setLocalCachedPrefs(group, individual, evaluation, prefsType, {
       KeyDescription: keys.filter((key) => key.Visible === false).map((key) => key.KeyDescription),

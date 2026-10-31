@@ -2,6 +2,8 @@ import {
   getLocalCachedPrefs,
   getLocalConnectSpans,
   getLocalFigureLabels,
+  getLocalFigureTextSize,
+  getLocalHiddenConditions,
   getLocalLegendSettings,
   getLocalSeriesStyles,
   getLocalShowTitle,
@@ -11,6 +13,8 @@ import {
   getLocalShowKeyLegend,
   ReturnLocalStorageCache,
   setLocalCachedPrefs,
+  setLocalFigureTextSize,
+  setLocalHiddenConditions,
   setLocalLegendSettings,
   setLocalShowConditionLegend,
   setLocalShowDescription,
@@ -59,6 +63,14 @@ describe('LocalStorage Prefs', () => {
 
       const result = getLocalCachedPrefs(group, individual, evaluation, type);
       expect(result).toEqual(defaultCache);
+    });
+
+    it('should fill in missing KeyDescription so hidden keys are never lost to undefined', () => {
+      localStorage.setItem(dynamicKey, JSON.stringify({ Schedule: 'End on Timer #2' }));
+
+      const result = getLocalCachedPrefs(group, individual, evaluation, type);
+      expect(result.KeyDescription).toEqual([]);
+      expect(result.Schedule).toEqual('End on Timer #2');
     });
   });
 
@@ -369,6 +381,27 @@ describe('LocalStorage Prefs', () => {
       );
 
       expect(getLocalLegendSettings(group, individual, evaluation, 'Rate')).toEqual(DEFAULT_LEGEND_SETTINGS);
+    });
+  });
+
+  describe('figure text size and hidden conditions', () => {
+    it('stores figure text size per plot and defaults to base', () => {
+      expect(getLocalFigureTextSize(group, individual, evaluation, 'Rate')).toBe('base');
+
+      setLocalFigureTextSize(group, individual, evaluation, 'Rate', 'extraLarge');
+
+      expect(getLocalFigureTextSize(group, individual, evaluation, 'Rate')).toBe('extraLarge');
+      expect(getLocalFigureTextSize(group, individual, evaluation, 'Proportion')).toBe('base');
+    });
+
+    it('stores hidden conditions as a list and falls back to empty for invalid JSON', () => {
+      expect(getLocalHiddenConditions(group, individual, evaluation)).toEqual([]);
+
+      setLocalHiddenConditions(group, individual, evaluation, ['Baseline']);
+      expect(getLocalHiddenConditions(group, individual, evaluation)).toEqual(['Baseline']);
+
+      localStorage.setItem(`${group}_${individual}_${evaluation}_HiddenConditions`, '{not json');
+      expect(getLocalHiddenConditions(group, individual, evaluation)).toEqual([]);
     });
   });
 });

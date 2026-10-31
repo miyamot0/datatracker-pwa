@@ -10,7 +10,15 @@ import {
   writeStylesFile,
 } from '../styles-file';
 import type { StylesFile } from '../styles-file';
-import { setLocalShowTitle } from '../local_storage';
+import {
+  getLocalCachedPrefs,
+  setLocalCachedPrefs,
+  setLocalFigureTextSize,
+  setLocalHiddenConditions,
+  setLocalShowTitle,
+  setLocalSingleTarget,
+} from '../local_storage';
+import type { ReturnLocalStorageCache } from '../local_storage';
 
 type Entry = FileEntry | FolderEntry;
 type FileEntry = { kind: 'file'; text: string };
@@ -108,6 +116,68 @@ describe('styles file round trip', () => {
     expect(await deleteStylesFile(root, 'G', 'I', 'E')).toBe(false);
   });
 
+  it('always writes every portable setting to the file text, even with nothing in local storage', async () => {
+    const root = makeDirectory(
+      new Map([
+        [
+          'G',
+          {
+            kind: 'folder',
+            children: new Map([
+              ['I', { kind: 'folder', children: new Map([['E', { kind: 'folder', children: new Map() }]]) }],
+            ]),
+          },
+        ],
+      ]),
+    );
+
+    // A cache entry without KeyDescription must not drop hiddenKeys
+    localStorage.setItem('G_I_E_Rate', JSON.stringify({ Schedule: 'End on Timer #1' }));
+
+    await writeStylesFile(root, 'G', 'I', 'E');
+
+    const group = root as unknown as { getDirectoryHandle: (name: string) => Promise<FileSystemDirectoryHandle> };
+    const evaluation = await (
+      await (await group.getDirectoryHandle('G')).getDirectoryHandle('I')
+    ).getDirectoryHandle('E');
+    const text = await (await (await evaluation.getFileHandle('styles.json')).getFile()).text();
+    const written = JSON.parse(text) as Record<string, unknown>;
+
+    for (const key of [
+      'version',
+      'seriesStyles',
+      'showTooltip',
+      'showConditionLegend',
+      'showKeyLegend',
+      'showDescription',
+      'singleTarget',
+      'hiddenConditions',
+      'plots',
+    ]) {
+      expect(written, `top-level ${key}`).toHaveProperty(key);
+    }
+
+    const plots = written.plots as Record<string, Record<string, unknown>>;
+
+    for (const plot of ['Rate', 'Proportion']) {
+      for (const key of [
+        'showTitle',
+        'connectSpans',
+        'figureLabels',
+        'legendSettings',
+        'fontFamily',
+        'axisMax',
+        'figureTextSize',
+        'hiddenKeys',
+      ]) {
+        expect(plots[plot], `${plot}.${key}`).toHaveProperty(key);
+      }
+    }
+
+    expect(written).not.toHaveProperty('schedule');
+    expect(text).not.toContain('Schedule');
+  });
+
   it('merges only fields present in the file', () => {
     localStorage.clear();
     setLocalShowTitle('G', 'I', 'E', 'Rate', false);
@@ -135,6 +205,37 @@ describe('styles file round trip', () => {
   it('returns false when no backup exists', () => {
     sessionStorage.clear();
     expect(restoreStylesBackup('G', 'I', 'E')).toBe(false);
+  });
+
+  it('round trips every portable setting and leaves the schedule out of the file', () => {
+    localStorage.clear();
+    setLocalSingleTarget('G', 'I', 'E', true);
+    setLocalHiddenConditions('G', 'I', 'E', ['Condition B']);
+    setLocalFigureTextSize('G', 'I', 'E', 'Rate', 'large');
+    setLocalCachedPrefs('G', 'I', 'E', 'Rate', {
+      KeyDescription: ['Key 1'],
+      Schedule: ['Schedule A'],
+    } as ReturnLocalStorageCache);
+
+    const built = buildStylesFile('G', 'I', 'E');
+    const serialized = JSON.stringify(built);
+    expect(serialized).not.toContain('Schedule A');
+
+    const reparsed = parseStylesFile(serialized);
+    expect(reparsed.singleTarget).toBe(true);
+    expect(reparsed.hiddenConditions).toEqual(['Condition B']);
+    expect(reparsed.plots?.Rate?.figureTextSize).toBe('large');
+    expect(reparsed.plots?.Rate?.hiddenKeys).toEqual(['Key 1']);
+
+    localStorage.clear();
+    setLocalCachedPrefs('G', 'I', 'E', 'Rate', {
+      KeyDescription: [],
+      Schedule: ['Local schedule'],
+    } as ReturnLocalStorageCache);
+    applyStylesFile('G', 'I', 'E', reparsed);
+
+    expect(buildStylesFile('G', 'I', 'E')).toEqual(built);
+    expect(getLocalCachedPrefs('G', 'I', 'E', 'Rate').Schedule).toEqual(['Local schedule']);
   });
 });
 

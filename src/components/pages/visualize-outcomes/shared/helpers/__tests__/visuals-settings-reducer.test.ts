@@ -31,6 +31,49 @@ function makeState(overrides: Partial<VisualsSettingsState> = {}): VisualsSettin
   };
 }
 
+describe('settingsReloaded visibility', () => {
+  const reloadSettings = {
+    schedule: { value: 'Default', label: 'Default' },
+    figureTextSize: 'large',
+    connectSpans: false,
+    singleTarget: true,
+    showTitle: true,
+    showTooltip: true,
+    showConditionLegend: true,
+    showKeyLegend: true,
+    showDescription: true,
+    figureLabels: EMPTY_FIGURE_LABEL_SETTINGS,
+    legendSettings: DEFAULT_LEGEND_SETTINGS,
+    seriesStyles: EMPTY_SERIES_STYLES,
+  } as const;
+
+  it('applies hidden keys and conditions from storage and keeps single target when one key is visible', () => {
+    const next = visualsSettingsReducer(makeState({ singleTarget: false }), {
+      type: 'settingsReloaded',
+      settings: { ...reloadSettings },
+      hiddenKeys: ['Key A'],
+      hiddenConditions: ['Treatment'],
+    });
+
+    expect(next.keys.map((k) => k.Visible)).toEqual([false, true]);
+    expect(next.conditions.map((c) => c.Visible)).toEqual([true, false]);
+    expect(next.figureTextSize).toBe('large');
+    expect(next.singleTarget).toBe(true);
+  });
+
+  it('lifts single target when more than one key is visible after reload', () => {
+    const next = visualsSettingsReducer(makeState(), {
+      type: 'settingsReloaded',
+      settings: { ...reloadSettings },
+      hiddenKeys: [],
+      hiddenConditions: [],
+    });
+
+    expect(next.keys.map((k) => k.Visible)).toEqual([true, true]);
+    expect(next.singleTarget).toBe(false);
+  });
+});
+
 describe('visualsSettingsReducer', () => {
   it('toggles only the matching key by description', () => {
     const next = visualsSettingsReducer(makeState(), {

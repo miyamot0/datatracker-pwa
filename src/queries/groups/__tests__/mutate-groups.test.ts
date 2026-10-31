@@ -6,6 +6,13 @@ vi.mock('@/App', () => ({
   queryClient: { query: vi.fn().mockResolvedValue(['Group A']) },
 }));
 
+const demoStyleMocks = vi.hoisted(() => ({
+  loadDemoStyles: vi.fn(),
+  applyDemoStyles: vi.fn(),
+}));
+
+vi.mock('@/lib/demo-styles', () => demoStyleMocks);
+
 vi.mock('@/workers/mutations/file-query-mutate-worker.ts?worker', () => ({
   default: class {
     onmessage: any;
@@ -24,6 +31,42 @@ const handle = {} as FileSystemDirectoryHandle;
 describe('mutationGroups', () => {
   beforeEach(() => {
     workerState.instance = null;
+    demoStyleMocks.loadDemoStyles.mockReset().mockResolvedValue([]);
+    demoStyleMocks.applyDemoStyles.mockReset();
+  });
+
+  it('applies bundled demo styles on the main thread after the worker copies the demo', async () => {
+    const entries = [{ individual: 'Participant 001', evaluation: 'Tangible Treatment Evaluation', styles: {} }];
+    demoStyleMocks.loadDemoStyles.mockResolvedValue(entries);
+
+    const promise = mutationGroups({ Group: ['Example DataTracker Group'], Handle: handle, Action: 'Demo' });
+    await vi.waitFor(() => expect(workerState.instance).not.toBeNull());
+
+    workerState.instance!.onmessage({ data: { success: true, data: ['Example DataTracker Group'] } });
+
+    await expect(promise).resolves.toEqual(['Example DataTracker Group']);
+    expect(demoStyleMocks.applyDemoStyles).toHaveBeenCalledWith(entries);
+  });
+
+  it('does not apply demo styles when the worker fails', async () => {
+    const promise = mutationGroups({ Group: ['Example DataTracker Group'], Handle: handle, Action: 'Demo' });
+    await vi.waitFor(() => expect(workerState.instance).not.toBeNull());
+
+    workerState.instance!.onmessage({ data: { success: false, error: 'boom' } });
+
+    await expect(promise).rejects.toThrow('boom');
+    expect(demoStyleMocks.applyDemoStyles).not.toHaveBeenCalled();
+  });
+
+  it('does not load demo styles for non-demo actions', async () => {
+    const promise = mutationGroups({ Group: ['Group A'], Handle: handle, Action: 'Add' });
+    await vi.waitFor(() => expect(workerState.instance).not.toBeNull());
+
+    workerState.instance!.onmessage({ data: { success: true, data: ['Group A'] } });
+
+    await promise;
+    expect(demoStyleMocks.loadDemoStyles).not.toHaveBeenCalled();
+    expect(demoStyleMocks.applyDemoStyles).not.toHaveBeenCalled();
   });
 
   it('resolves with the directories returned by the worker', async () => {

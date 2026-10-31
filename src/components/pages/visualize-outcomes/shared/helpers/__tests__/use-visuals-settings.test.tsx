@@ -5,6 +5,11 @@ import { type ToggleDisplayKey } from '@/types/visuals';
 import { useVisualsSettings, type VisualsSettingsOptions } from '../use-visuals-settings';
 
 vi.mock('@/lib/local_storage', () => ({
+  getLocalCachedPrefs: vi.fn(() => ({ KeyDescription: [], Schedule: [] })),
+  getLocalFigureTextSize: vi.fn(() => 'base'),
+  setLocalFigureTextSize: vi.fn(),
+  getLocalHiddenConditions: vi.fn(() => []),
+  setLocalHiddenConditions: vi.fn(),
   getLocalFigureFontFamily: vi.fn(() => 'default'),
   setLocalFigureFontFamily: vi.fn(),
   getLocalFigureAxisMax: vi.fn(() => ({ overrideXMax: false, xMax: null, overrideYMax: false, yMax: null })),

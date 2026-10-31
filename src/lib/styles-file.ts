@@ -1,10 +1,13 @@
 import { CleanUpString } from '@/lib/strings';
 import { RESERVED_STYLES_FILE_NAME } from '@/lib/reserved-names';
 import {
+  getLocalCachedPrefs,
   getLocalConnectSpans,
   getLocalFigureAxisMax,
   getLocalFigureFontFamily,
   getLocalFigureLabels,
+  getLocalFigureTextSize,
+  getLocalHiddenConditions,
   getLocalLegendSettings,
   getLocalSeriesStyles,
   getLocalShowConditionLegend,
@@ -12,10 +15,14 @@ import {
   getLocalShowKeyLegend,
   getLocalShowTitle,
   getLocalShowTooltip,
+  getLocalSingleTarget,
+  setLocalCachedPrefs,
   setLocalConnectSpans,
   setLocalFigureAxisMax,
   setLocalFigureFontFamily,
   setLocalFigureLabels,
+  setLocalFigureTextSize,
+  setLocalHiddenConditions,
   setLocalLegendSettings,
   setLocalSeriesStyles,
   setLocalShowConditionLegend,
@@ -23,6 +30,7 @@ import {
   setLocalShowKeyLegend,
   setLocalShowTitle,
   setLocalShowTooltip,
+  setLocalSingleTarget,
 } from '@/lib/local_storage';
 import { type SeriesStyles } from '@/lib/graphing/series-style';
 import { type FigureLabelSettings } from '@/lib/graphing/figure-labels';
@@ -33,9 +41,13 @@ import {
   type FigureAxisMaxSettings,
   type FigureFontFamily,
 } from '@/lib/graphing/figure-text-settings';
+import { FIGURE_TEXT_OPTIONS, type FigureVisualSizing } from '@/types/accessibility';
 
 export type StylesPlot = 'Rate' | 'Proportion';
 const PLOTS: StylesPlot[] = ['Rate', 'Proportion'];
+
+/** Cache scope that holds each plot's hidden keys. Schedule shares this cache but is never written to styles.json. */
+const PREFS_TYPE_BY_PLOT: Record<StylesPlot, 'Rate' | 'Duration'> = { Rate: 'Rate', Proportion: 'Duration' };
 
 export type StylesPlotSettings = {
   showTitle?: boolean;
@@ -44,6 +56,9 @@ export type StylesPlotSettings = {
   legendSettings?: LegendSettings;
   fontFamily?: FigureFontFamily;
   axisMax?: FigureAxisMaxSettings;
+  figureTextSize?: FigureVisualSizing;
+  /** Keys hidden from the figure and legend */
+  hiddenKeys?: string[];
 };
 
 /**
@@ -56,8 +71,14 @@ export type StylesFile = {
   showConditionLegend?: boolean;
   showKeyLegend?: boolean;
   showDescription?: boolean;
+  singleTarget?: boolean;
+  /** Conditions hidden from the figure and legend */
+  hiddenConditions?: string[];
   plots?: Partial<Record<StylesPlot, StylesPlotSettings>>;
 };
+
+const isStringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string');
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -78,10 +99,14 @@ export function parseStylesFile(text: string): StylesFile {
     throw new Error(`${RESERVED_STYLES_FILE_NAME} must be an object with version 1`);
   }
 
-  for (const key of ['showTooltip', 'showConditionLegend', 'showKeyLegend', 'showDescription'] as const) {
+  for (const key of ['showTooltip', 'showConditionLegend', 'showKeyLegend', 'showDescription', 'singleTarget'] as const) {
     if (parsed[key] !== undefined && typeof parsed[key] !== 'boolean') {
       throw new Error(`${key} must be true or false`);
     }
+  }
+
+  if (parsed.hiddenConditions !== undefined && !isStringArray(parsed.hiddenConditions)) {
+    throw new Error('hiddenConditions must be a list of condition names');
   }
 
   if (parsed.seriesStyles !== undefined) {
@@ -144,6 +169,19 @@ export function parseStylesFile(text: string): StylesFile {
           `plots.${plot}.axisMax must have overrideXMax and overrideYMax as true or false, and xMax and yMax as positive whole numbers or null`,
         );
       }
+
+      if (
+        plotSettings.figureTextSize !== undefined &&
+        !FIGURE_TEXT_OPTIONS.some((option) => option.value === plotSettings.figureTextSize)
+      ) {
+        throw new Error(
+          `plots.${plot}.figureTextSize must be one of: ${FIGURE_TEXT_OPTIONS.map((option) => option.value).join(', ')}`,
+        );
+      }
+
+      if (plotSettings.hiddenKeys !== undefined && !isStringArray(plotSettings.hiddenKeys)) {
+        throw new Error(`plots.${plot}.hiddenKeys must be a list of key names`);
+      }
     }
   }
 
@@ -164,6 +202,8 @@ export function buildStylesFile(group: string, individual: string, evaluation: s
         legendSettings: getLocalLegendSettings(group, individual, evaluation, plot),
         fontFamily: getLocalFigureFontFamily(group, individual, evaluation, plot),
         axisMax: getLocalFigureAxisMax(group, individual, evaluation, plot),
+        figureTextSize: getLocalFigureTextSize(group, individual, evaluation, plot),
+        hiddenKeys: getLocalCachedPrefs(group, individual, evaluation, PREFS_TYPE_BY_PLOT[plot]).KeyDescription,
       },
     ]),
   ) as Record<StylesPlot, StylesPlotSettings>;
@@ -175,6 +215,8 @@ export function buildStylesFile(group: string, individual: string, evaluation: s
     showConditionLegend: getLocalShowConditionLegend(group, individual, evaluation),
     showKeyLegend: getLocalShowKeyLegend(group, individual, evaluation),
     showDescription: getLocalShowDescription(group, individual, evaluation),
+    singleTarget: getLocalSingleTarget(group, individual, evaluation),
+    hiddenConditions: getLocalHiddenConditions(group, individual, evaluation),
     plots,
   };
 }
@@ -233,6 +275,14 @@ export function applyStylesFile(
     setLocalShowDescription(group, individual, evaluation, file.showDescription);
   }
 
+  if (file.singleTarget !== undefined) {
+    setLocalSingleTarget(group, individual, evaluation, file.singleTarget);
+  }
+
+  if (file.hiddenConditions !== undefined) {
+    setLocalHiddenConditions(group, individual, evaluation, file.hiddenConditions);
+  }
+
   for (const plot of PLOTS) {
     const plotSettings = file.plots?.[plot];
 
@@ -262,6 +312,20 @@ export function applyStylesFile(
 
     if (plotSettings.axisMax) {
       setLocalFigureAxisMax(group, individual, evaluation, plot, plotSettings.axisMax);
+    }
+
+    if (plotSettings.figureTextSize !== undefined) {
+      setLocalFigureTextSize(group, individual, evaluation, plot, plotSettings.figureTextSize);
+    }
+
+    if (plotSettings.hiddenKeys !== undefined) {
+      const prefsType = PREFS_TYPE_BY_PLOT[plot];
+      const { Schedule } = getLocalCachedPrefs(group, individual, evaluation, prefsType);
+
+      setLocalCachedPrefs(group, individual, evaluation, prefsType, {
+        KeyDescription: plotSettings.hiddenKeys,
+        Schedule,
+      });
     }
   }
 }

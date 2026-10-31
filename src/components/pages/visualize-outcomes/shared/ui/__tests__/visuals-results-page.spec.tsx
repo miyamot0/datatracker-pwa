@@ -9,7 +9,12 @@ const mockFilteredSessionScoringOptions = vi.hoisted(() => vi.fn());
 const mockGetLocalShowDescription = vi.hoisted(() => vi.fn(() => true));
 
 vi.mock('@/lib/local_storage', () => ({
+  getLocalCachedPrefs: vi.fn(() => ({ KeyDescription: [], Schedule: [] })),
   setLocalCachedPrefs: vi.fn(),
+  getLocalFigureTextSize: vi.fn(() => 'base'),
+  setLocalFigureTextSize: vi.fn(),
+  getLocalHiddenConditions: vi.fn(() => []),
+  setLocalHiddenConditions: vi.fn(),
   getLocalFigureFontFamily: vi.fn(() => 'default'),
   setLocalFigureFontFamily: vi.fn(),
   getLocalFigureAxisMax: vi.fn(() => ({ overrideXMax: false, xMax: null, overrideYMax: false, yMax: null })),
