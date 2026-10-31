@@ -146,6 +146,15 @@ export function getChartVerticalSpacing(figureTextSize: FigureVisualSizing, show
 }
 
 /**
+ * Smooths joins and line ends and favours anti-aliased geometry over pixel snapping, so series lines and markers stay clean
+ */
+export const SERIES_RENDER_PROPS = {
+  strokeLinejoin: 'round' as const,
+  strokeLinecap: 'round' as const,
+  shapeRendering: 'geometricPrecision' as const,
+};
+
+/**
  * Common chart configuration and props
  */
 export function getChartConfiguration() {

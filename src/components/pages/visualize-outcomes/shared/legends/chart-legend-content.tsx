@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Symbols } from 'recharts';
 import { type LegendLayout } from '@/lib/graphing/legend-settings';
+import { ROTATED_SQUARE_LEGEND_AREA, ROTATED_SQUARE_SHAPE } from '@/lib/graphing/series-style';
+
+// Recharts positions triangles by their centroid, which sits 8/√3 units below the box center at this legend size.
+const TRIANGLE_LEGEND_CY = 16 + 8 / Math.sqrt(3);
 
 type Props = {
   payload?: any[];
@@ -43,26 +47,23 @@ export function ChartLegendContent({ payload, layout = 'horizontal', align = 'ce
           }}
         >
           <svg
-            width={14}
-            height={14}
+            width={16}
+            height={16}
             viewBox="0 0 32 32"
             aria-label={`${entry.value} legend icon`}
-            style={{ display: 'inline-block', marginRight: 4 }}
+            style={{ display: 'inline-block', marginRight: 4, overflow: 'visible' }}
           >
-            {entry.kind === 'condition' ? (
-              <Symbols
-                type={entry.type}
-                cx={16}
-                cy={16}
-                size={32}
-                sizeType="diameter"
-                fill={entry.color}
-                stroke="black"
-                strokeWidth={3}
-              />
-            ) : (
-              <Symbols type={entry.type} cx={16} cy={16} size={32} sizeType="diameter" fill={entry.color} />
-            )}
+            <Symbols
+              type={entry.type}
+              cx={16}
+              cy={entry.type === 'triangle' ? TRIANGLE_LEGEND_CY : 16}
+              {...(entry.type === ROTATED_SQUARE_SHAPE
+                ? { size: ROTATED_SQUARE_LEGEND_AREA, sizeType: 'area' as const }
+                : { size: 32, sizeType: 'diameter' as const })}
+              fill={entry.color}
+              shapeRendering="geometricPrecision"
+              {...(entry.kind === 'condition' ? { stroke: 'black', strokeWidth: 4 } : {})}
+            />
           </svg>
           <span className="recharts-legend-item-text" style={{ color: 'black' }}>
             {entry.value}

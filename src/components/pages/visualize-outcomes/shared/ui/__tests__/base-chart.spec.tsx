@@ -26,6 +26,7 @@ vi.mock('@/lib/graphing/chart-setup', async (importOriginal) => {
   return {
     getChartConfiguration: mockGetChartConfiguration,
     getChartVerticalSpacing: actual.getChartVerticalSpacing,
+    SERIES_RENDER_PROPS: actual.SERIES_RENDER_PROPS,
   };
 });
 
@@ -402,7 +403,7 @@ describe('BaseChart', () => {
     const item = document.querySelector('.recharts-legend-item')!;
     const marker = item.querySelector('svg path')!;
     expect(marker.getAttribute('stroke')).toBe('black');
-    expect(marker.getAttribute('stroke-width')).toBe('3');
+    expect(marker.getAttribute('stroke-width')).toBe('4');
     expect(getComputedStyle(marker).fill).toBe('rgb(255, 255, 255)');
     expect(getComputedStyle(item.querySelector('.recharts-legend-item-text')!).color).toBe('rgb(0, 0, 0)');
   });

@@ -1,8 +1,40 @@
-import { SymbolType } from 'recharts/types/util/types';
+import { Symbols } from 'recharts';
+import type { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 
 /** Marker borders are fixed and never user-editable */
 export const MARKER_BORDER_COLOR = 'black';
+
+/** Square rotated 45 degrees. Not part of recharts' built-in symbols, so it is registered below */
+export const ROTATED_SQUARE_SHAPE = 'rotatedSquare';
+
+/**
+ * Area passed to recharts for the rotated square in the legend. Diameter sizing treats unknown symbols as circles,
+ * which would push the diagonal past the 32-unit legend box, so this keeps the diagonal (about 30 units) inside it
+ */
+export const ROTATED_SQUARE_LEGEND_AREA = 450;
+
+/** Built-in recharts symbol or the custom rotated square */
+export type SeriesShape = SymbolType | typeof ROTATED_SQUARE_SHAPE;
+
+Symbols.registerSymbol(ROTATED_SQUARE_SHAPE, {
+  draw(context, size) {
+    // Diagonal half-length chosen so the area matches a square of the same size
+    const r = Math.sqrt(size / 2);
+    context.moveTo(0, -r);
+    context.lineTo(r, 0);
+    context.lineTo(0, r);
+    context.lineTo(-r, 0);
+    context.closePath();
+  },
+});
+
+/**
+ * Recharts resolves symbol names at runtime, including registered custom symbols, so the widened type is cast back here
+ */
+export function toSymbolType(shape: SeriesShape): SymbolType {
+  return shape as SymbolType;
+}
 
 /** Hides a key within a condition when used as its marker fill or line colour */
 export const TRANSPARENT_COLOR = 'transparent';
@@ -15,8 +47,8 @@ export function resolveMarkerStroke(fill: string) {
 }
 
 export type KeySeriesStyle = {
-  shape?: SymbolType;
-  shapes?: Record<string, SymbolType>;
+  shape?: SeriesShape;
+  shapes?: Record<string, SeriesShape>;
   fillColors?: Record<string, string>;
   lineColors?: Record<string, string>;
 };
@@ -142,7 +174,16 @@ export function isValidPhaseChange(value: unknown): value is PhaseChange {
   );
 }
 
-export const SERIES_SHAPES: SymbolType[] = ['circle', 'cross', 'diamond', 'square', 'star', 'triangle', 'wye'];
+export const SERIES_SHAPES: SeriesShape[] = [
+  'circle',
+  'cross',
+  'diamond',
+  'square',
+  ROTATED_SQUARE_SHAPE,
+  'star',
+  'triangle',
+  'wye',
+];
 
 /**
  * Checks a saved text annotation for a non-empty label, finite coordinates, and known anchor, justify, and weight values
@@ -213,7 +254,7 @@ export const DEFAULT_LINE_COLOR = 'black';
 /**
  * Resolves the marker shape for a key, falling back to the caller's default when no valid override is saved
  */
-export function resolveKeyShape(styles: SeriesStyles, keyDescription: string, defaultShape: SymbolType): SymbolType {
+export function resolveKeyShape(styles: SeriesStyles, keyDescription: string, defaultShape: SeriesShape): SeriesShape {
   const shape = styles.KeyStyles[keyDescription]?.shape;
 
   return shape && SERIES_SHAPES.includes(shape) ? shape : defaultShape;
@@ -227,8 +268,8 @@ export function resolveKeyConditionShape(
   styles: SeriesStyles,
   keyDescription: string,
   condition: string,
-  defaultShape: SymbolType,
-): SymbolType {
+  defaultShape: SeriesShape,
+): SeriesShape {
   const shape = styles.KeyStyles[keyDescription]?.shapes?.[condition];
 
   return shape && SERIES_SHAPES.includes(shape) ? shape : resolveKeyShape(styles, keyDescription, defaultShape);

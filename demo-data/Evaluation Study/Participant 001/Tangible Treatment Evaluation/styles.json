@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "seriesStyles": {
+    "KeyStyles": {
+      "FCR": {
+        "fillColors": {
+          "Tangible": "transparent",
+          "Baseline": "transparent",
+          "Intervention": "#14B694"
+        },
+        "shape": "wye",
+        "lineColors": {
+          "Tangible": "transparent",
+          "Baseline": "transparent"
+        }
+      },
+      "CTB": {
+        "shape": "circle",
+        "fillColors": {
+          "Tangible": "#000000",
+          "Intervention": "#FFFFFF",
+          "Baseline": "#000000"
+        }
+      }
+    },
+    "ConditionStyles": {},
+    "phase_changes": [
+      {
+        "position": 11.5,
+        "lineType": "solid"
+      }
+    ],
+    "text_annotations": [
+      {
+        "label": "Baseline",
+        "x": 4,
+        "y": 2,
+        "anchor": "middle-left",
+        "justify": "left",
+        "weight": "bold",
+        "page": "rate"
+      },
+      {
+        "label": "FC + EXT",
+        "x": 12,
+        "y": 2,
+        "anchor": "middle-left",
+        "justify": "left",
+        "weight": "bold",
+        "page": "rate"
+      }
+    ],
+    "aim_lines": [
+      {
+        "x1": 11.5,
+        "x2": 30,
+        "y": 0.4,
+        "lineType": "dotted",
+        "color": "#EB540A",
+        "page": "rate"
+      }
+    ]
+  },
+  "showTooltip": true,
+  "showConditionLegend": false,
+  "showKeyLegend": true,
+  "showDescription": true,
+  "plots": {
+    "Rate": {
+      "showTitle": true,
+      "connectSpans": false,
+      "figureLabels": {
+        "overrideTitle": true,
+        "titleText": "Tangible Treatment Evaluation",
+        "overrideXAxis": false,
+        "xAxisText": "",
+        "overrideYAxis": false,
+        "yAxisText": ""
+      },
+      "legendSettings": {
+        "position": "upper-right",
+        "layout": "vertical"
+      },
+      "fontFamily": "default",
+      "axisMax": {
+        "overrideXMax": true,
+        "xMax": 30,
+        "overrideYMax": true,
+        "yMax": 2
+      }
+    },
+    "Proportion": {
+      "showTitle": true,
+      "connectSpans": false,
+      "figureLabels": {
+        "overrideTitle": false,
+        "titleText": "",
+        "overrideXAxis": false,
+        "xAxisText": "",
+        "overrideYAxis": false,
+        "yAxisText": ""
+      },
+      "legendSettings": {
+        "position": "below",
+        "layout": "horizontal"
+      },
+      "fontFamily": "default",
+      "axisMax": {
+        "overrideXMax": false,
+        "xMax": null,
+        "overrideYMax": false,
+        "yMax": null
+      }
+    }
+  }
+}

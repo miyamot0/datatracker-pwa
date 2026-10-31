@@ -18,7 +18,7 @@ import { KeySetInstance } from '@/types/keyset/core';
 import { ExpandedSavedSessionResult } from '@/lib/dtos/session-results';
 import { CustomTooltipProps, PlotPoint } from '@/types/visuals';
 import { KeyManageType } from '@/types/timing';
-import { createChartLegends, generateTicks } from '@/lib/graphing/chart-setup';
+import { createChartLegends, generateTicks, SERIES_RENDER_PROPS } from '@/lib/graphing/chart-setup';
 import { AxisSpanLines } from '@/components/pages/visualize-outcomes/shared/annotations/axis-span-lines';
 import { ChartLegendContent } from '@/components/pages/visualize-outcomes/shared/legends/chart-legend-content';
 import {
@@ -29,6 +29,7 @@ import {
   resolveKeyFillColor,
   resolveLineColor,
   resolveMarkerStroke,
+  toSymbolType,
   type SeriesStyles,
 } from '@/lib/graphing/series-style';
 
@@ -202,15 +203,19 @@ export default function SessionFigure({ Session, PlotData, KeysHidden, SeriesSty
                   activeDot={false}
                   dataKey={`${key.KeyDescription}`}
                   stroke={resolveLineColor(SeriesStyles, key.KeyDescription, sessionCondition, DEFAULT_LINE_COLOR)}
+                  {...SERIES_RENDER_PROPS}
                 />
                 <Scatter
                   name={key.KeyDescription}
                   {...noAnimationProps}
+                  {...SERIES_RENDER_PROPS}
                   data={PlotData}
                   animationDuration={100}
                   dataKey={`${key.KeyDescription}`}
                   fill={sessionMarkerFill}
-                  shape={resolveKeyConditionShape(SeriesStyles, key.KeyDescription, sessionCondition, getShape(index))}
+                  shape={toSymbolType(
+                    resolveKeyConditionShape(SeriesStyles, key.KeyDescription, sessionCondition, getShape(index)),
+                  )}
                   stroke={resolveMarkerStroke(sessionMarkerFill)}
                 />
               </React.Fragment>

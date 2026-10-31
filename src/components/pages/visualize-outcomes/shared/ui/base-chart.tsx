@@ -13,7 +13,6 @@ import {
   ZAxis,
   ReferenceLine,
 } from 'recharts';
-import { SymbolType } from 'recharts/types/util/types';
 import { FIGURE_PATH_COLORS } from '@/lib/colors';
 import { getShape } from '@/lib/shapes';
 import { ChartLegendContent } from '@/components/pages/visualize-outcomes/shared/legends/chart-legend-content';
@@ -27,6 +26,8 @@ import {
   resolveKeyFillColor,
   resolveLineColor,
   resolveMarkerStroke,
+  toSymbolType,
+  type SeriesShape,
   type SeriesStyles,
   type TextPage,
   getPageTextAnnotations,
@@ -44,12 +45,8 @@ import {
   type FigureFontFamily,
 } from '@/lib/graphing/figure-text-settings';
 import { calculateSplitPoints } from '@/lib/graphing/data-preparation';
-import { getChartConfiguration, getChartVerticalSpacing } from '@/lib/graphing/chart-setup';
-import {
-  DEFAULT_LEGEND_SETTINGS,
-  LEGEND_CHART_POSITIONS,
-  type LegendSettings,
-} from '@/lib/graphing/legend-settings';
+import { getChartConfiguration, getChartVerticalSpacing, SERIES_RENDER_PROPS } from '@/lib/graphing/chart-setup';
+import { DEFAULT_LEGEND_SETTINGS, LEGEND_CHART_POSITIONS, type LegendSettings } from '@/lib/graphing/legend-settings';
 import { AxisSpanLines } from '../annotations/axis-span-lines';
 import { TextAnnotationsLayer } from '../annotations/text-annotations-layer';
 import { AimLinesLayer } from '../annotations/aim-lines-layer';
@@ -170,7 +167,7 @@ export function BaseChart({
           const lines = keySetFull
             .filter((key) => key.Visible === true)
             .map((key, index) => {
-              const shape: SymbolType = resolveKeyConditionShape(
+              const shape: SeriesShape = resolveKeyConditionShape(
                 seriesStyles,
                 key.KeyDescription,
                 condition.name,
@@ -191,6 +188,7 @@ export function BaseChart({
                   <React.Fragment key={`${index_main}-${index}`}>
                     <Line
                       {...noAnimationProps}
+                      {...SERIES_RENDER_PROPS}
                       connectNulls={false}
                       name={`${key.KeyDescription}-Points_`}
                       data={condition.data}
@@ -205,10 +203,11 @@ export function BaseChart({
                       name={key.KeyDescription}
                       data={condition.data}
                       {...noAnimationProps}
+                      {...SERIES_RENDER_PROPS}
                       onDoubleClick={onNavigate}
                       dataKey={`${key.KeyDescription}`}
                       fill={marker_fill}
-                      shape={shape}
+                      shape={toSymbolType(shape)}
                       stroke={marker_stroke}
                     />
                   </React.Fragment>
@@ -223,6 +222,7 @@ export function BaseChart({
                     <React.Fragment key={`${index_main}-${index}-${segment_index}`}>
                       <Line
                         {...noAnimationProps}
+                        {...SERIES_RENDER_PROPS}
                         connectNulls={false}
                         name={`${key.KeyDescription}-Points_`}
                         data={segment}
@@ -237,10 +237,11 @@ export function BaseChart({
                         name={key.KeyDescription}
                         data={segment}
                         {...noAnimationProps}
+                        {...SERIES_RENDER_PROPS}
                         onDoubleClick={onNavigate}
                         dataKey={`${key.KeyDescription}`}
                         fill={marker_fill}
-                        shape={shape}
+                        shape={toSymbolType(shape)}
                         stroke={marker_stroke}
                       />
                     </React.Fragment>
@@ -334,9 +335,9 @@ export function BaseChart({
           {...(legendPosition === undefined
             ? { wrapperStyle: { left: chartMargins.left + Y_AXIS_WIDTH, right: chartMargins.right, width: 'auto' } }
             : {
-              position: legendPosition,
-              wrapperStyle: { backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '2px 6px', borderRadius: 4 },
-            })}
+                position: legendPosition,
+                wrapperStyle: { backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '2px 6px', borderRadius: 4 },
+              })}
           layout={legendSettings.layout}
           content={() => (
             <ChartLegendContent

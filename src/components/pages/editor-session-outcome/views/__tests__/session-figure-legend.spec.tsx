@@ -54,7 +54,7 @@ describe('SessionFigure legend', () => {
     expect(condition.querySelector('.recharts-legend-item-text')!.textContent).toBe('Baseline');
     const conditionMarker = condition.querySelector('svg path')!;
     expect(getComputedStyle(conditionMarker).stroke).toBe('rgb(0, 0, 0)');
-    expect(getComputedStyle(conditionMarker).strokeWidth).toBe('3px');
+    expect(getComputedStyle(conditionMarker).strokeWidth).toBe('4px');
 
     expect(keys.map((item) => item.querySelector('.recharts-legend-item-text')!.textContent)).toEqual([
       'Hitting',

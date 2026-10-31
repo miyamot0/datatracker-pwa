@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "seriesStyles": {
+    "KeyStyles": {},
+    "ConditionStyles": {},
+    "phase_changes": [
+      {
+        "position": 12.5,
+        "lineType": "solid"
+      }
+    ],
+    "text_annotations": [
+      {
+        "label": "Baseline",
+        "x": 2,
+        "y": 8,
+        "anchor": "middle-left",
+        "justify": "left",
+        "weight": "bold",
+        "page": "rate"
+      },
+      {
+        "label": "Intervention",
+        "x": 13,
+        "y": 8,
+        "anchor": "middle-left",
+        "justify": "left",
+        "weight": "bold",
+        "page": "rate"
+      }
+    ],
+    "aim_lines": [
+      {
+        "x1": 12.5,
+        "x2": 30,
+        "y": 2,
+        "lineType": "dotted",
+        "color": "#EB540A",
+        "page": "rate"
+      }
+    ]
+  },
+  "showTooltip": true,
+  "showConditionLegend": true,
+  "showDescription": true,
+  "plots": {
+    "Rate": {
+      "showTitle": false,
+      "connectSpans": false,
+      "figureLabels": {
+        "overrideTitle": false,
+        "titleText": "",
+        "overrideXAxis": false,
+        "xAxisText": "",
+        "overrideYAxis": false,
+        "yAxisText": ""
+      },
+      "legendSettings": {
+        "position": "upper-right",
+        "layout": "horizontal"
+      },
+      "fontFamily": "timesNewRoman",
+      "axisMax": {
+        "overrideXMax": true,
+        "xMax": 30,
+        "overrideYMax": false,
+        "yMax": null
+      }
+    },
+    "Proportion": {
+      "showTitle": true,
+      "connectSpans": false,
+      "figureLabels": {
+        "overrideTitle": false,
+        "titleText": "",
+        "overrideXAxis": false,
+        "xAxisText": "",
+        "overrideYAxis": false,
+        "yAxisText": ""
+      },
+      "legendSettings": {
+        "position": "below",
+        "layout": "horizontal"
+      },
+      "fontFamily": "default",
+      "axisMax": {
+        "overrideXMax": false,
+        "xMax": null,
+        "overrideYMax": false,
+        "yMax": null
+      }
+    }
+  }
+}
