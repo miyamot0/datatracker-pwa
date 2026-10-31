@@ -36,6 +36,8 @@
   "showConditionLegend": true,
   "showKeyLegend": false,
   "showDescription": true,
+  "singleTarget": false,
+  "hiddenConditions": [],
   "plots": {
     "Rate": {
       "showTitle": false,
@@ -58,7 +60,9 @@
         "xMax": null,
         "overrideYMax": false,
         "yMax": null
-      }
+      },
+      "figureTextSize": "base",
+      "hiddenKeys": []
     },
     "Proportion": {
       "showTitle": true,
@@ -81,7 +85,9 @@
         "xMax": null,
         "overrideYMax": false,
         "yMax": null
-      }
+      },
+      "figureTextSize": "base",
+      "hiddenKeys": []
     }
   }
 }
