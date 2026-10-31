@@ -9,6 +9,11 @@ import { initializeSharedArrayBufferSupport } from '@/lib/shared-buffer.ts';
 import { startAnalyticsSync } from './lib/analytics/analytics-sync.ts';
 import { setupErrorTracking } from './lib/analytics/analytics-errors.ts';
 
+import { config } from 'zod';
+
+// Zod version 4.x uses eval for some reason, CSP no likey
+config({ jitless: true });
+
 if (import.meta.env.VITE_MODE !== 'island' && import.meta.env.PROD) {
   import('./config/pwa-registration').then(({ init }) => {
     init();
