@@ -36,33 +36,40 @@
   "showConditionLegend": true,
   "showKeyLegend": false,
   "showDescription": true,
-  "singleTarget": false,
+  "singleTarget": true,
   "hiddenConditions": [],
   "plots": {
     "Rate": {
-      "showTitle": false,
+      "showTitle": true,
       "connectSpans": true,
       "figureLabels": {
-        "overrideTitle": false,
-        "titleText": "",
+        "overrideTitle": true,
+        "titleText": "Functional Analysis",
         "overrideXAxis": false,
         "xAxisText": "",
-        "overrideYAxis": false,
-        "yAxisText": ""
+        "overrideYAxis": true,
+        "yAxisText": "Combined Target Behavior"
       },
       "legendSettings": {
-        "position": "upper-right",
+        "position": "mid-right",
         "layout": "vertical"
       },
       "fontFamily": "timesNewRoman",
       "axisMax": {
         "overrideXMax": false,
         "xMax": null,
-        "overrideYMax": false,
-        "yMax": null
+        "overrideYMax": true,
+        "yMax": 6
       },
       "figureTextSize": "base",
-      "hiddenKeys": []
+      "hiddenKeys": [
+        "SIB",
+        "DIS",
+        "AGG",
+        "Prompt",
+        "Compliance",
+        "Comply PCT"
+      ]
     },
     "Proportion": {
       "showTitle": true,

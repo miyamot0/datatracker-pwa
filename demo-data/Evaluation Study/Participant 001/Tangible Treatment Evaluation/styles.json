@@ -76,11 +76,11 @@
         "titleText": "Tangible Treatment Evaluation",
         "overrideXAxis": false,
         "xAxisText": "",
-        "overrideYAxis": false,
-        "yAxisText": ""
+        "overrideYAxis": true,
+        "yAxisText": "Combined Target Behavior (per min)"
       },
       "legendSettings": {
-        "position": "upper-right",
+        "position": "mid-right",
         "layout": "vertical"
       },
       "fontFamily": "default",
@@ -91,7 +91,14 @@
         "yMax": 2
       },
       "figureTextSize": "base",
-      "hiddenKeys": []
+      "hiddenKeys": [
+        "SIB",
+        "DIS",
+        "AGG",
+        "Prompt",
+        "Compliance",
+        "Comply PCT"
+      ]
     },
     "Proportion": {
       "showTitle": true,
