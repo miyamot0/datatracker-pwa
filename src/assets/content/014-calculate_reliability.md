@@ -79,4 +79,6 @@ All interactions with DataTracker are limited to a single data collector operati
 
 The DataTracker software can only calculate IOA when the necessary data is contained in the _relevant 'DataTracker' folder_. In the past, many have opted to directly copy-paste files directly from one computer to another (e.g., via some intranet storage). This remains an option for users versed in the software (and comfortable with associated risks), but the DataTracker software provides an option to identify a _second_ 'DataTracker' folder from which to push/pull files (e.g., a shared network folder).
 
-The built-in 'sync' functionality is recommended for most users and this is presented in the following section in greater detail. As a reminder, _no IOA can be computed until the required files are available on the current machine_. When corresponding pairs of session data are available, the software will compute _all_ IOA metrics without further input from the user.
+The built-in 'sync' functionality is recommended for most users and this is presented in the following section in greater detail. As a reminder, _no IOA can be computed until the required files are available on the current machine_. When corresponding pairs of session data are available, the software will compute _all_ IOA metrics without further input from the user. An example of the **Reliability Viewer** for a pair of sessions is displayed below:
+
+![Image of DataTracker reliability viewer](screenshots/reli_viewer_page.png 'Image of DataTracker reliability viewer')

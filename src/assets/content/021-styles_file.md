@@ -2,7 +2,7 @@
 title: Saving, Loading, and Deleting Style Files
 description: This entry explains how to write, read, and delete the styles.json file for an evaluation from the figure menu bar. It also describes what the file contains, how Undo works when reading a file, and how the file is handled by the File Sync Assistant.
 date: 10/28/2026
-keywords: 'styles.json, Saving Styles, Loading Styles, Deleting Styles'
+keywords: 'Saving Styles, Loading Styles, Deleting Styles'
 author: 'Shawn Gilroy'
 index: 21
 ---
@@ -59,4 +59,4 @@ When you rename a condition from the session history page, its styles follow it.
 
 ### Closing Notes and Tips
 
-A few tips are provided here to help with visualizing outcomes consistently across users and machines. First, write a style file after you finish styling a set of figures, so you have a copy you can save/restore/share. Second, sync that file to a remote backup or another machine to keep the styles consistent across environments. Third, on new machines, pull the relevant information for a case to your new *local* machine, including the relevant figure styles. Lastly, you can use **Read** styles on the new machine to ensure that the same look is applied to the evaluation figures.
+A few tips are provided here to help with visualizing outcomes consistently across users and machines. First, write a style file after you finish styling a set of figures, so you have a copy you can save/restore/share. Second, sync that file to a remote backup or another machine to keep the styles consistent across environments. Third, on new machines, pull the relevant information for a case to your new _local_ machine, including the relevant figure styles. Lastly, you can use **Read** styles on the new machine to ensure that the same look is applied to the evaluation figures.

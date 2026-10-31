@@ -17,6 +17,8 @@ The Rate and Proportion sections of an evaluation provide access to several ways
 
 Regardless of the control you use, changes only affect the visual representation of the figure and **do not alter the underlying session data**. Additional information on the style controls is provided in the sections below.
 
+![Image of the rate visualization page with the figure toolbar](screenshots/rate_visuals_page.png 'Image of the rate visualization page with the figure toolbar')
+
 #### Showing and Hiding Keys
 
 The **Keys** control allows you to choose which keys appear in the figure. Each key has a checkbox. You can uncheck a key to remove it from the chart and check it again to bring it back. As a reminder, keys labeled **(Derived)** are "keys" that are calculated from other keys rather than logged manually. The logic builder provided in the KeySet portion of the app can be used to create event types based on other manually logged keys, which then appears in this list like any other key.
@@ -25,11 +27,15 @@ The **Keys** control allows you to choose which keys appear in the figure. Each 
 
 As a reminder, keys that are flagged as 'hidden' will not appear in the figure nor in the styling dialog for individual series.
 
+![Image of the Display Keys menu](screenshots/figure_menu_display_keys.png 'Image of the Display Keys menu')
+
 #### Styling: Condition-wide Settings
 
 It is often the case that you want all series within a condition to share a common visual style, such as a common marker fill color (e.g., all markers in Baseline have black fill, all markers in Intervention have white fill). This helps quickly distinguish one condition from another in the figure. The program provides some simple defaults, but you may wish to override them to match your preferred color scheme or to emphasize certain conditions.
 
 Clicking the **Styles** control presents a dialog with various options for customizing the appearance of series in the figure. The top-most portion, labeled with a heading named **Conditions**, contains settings that apply to _all series within_ each condition. This section will include a **Marker Fill (**condition**)** for _each_ of the conditions included in the data set. Selecting the dropdown for a condition allows you to choose a color for all series within that condition.
+
+![Image of the series styles dialog](screenshots/series_styles_dialog.png 'Image of the series styles dialog')
 
 **Example:** Should you wish to have every marker in _Baseline_ to have a black fill, you would select **Marker Fill (Baseline)** and set it to black. Every key's marker in _Baseline_ is now black, unless you override a specific key (see the next section). Line colors do not change at the condition level, because lines stay black by default, unless these are changed at the individual series level. This is described in the sections below.
 
@@ -54,6 +60,8 @@ There are various combinations of styles available to users, and in conditions w
 #### Phase Lines, Aim Lines, and Text Annotations
 
 Phase change lines, aim lines, and text annotations are not part of series styling, so they are documented separately in [Annotating Figures with Phase Lines, Aim Lines, and Text](/documentation/019-figure_annotations). That entry covers how to add and edit each type, how aim lines and text are scoped to the rate or proportion page, and how these annotations are saved.
+
+![Image of the Annotations submenu](screenshots/figure_menu_annotations.png 'Image of the Annotations submenu')
 
 ### Closing Notes and Tips
 

@@ -23,6 +23,8 @@ Although ending on "Total Time" and "Timer #1 Time" are essentially synonymous i
 
 When in doubt, it is recommended to end session based on "Timer #1" so that either Timer #2 or Timer #3 can be used as a 'Pause' timer in the software.
 
+![Image of DataTracker recording with Timer #1 active](screenshots/session_recorder_in_progress.png 'Image of DataTracker recording with Timer #1 active')
+
 #### Example 2. 'Comparative' Timing (e.g., multiple schedules)
 
 It is often helpful to compare responding across contexts that may take place at certain times during a session. In the case of multiple schedules, clinicians may wish to examine rates of individual behavior when in the presence (i.e., availability of reinforcement; Timer #1) and the absence of stimuli signaling the availability of programmed reinforcement (i.e., non-availability of reinforcement; Timer #2).
@@ -30,6 +32,8 @@ It is often helpful to compare responding across contexts that may take place at
 In this arrangement, both Timer #1 and Timer #2 would count toward a _shared_ session limit (e.g., 600s), with each contributing toward that _total_ session duration. The criteria for ending this type of session would require the "End on Total Time" setting, since the procedure would entail some varying amounts of Timer #1/#2 time but an overall common total session duration.
 
 The DataTracker software supports comparative timing situations in a few ways. First, if the ability to 'pause' isn't especially critical, it would be easiest to maintain the 'End on Total Time' setting to maintain the uniform session length. Alternatively, if there is a goal of maintaining a 'pause' timer that does not count toward the final calculations, it may be simpler to base the session termination criteria on Timer #1 (e.g., 30s S-delta from 600s = 570s ending for Timer #1). This has the benefit of maintaining the ability to record and quantify behavior on each of the schedules provided (e.g., calculations of rate, proportion of session).
+
+![Image of DataTracker recording after switching to Timer #2](screenshots/session_recorder_timer_two.png 'Image of DataTracker recording after switching to Timer #2')
 
 #### Other Notes
 

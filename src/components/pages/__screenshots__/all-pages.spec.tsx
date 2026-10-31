@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { render } from 'vitest-browser-react';
-import { page } from 'vitest/browser';
-import { vi, describe, it } from 'vitest';
+import { page, userEvent } from 'vitest/browser';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import EvaluationsPage from '../dashboard-evaluations/evaluations-page';
 import PageWrapper from '@/components/elements/page-wrapper';
 import { ThemeProvider } from '@/components/ui/theme-provider';
@@ -38,6 +38,8 @@ import { generateTicks } from '@/lib/graphing/chart-setup';
 import { getCorrespondingSessionPairs } from '@/lib/reli';
 import { filterSessionsByPrimaryRole } from '@/lib/graphing/session-filters';
 import demandTreatmentKeysetJson from '../../../../demo-data/Evaluation Study/Participant 001/FC Treatment Evaluation.json';
+import demandTreatmentStylesJson from '../../../../demo-data/Evaluation Study/Participant 001/Demand Treatment Evaluation/styles.json';
+import { applyStylesFile, parseStylesFile } from '@/lib/styles-file';
 import { DiagnosticsPage } from '../diagnostics/diagnostics-page';
 import { RouteErrorView } from '../error/route-error-view';
 import ReliabilityBlank from '../summary-agreement/views/reli-blank';
@@ -54,6 +56,8 @@ import { AimLinesDialog } from '../visualize-outcomes/shared/dialogs/aim-lines-d
 import { PhaseChangesDialog } from '../visualize-outcomes/shared/dialogs/phase-changes-dialog';
 import { DEFAULT_LEGEND_SETTINGS } from '@/lib/graphing/legend-settings';
 import { EMPTY_SERIES_STYLES } from '@/lib/graphing/series-style';
+import { EMPTY_FIGURE_LABEL_SETTINGS } from '@/lib/graphing/figure-labels';
+import { EMPTY_FIGURE_AXIS_MAX_SETTINGS } from '@/lib/graphing/figure-text-settings';
 
 const demandTreatmentSessionModules = {
   ...import.meta.glob(
@@ -599,20 +603,36 @@ const demandTreatmentSessions = Object.entries(demandTreatmentSessionModules)
     return hydrateImportedSession(filename, session as ImportedSessionResult, demandTreatmentKeyset);
   });
 
+// The demo evaluation's styles.json drives the figures so screenshots look like a styled, reviewed evaluation
+const demandTreatmentStyles = parseStylesFile(JSON.stringify(demandTreatmentStylesJson));
+const demandTreatmentRateStyles = demandTreatmentStyles.plots?.Rate ?? {};
+const demandTreatmentRateHiddenKeys = demandTreatmentRateStyles.hiddenKeys ?? [];
+const demandTreatmentSeriesStyles = demandTreatmentStyles.seriesStyles ?? EMPTY_SERIES_STYLES;
+const demandTreatmentRateLabels = demandTreatmentRateStyles.figureLabels ?? EMPTY_FIGURE_LABEL_SETTINGS;
+const demandTreatmentRateAxisMax = demandTreatmentRateStyles.axisMax ?? EMPTY_FIGURE_AXIS_MAX_SETTINGS;
+const demandTreatmentRateLegend = demandTreatmentRateStyles.legendSettings ?? DEFAULT_LEGEND_SETTINGS;
+const demandTreatmentProportionHiddenKeys = demandTreatmentStyles.plots?.Proportion?.hiddenKeys ?? [];
+
+beforeEach(() => {
+  applyStylesFile('Evaluation Study', 'Participant 001', 'Demand Treatment Evaluation', demandTreatmentStyles, {
+    replace: true,
+  });
+});
+
 const demandTreatmentRateShowKeys: import('@/types/visuals').ToggleDisplayKey[] = [
   ...demandTreatmentKeyset.FrequencyKeys.filter((key) =>
     ['AGG', 'DIS', 'FCR', 'Prompt'].includes(key.KeyDescription),
   ).map((key) => ({
     ...key,
     KeyType: 'Observed' as const,
-    Visible: true,
+    Visible: !demandTreatmentRateHiddenKeys.includes(key.KeyDescription),
   })),
   ...demandTreatmentKeyset.DerivedKeys.filter((key) => ['CTB'].includes(key.name)).map((key, index) => ({
     KeyName: key.name,
     KeyDescription: key.name,
     KeyCode: 1000 + index,
     KeyType: 'Derived' as const,
-    Visible: true,
+    Visible: !demandTreatmentRateHiddenKeys.includes(key.name),
   })),
 ];
 
@@ -620,7 +640,7 @@ const demandTreatmentProportionShowKeys: import('@/types/visuals').ToggleDisplay
   demandTreatmentKeyset.DurationKeys.filter((key) => ['SR', 'Tantrum'].includes(key.KeyDescription)).map((key) => ({
     ...key,
     KeyType: 'Observed' as const,
-    Visible: true,
+    Visible: !demandTreatmentProportionHiddenKeys.includes(key.KeyDescription),
   }));
 
 const demandTreatmentTimerMapping: import('@/types/schedules').ScoringOptionsMapType = {
@@ -1141,6 +1161,7 @@ describe('SessionViewerContent', () => {
     );
 
     await page.viewport(1295, 2050);
+    await waitForChart();
     await page.screenshot({ path: '../../../../public/screenshots/session_viewer_content_page.png' });
   });
 });
@@ -1366,6 +1387,7 @@ describe('ResultsRateVisualsPage', () => {
     );
 
     await page.viewport(1295, 1150);
+    await waitForChart();
     await page.screenshot({ path: '../../../../public/screenshots/rate_visuals_page.png' });
   });
 });
@@ -1418,11 +1440,17 @@ describe('ResultsProportionVisualsPage', () => {
     );
 
     await page.viewport(1295, 1150);
+    await waitForChart();
     await page.screenshot({ path: '../../../../public/screenshots/proportion_visuals_page.png' });
   });
 });
 
 const settleDialogAnimation = () => new Promise((resolve) => setTimeout(resolve, 400));
+
+const waitForChart = async () => {
+  await expect.poll(() => document.querySelector('.recharts-surface')).not.toBeNull();
+  await settleDialogAnimation();
+};
 
 const demandTreatmentConditions = ['Baseline', 'Intervention'];
 
@@ -1580,16 +1608,9 @@ describe('TitleDialog', () => {
       renderOverRateVisuals(
         <TitleDialog
           page="rate"
-          labels={{
-            overrideTitle: false,
-            titleText: '',
-            overrideXAxis: false,
-            xAxisText: '',
-            overrideYAxis: false,
-            yAxisText: '',
-          }}
+          labels={demandTreatmentRateLabels}
           onChange={vi.fn()}
-          showTitle
+          showTitle={demandTreatmentRateStyles.showTitle ?? true}
           onShowTitleChange={vi.fn()}
           open
           onOpenChange={vi.fn()}
@@ -1609,14 +1630,7 @@ describe('AxisLabelsDialog', () => {
       renderOverRateVisuals(
         <AxisLabelsDialog
           page="rate"
-          labels={{
-            overrideTitle: false,
-            titleText: '',
-            overrideXAxis: false,
-            xAxisText: '',
-            overrideYAxis: false,
-            yAxisText: '',
-          }}
+          labels={demandTreatmentRateLabels}
           onChange={vi.fn()}
           open
           onOpenChange={vi.fn()}
@@ -1636,7 +1650,7 @@ describe('AxisLimitsDialog', () => {
       renderOverRateVisuals(
         <AxisLimitsDialog
           page="rate"
-          axisMax={{ overrideXMax: false, xMax: null, overrideYMax: false, yMax: null }}
+          axisMax={demandTreatmentRateAxisMax}
           onAxisMaxChange={vi.fn()}
           open
           onOpenChange={vi.fn()}
@@ -1655,11 +1669,11 @@ describe('LegendDialog', () => {
     render(
       renderOverRateVisuals(
         <LegendDialog
-          settings={DEFAULT_LEGEND_SETTINGS}
+          settings={demandTreatmentRateLegend}
           onChange={vi.fn()}
-          showConditionLegend
+          showConditionLegend={demandTreatmentStyles.showConditionLegend ?? true}
           onShowConditionLegendChange={vi.fn()}
-          showKeyLegend
+          showKeyLegend={demandTreatmentStyles.showKeyLegend ?? true}
           onShowKeyLegendChange={vi.fn()}
           open
           onOpenChange={vi.fn()}
@@ -1681,7 +1695,7 @@ describe('SeriesStylesDialog', () => {
           keys={demandTreatmentRateShowKeys}
           conditions={demandTreatmentConditions}
           visibleConditions={demandTreatmentConditions}
-          styles={EMPTY_SERIES_STYLES}
+          styles={demandTreatmentSeriesStyles}
           onChange={vi.fn()}
           open
           onOpenChange={vi.fn()}
@@ -1700,7 +1714,7 @@ describe('TextAnnotationsDialog', () => {
     render(
       renderOverRateVisuals(
         <TextAnnotationsDialog
-          styles={EMPTY_SERIES_STYLES}
+          styles={demandTreatmentSeriesStyles}
           page="rate"
           onChange={vi.fn()}
           open
@@ -1720,13 +1734,7 @@ describe('AimLinesDialog', () => {
     render(
       renderOverRateVisuals(
         <AimLinesDialog
-          styles={{
-            ...EMPTY_SERIES_STYLES,
-            aim_lines: [
-              { x1: 2, x2: 21, y: 2, lineType: 'solid', color: '#dc2626', page: 'rate' },
-              { x1: 13, x2: 21, y: 4, lineType: 'dashed', color: '#2563eb', page: 'rate' },
-            ],
-          }}
+          styles={demandTreatmentSeriesStyles}
           page="rate"
           onChange={vi.fn()}
           open
@@ -1746,7 +1754,7 @@ describe('PhaseChangesDialog', () => {
     render(
       renderOverRateVisuals(
         <PhaseChangesDialog
-          styles={EMPTY_SERIES_STYLES}
+          styles={demandTreatmentSeriesStyles}
           onChange={vi.fn()}
           open
           onOpenChange={vi.fn()}
@@ -1757,5 +1765,141 @@ describe('PhaseChangesDialog', () => {
     await page.viewport(1295, 1150);
     await settleDialogAnimation();
     await page.screenshot({ path: '../../../../public/screenshots/phase_changes_dialog.png' });
+  });
+});
+
+// ----- Interactive captures (menus and in-progress states) -----
+
+const captureMenuOverRateVisuals = async (menus: string[], fileName: string) => {
+  render(captureProviders(demandTreatmentRateVisuals));
+
+  await page.viewport(1295, 890);
+  await waitForChart();
+
+  for (const menu of menus) {
+    await page.getByRole('menuitem', { name: menu }).click();
+  }
+
+  await settleDialogAnimation();
+  await page.screenshot({ path: `../../../../public/screenshots/${fileName}.png` });
+};
+
+describe('Figure menus', () => {
+  it('captures the Display Keys menu', async () => {
+    await captureMenuOverRateVisuals(['Data Display', 'Display Keys'], 'figure_menu_display_keys');
+  });
+
+  it('captures the Aesthetics menu with Axes expanded', async () => {
+    await captureMenuOverRateVisuals(['Aesthetics', 'Axes'], 'figure_menu_aesthetics');
+  });
+
+  it('captures the Annotations submenu', async () => {
+    await captureMenuOverRateVisuals(['Aesthetics', 'Annotations'], 'figure_menu_annotations');
+  });
+
+  it('captures the Figure Output menu', async () => {
+    await captureMenuOverRateVisuals(['File', 'Figure Output'], 'figure_menu_export');
+  });
+});
+
+describe('SessionDesigner (termination options)', () => {
+  it('captures the open termination dropdown', async () => {
+    const mockHandle = {} as FileSystemDirectoryHandle;
+
+    render(
+      captureProviders(
+        <PageWrapper
+          Settings={DEFAULT_APPLICATION_SETTINGS}
+          breadcrumbs={[
+            { label: 'Study Trial A', to: '/session/$group' },
+            { label: 'Participant 001', to: '/session/$group/$individual' },
+            { label: 'Functional Analysis', to: '/session/$group/$individual/$evaluation' },
+          ]}
+          label="Session Designer"
+        >
+          <SessionDesigner
+            Group="Study Trial A"
+            Individual="Participant 001"
+            Evaluation="Functional Analysis"
+            Conditions={['Baseline', 'Attention', 'Demand', 'Alone']}
+            Keysets={[mockKeyset]}
+            SessionSettings={mockSessionSettings}
+            Settings={DEFAULT_APPLICATION_SETTINGS}
+            Handle={mockHandle}
+          />
+        </PageWrapper>,
+      ),
+    );
+
+    await page.viewport(1295, 1475);
+    await page.getByRole('combobox').last().click();
+    await settleDialogAnimation();
+    await page.screenshot({ path: '../../../../public/screenshots/session_designer_termination.png' });
+  });
+});
+
+describe('SessionRecorderPage (in progress)', () => {
+  const renderRecorder = () =>
+    render(
+      captureProviders(
+        <PageWrapper
+          Settings={DEFAULT_APPLICATION_SETTINGS}
+          breadcrumbs={[
+            { label: 'Study Trial A', to: '/session/$group' },
+            { label: 'Participant 001', to: '/session/$group/$individual' },
+            { label: 'Functional Analysis', to: '/session/$group/$individual/$evaluation' },
+          ]}
+          label="Session Recorder"
+        >
+          <SessionRecorderPage
+            Group="Study Trial A"
+            Individual="Participant 001"
+            Evaluation="Functional Analysis"
+            KeySetObject={mockKeyset}
+            SessionParams={mockSessionSettings}
+            Handle={{} as FileSystemDirectoryHandle}
+            ApplicationSettings={DEFAULT_APPLICATION_SETTINGS}
+          />
+        </PageWrapper>,
+      ),
+    );
+
+  const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  it('captures recording on Timer #1 with running counts', async () => {
+    renderRecorder();
+    await page.viewport(1295, 900);
+
+    await userEvent.keyboard('{Enter}');
+    await wait(1200);
+    await userEvent.keyboard('a');
+    await userEvent.keyboard('a');
+    await userEvent.keyboard('s');
+    await wait(1500);
+    await page.screenshot({ path: '../../../../public/screenshots/session_recorder_in_progress.png' });
+  });
+
+  it('captures recording after switching to Timer #2', async () => {
+    renderRecorder();
+    await page.viewport(1295, 900);
+
+    await userEvent.keyboard('{Enter}');
+    await wait(1500);
+    await userEvent.keyboard('x');
+    await userEvent.keyboard('d');
+    await wait(1500);
+    await page.screenshot({ path: '../../../../public/screenshots/session_recorder_timer_two.png' });
+  });
+
+  it('captures the end-of-session prompt', async () => {
+    renderRecorder();
+    await page.viewport(1295, 900);
+
+    await userEvent.keyboard('{Enter}');
+    await wait(1200);
+    await userEvent.keyboard('a');
+    await userEvent.keyboard('{Escape}');
+    await settleDialogAnimation();
+    await page.screenshot({ path: '../../../../public/screenshots/session_recorder_end_prompt.png' });
   });
 });

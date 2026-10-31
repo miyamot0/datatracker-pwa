@@ -1,4 +1,4 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-98.94_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-95.97_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-99.57_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-98.85_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-95.54_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-99.33_Percent-green>)
 
 ![Static Badge Version](https://img.shields.io/badge/Version-0.5.16-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
@@ -37,19 +37,19 @@ Features include the following:
 
 ### Changelog
 
-#### 0.5.16 (2026-06-30):
+#### 0.5.16 (2026-10-30):
 
 - Experimental release of visual editor for data
 - Updates to React 19, bumps for deps
 - Streamlined loading and sync fixes for races/global state quirks
 
-#### 0.5.15 (2026-06-27):
+#### 0.5.15 (2026-10-27):
 
 - Round out visual package (i.e., annotations)
 - Improvements to error reporting
 - Expansion of source coverage (nearly all components)
 
-#### 0.5.14 (2026-06-26):
+#### 0.5.14 (2026-10-26):
 
 - Updates to series styling and figure customization options
 - Changes to persistence of series styling settings across sessions
