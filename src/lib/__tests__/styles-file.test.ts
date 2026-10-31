@@ -140,7 +140,7 @@ describe('styles file round trip', () => {
 
 describe('parseStylesFile validation messages', () => {
   it('rejects each wrongly typed top-level flag', () => {
-    for (const key of ['showConditionLegend', 'showDescription']) {
+    for (const key of ['showConditionLegend', 'showKeyLegend', 'showDescription']) {
       expect(() => parseStylesFile(`{"version":1,"${key}":"yes"}`)).toThrow(`${key} must be true or false`);
     }
   });
@@ -179,6 +179,7 @@ describe('parseStylesFile validation messages', () => {
       version: 1,
       showTooltip: true,
       showConditionLegend: false,
+      showKeyLegend: true,
       showDescription: true,
       seriesStyles: { KeyStyles: {}, ConditionStyles: {}, phase_changes: [], text_annotations: [], aim_lines: [] },
       plots: {
@@ -244,12 +245,14 @@ describe('applyStylesFile branches', () => {
       version: 1,
       showTooltip: false,
       showConditionLegend: true,
+      showKeyLegend: false,
       showDescription: false,
     } as StylesFile);
 
     const built = buildStylesFile('G', 'I', 'E');
     expect(built.showTooltip).toBe(false);
     expect(built.showConditionLegend).toBe(true);
+    expect(built.showKeyLegend).toBe(false);
     expect(built.showDescription).toBe(false);
   });
 

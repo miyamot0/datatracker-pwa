@@ -8,6 +8,7 @@ import {
   getLocalSeriesStyles,
   getLocalShowConditionLegend,
   getLocalShowDescription,
+  getLocalShowKeyLegend,
   getLocalShowTitle,
   getLocalShowTooltip,
   setLocalCachedPrefs,
@@ -19,6 +20,7 @@ import {
   setLocalSeriesStyles,
   setLocalShowConditionLegend,
   setLocalShowDescription,
+  setLocalShowKeyLegend,
   setLocalShowTitle,
   setLocalShowTooltip,
 } from '@/lib/local_storage';
@@ -51,6 +53,7 @@ export function readPersistedVisualsSettings(
     showTitle: getLocalShowTitle(group, individual, evaluation, plot),
     showTooltip: getLocalShowTooltip(group, individual, evaluation),
     showConditionLegend: getLocalShowConditionLegend(group, individual, evaluation),
+    showKeyLegend: getLocalShowKeyLegend(group, individual, evaluation),
     showDescription: getLocalShowDescription(group, individual, evaluation),
     figureLabels: getLocalFigureLabels(group, individual, evaluation, plot),
     legendSettings: getLocalLegendSettings(group, individual, evaluation, plot),
@@ -101,6 +104,7 @@ export function useVisualsSettings(options: VisualsSettingsOptions) {
   usePersistOnChange(state.showConditionLegend, (show) =>
     setLocalShowConditionLegend(group, individual, evaluation, show),
   );
+  usePersistOnChange(state.showKeyLegend, (show) => setLocalShowKeyLegend(group, individual, evaluation, show));
   usePersistOnChange(state.showDescription, (show) => setLocalShowDescription(group, individual, evaluation, show));
   usePersistOnChange(state.figureLabels, (labels) => setLocalFigureLabels(group, individual, evaluation, plot, labels));
   usePersistOnChange(state.legendSettings, (settings) =>

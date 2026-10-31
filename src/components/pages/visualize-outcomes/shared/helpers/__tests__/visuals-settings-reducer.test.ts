@@ -21,6 +21,7 @@ function makeState(overrides: Partial<VisualsSettingsState> = {}): VisualsSettin
     showTitle: true,
     showTooltip: true,
     showConditionLegend: true,
+    showKeyLegend: true,
     showDescription: true,
     figureLabels: EMPTY_FIGURE_LABEL_SETTINGS,
     legendSettings: DEFAULT_LEGEND_SETTINGS,
@@ -109,6 +110,7 @@ describe('visualsSettingsReducer', () => {
     expect(visualsSettingsReducer(state, { type: 'showConditionLegendChanged', show: false }).showConditionLegend).toBe(
       false,
     );
+    expect(visualsSettingsReducer(state, { type: 'showKeyLegendChanged', show: false }).showKeyLegend).toBe(false);
     expect(visualsSettingsReducer(state, { type: 'showDescriptionChanged', show: false }).showDescription).toBe(false);
   });
 

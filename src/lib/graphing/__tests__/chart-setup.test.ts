@@ -145,12 +145,14 @@ describe('chart-setup', () => {
 
       expect(result[3]).toEqual({
         id: 'Key1',
+        kind: 'key',
         type: 'circle',
         value: 'Key1',
         color: 'black',
       });
       expect(result[4]).toEqual({
         id: 'Key3',
+        kind: 'key',
         type: 'cross',
         value: 'Key3',
         color: 'black',
@@ -169,6 +171,7 @@ describe('chart-setup', () => {
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({
         id: 'Key1',
+        kind: 'key',
         type: 'circle',
         value: 'Key1',
         color: 'black',

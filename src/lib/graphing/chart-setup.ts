@@ -53,6 +53,7 @@ export function createChartLegends(
     .filter((key) => key.Visible === true)
     .map((item, index) => ({
       id: item.KeyDescription,
+      kind: 'key' as const,
       type: resolveKeyShape(seriesStyles, item.KeyDescription, getShape(index)),
       value: item.KeyDescription,
       color: MARKER_BORDER_COLOR,

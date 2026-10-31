@@ -1659,6 +1659,8 @@ describe('LegendDialog', () => {
           onChange={vi.fn()}
           showConditionLegend
           onShowConditionLegendChange={vi.fn()}
+          showKeyLegend
+          onShowKeyLegendChange={vi.fn()}
           open
           onOpenChange={vi.fn()}
         />,

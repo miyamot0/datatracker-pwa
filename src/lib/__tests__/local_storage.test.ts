@@ -8,11 +8,13 @@ import {
   getLocalShowTooltip,
   getLocalShowConditionLegend,
   getLocalShowDescription,
+  getLocalShowKeyLegend,
   ReturnLocalStorageCache,
   setLocalCachedPrefs,
   setLocalLegendSettings,
   setLocalShowConditionLegend,
   setLocalShowDescription,
+  setLocalShowKeyLegend,
   setLocalShowTooltip,
   setLocalConnectSpans,
   setLocalFigureLabels,
@@ -249,20 +251,25 @@ describe('LocalStorage Prefs', () => {
     it('defaults both to shown when nothing is saved', () => {
       expect(getLocalShowTooltip(group, individual, evaluation)).toBe(true);
       expect(getLocalShowConditionLegend(group, individual, evaluation)).toBe(true);
+      expect(getLocalShowKeyLegend(group, individual, evaluation)).toBe(true);
     });
 
     it('round-trips hidden values and restores them when turned back on', () => {
       setLocalShowTooltip(group, individual, evaluation, false);
       setLocalShowConditionLegend(group, individual, evaluation, false);
+      setLocalShowKeyLegend(group, individual, evaluation, false);
 
       expect(getLocalShowTooltip(group, individual, evaluation)).toBe(false);
       expect(getLocalShowConditionLegend(group, individual, evaluation)).toBe(false);
+      expect(getLocalShowKeyLegend(group, individual, evaluation)).toBe(false);
 
       setLocalShowTooltip(group, individual, evaluation, true);
       setLocalShowConditionLegend(group, individual, evaluation, true);
+      setLocalShowKeyLegend(group, individual, evaluation, true);
 
       expect(getLocalShowTooltip(group, individual, evaluation)).toBe(true);
       expect(getLocalShowConditionLegend(group, individual, evaluation)).toBe(true);
+      expect(getLocalShowKeyLegend(group, individual, evaluation)).toBe(true);
     });
   });
 

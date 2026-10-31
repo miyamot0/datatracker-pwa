@@ -85,6 +85,7 @@ type BaseChartProps = {
   showTitle?: boolean;
   showTooltip?: boolean;
   showConditionLegend?: boolean;
+  showKeyLegend?: boolean;
   legendSettings?: LegendSettings;
   xAxisLabel?: string;
   fontFamily?: FigureFontFamily;
@@ -110,6 +111,7 @@ export function BaseChart({
   showTitle = true,
   showTooltip = true,
   showConditionLegend = true,
+  showKeyLegend = true,
   legendSettings = DEFAULT_LEGEND_SETTINGS,
   xAxisLabel = 'Session',
   fontFamily = DEFAULT_FIGURE_FONT_FAMILY,
@@ -335,7 +337,10 @@ export function BaseChart({
             <ChartLegendContent
               layout={legendSettings.layout}
               align={legendPosition === undefined ? 'center' : 'start'}
-              payload={showConditionLegend ? legends : legends.filter((entry) => entry.kind !== 'condition')}
+              payload={legends.filter(
+                (entry) =>
+                  (entry.kind !== 'condition' || showConditionLegend) && (entry.kind !== 'key' || showKeyLegend),
+              )}
             />
           )}
         />

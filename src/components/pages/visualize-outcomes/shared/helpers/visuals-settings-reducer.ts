@@ -14,6 +14,7 @@ export type PersistedVisualsSettings = Pick<
   | 'showTitle'
   | 'showTooltip'
   | 'showConditionLegend'
+  | 'showKeyLegend'
   | 'showDescription'
   | 'figureLabels'
   | 'legendSettings'
@@ -31,6 +32,7 @@ export type VisualsSettingsState = {
   showTitle: boolean;
   showTooltip: boolean;
   showConditionLegend: boolean;
+  showKeyLegend: boolean;
   showDescription: boolean;
   figureLabels: FigureLabelSettings;
   legendSettings: LegendSettings;
@@ -48,6 +50,7 @@ export type VisualsSettingsAction =
   | { type: 'showTitleChanged'; show: boolean }
   | { type: 'showTooltipChanged'; show: boolean }
   | { type: 'showConditionLegendChanged'; show: boolean }
+  | { type: 'showKeyLegendChanged'; show: boolean }
   | { type: 'showDescriptionChanged'; show: boolean }
   | { type: 'figureLabelsChanged'; labels: FigureLabelSettings }
   | { type: 'legendSettingsChanged'; settings: LegendSettings }
@@ -90,6 +93,8 @@ export function visualsSettingsReducer(
       return { ...state, showTooltip: action.show };
     case 'showConditionLegendChanged':
       return { ...state, showConditionLegend: action.show };
+    case 'showKeyLegendChanged':
+      return { ...state, showKeyLegend: action.show };
     case 'showDescriptionChanged':
       return { ...state, showDescription: action.show };
     case 'figureLabelsChanged':

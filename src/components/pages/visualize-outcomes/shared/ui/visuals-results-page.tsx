@@ -261,6 +261,7 @@ export function VisualsResultsPage({
               ShowTitle={settings.showTitle}
               ShowTooltip={settings.showTooltip}
               ShowConditionLegend={settings.showConditionLegend}
+              ShowKeyLegend={settings.showKeyLegend}
               LegendSettings={settings.legendSettings}
               FigureLabels={settings.figureLabels}
               FontFamily={settings.fontFamily}

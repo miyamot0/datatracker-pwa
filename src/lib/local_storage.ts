@@ -192,6 +192,24 @@ export function setLocalShowConditionLegend(
 }
 
 /**
+ * Retrieve whether the key entries of the legend are shown for a Group/Individual/Evaluation. Defaults to shown.
+ */
+export function getLocalShowKeyLegend(Group: string, Individual: string, Evaluation: string) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ShowKeyLegend'].join('_');
+
+  return localStorage.getItem(dynamic_key) !== 'false';
+}
+
+/**
+ * Store whether the key entries of the legend are shown for a Group/Individual/Evaluation.
+ */
+export function setLocalShowKeyLegend(Group: string, Individual: string, Evaluation: string, ShowKeyLegend: boolean) {
+  const dynamic_key = [Group.trim(), Individual.trim(), Evaluation.trim(), 'ShowKeyLegend'].join('_');
+
+  localStorage.setItem(dynamic_key, String(ShowKeyLegend));
+}
+
+/**
  * Retrieve whether the explanation text above the figure is shown for a Group/Individual/Evaluation. Defaults to shown.
  */
 export function getLocalShowDescription(Group: string, Individual: string, Evaluation: string) {

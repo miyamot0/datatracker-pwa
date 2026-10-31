@@ -9,6 +9,7 @@ import {
   getLocalSeriesStyles,
   getLocalShowConditionLegend,
   getLocalShowDescription,
+  getLocalShowKeyLegend,
   getLocalShowTitle,
   getLocalShowTooltip,
   setLocalConnectSpans,
@@ -19,6 +20,7 @@ import {
   setLocalSeriesStyles,
   setLocalShowConditionLegend,
   setLocalShowDescription,
+  setLocalShowKeyLegend,
   setLocalShowTitle,
   setLocalShowTooltip,
 } from '@/lib/local_storage';
@@ -52,6 +54,7 @@ export type StylesFile = {
   seriesStyles?: SeriesStyles;
   showTooltip?: boolean;
   showConditionLegend?: boolean;
+  showKeyLegend?: boolean;
   showDescription?: boolean;
   plots?: Partial<Record<StylesPlot, StylesPlotSettings>>;
 };
@@ -75,7 +78,7 @@ export function parseStylesFile(text: string): StylesFile {
     throw new Error(`${RESERVED_STYLES_FILE_NAME} must be an object with version 1`);
   }
 
-  for (const key of ['showTooltip', 'showConditionLegend', 'showDescription'] as const) {
+  for (const key of ['showTooltip', 'showConditionLegend', 'showKeyLegend', 'showDescription'] as const) {
     if (parsed[key] !== undefined && typeof parsed[key] !== 'boolean') {
       throw new Error(`${key} must be true or false`);
     }
@@ -170,6 +173,7 @@ export function buildStylesFile(group: string, individual: string, evaluation: s
     seriesStyles: getLocalSeriesStyles(group, individual, evaluation),
     showTooltip: getLocalShowTooltip(group, individual, evaluation),
     showConditionLegend: getLocalShowConditionLegend(group, individual, evaluation),
+    showKeyLegend: getLocalShowKeyLegend(group, individual, evaluation),
     showDescription: getLocalShowDescription(group, individual, evaluation),
     plots,
   };
@@ -219,6 +223,10 @@ export function applyStylesFile(
 
   if (file.showConditionLegend !== undefined) {
     setLocalShowConditionLegend(group, individual, evaluation, file.showConditionLegend);
+  }
+
+  if (file.showKeyLegend !== undefined) {
+    setLocalShowKeyLegend(group, individual, evaluation, file.showKeyLegend);
   }
 
   if (file.showDescription !== undefined) {

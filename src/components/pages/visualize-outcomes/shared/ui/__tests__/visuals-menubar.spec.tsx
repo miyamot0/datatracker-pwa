@@ -31,6 +31,7 @@ function makeSettings(overrides: Partial<VisualsSettingsState> = {}): VisualsSet
     showTitle: true,
     showTooltip: true,
     showConditionLegend: true,
+    showKeyLegend: true,
     showDescription: true,
     figureLabels: EMPTY_FIGURE_LABEL_SETTINGS,
     fontFamily: 'default',
@@ -296,6 +297,16 @@ describe('VisualsMenubar', () => {
     await page.getByRole('checkbox', { name: 'Conditions in Legend' }).click();
 
     expect(dispatch).toHaveBeenLastCalledWith({ type: 'showConditionLegendChanged', show: false });
+  });
+
+  it('dispatches the key legend checkbox from the legend dialog', async () => {
+    const { dispatch } = renderMenubar();
+
+    await page.getByRole('menuitem', { name: 'Aesthetics' }).click();
+    await page.getByRole('menuitem', { name: 'Legend', exact: true }).click();
+    await page.getByRole('checkbox', { name: 'Keys in Legend' }).click();
+
+    expect(dispatch).toHaveBeenLastCalledWith({ type: 'showKeyLegendChanged', show: false });
   });
 
   it('dispatches an element magnification size from Aesthetics', async () => {

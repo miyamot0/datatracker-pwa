@@ -112,6 +112,7 @@ export function VisualsMenubar({
     legendSettings,
     showTooltip,
     showConditionLegend,
+    showKeyLegend,
     showDescription,
   } = settings;
   const [activeDialog, setActiveDialog] = useState<AnnotationDialog | null>(null);
@@ -123,6 +124,7 @@ export function VisualsMenubar({
   const onLegendSettingsChange = (next: LegendSettings) => dispatch({ type: 'legendSettingsChanged', settings: next });
   const onShowTitleChange = (show: boolean) => dispatch({ type: 'showTitleChanged', show });
   const onShowConditionLegendChange = (show: boolean) => dispatch({ type: 'showConditionLegendChanged', show });
+  const onShowKeyLegendChange = (show: boolean) => dispatch({ type: 'showKeyLegendChanged', show });
 
   return (
     <Menubar className="h-auto w-fit flex-wrap bg-card dark:[--accent:0_0%_40%] shadow-none">
@@ -429,6 +431,8 @@ export function VisualsMenubar({
             onChange={onLegendSettingsChange}
             showConditionLegend={showConditionLegend}
             onShowConditionLegendChange={onShowConditionLegendChange}
+            showKeyLegend={showKeyLegend}
+            onShowKeyLegendChange={onShowKeyLegendChange}
             open={activeDialog === 'legend'}
             onOpenChange={closeDialog}
           />
