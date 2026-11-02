@@ -21,11 +21,11 @@ This can be done on a fairly regular basis to ensure that all users have access 
 
 The option for syncing files is provided in the header of the program. This option cannot be accessed until the user has provided access to their main directory, and if access is not yet authorized, it will be 'greyed out' and cannot be selected. An illustration of this is provided below.
 
-![Image of DataTracker sync option](docs/sync_unauthorized.png 'Image of DataTracker sync option')
+![Image of DataTracker sync option](docs/sync_unauthorized.webp 'Image of DataTracker sync option')
 
 The option to sync files will be available once the user has provided access to their main directory. This is generally available once the program has been authorized to access to files in question. An illustration of this is provided below.
 
-![Image of DataTracker sync option](docs/sync_authorized.png 'Image of DataTracker sync option')
+![Image of DataTracker sync option](docs/sync_authorized.webp 'Image of DataTracker sync option')
 
 Once clicked, the "Sync" button will direct the user to the File Sync Interface that supports the migration and syncing of files to a secondary location.
 
@@ -33,13 +33,13 @@ Once clicked, the "Sync" button will direct the user to the File Sync Interface 
 
 The File Sync Interface provides a method for selecting a Remote Backup location and maintaining parity with that location (i.e., presence of similarly-named files). Like methods for authorizing core DataTracker folder (Local), this involves selecting and authorizing a separate location that the program can also access (Remote). Once each are authorized, the program compares files across _both_ locations and provides a list of files that can copied to the selected location. A visual of this interface, prior to authorizing the Remote location, is provided below.
 
-![Image of DataTracker sync screen with button auth](docs/sync_screen_folder_auth.png 'Visual of sync screen with button auth')
+![Image of DataTracker sync screen with button auth](docs/sync_screen_folder_auth.webp 'Visual of sync screen with button auth')
 
 ##### Moving File to the Remote Backup Location
 
 Upon providing access to the Remote Backup location, the program will provide a list of files that can be moved from the Local to the Remote location. Users can indicate which files should be moved and which should be left in place. As a general default, files copied to the Remote location are removed from the current page but are not deleted from the main DataTracker folder. An illustration of the interface for moving data _from_ the main location (Local) to the secondary (Remote) location is provided below.
 
-![Image of DataTracker sync screen with button auth](docs/sync_screen_folder_auth.png 'Visual of sync screen with button auth')
+![Image of DataTracker sync screen with button auth](docs/sync_screen_folder_auth.webp 'Visual of sync screen with button auth')
 
 Individual files can be selected for sync via the checkboxes provided and then synced by using the respective button for beginning the sync process.
 
@@ -47,7 +47,7 @@ Individual files can be selected for sync via the checkboxes provided and then s
 
 Alternatively, users can move files from the Remote location to the main DataTracker folder (Local). This is not the initial state for the File Sync Interface, but can be accessed by clicking the "FROM Remote" button at the top of the interface. This will change the interface to show files that are available in the Remote location and can be moved to the Local location. An illustration of this interface is provided below.
 
-![Image of DataTracker sync screen with button auth](docs/sync_screen_folders_list_from.png 'Visual of sync screen FROM remote')
+![Image of DataTracker sync screen with button auth](docs/sync_screen_folders_list_from.webp 'Visual of sync screen FROM remote')
 
 ### Option 2: Manual Copying of Folders/Files (Advanced)
 

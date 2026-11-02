@@ -17,7 +17,7 @@ The visualization page features a menu bar with a range of various controls that
 - **Axes**: A submenu with **Axis Labels** (overriding the X-Axis and Y-Axis labels) and **Axis Limits** (overriding the maximum tick on each axis).
 - **Legend**: Opens the dialog for the legend and relevant display settings.
 
-![Image of the Aesthetics menu with the Axes submenu open](screenshots/figure_menu_aesthetics.png 'Image of the Aesthetics menu with the Axes submenu open')
+![Image of the Aesthetics menu with the Axes submenu open](screenshots/figure_menu_aesthetics.webp 'Image of the Aesthetics menu with the Axes submenu open')
 
 Each dialog will apply changes as you make them, so the figure updates while the dialog is open. Click **Done** to close a dialog and review the changes.
 
@@ -31,7 +31,7 @@ The legend identifies each series and, when enabled, each condition in the figur
 
 Various settings are available and users can click **Reset to Defaults** to return Position to **Below Figure** and Layout to **Horizontal**. This button does not change the **Conditions in Legend** checkbox.
 
-![Image of the legend dialog](screenshots/legend_dialog.png 'Image of the legend dialog')
+![Image of the legend dialog](screenshots/legend_dialog.webp 'Image of the legend dialog')
 
 #### Title
 
@@ -44,7 +44,7 @@ The **Title** dialog controls the figure title. It includes the following fields
 
 Users may click **Reset to Defaults** to turn off the title override and clear its text. This button does not change the **Hide Title** checkbox. If the title is hidden and you want it back, uncheck **Hide Title** directly.
 
-![Image of the title dialog](screenshots/title_dialog.png 'Image of the title dialog')
+![Image of the title dialog](screenshots/title_dialog.webp 'Image of the title dialog')
 #### Axis Labels
 
 The **Axis Labels** dialog controls the **X-Axis** and **Y-Axis** labels. Each axis has the following fields:
@@ -55,7 +55,7 @@ The **Axis Labels** dialog controls the **X-Axis** and **Y-Axis** labels. Each a
 
 Users may click **Reset to Defaults** to turn off both axis label overrides and clear their text.
 
-![Image of the axis labels dialog](screenshots/axis_labels_dialog.png 'Image of the axis labels dialog')
+![Image of the axis labels dialog](screenshots/axis_labels_dialog.webp 'Image of the axis labels dialog')
 
 #### Axis Limits
 
@@ -66,12 +66,12 @@ The **Axis Limits** dialog lets users set the maximum tick on an axis. The data 
 
 The **Y-Axis Max** option is available for the rate figure. The proportion figure's Y-Axis always runs from 0 to 100. Users may click **Reset to Defaults** to turn off both overrides.
 
-![Image of the axis limits dialog](screenshots/axis_limits_dialog.png 'Image of the axis limits dialog')
+![Image of the axis limits dialog](screenshots/axis_limits_dialog.webp 'Image of the axis limits dialog')
 ### Exporting Figures
 
 Once the legend, title, and labels are set, the figure can be saved from the **File** menu. To keep these settings for later or for another machine, write them to a style file as described in [Saving, Loading, and Deleting Style Files](/documentation/021-styles_file). Click **File**, then **Figure Output**, and choose one of the two formats:
 
-![Image of the Figure Output menu](screenshots/figure_menu_export.png 'Image of the Figure Output menu')
+![Image of the Figure Output menu](screenshots/figure_menu_export.webp 'Image of the Figure Output menu')
 - **Save to SVG:** Saves the figure as a vector image. Lines, text, and the legend stay sharp at any size, so SVG is the better choice for a figure that will be resized, edited in a drawing program, or printed at a large size.
 - **Save to PNG:** Saves the figure as a raster image at twice its on-screen size, on a white background. PNG is the better choice for pasting into a document or presentation where a single bitmap is expected.
 

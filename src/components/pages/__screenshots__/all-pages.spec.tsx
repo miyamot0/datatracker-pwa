@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 import { render } from 'vitest-browser-react';
-import { page, userEvent } from 'vitest/browser';
+import { page, userEvent, commands } from 'vitest/browser';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import EvaluationsPage from '../dashboard-evaluations/evaluations-page';
 import PageWrapper from '@/components/elements/page-wrapper';
@@ -58,6 +58,14 @@ import { DEFAULT_LEGEND_SETTINGS } from '@/lib/graphing/legend-settings';
 import { EMPTY_SERIES_STYLES } from '@/lib/graphing/series-style';
 import { EMPTY_FIGURE_LABEL_SETTINGS } from '@/lib/graphing/figure-labels';
 import { EMPTY_FIGURE_AXIS_MAX_SETTINGS } from '@/lib/graphing/figure-text-settings';
+
+// Captured as PNG in-browser, then converted to public/screenshots/<name>.webp by the `saveWebp` command
+async function saveScreenshot(name: string) {
+  const base64 = await page.screenshot({ save: false });
+  await (commands as unknown as SaveWebpCommands).saveWebp(name, base64);
+}
+
+type SaveWebpCommands = { saveWebp: (name: string, base64Png: string) => Promise<void> };
 
 const demandTreatmentSessionModules = {
   ...import.meta.glob(
@@ -291,7 +299,7 @@ describe('EvaluationsPage', () => {
     );
 
     await page.viewport(1295, 825);
-    await page.screenshot({ path: '../../../../public/screenshots/evaluation_page.png' });
+    await saveScreenshot('evaluation_page');
   });
 });
 
@@ -320,7 +328,7 @@ describe('HomePage', () => {
     );
 
     await page.viewport(1295, 1000);
-    await page.screenshot({ path: '../../../../public/screenshots/home_page.png' });
+    await saveScreenshot('home_page');
   });
 });
 
@@ -349,7 +357,7 @@ describe('DocumentationListingPage', () => {
     );
 
     //await page.viewport( 1295, 1000 );
-    //await page.screenshot({ path: '../../../../public/screenshots/documentation_listing_page.png' },);
+    //await saveScreenshot('documentation_listing_page');
   });
 });
 
@@ -377,7 +385,7 @@ describe('DocumentationEntryPage', () => {
       </ThemeProvider>,
     );
 
-    //await page.screenshot({ path: '../../../../public/screenshots/documentation_entry_page.png' });
+    //await saveScreenshot('documentation_entry_page');
   });
 });
 
@@ -416,7 +424,7 @@ describe('AuthorizedDisplayContent', () => {
     );
 
     await page.viewport(1350, 850);
-    await page.screenshot({ path: '../../../../public/screenshots/groups_authorized_page.png' });
+    await saveScreenshot('groups_authorized_page');
   });
 });
 
@@ -445,7 +453,7 @@ describe('UnauthorizedDisplay', () => {
     );
 
     await page.viewport(1295, 650);
-    await page.screenshot({ path: '../../../../public/screenshots/groups_unauthorized_page.png' });
+    await saveScreenshot('groups_unauthorized_page');
   });
 });
 
@@ -485,7 +493,7 @@ describe('ClientsPage', () => {
     );
 
     await page.viewport(1295, 650);
-    await page.screenshot({ path: '../../../../public/screenshots/clients_page.png' });
+    await saveScreenshot('clients_page');
   });
 });
 
@@ -758,7 +766,7 @@ describe('ViewerEvaluationsPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots/viewer_evaluations_page.png' });
+    await saveScreenshot('viewer_evaluations_page');
   });
 });
 
@@ -810,7 +818,7 @@ describe('KeySetsPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots/keysets_page.png' });
+    await saveScreenshot('keysets_page');
   });
 });
 
@@ -864,7 +872,7 @@ describe('ViewerKeysetPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots/viewer_keyset_page.png' });
+    await saveScreenshot('viewer_keyset_page');
   });
 });
 
@@ -931,7 +939,7 @@ describe('DashboardHistoryPage', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots/dashboard_history_page.png' });
+    await saveScreenshot('dashboard_history_page');
   });
 });
 
@@ -962,7 +970,7 @@ describe('ViewSyncPage', () => {
     );
 
     await page.viewport(1295, 500);
-    await page.screenshot({ path: '../../../../public/screenshots/view_sync_page.png' });
+    await saveScreenshot('view_sync_page');
   });
 });
 
@@ -1006,7 +1014,7 @@ describe('KeySetEditor', () => {
     );
 
     await page.viewport(1295, 700);
-    await page.screenshot({ path: '../../../../public/screenshots/keyset_editor_page.png' });
+    await saveScreenshot('keyset_editor_page');
   });
 });
 
@@ -1054,7 +1062,7 @@ describe('SessionDesigner', () => {
     );
 
     await page.viewport(1295, 1475);
-    await page.screenshot({ path: '../../../../public/screenshots/session_designer_page.png' });
+    await saveScreenshot('session_designer_page');
   });
 });
 
@@ -1113,7 +1121,7 @@ describe('SessionManagerContent', () => {
       </ThemeProvider>,
     );
 
-    await page.screenshot({ path: '../../../../public/screenshots/session_manager_content_page.png' });
+    await saveScreenshot('session_manager_content_page');
   });
 });
 
@@ -1162,7 +1170,7 @@ describe('SessionViewerContent', () => {
 
     await page.viewport(1295, 2050);
     await waitForChart();
-    await page.screenshot({ path: '../../../../public/screenshots/session_viewer_content_page.png' });
+    await saveScreenshot('session_viewer_content_page');
   });
 });
 
@@ -1191,7 +1199,7 @@ describe('SettingsPage', () => {
     );
 
     await page.viewport(1295, 1000);
-    await page.screenshot({ path: '../../../../public/screenshots/settings_page.png' });
+    await saveScreenshot('settings_page');
   });
 });
 
@@ -1238,7 +1246,7 @@ describe('SessionRecorderPage', () => {
     );
 
     await page.viewport(1295, 900);
-    await page.screenshot({ path: '../../../../public/screenshots/session_recorder_page.png' });
+    await saveScreenshot('session_recorder_page');
   });
 });
 
@@ -1284,7 +1292,7 @@ describe('ReliabilityViewerPage', () => {
     );
 
     await page.viewport(1295, 800);
-    await page.screenshot({ path: '../../../../public/screenshots/reli_viewer_page.png' });
+    await saveScreenshot('reli_viewer_page');
   });
 });
 
@@ -1334,7 +1342,7 @@ describe('ResultsViewerContent', () => {
     );
 
     await page.viewport(1295, 1000);
-    await page.screenshot({ path: '../../../../public/screenshots/results_viewer_content_page.png' });
+    await saveScreenshot('results_viewer_content_page');
   });
 });
 
@@ -1388,7 +1396,7 @@ describe('ResultsRateVisualsPage', () => {
 
     await page.viewport(1295, 1150);
     await waitForChart();
-    await page.screenshot({ path: '../../../../public/screenshots/rate_visuals_page.png' });
+    await saveScreenshot('rate_visuals_page');
   });
 });
 
@@ -1441,7 +1449,7 @@ describe('ResultsProportionVisualsPage', () => {
 
     await page.viewport(1295, 1150);
     await waitForChart();
-    await page.screenshot({ path: '../../../../public/screenshots/proportion_visuals_page.png' });
+    await saveScreenshot('proportion_visuals_page');
   });
 });
 
@@ -1513,7 +1521,7 @@ describe('DiagnosticsPage', () => {
     render(captureProviders(<DiagnosticsPage />));
 
     await page.viewport(1295, 900);
-    await page.screenshot({ path: '../../../../public/screenshots/diagnostics_page.png' });
+    await saveScreenshot('diagnostics_page');
   });
 });
 
@@ -1534,7 +1542,7 @@ describe('RouteErrorView', () => {
     );
 
     await page.viewport(1295, 900);
-    await page.screenshot({ path: '../../../../public/screenshots/route_error_view.png' });
+    await saveScreenshot('route_error_view');
   });
 });
 
@@ -1543,7 +1551,7 @@ describe('ReliabilityBlank', () => {
     render(captureProviders(<ReliabilityBlank />));
 
     await page.viewport(1295, 900);
-    await page.screenshot({ path: '../../../../public/screenshots/reli_blank_page.png' });
+    await saveScreenshot('reli_blank_page');
   });
 });
 
@@ -1552,7 +1560,7 @@ describe('ResultsViewerBlank', () => {
     render(captureProviders(<ResultsViewerBlank />));
 
     await page.viewport(1295, 900);
-    await page.screenshot({ path: '../../../../public/screenshots/results_viewer_blank_page.png' });
+    await saveScreenshot('results_viewer_blank_page');
   });
 });
 
@@ -1574,7 +1582,7 @@ describe('ConfirmDialog', () => {
 
     await page.viewport(1295, 900);
     await settleDialogAnimation();
-    await page.screenshot({ path: '../../../../public/screenshots/confirm_dialog.png' });
+    await saveScreenshot('confirm_dialog');
   });
 });
 
@@ -1598,7 +1606,7 @@ describe('NameDialog', () => {
 
     await page.viewport(1295, 900);
     await settleDialogAnimation();
-    await page.screenshot({ path: '../../../../public/screenshots/name_dialog.png' });
+    await saveScreenshot('name_dialog');
   });
 });
 
@@ -1620,7 +1628,7 @@ describe('TitleDialog', () => {
 
     await page.viewport(1295, 1150);
     await settleDialogAnimation();
-    await page.screenshot({ path: '../../../../public/screenshots/title_dialog.png' });
+    await saveScreenshot('title_dialog');
   });
 });
 
@@ -1640,7 +1648,7 @@ describe('AxisLabelsDialog', () => {
 
     await page.viewport(1295, 1150);
     await settleDialogAnimation();
-    await page.screenshot({ path: '../../../../public/screenshots/axis_labels_dialog.png' });
+    await saveScreenshot('axis_labels_dialog');
   });
 });
 
@@ -1660,7 +1668,7 @@ describe('AxisLimitsDialog', () => {
 
     await page.viewport(1295, 1150);
     await settleDialogAnimation();
-    await page.screenshot({ path: '../../../../public/screenshots/axis_limits_dialog.png' });
+    await saveScreenshot('axis_limits_dialog');
   });
 });
 
@@ -1683,7 +1691,7 @@ describe('LegendDialog', () => {
 
     await page.viewport(1295, 1150);
     await settleDialogAnimation();
-    await page.screenshot({ path: '../../../../public/screenshots/legend_dialog.png' });
+    await saveScreenshot('legend_dialog');
   });
 });
 
@@ -1705,7 +1713,7 @@ describe('SeriesStylesDialog', () => {
 
     await page.viewport(1295, 1150);
     await settleDialogAnimation();
-    await page.screenshot({ path: '../../../../public/screenshots/series_styles_dialog.png' });
+    await saveScreenshot('series_styles_dialog');
   });
 });
 
@@ -1725,7 +1733,7 @@ describe('TextAnnotationsDialog', () => {
 
     await page.viewport(1295, 1150);
     await settleDialogAnimation();
-    await page.screenshot({ path: '../../../../public/screenshots/text_annotations_dialog.png' });
+    await saveScreenshot('text_annotations_dialog');
   });
 });
 
@@ -1745,7 +1753,7 @@ describe('AimLinesDialog', () => {
 
     await page.viewport(1295, 1150);
     await settleDialogAnimation();
-    await page.screenshot({ path: '../../../../public/screenshots/aim_lines_dialog.png' });
+    await saveScreenshot('aim_lines_dialog');
   });
 });
 
@@ -1764,7 +1772,7 @@ describe('PhaseChangesDialog', () => {
 
     await page.viewport(1295, 1150);
     await settleDialogAnimation();
-    await page.screenshot({ path: '../../../../public/screenshots/phase_changes_dialog.png' });
+    await saveScreenshot('phase_changes_dialog');
   });
 });
 
@@ -1781,7 +1789,7 @@ const captureMenuOverRateVisuals = async (menus: string[], fileName: string) => 
   }
 
   await settleDialogAnimation();
-  await page.screenshot({ path: `../../../../public/screenshots/${fileName}.png` });
+  await saveScreenshot(fileName);
 };
 
 describe('Figure menus', () => {
@@ -1834,7 +1842,7 @@ describe('SessionDesigner (termination options)', () => {
     await page.viewport(1295, 1475);
     await page.getByRole('combobox').last().click();
     await settleDialogAnimation();
-    await page.screenshot({ path: '../../../../public/screenshots/session_designer_termination.png' });
+    await saveScreenshot('session_designer_termination');
   });
 });
 
@@ -1876,7 +1884,7 @@ describe('SessionRecorderPage (in progress)', () => {
     await userEvent.keyboard('a');
     await userEvent.keyboard('s');
     await wait(1500);
-    await page.screenshot({ path: '../../../../public/screenshots/session_recorder_in_progress.png' });
+    await saveScreenshot('session_recorder_in_progress');
   });
 
   it('captures recording after switching to Timer #2', async () => {
@@ -1888,7 +1896,7 @@ describe('SessionRecorderPage (in progress)', () => {
     await userEvent.keyboard('x');
     await userEvent.keyboard('d');
     await wait(1500);
-    await page.screenshot({ path: '../../../../public/screenshots/session_recorder_timer_two.png' });
+    await saveScreenshot('session_recorder_timer_two');
   });
 
   it('captures the end-of-session prompt', async () => {
@@ -1900,6 +1908,6 @@ describe('SessionRecorderPage (in progress)', () => {
     await userEvent.keyboard('a');
     await userEvent.keyboard('{Escape}');
     await settleDialogAnimation();
-    await page.screenshot({ path: '../../../../public/screenshots/session_recorder_end_prompt.png' });
+    await saveScreenshot('session_recorder_end_prompt');
   });
 });

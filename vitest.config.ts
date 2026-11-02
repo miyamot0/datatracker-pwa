@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { CoverageV8Options } from 'vitest/node';
 import { loadEnv } from 'vite';
 import { prerenderDocsPlugin } from './scripts/plugins/prerender-docs.ts';
+import { saveWebp } from './scripts/commands/save-webp.ts';
 
 const componentProj: TestProjectConfiguration = {
   extends: false,
@@ -45,6 +46,10 @@ const screenshotProj: TestProjectConfiguration = {
     include: ['./src/components/pages/__screenshots__/**/*.spec.tsx'],
     exclude: [...configDefaults.exclude],
     name: 'screenshots',
+    browser: {
+      ...componentProj.test!.browser!,
+      commands: { saveWebp },
+    },
   },
 };
 

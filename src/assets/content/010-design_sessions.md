@@ -11,7 +11,7 @@ The **Session Designer** is a critical element of the DataTracker program. This 
 
 An illustration of a hypothetical session is displayed below:
 
-![Image of DataTracker session design page](screenshots/session_designer_page.png 'Image of DataTracker session design page')
+![Image of DataTracker session design page](screenshots/session_designer_page.webp 'Image of DataTracker session design page')
 
 ### Adding/Selection Evaluation Condition
 
@@ -45,7 +45,7 @@ For example, it may be necessary to distinguish between "time spent working" fro
 
 DataTracker allows for the use of various timers; with each timer providing flexibility in the customization of session termination rules. Generally, only a single 'primary' schedule is needed; however, specific clinical or research questions may require the use of multiple timers to provide comparable estimations across sessions (e.g., partialling out reinforcement or break time within a larger session). Various options are available for session termination, and these are discussed in more detail in the documentation section on Session Timers.
 
-![Image of DataTracker session termination options](screenshots/session_designer_termination.png 'Image of DataTracker session termination options')
+![Image of DataTracker session termination options](screenshots/session_designer_termination.webp 'Image of DataTracker session termination options')
 
 ### Session Numbering
 

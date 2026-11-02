@@ -81,4 +81,4 @@ The DataTracker software can only calculate IOA when the necessary data is conta
 
 The built-in 'sync' functionality is recommended for most users and this is presented in the following section in greater detail. As a reminder, _no IOA can be computed until the required files are available on the current machine_. When corresponding pairs of session data are available, the software will compute _all_ IOA metrics without further input from the user. An example of the **Reliability Viewer** for a pair of sessions is displayed below:
 
-![Image of DataTracker reliability viewer](screenshots/reli_viewer_page.png 'Image of DataTracker reliability viewer')
+![Image of DataTracker reliability viewer](screenshots/reli_viewer_page.webp 'Image of DataTracker reliability viewer')
