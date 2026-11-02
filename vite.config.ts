@@ -8,14 +8,13 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import csp from 'vite-plugin-csp-guard';
 import { deleteUnnecessaryPlugin } from './scripts/plugins/delete-unnecessary-files.ts';
-import { compressPNGPlugin } from './scripts/plugins/compress-png-files.ts';
 import { scrubIslandHtmlPlugin } from './scripts/plugins/scrub-island-html.ts';
 import { inlineWorkersPlugin } from './scripts/plugins/inline-workers.ts';
 import { prerenderDocsPlugin } from './scripts/plugins/prerender-docs.ts';
 
 const common_screenshot_params = {
   sizes: '1148x969',
-  type: 'image/png',
+  type: 'image/webp',
   form_factor: 'wide' as 'narrow' | 'wide',
 };
 
@@ -51,7 +50,6 @@ const basePlugins: PluginOption[] = [
   react(),
   tailwindcss(),
   prerenderDocsPlugin,
-  compressPNGPlugin,
   csp({
     dev: {
       run: false,
@@ -92,7 +90,7 @@ const basePlugins: PluginOption[] = [
     workbox: {
       disableDevLogs: true,
       globPatterns: ['**/*.{js,css,html,ico,png,svg,md,woff2}'],
-      globIgnores: ['**/*.map', 'sw.js', 'workbox-*.js', '/docs/*.png'],
+      globIgnores: ['**/*.map', 'sw.js', 'workbox-*.js', '/docs/*.webp'],
       cleanupOutdatedCaches: true,
       inlineWorkboxRuntime: true,
       sourcemap: false,
@@ -183,37 +181,37 @@ const basePlugins: PluginOption[] = [
       screenshots: [
         {
           ...common_screenshot_params,
-          src: 'screenshots/session_designer_page.png',
+          src: 'screenshots/session_designer_page.webp',
           label: 'View of Session Designer Page',
         },
         {
           ...common_screenshot_params,
-          src: 'screenshots/rate_visuals_page.png',
+          src: 'screenshots/rate_visuals_page.webp',
           label: 'Illustration of recorded data',
         },
         {
           ...common_screenshot_params,
-          src: 'screenshots/groups_authorized_page.png',
+          src: 'screenshots/groups_authorized_page.webp',
           label: 'View of Group Editor Page',
         },
         {
           ...common_screenshot_params,
-          src: 'screenshots/keyset_editor_page.png',
+          src: 'screenshots/keyset_editor_page.webp',
           label: 'View of Keyboard Editor Page',
         },
         {
           ...common_screenshot_params,
-          src: 'screenshots/home_page.png',
+          src: 'screenshots/home_page.webp',
           label: 'View of Landing Page',
         },
         {
           ...common_screenshot_params,
-          src: 'screenshots/session_recorder_page.png',
+          src: 'screenshots/session_recorder_page.webp',
           label: 'View of Session Recorder Page',
         },
         {
           ...common_screenshot_params,
-          src: 'screenshots/within_session_preview.png',
+          src: 'screenshots/within_session_preview.webp',
           label: 'View of Session Inspection Page',
         },
       ],
@@ -263,7 +261,7 @@ export default defineConfig(({ mode }) => {
       minify: true,
       outDir,
       rollupOptions: {
-        external: [/\.test\.(js|ts|tsx)$/, '**/__tests__/**/*', '**/*.test.{ts,tsx}', '/docs/*.png'],
+        external: [/\.test\.(js|ts|tsx)$/, '**/__tests__/**/*', '**/*.test.{ts,tsx}', '/docs/*.webp'],
       },
     },
   };

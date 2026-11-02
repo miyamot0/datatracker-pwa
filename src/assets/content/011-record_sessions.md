@@ -9,7 +9,7 @@ index: 11
 
 The **Session Recorder** page is the main interface for actively collecting data in real-time. This page pulls the parameters set in the **Session Designer**, such as the **Keyboard** (i.e., behavior/key mappings) and the duration of total session (i.e., under which conditions sessions are planned to end). Once the session begins, the data collector uses the pre-defined keys defined in the **KeySet** to log behaviors and those outlined in the UI to manage timers in real-time. An example of a hypothetical session ready to begin is displayed below:
 
-![Image of DataTracker session recorder page](screenshots/session_recorder_page.png 'Image of DataTracker session recorder page')
+![Image of DataTracker session recorder page](screenshots/session_recorder_page.webp 'Image of DataTracker session recorder page')
 
 ### Beginning and Ending the Session
 
@@ -27,7 +27,7 @@ Throughout the session, the data collector can actively manage up to system-leve
 
 For example, a specific timer might be used to track the duration of a specific context (i.e., when task demands are present; e.g., Timer #1) while a second, separate timer might be introduced to separately score events distinct from the prior context (e.g., time spent accessing reinforcers; Timer #2). This allows for a more controlled analysis of behavior in relation to specific contexts or events, providing valuable insights into the dynamics of behavior during the session. Data collectors can start and stop each timer independently using the designated keys, ensuring that multiple time frames are accurately recorded during the session.
 
-![Image of DataTracker recording a session on Timer #1](screenshots/session_recorder_in_progress.png 'Image of DataTracker recording a session on Timer #1')
+![Image of DataTracker recording a session on Timer #1](screenshots/session_recorder_in_progress.webp 'Image of DataTracker recording a session on Timer #1')
 
 When a session is under way, the active timer is highlighted in the **Session Measurements** panel and each logged key is listed with the schedule it was recorded under. Counts for each key update immediately as keys are pressed.
 
@@ -35,7 +35,7 @@ When a session is under way, the active timer is highlighted in the **Session Me
 
 The session concludes when the predefined termination criteria are met, as set in the **Session Designer**. This could occur when the 'Total Time' reaches the session duration limit (i.e., time independent of specific timers uses), or when any of the specific timers (e.g., Timer #1) meets the specified criteria. For example, if the session is set to end after 10 minutes for Timer #1, the session will automatically conclude when Timer #1 hits 600 seconds. Alternatively, in the case that session time is open-ended, the session can be concluded at any time; however, the user must indicate that they wish to _keep_ a 'partial' session and its data (i.e., to confirm the data is a representative sample).
 
-![Image of DataTracker prompt shown when a session is ended early](screenshots/session_recorder_end_prompt.png 'Image of DataTracker prompt shown when a session is ended early')
+![Image of DataTracker prompt shown when a session is ended early](screenshots/session_recorder_end_prompt.webp 'Image of DataTracker prompt shown when a session is ended early')
 
 ## Summary and Overview
 

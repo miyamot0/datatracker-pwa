@@ -23,7 +23,7 @@ Although ending on "Total Time" and "Timer #1 Time" are essentially synonymous i
 
 When in doubt, it is recommended to end session based on "Timer #1" so that either Timer #2 or Timer #3 can be used as a 'Pause' timer in the software.
 
-![Image of DataTracker recording with Timer #1 active](screenshots/session_recorder_in_progress.png 'Image of DataTracker recording with Timer #1 active')
+![Image of DataTracker recording with Timer #1 active](screenshots/session_recorder_in_progress.webp 'Image of DataTracker recording with Timer #1 active')
 
 #### Example 2. 'Comparative' Timing (e.g., multiple schedules)
 
@@ -33,7 +33,7 @@ In this arrangement, both Timer #1 and Timer #2 would count toward a _shared_ se
 
 The DataTracker software supports comparative timing situations in a few ways. First, if the ability to 'pause' isn't especially critical, it would be easiest to maintain the 'End on Total Time' setting to maintain the uniform session length. Alternatively, if there is a goal of maintaining a 'pause' timer that does not count toward the final calculations, it may be simpler to base the session termination criteria on Timer #1 (e.g., 30s S-delta from 600s = 570s ending for Timer #1). This has the benefit of maintaining the ability to record and quantify behavior on each of the schedules provided (e.g., calculations of rate, proportion of session).
 
-![Image of DataTracker recording after switching to Timer #2](screenshots/session_recorder_timer_two.png 'Image of DataTracker recording after switching to Timer #2')
+![Image of DataTracker recording after switching to Timer #2](screenshots/session_recorder_timer_two.webp 'Image of DataTracker recording after switching to Timer #2')
 
 #### Other Notes
 

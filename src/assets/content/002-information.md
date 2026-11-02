@@ -19,19 +19,19 @@ Because of how this program is designed, users will always be prompted to approv
 
 The DataTracker interface will provide cues to indicate if the required access has, or has not, been authorized. A pair of images visualizing each status are shown below:
 
-![Image of access not being authorized](docs/access_not_authorized.png 'Image of access not being authorized')
+![Image of access not being authorized](docs/access_not_authorized.webp 'Image of access not being authorized')
 
-![Image of access being authorized](docs/access_authorized.png 'Image of access being authorized')
+![Image of access being authorized](docs/access_authorized.webp 'Image of access being authorized')
 
 ### Approving the 'DataTracker' Folder
 
 The DataTracker program will present a prompt to the user if access has not been granted to a primary 'DataTracker' folder. Specifically, upon clicking the 'Load Application' button, the program will present a page prompting the user to authorize the relevant folder. A visual of this is shown below:
 
-![Image of DataTracker program access screen](screenshots/groups_unauthorized_page.png 'Image of DataTracker program access screen')
+![Image of DataTracker program access screen](screenshots/groups_unauthorized_page.webp 'Image of DataTracker program access screen')
 
 Pressing the 'Authorize Access' button will prompt you to use a Folder named DataTracker (i.e., "DataTracker" folder in your _Documents_ folder or on your _Desktop_). This is largely as a strategy to avoid accidentally loading a "Group" folder as if it were a "DataTracker" folder. This can be disabled, but for good practice, it is kept as a default setting (i.e., to prevent novice users from losing data). Using **Google Chrome** in Windows, this could appear as the following:
 
-![Image of relevant 'DataTracker' folder being selected](docs/approve_folder.png 'Image of relevant "DataTracker" folder being selected')
+![Image of relevant 'DataTracker' folder being selected](docs/approve_folder.webp 'Image of relevant "DataTracker" folder being selected')
 
 ### Some General Rules for Working with DataTracker Data
 

@@ -23,7 +23,7 @@ To create a new **Condition** folder, you can do so by clicking the "Add Conditi
 
 Adding a **Condition** to the relevant **Evaluation** will change the options available in the **Session Designer** page. Specifically, there will be a new dropdown option in the association section. An illustration of this interface is displayed below:
 
-![Image of DataTracker session design page](screenshots/session_designer_page.png 'Image of DataTracker session design page')
+![Image of DataTracker session design page](screenshots/session_designer_page.webp 'Image of DataTracker session design page')
 
 ### Clearing Blank/Unnecessary Conditions
 

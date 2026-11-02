@@ -17,7 +17,7 @@ Both the Rate and Proportion sections of an evaluation each provide annotation c
 
 Aim lines do not have a toolbar control. They are opened from the **Aesthetics** menu, under **Annotations**, then **Aim Lines**. The Annotations submenu also lists **Text Labels** and **Phase Change Lines**, which open the same dialogs as the toolbar controls.
 
-![Image of the Annotations submenu](screenshots/figure_menu_annotations.png 'Image of the Annotations submenu')
+![Image of the Annotations submenu](screenshots/figure_menu_annotations.webp 'Image of the Annotations submenu')
 
 Phase change lines are shared annotations that persist across *both* Rate and Proportion figures. Aim lines and text annotations are scoped to a single page, given that each page has a respective Y axis that is not often meaningful across pages. The sections below describe each annotation type in detail.
 
@@ -31,7 +31,7 @@ Clicking **Phase Changes** opens a dialog where you can add, edit, and delete li
 - **Line type:** Options for lines are solid, dashed, or dotted. Lines are always black.
 - **Delete:** Removes that annotation/line only. The delete button is always at the far right of the row.
 
-![Image of the phase change lines dialog](screenshots/phase_changes_dialog.png 'Image of the phase change lines dialog')
+![Image of the phase change lines dialog](screenshots/phase_changes_dialog.webp 'Image of the phase change lines dialog')
 
 Adding a new phase change line requires specifying its position and line type. Users can click **Add Line** to create a new row. A row with an invalid position is shown with a message and is not saved until its position is corrected. If you enter a position that is not a number, or zero or less, the line is not saved, so it does not appear in the figure.
 
@@ -50,7 +50,7 @@ Aim lines are opened from **Aesthetics**, then **Annotations**, then **Aim Lines
 - **Color:** A color from the series palette, so an aim line can be distinguished from the data and from other aim lines.
 - **Delete:** Removes that aim line only. The delete button is shown at the end of the row.
 
-![Image of the aim lines dialog](screenshots/aim_lines_dialog.png 'Image of the aim lines dialog')
+![Image of the aim lines dialog](screenshots/aim_lines_dialog.webp 'Image of the aim lines dialog')
 
 Users can click **Add Aim Line** to create a new row. A row with a missing or non-numeric X1, X2, or Y value is shown with a message and is not saved until it is corrected. Aim lines are scoped to the page they are added on. The Rate and Proportion pages each keep their own list, and an aim line added on one page does not appear on the other.
 
@@ -68,7 +68,7 @@ Text annotations place a label at a specific point in the figure, such as a note
 - **Justify:** How lines are aligned inside the text box: left, center, or right. This matters only when the label has more than one line (e.g., centered vs. left-aligned).
 - **Delete:** Removes that text annotation.
 
-![Image of the text annotations dialog](screenshots/text_annotations_dialog.png 'Image of the text annotations dialog')
+![Image of the text annotations dialog](screenshots/text_annotations_dialog.webp 'Image of the text annotations dialog')
 
 Users can add new annotations by clicking **Add Text** to create a new row. A row missing a label or a numeric X or Y is shown with a message and is not saved until it is corrected. An entry whose position falls outside the plotted area is not drawn.
 

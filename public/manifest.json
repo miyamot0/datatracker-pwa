@@ -95,13 +95,6 @@
             "type": "image/png",
             "form_factor": "wide",
             "label": "View of Session Recorder Page"
-        },
-        {
-            "src": "/screenshots/within_session_preview.png",
-            "sizes": "1375x905",
-            "type": "image/png",
-            "form_factor": "wide",
-            "label": "View of Session Inspection Page"
         }
     ]
 }

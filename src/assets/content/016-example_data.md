@@ -15,7 +15,7 @@ Functionality for loading the 'Example' group data is available on the _Group_ d
 
 This operation will copy numerous files to this folder and make take a moment to fully copy all the necessary files to this location. Once it is complete, a success message will indicate that the example data have been copied to the current group directory. The example data will be available in the _Group_ directory listing page and can be opened like any other group data (i.e., the "Example DataTracker Group" folder will have a new entry).
 
-![Image of mock data import](docs/extract_demo_data.png 'Image of mock data import')
+![Image of mock data import](docs/extract_demo_data.webp 'Image of mock data import')
 
 ### Exploring Relevant Functionality
 
@@ -27,7 +27,7 @@ There is one participant included in the example data and these data include a r
 
 The interface is designed to be flexible and allow analysts to visualize various targets, or if more relevant, visualize a simpler figure that aggregates behavior presumed to be functionally related. The saved styles in this example hide the individual targets and show only the FCR series and the combined target behavior (CTB). They also add a custom title and y-axis label, a phase change line, condition labels, an aim line, and a legend at the right of the figure. This is the kind of figure an analyst would prepare after styling and reviewing their data (see the entries on figure elements, annotations, and series styles for how each of these is set). An example of this output is provided below.
 
-![Image of the rate visualization page with the figure toolbar](screenshots/rate_visuals_page.png 'Image of the rate visualization page with the figure toolbar')
+![Image of the rate visualization page with the figure toolbar](screenshots/rate_visuals_page.webp 'Image of the rate visualization page with the figure toolbar')
 
 #### Rater Agreement Calculations
 
@@ -35,7 +35,7 @@ The example dataset provided in DataTracker also allows for an inspection of the
 
 Using the example data, users can evaluate how the program calculates and displays IOA for each target behavior. The IOA calculations are provided in a table format that includes the total count, interval-by-interval, and occurrence/non-occurrence calculations. An example of this output is provided below.
 
-![Image of example functional analysis reliability calculations](docs/demo_fa_reli.png 'Image of example functional analysis reliability calculations')
+![Image of example functional analysis reliability calculations](docs/demo_fa_reli.webp 'Image of example functional analysis reliability calculations')
 
 #### Syncing with Other Devices
 
@@ -43,4 +43,4 @@ The example data provided in DataTracker will also let users explore sync functi
 
 Once relevant data is available, users can press the "Sync" button and then select the desired "Remote" DataTracker folder (Note: this folder must be authorized and named DataTracker as well, if this setting is not relaxed). From this screen, users can choose which files to _send_ to the remote folder and which files to _receive_ from the remote folder. This approach is suggested because it preserves the original structural pattern of the directory and minimizes the chance of human error confusing the program. A visual of this interface, when attempting to sync mock data to a second location, is provided below.
 
-![Image of sync screen with demo data](docs/demo_sync_data.png 'Image of sync screen with demo data')
+![Image of sync screen with demo data](docs/demo_sync_data.webp 'Image of sync screen with demo data')

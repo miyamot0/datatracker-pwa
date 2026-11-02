@@ -1,4 +1,4 @@
-![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-98.85_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-95.54_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-99.33_Percent-green>)
+![Static Badge Lines](<https://img.shields.io/badge/Coverage_(Lines)-98.79_Percent-green>) ![Static Badge Branches](<https://img.shields.io/badge/Coverage_(Branches)-95.38_Percent-green>) ![Static Badge Functions](<https://img.shields.io/badge/Coverage_(Functions)-99.33_Percent-green>)
 
 ![Static Badge Version](https://img.shields.io/badge/Version-0.5.16-blue) ![Static Badge License](https://img.shields.io/badge/License-Apache_2.0-purple)
 
@@ -97,19 +97,19 @@ docker run -d \
 
 ### Screenshots and Visuals
 
-![DataTracker Home Page](public/screenshots/home_page.png 'Visual of landing page for program')
+![DataTracker Home Page](public/screenshots/home_page.webp 'Visual of landing page for program')
 
-![DataTracker Data Visualization](public/screenshots/rate_visuals_page.png 'DataTracker Options for Between-Session Data Display')
+![DataTracker Data Visualization](public/screenshots/rate_visuals_page.webp 'DataTracker Options for Between-Session Data Display')
 
-![DataTracker Data Visualization](public/screenshots/session_viewer_content_page.png 'DataTracker Options for Within-Session Data Display')
+![DataTracker Data Visualization](public/screenshots/session_viewer_content_page.webp 'DataTracker Options for Within-Session Data Display')
 
-![Group-level Organization](public/screenshots/groups_authorized_page.png 'Organization of Participant Data by Groups')
+![Group-level Organization](public/screenshots/groups_authorized_page.webp 'Organization of Participant Data by Groups')
 
-![Key Management](public/screenshots/keyset_editor_page.png 'Basic Editor for Keyboards Mappings')
+![Key Management](public/screenshots/keyset_editor_page.webp 'Basic Editor for Keyboards Mappings')
 
-![Session Designer Page](public/screenshots/session_designer_page.png 'Various options for designing session conditions')
+![Session Designer Page](public/screenshots/session_designer_page.webp 'Various options for designing session conditions')
 
-![Session Recorder Page](public/screenshots/session_recorder_page.png 'Options for displaying session recording progress')
+![Session Recorder Page](public/screenshots/session_recorder_page.webp 'Options for displaying session recording progress')
 
 ### Program Support
 
