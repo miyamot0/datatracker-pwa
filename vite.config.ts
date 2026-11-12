@@ -57,18 +57,12 @@ const basePlugins: PluginOption[] = [
     },
     policy: {
       'default-src': ["'self'"],
-      'script-src': ["'self'", 'https://www.google-analytics.com', 'https://www.googletagmanager.com'],
-      'script-src-elem': ["'self'", 'https://www.google-analytics.com', 'https://www.googletagmanager.com'],
+      'script-src': ["'self'"],
+      'script-src-elem': ["'self'"],
       'style-src': ["'self'", "'unsafe-hashes'"],
       'style-src-elem': ["'self'", "'unsafe-inline'"],
       'style-src-attr': ["'unsafe-hashes'"],
-      'connect-src': [
-        "'self'",
-        'https://www.google-analytics.com',
-        'https://analytics.google.com',
-        'https://region1.google-analytics.com',
-        'https://www.googletagmanager.com',
-      ],
+      'connect-src': ["'self'"],
       'img-src': ["'self'", 'data:', 'https:'],
       'font-src': ["'self'"],
       'worker-src': ["'self'"],
@@ -111,18 +105,6 @@ const basePlugins: PluginOption[] = [
         {
           urlPattern: ({ request }) => request.destination === 'image',
           handler: 'CacheFirst',
-        },
-        {
-          urlPattern: /https:\/\/www\.google-analytics\.com/,
-          handler: 'NetworkOnly',
-          options: {
-            backgroundSync: {
-              name: 'ga-queue',
-              options: {
-                maxRetentionTime: 24 * 60, // retry for 24 hours
-              },
-            },
-          },
         },
       ],
     },
