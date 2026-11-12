@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatForSpreadsheet } from '@/lib/calculations/calculation-formatting';
+import { formatForCsv, formatForSpreadsheet } from '@/lib/calculations/calculation-formatting';
 import type { ProcessedSessionData, ProcessedKeyResult } from '@/types/calculation';
 
 // ── Factories ────────────────────────────────────────────────────────────────
@@ -74,6 +74,51 @@ const BASE_HEADERS = [
   'Timer',
   'Duration (min)',
 ];
+
+describe('formatForCsv', () => {
+  it('escapes commas, quotes, and embedded line breaks without changing displayed values', () => {
+    const data = [makeSessionData({ condition: 'Baseline, "A"\r\nNext line' })];
+    const displayed = formatForSpreadsheet(data);
+
+    expect(formatForCsv(data)).toContain(',"Baseline, ""A""\r\nNext line",');
+    expect(formatForSpreadsheet(data)).toEqual(displayed);
+    expect(displayed[1][3]).toBe('Baseline, "A"\r\nNext line');
+  });
+
+  it.each(['=1+1', '+1', '-12', '@SUM(A1)', '\t=1', ' \r\n=1', '\u0000=1', '\u2003@SUM(A1)', '\ttext', '\ntext'])(
+    'neutralizes potentially executable text %j',
+    (value) => {
+      const data = [makeSessionData({ condition: value, collector: value, therapist: value, timerLabel: value })];
+      const csv = formatForCsv(data);
+      const row = csv.slice(csv.indexOf('\r\n') + 2);
+
+      expect(row).toContain(`,"'${value}","'${value}","'${value}","'${value}",`);
+      expect(formatForSpreadsheet(data)[1].slice(3, 7)).toEqual([value, value, value, value]);
+    },
+  );
+
+  it('protects dynamic headers while preserving genuine negative numbers and decimal precision', () => {
+    const data = [
+      makeSessionData({
+        frequencyKeys: [makeFreqKey({ keyDescription: '=Frequency', rawValue: -2, rate: -0.5 })],
+        durationKeys: [makeDurKey({ keyDescription: '+Duration', rawValue: -1.25 })],
+        derivedKeys: [makeDerivedKey({ keyDescription: '@Derived', rawValue: -3, rate: -1.5 })],
+      }),
+    ];
+    const csv = formatForCsv(data);
+
+    expect(csv).toContain(`"'=Frequency (Count)"`);
+    expect(csv).toContain(`"'+Duration (Seconds)"`);
+    expect(csv).toContain(`"'@Derived (Derived Count)"`);
+    expect(csv).toContain(',"-2","-0.50","-1.25",');
+    expect(csv).toContain(',"-3","-1.50"');
+    expect(csv).toContain(',"Baseline","JD","Dr. Smith","Session","10.00",');
+  });
+
+  it('returns an empty CSV for no sessions', () => {
+    expect(formatForCsv([])).toBe('');
+  });
+});
 
 // ── Tests ────────────────────────────────────────────────────────────────────
 

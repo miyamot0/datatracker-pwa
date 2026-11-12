@@ -1,8 +1,9 @@
 ﻿import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import type { ProcessedSessionData } from '@/types/calculation';
 
-const mockProcessDuration = vi.hoisted(() => vi.fn(() => []));
+const mockProcessDuration = vi.hoisted(() => vi.fn((): ProcessedSessionData[] => []));
 
 // ----- Module mocks -----
 
@@ -39,7 +40,8 @@ vi.mock('@/lib/calculations/calculation-helpers', () => ({
   convertLegacyTimerType: vi.fn(() => 'Total'),
 }));
 
-vi.mock('@/lib/calculations/calculation-formatting', () => ({
+vi.mock('@/lib/calculations/calculation-formatting', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/calculations/calculation-formatting')>()),
   formatForSpreadsheet: vi.fn(() => [
     ['Session', 'Condition'],
     ['1', 'Baseline'],
@@ -159,6 +161,31 @@ describe('ViewDurationResults', () => {
       const downloadBtns = await page.getByRole('button', { name: /download/i }).all();
       await downloadBtns[0].click();
       expect(URL.createObjectURL).toHaveBeenCalled();
+    });
+
+    it('downloads safely encoded CSV text rather than spreadsheet formulas', async () => {
+      mockProcessDuration.mockReturnValueOnce([
+        {
+          session: 1,
+          date: new Date('2024-01-15T10:30:00'),
+          condition: '@SUM(A1)',
+          collector: 'Collector, "Two"',
+          therapist: 'Clinician',
+          timerType: 'Total',
+          timerLabel: 'Session',
+          timerDuration: 10,
+          frequencyKeys: [],
+          durationKeys: [],
+          derivedKeys: [],
+        },
+      ]);
+      await renderDur();
+      await page.getByRole('button', { name: /download/i }).first().click();
+
+      const downloaded = vi.mocked(URL.createObjectURL).mock.calls.at(-1)?.[0];
+      if (!(downloaded instanceof Blob)) throw new Error('Expected a CSV Blob download');
+      expect(downloaded.type).toBe('text/csv');
+      expect(await downloaded.text()).toContain(`,"'@SUM(A1)","Collector, ""Two""","Clinician",`);
     });
 
     it('clicking the JSON Download button calls URL.createObjectURL', async () => {

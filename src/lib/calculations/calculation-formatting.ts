@@ -7,6 +7,23 @@ import { ProcessedSessionData } from '../../types/calculation';
  * @return A 2D array of strings representing the spreadsheet matrix, including headers and data rows
  */
 export function formatForSpreadsheet(data: ProcessedSessionData[]): string[][] {
+  return buildSpreadsheetMatrix(data, (value) => value);
+}
+
+/**
+ * Quotes CSV fields and neutralizes spreadsheet formulas in text, not calculated numbers.
+ * The protective apostrophe may be visible in CSV readers that do not interpret it as a text prefix.
+ */
+export function formatForCsv(data: ProcessedSessionData[]): string {
+  return buildSpreadsheetMatrix(data, (value) => {
+    const unsafeText = /^[\s\p{Cc}]*[=+\-@]/u.test(value) || /^[\t\r\n]/.test(value);
+    return unsafeText ? `'${value}` : value;
+  })
+    .map((row) => row.map((value) => `"${value.replaceAll('"', '""')}"`).join(','))
+    .join('\r\n');
+}
+
+function buildSpreadsheetMatrix(data: ProcessedSessionData[], formatText: (value: string) => string): string[][] {
   if (data.length === 0) return [];
 
   // Build header row
@@ -46,12 +63,12 @@ export function formatForSpreadsheet(data: ProcessedSessionData[]): string[][] {
   const rows = data.map((sessionData) => {
     const row = [
       sessionData.session.toString(),
-      sessionData.date.toLocaleDateString(),
-      sessionData.date.toLocaleTimeString(),
-      sessionData.condition,
-      sessionData.collector,
-      sessionData.therapist,
-      sessionData.timerLabel,
+      formatText(sessionData.date.toLocaleDateString()),
+      formatText(sessionData.date.toLocaleTimeString()),
+      formatText(sessionData.condition),
+      formatText(sessionData.collector),
+      formatText(sessionData.therapist),
+      formatText(sessionData.timerLabel),
       sessionData.timerDuration.toFixed(2),
     ];
 
@@ -78,5 +95,5 @@ export function formatForSpreadsheet(data: ProcessedSessionData[]): string[][] {
     return row;
   });
 
-  return [headers, ...rows];
+  return [headers.map(formatText), ...rows];
 }

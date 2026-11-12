@@ -4,43 +4,78 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   build:
-    permissions: write-all
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          node-version: '24.22.1'
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Enable pinned Yarn
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: yarn install --frozen-lockfile --non-interactive
 
       - name: Run build
-        run: npm run build-island
+        run: yarn build-island
 
       - name: Get Version
         shell: bash
         id: get-version
-        run: echo "VERSION=$(node ./.github/workflows/get-version.js)" >> $GITHUB_ENV
+        run: echo "version=$(node ./.github/workflows/get-version.js)" >> "$GITHUB_OUTPUT"
 
       - name: Zip files
+        env:
+          VERSION: ${{ steps.get-version.outputs.version }}
         run: |
-          cd dist-island && zip -r "../DataTracker Island build v${{ env.VERSION }}.zip" .
+          cd dist-island && zip -r "../DataTracker Island build v${VERSION}.zip" .
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: island-release
+          path: DataTracker Island build v${{ steps.get-version.outputs.version }}.zip
+          if-no-files-found: error
+
+  # Dependency and build code must never execute with release-write permissions.
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download release artifact
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: island-release
+          path: release-artifacts
 
       - name: Create Release
         id: create-release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
         with:
-          tag: v${{ env.VERSION }}
+          tag: v${{ needs.build.outputs.version }}
+          commit: ${{ github.sha }}
           allowUpdates: true
-          name: DataTracker Island Build v${{ env.VERSION }}
+          name: DataTracker Island Build v${{ needs.build.outputs.version }}
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifacts: DataTracker Island build v${{ env.VERSION }}.zip
+          artifacts: release-artifacts/DataTracker Island build v${{ needs.build.outputs.version }}.zip
+          artifactErrorsFailBuild: true

@@ -20,7 +20,7 @@ import { SessionTerminationOptionsType } from '@/types/terminations';
 import { ToggleDisplayKey } from '@/types/visuals';
 import { processMultipleSessionDataWithKeys } from '@/lib/calculations';
 import { convertLegacyTimerType } from '@/lib/calculations/calculation-helpers';
-import { formatForSpreadsheet } from '@/lib/calculations/calculation-formatting';
+import { formatForCsv, formatForSpreadsheet } from '@/lib/calculations/calculation-formatting';
 
 type Props = {
   SessionTimer: SessionTerminationOptionsType;
@@ -60,7 +60,7 @@ export default function ViewDurationResults({
   );
 
   const matrix = formatForSpreadsheet(durationResults);
-  const csvString = matrix.map((row) => row.join(',')).join('\r\n');
+  const csvString = formatForCsv(durationResults);
 
   return (
     <Card className="w-full">
