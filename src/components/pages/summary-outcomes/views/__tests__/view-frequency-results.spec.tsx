@@ -1,8 +1,9 @@
 ﻿import { render } from 'vitest-browser-react';
 import { page } from 'vitest/browser';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import type { ProcessedSessionData } from '@/types/calculation';
 
-const mockProcessFrequency = vi.hoisted(() => vi.fn(() => []));
+const mockProcessFrequency = vi.hoisted(() => vi.fn((): ProcessedSessionData[] => []));
 
 // ----- Module mocks -----
 
@@ -39,7 +40,8 @@ vi.mock('@/lib/calculations/calculation-helpers', () => ({
   convertLegacyTimerType: vi.fn(() => 'Total'),
 }));
 
-vi.mock('@/lib/calculations/calculation-formatting', () => ({
+vi.mock('@/lib/calculations/calculation-formatting', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/calculations/calculation-formatting')>()),
   formatForSpreadsheet: vi.fn(() => [
     ['Session', 'Condition'],
     ['1', 'Baseline'],
@@ -160,6 +162,31 @@ describe('ViewFrequencyResults', () => {
       const downloadBtns = await page.getByRole('button', { name: /download/i }).all();
       await downloadBtns[0].click();
       expect(URL.createObjectURL).toHaveBeenCalled();
+    });
+
+    it('downloads safely encoded CSV text rather than spreadsheet formulas', async () => {
+      mockProcessFrequency.mockReturnValueOnce([
+        {
+          session: 1,
+          date: new Date('2024-01-15T10:30:00'),
+          condition: '=1+1',
+          collector: 'Collector, "One"',
+          therapist: 'Clinician',
+          timerType: 'Total',
+          timerLabel: 'Session',
+          timerDuration: 10,
+          frequencyKeys: [],
+          durationKeys: [],
+          derivedKeys: [],
+        },
+      ]);
+      await renderFreq();
+      await page.getByRole('button', { name: /download/i }).first().click();
+
+      const downloaded = vi.mocked(URL.createObjectURL).mock.calls.at(-1)?.[0];
+      if (!(downloaded instanceof Blob)) throw new Error('Expected a CSV Blob download');
+      expect(downloaded.type).toBe('text/csv');
+      expect(await downloaded.text()).toContain(`,"'=1+1","Collector, ""One""","Clinician",`);
     });
 
     it('clicking the JSON Download button calls URL.createObjectURL', async () => {
