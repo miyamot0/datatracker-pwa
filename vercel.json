@@ -18,7 +18,7 @@
                 },
                 {
                     "key": "Cross-Origin-Resource-Policy",
-                    "value": "cross-origin"
+                    "value": "same-site"
                 },
                 {
                     "key": "X-Content-Type-Options",
@@ -30,7 +30,7 @@
                 },
                 {
                     "key": "Content-Security-Policy",
-                    "value": "frame-ancestors 'none'; object-src 'none'; script-src 'self'; require-trusted-types-for 'script'; trusted-types default;"
+                    "value": "frame-ancestors 'none'; object-src 'none'; script-src https://datatracker.smallnstats.com https://datatracker-testing.smallnstats.com https://datatracker-experimental.smallnstats.com; require-trusted-types-for 'script'; trusted-types default;"
                 },
                 {
                     "key": "Referrer-Policy",
@@ -48,6 +48,15 @@
         },
         {
             "source": "/manifest.json",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "application/manifest+json"
+                }
+            ]
+        },
+        {
+            "source": "/manifest.webmanifest",
             "headers": [
                 {
                     "key": "Content-Type",

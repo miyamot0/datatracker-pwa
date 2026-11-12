@@ -42,6 +42,12 @@ const islandPlugins: PluginOption[] = [
   deleteUnnecessaryPlugin,
 ];
 
+const cspOrigins = [
+  'https://datatracker.smallnstats.com',
+  'https://datatracker-testing.smallnstats.com',
+  'https://datatracker-experimental.smallnstats.com',
+];
+
 const basePlugins: PluginOption[] = [
   tanstackRouter({
     target: 'react',
@@ -56,21 +62,22 @@ const basePlugins: PluginOption[] = [
       outlierSupport: ['tailwind'],
     },
     policy: {
-      'default-src': ["'self'"],
-      'script-src': ["'self'"],
-      'script-src-elem': ["'self'"],
-      'style-src': ["'self'", "'unsafe-hashes'"],
-      'style-src-elem': ["'self'", "'unsafe-inline'"],
+      'default-src': [...cspOrigins],
+      'script-src': [...cspOrigins],
+      'script-src-elem': [...cspOrigins],
+      'style-src': [...cspOrigins, "'unsafe-hashes'"],
+      'style-src-elem': [...cspOrigins, "'unsafe-inline'"],
       'style-src-attr': ["'unsafe-hashes'"],
-      'connect-src': ["'self'"],
-      'img-src': ["'self'", 'data:', 'https:'],
-      'font-src': ["'self'"],
-      'worker-src': ["'self'"],
-      'manifest-src': ["'self'"],
-      'base-uri': ["'self'"],
-      'form-action': ["'self'"],
+      'connect-src': [...cspOrigins],
+      'img-src': [...cspOrigins, 'data:'],
+      'font-src': [...cspOrigins],
+      'worker-src': [...cspOrigins],
+      'manifest-src': [...cspOrigins],
+      'base-uri': [...cspOrigins],
+      'form-action': [...cspOrigins],
     },
     build: {
+      override: true,
       sri: true,
     },
   }),
