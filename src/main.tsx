@@ -7,8 +7,6 @@ import 'virtual:docs-highlight.css';
 import 'sonner/dist/styles.css';
 
 import { initializeSharedArrayBufferSupport } from '@/lib/shared-buffer.ts';
-import { startAnalyticsSync } from './lib/analytics/analytics-sync.ts';
-import { setupErrorTracking } from './lib/analytics/analytics-errors.ts';
 
 if (import.meta.env.VITE_MODE !== 'island' && import.meta.env.PROD) {
   import('./config/pwa-registration').then(({ init }) => {
@@ -18,9 +16,6 @@ if (import.meta.env.VITE_MODE !== 'island' && import.meta.env.PROD) {
 
 // Initialize SharedArrayBuffer support check
 initializeSharedArrayBufferSupport();
-
-startAnalyticsSync();
-setupErrorTracking();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

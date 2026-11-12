@@ -7,13 +7,7 @@
     return;
   }
 
-  const allowedOrigins = new Set([
-    window.location.origin,
-    'https://www.googletagmanager.com',
-    'https://www.google-analytics.com',
-    'https://analytics.google.com',
-    'https://region1.google-analytics.com',
-  ]);
+  const allowedOrigins = new Set([window.location.origin]);
 
   function toAbsoluteUrl(value) {
     try {

@@ -12,12 +12,6 @@ vi.mock('@/App', () => ({
   },
 }));
 
-const mockSetConsent = vi.hoisted(() => vi.fn());
-vi.mock('@/lib/analytics/analytics-consent', () => ({
-  getConsent: vi.fn(() => 'denied'),
-  setConsent: mockSetConsent,
-}));
-
 vi.mock('@/lib/notifications', () => ({
   displayConditionalNotification: vi.fn(),
 }));
@@ -66,21 +60,16 @@ describe('SettingsTabAdministrative', () => {
     await expect.element(page.getByText(/Select whether to allow folders named other than/i)).toBeInTheDocument();
   });
 
-  it('renders the anonymous error logging label', async () => {
+  it('does not offer anonymous error logging', async () => {
     await renderWithTabs();
-    await expect.element(page.getByText('Contribute Anonymous Error Logging')).toBeInTheDocument();
+    await expect.element(page.getByText('Contribute Anonymous Error Logging')).not.toBeInTheDocument();
   });
 
-  it('renders the analytics consent description', async () => {
-    await renderWithTabs();
-    await expect.element(page.getByText(/Select whether to allow anonymous error logging/i)).toBeInTheDocument();
-  });
-
-  it('renders three Select triggers', async () => {
+  it('renders two Select triggers', async () => {
     await renderWithTabs();
     await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
     const triggers = await page.getByRole('combobox').all();
-    expect(triggers).toHaveLength(3);
+    expect(triggers).toHaveLength(2);
   });
 
   describe('select interactions', () => {
@@ -112,7 +101,6 @@ describe('SettingsTabAdministrative', () => {
     beforeEach(() => {
       mockSetSettings.mockReset();
       mockSaveSettings.mockReset();
-      mockSetConsent.mockReset();
     });
 
     it('selecting Allow elevated privileges calls setSettings with EnableFileDeletion: true', async () => {
@@ -153,15 +141,6 @@ describe('SettingsTabAdministrative', () => {
       await page.getByRole('option', { name: "'DataTracker' Name Required" }).click();
       expect(mockSetSettings).toHaveBeenCalledWith(expect.objectContaining({ EnforceDataFolderName: true }));
       expect(mockSaveSettings).toHaveBeenCalled();
-    });
-
-    it('selecting Allow anonymous error logs calls setConsent with granted', async () => {
-      await renderWithProvider();
-      await expect.element(page.getByRole('combobox').first()).toBeInTheDocument();
-      const triggers = await page.getByRole('combobox').all();
-      await triggers[2].click();
-      await page.getByRole('option', { name: 'Allow anonymous error logs' }).click();
-      expect(mockSetConsent).toHaveBeenCalledWith('granted');
     });
   });
 });

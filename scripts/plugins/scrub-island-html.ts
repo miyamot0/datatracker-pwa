@@ -2,8 +2,6 @@ import { PluginOption } from 'vite';
 
 const SCRUB_PATTERNS = [
   /<script\s+src="\.?\/?trusted-types-init\.js"><\/script>/,
-  /<script\s+async\s+src="https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=[^"]*"><\/script>/,
-  /<script\s+src="\.?\/?analytics-init\.js"><\/script>/,
 ];
 
 /**

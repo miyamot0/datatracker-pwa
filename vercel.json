@@ -30,7 +30,7 @@
                 },
                 {
                     "key": "Content-Security-Policy",
-                    "value": "frame-ancestors 'none'; object-src 'none'; script-src 'self' https://www.google-analytics.com https://www.googletagmanager.com; require-trusted-types-for 'script'; trusted-types default goog#html;"
+                    "value": "frame-ancestors 'none'; object-src 'none'; script-src 'self'; require-trusted-types-for 'script'; trusted-types default;"
                 },
                 {
                     "key": "Referrer-Policy",
