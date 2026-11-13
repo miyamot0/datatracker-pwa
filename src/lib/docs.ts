@@ -9,7 +9,7 @@ export { AllFrontMatter, AllKeywordsArray };
 export const findFrontMatter = (slug: string) => AllFrontMatter.find((matter) => matter.slug === slug);
 
 /**
- * Loads a documentation entry with its pre-rendered HTML body (built at compile time by the prerender-docs plugin)
+ * Loads a documentation entry with its build-time parsed Markdown document
  *
  * @returns the entry, or undefined if no entry exists for the slug
  */

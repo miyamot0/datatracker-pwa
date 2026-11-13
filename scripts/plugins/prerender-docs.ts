@@ -1,11 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Plugin } from 'vite';
-import { renderHtml } from '@tanstack/markdown/html';
-import { createHighlighter } from '@tanstack/highlight/core';
-import { js } from '@tanstack/highlight/languages/js';
-import { plaintext } from '@tanstack/highlight/languages/plaintext';
-import { createTanStackMarkdownHighlighter } from '@tanstack/highlight/markdown';
+import { parseMarkdown } from '@tanstack/markdown/parser';
 import { createThemeCss } from '@tanstack/highlight/theme';
 import { githubDarkTheme } from '@tanstack/highlight/themes/github-dark';
 import { githubLightTheme } from '@tanstack/highlight/themes/github-light';
@@ -17,10 +13,6 @@ const CONTENT_DIR = path.resolve(import.meta.dirname, '../../src/assets/content'
 const DOCS_ID = 'virtual:docs';
 const BODY_PREFIX = 'virtual:docs-body/';
 const CSS_ID = 'virtual:docs-highlight.css';
-
-const highlightCode = createTanStackMarkdownHighlighter(
-  createHighlighter({ languages: [plaintext, js], fallbackLanguage: 'plaintext' }),
-);
 
 /**
  * Splits a content file into its front matter (key: value lines) and markdown body
@@ -79,7 +71,9 @@ function buildBodyModule(slug: string): string | undefined {
   if (!fs.existsSync(file)) return undefined;
 
   const { body } = parseEntry(`${slug}.md`, fs.readFileSync(file, 'utf8'));
-  return `export default ${JSON.stringify(renderHtml(body, { highlighter: highlightCode }))};`;
+  const document = JSON.stringify(parseMarkdown(body, { allowHtml: false }))
+    .replaceAll('<', '\\u003c').replaceAll('\u2028', '\\u2028').replaceAll('\u2029', '\\u2029');
+  return `export default ${document};`;
 }
 
 function buildHighlightCss(): string {
@@ -93,8 +87,7 @@ function buildHighlightCss(): string {
 }
 
 /**
- * Pre-renders documentation markdown to HTML at build time so the app ships
- * finished markup (with highlighted code) instead of parsing markdown at runtime.
+ * Pre-parses documentation into static AST data for TanStack's React renderer.
  */
 export const prerenderDocsPlugin: Plugin = {
   name: 'prerender-docs',
@@ -111,7 +104,8 @@ export const prerenderDocsPlugin: Plugin = {
   },
   handleHotUpdate({ file, server }) {
     if (file.startsWith(CONTENT_DIR) && file.endsWith('.md')) {
-      for (const id of [`\0${DOCS_ID}`, `\0${CSS_ID}`]) {
+      const slug = path.basename(file, '.md');
+      for (const id of [`\0${DOCS_ID}`, `\0${CSS_ID}`, `\0${BODY_PREFIX}${slug}`]) {
         const mod = server.moduleGraph.getModuleById(id);
         if (mod) server.moduleGraph.invalidateModule(mod);
       }

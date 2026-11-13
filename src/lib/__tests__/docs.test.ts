@@ -15,11 +15,12 @@ describe('docs', () => {
     expect(findFrontMatter('does-not-exist')).toBeUndefined();
   });
 
-  it('loads a pre-rendered HTML body for a known slug', async () => {
-    const entry = await loadEntry(AllFrontMatter[0].slug);
+  it.each(AllFrontMatter)('loads a pre-parsed document for $slug', async (matter) => {
+    const entry = await loadEntry(matter.slug);
 
-    expect(entry?.matter).toEqual(AllFrontMatter[0]);
-    expect(entry?.value).toContain('<');
+    expect(entry?.matter).toEqual(matter);
+    expect(entry?.value.type).toBe('root');
+    expect(entry?.value.children.length).toBeGreaterThan(0);
   });
 
   it('returns undefined for an unknown slug', async () => {

@@ -1,3 +1,5 @@
+import type { MarkdownDocument } from '@tanstack/markdown';
+
 /**
  * This is the type for all frontmatter in MDs
  */
@@ -17,5 +19,5 @@ export type FrontMatterUniversalType = {
  */
 export type ParsedFrontMatterType = {
   matter: FrontMatterUniversalType;
-  value: string;
+  value: MarkdownDocument;
 };

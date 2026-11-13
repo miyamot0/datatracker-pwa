@@ -99,7 +99,7 @@ vi.mock('@/routes/documentation/$slug', () => ({
 }));
 
 vi.mock('@/components/pages/documentation/views/md-viewer-lite', () => ({
-  MdViewerLite: ({ html }) => <div data-testid="md-viewer-lite">{html}</div>,
+  MdViewerLite: ({ document }) => <div data-testid="md-viewer-lite">{document.children[0].children[0].value}</div>,
 }));
 
 vi.mock('@/components/elements/page-wrapper', () => ({
@@ -167,7 +167,7 @@ const createMockEntry = (overrides = {}) => ({
     keywords: 'testing,documentation',
     ...overrides.matter,
   },
-  value: '# Test Content\n\nThis is test markdown content.',
+  value: { type: 'root', children: [{ type: 'heading', depth: 1, children: [{ type: 'text', value: 'Test Content' }] }] },
   ...overrides,
 });
 
@@ -261,7 +261,7 @@ describe('DocumentationEntryPage', () => {
 
   it('renders markdown viewer with entry content', async () => {
     await renderEntryPage();
-    await expect.element(page.getByTestId('md-viewer-lite')).toMatchTextContent('# Test Content');
+    await expect.element(page.getByTestId('md-viewer-lite')).toMatchTextContent('Test Content');
   });
 
   it('disables previous button when PreviousEntry is undefined', async () => {
