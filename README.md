@@ -153,6 +153,10 @@ Gilroy, S. P. (2017-Present). DataTracker3. [Repo (GPL-3)](https://github.com/mi
  
 @radix-ui/react-tooltip (1.4.1). Copyright n/a -- MIT Licensed: [Repo](https://github.com/radix-ui/primitives.git) 
  
+@tanstack/highlight (1.2.0). Copyright TanStack -- MIT Licensed: [Repo](https://github.com/TanStack/highlight.git) 
+ 
+@tanstack/markdown (1.0.0). Copyright n/a -- MIT Licensed: [Repo](https://github.com/TanStack/markdown.git) 
+ 
 @tanstack/react-hotkeys (0.10.0). Copyright Tanner Linsley -- MIT Licensed: [Repo](https://github.com/TanStack/hotkeys.git) 
  
 @tanstack/react-query (5.104.5). Copyright tannerlinsley -- MIT Licensed: [Repo](https://github.com/TanStack/query.git) 

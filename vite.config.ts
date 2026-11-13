@@ -8,7 +8,6 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import csp from 'vite-plugin-csp-guard';
 import { deleteUnnecessaryPlugin } from './scripts/plugins/delete-unnecessary-files.ts';
-import { scrubIslandHtmlPlugin } from './scripts/plugins/scrub-island-html.ts';
 import { inlineWorkersPlugin } from './scripts/plugins/inline-workers.ts';
 import { prerenderDocsPlugin } from './scripts/plugins/prerender-docs.ts';
 
@@ -32,7 +31,6 @@ const islandPlugins: PluginOption[] = [
   tailwindcss(),
   prerenderDocsPlugin,
   inlineWorkersPlugin,
-  scrubIslandHtmlPlugin,
   viteSingleFile({
     removeViteModuleLoader: true,
     overrideConfig: {

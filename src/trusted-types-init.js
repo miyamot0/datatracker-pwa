@@ -3,7 +3,8 @@
 (function () {
   'use strict';
 
-  if (typeof window === 'undefined' || !window.trustedTypes || typeof window.trustedTypes.createPolicy !== 'function') {
+  if (import.meta.env.VITE_MODE === 'island' || typeof window === 'undefined' ||
+    !window.trustedTypes || typeof window.trustedTypes.createPolicy !== 'function') {
     return;
   }
 
