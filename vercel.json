@@ -1,83 +1,83 @@
 {
-    "version": 2,
-    "buildCommand": "yarn build",
-    "outputDirectory": "dist",
-    "installCommand": "yarn install --frozen-lockfile",
-    "framework": "vite",
-    "headers": [
+  "version": 2,
+  "buildCommand": "yarn build",
+  "outputDirectory": "dist",
+  "installCommand": "yarn install --frozen-lockfile",
+  "framework": "vite",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
         {
-            "source": "/(.*)",
-            "headers": [
-                {
-                    "key": "Cross-Origin-Embedder-Policy",
-                    "value": "require-corp"
-                },
-                {
-                    "key": "Cross-Origin-Opener-Policy",
-                    "value": "same-origin"
-                },
-                {
-                    "key": "Cross-Origin-Resource-Policy",
-                    "value": "same-site"
-                },
-                {
-                    "key": "X-Content-Type-Options",
-                    "value": "nosniff"
-                },
-                {
-                    "key": "X-Frame-Options",
-                    "value": "DENY"
-                },
-                {
-                    "key": "Content-Security-Policy",
-                    "value": "frame-ancestors 'none'; object-src 'none'; script-src https://datatracker.smallnstats.com https://datatracker-testing.smallnstats.com https://datatracker-experimental.smallnstats.com; require-trusted-types-for 'script'; trusted-types default;"
-                },
-                {
-                    "key": "Referrer-Policy",
-                    "value": "strict-origin-when-cross-origin"
-                },
-                {
-                    "key": "Permissions-Policy",
-                    "value": "camera=(), microphone=(), geolocation=(self), payment=()"
-                },
-                {
-                    "key": "Strict-Transport-Security",
-                    "value": "max-age=31536000; includeSubDomains; preload"
-                }
-            ]
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "require-corp"
         },
         {
-            "source": "/manifest.json",
-            "headers": [
-                {
-                    "key": "Content-Type",
-                    "value": "application/manifest+json"
-                }
-            ]
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
         },
         {
-            "source": "/manifest.webmanifest",
-            "headers": [
-                {
-                    "key": "Content-Type",
-                    "value": "application/manifest+json"
-                }
-            ]
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "same-site"
         },
         {
-            "source": "/sw.js",
-            "headers": [
-                {
-                    "key": "Service-Worker-Allowed",
-                    "value": "/"
-                }
-            ]
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors 'none'; object-src 'none'; script-src https://datatracker.smallnstats.com https://datatracker-testing.smallnstats.com https://datatracker-experimental.smallnstats.com; script-src-attr 'none'; base-uri 'none'; frame-src 'none'; form-action 'none'; require-trusted-types-for 'script'; trusted-types default;"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "accelerometer=(), bluetooth=(), camera=(), clipboard-read=(), clipboard-write=(self), cross-origin-isolated=(self), display-capture=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), local-fonts=(), magnetometer=(), microphone=(), midi=(), payment=(), screen-wake-lock=(self), serial=(), usb=(), xr-spatial-tracking=()"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains; preload"
         }
-    ],
-    "rewrites": [
+      ]
+    },
+    {
+      "source": "/manifest.json",
+      "headers": [
         {
-            "source": "/((?!api/).*)",
-            "destination": "/index.html"
+          "key": "Content-Type",
+          "value": "application/manifest+json"
         }
-    ]
+      ]
+    },
+    {
+      "source": "/manifest.webmanifest",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ]
 }

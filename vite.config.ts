@@ -62,7 +62,8 @@ const basePlugins: PluginOption[] = [
     policy: {
       'default-src': [...cspOrigins],
       'script-src': [...cspOrigins],
-      'script-src-elem': [...cspOrigins],
+      'script-src-elem': [...cspOrigins, "'strict-dynamic'"],
+      'script-src-attr': ["'none'"],
       'style-src': [...cspOrigins, "'unsafe-hashes'"],
       'style-src-elem': [...cspOrigins, "'unsafe-inline'"],
       'style-src-attr': ["'unsafe-hashes'"],
@@ -71,8 +72,9 @@ const basePlugins: PluginOption[] = [
       'font-src': [...cspOrigins],
       'worker-src': [...cspOrigins],
       'manifest-src': [...cspOrigins],
-      'base-uri': [...cspOrigins],
-      'form-action': [...cspOrigins],
+      'base-uri': ["'none'"],
+      'frame-src': ["'none'"],
+      'form-action': ["'none'"],
     },
     build: {
       override: true,
